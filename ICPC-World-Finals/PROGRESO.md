@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **162 / 200**
+Total de problemas: **200** · Completados: **163 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -226,7 +226,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | N | What's Our Vector, Victor? | `2020/N/N.html` |
 | [x] | O | Which Planet is This?! | `2020/O/O.html` |
 
-## 2021 ICPC World Finals — 8 / 12
+## 2021 ICPC World Finals — 9 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -238,7 +238,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | F | Islands from the Sky | `2021/F/F.html` |
 | [x] | G | Mosaic Browsing | `2021/G/G.html` |
 | [x] | H | Prehistoric Programs | `2021/H/H.html` |
-| [ ] | I | Spider Walk | `2021/I/I.html` |
+| [x] | I | Spider Walk | `2021/I/I.html` |
 | [ ] | J | Splitstream | `2021/J/J.html` |
 | [ ] | K | Take On Meme | `2021/K/K.html` |
 | [ ] | L | Where Am I? | `2021/L/L.html` |
