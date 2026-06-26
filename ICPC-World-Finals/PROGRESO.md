@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **104 / 200**
+Total de problemas: **200** · Completados: **105 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -139,7 +139,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | L | Weather Report | `2015/L/L.html` |
 | [x] | M | Window Manager | `2015/M/M.html` |
 
-## 2016 ICPC World Finals — 12 / 13
+## 2016 ICPC World Finals — 13 / 13
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -155,7 +155,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Spin Doctor | `2016/J/J.html` |
 | [x] | K | String Theory | `2016/K/K.html` |
 | [x] | L | Swap Space | `2016/L/L.html` |
-| [ ] | M | What Really Happened on Mars? | `2016/M/M.html` |
+| [x] | M | What Really Happened on Mars? | `2016/M/M.html` |
 
 ## 2017 ICPC World Finals — 0 / 12
 
