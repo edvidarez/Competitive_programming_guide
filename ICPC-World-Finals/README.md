@@ -79,7 +79,13 @@ en `TEMPLATE.html`):
   No inventes diagramas: usa los del PDF.
 
 ### Vista 2 — Upsolving (socrática)
-- Empieza con un **resumen mínimo**: quita la historia y todo lo que no sea
+- **🏷️ Etiquetas (obligatorio):** al inicio de la Vista 2, una barra con
+  **2–5 tags** del tipo/técnicas del problema, usando un vocabulario
+  consistente: *Matemáticas, Teoría de números, Combinatoria, Geometría,
+  Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+  Backtracking/IDDFS, BFS/DFS, Strings, Estructuras de datos, Flujos, Bitmask,
+  Simulación, Parsing, Fuerza bruta, Two pointers, Hashing*.
+- Sigue con un **resumen mínimo**: quita la historia y todo lo que no sea
   parte del problema. Solo *qué te dan* y *qué hay que calcular*.
 - Luego una **lista de pistas progresivas**, de lo general a lo específico.
   - Cada pista va **escondida** y se abre con un clic (elemento `<details>`).
