@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **23 / 200**
+Total de problemas: **200** · Completados: **24 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -39,12 +39,12 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Subway Timing | `2009/J/J.html` |
 | [x] | K | Suffix-Replacement Grammars | `2009/K/K.html` |
 
-## 2010 ICPC World Finals — 1 / 11
+## 2010 ICPC World Finals — 2 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
 | [x] | A | APL Lives! | `2010/A/A.html` |
-| [ ] | B | Barcodes | `2010/B/B.html` |
+| [x] | B | Barcodes | `2010/B/B.html` |
 | [ ] | C | Tracking Bio-bots | `2010/C/C.html` |
 | [ ] | D | Castles | `2010/D/D.html` |
 | [ ] | E | Channel | `2010/E/E.html` |
