@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **139 / 200**
+Total de problemas: **200** · Completados: **140 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -206,11 +206,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Miniature Golf | `2019/J/J.html` |
 | [x] | K | Traffic Blights | `2019/K/K.html` |
 
-## 2020 ICPC World Finals — 0 / 15
+## 2020 ICPC World Finals — 1 / 15
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Cardiology | `2020/A/A.html` |
+| [x] | A | Cardiology | `2020/A/A.html` |
 | [ ] | B | The Cost of Speed Limits | `2020/B/B.html` |
 | [ ] | C | Domes | `2020/C/C.html` |
 | [ ] | D | Gene Folding | `2020/D/D.html` |
