@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **33 / 200**
+Total de problemas: **200** · Completados: **34 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -55,11 +55,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Chocolate | `2010/J/J.html` |
 | [x] | K | Paperweight | `2010/K/K.html` |
 
-## 2011 ICPC World Finals — 0 / 11
+## 2011 ICPC World Finals — 1 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | To Add or to Multiply | `2011/A/A.html` |
+| [x] | A | To Add or to Multiply | `2011/A/A.html` |
 | [ ] | B | Affine Mess | `2011/B/B.html` |
 | [ ] | C | Ancient Messages | `2011/C/C.html` |
 | [ ] | D | Chips Challenge | `2011/D/D.html` |
