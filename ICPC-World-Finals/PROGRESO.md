@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **127 / 200**
+Total de problemas: **200** · Completados: **128 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -174,7 +174,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Tarot Sham Boast | `2017/K/K.html` |
 | [x] | L | Visual Python++ | `2017/L/L.html` |
 
-## 2018 ICPC World Finals — 10 / 11
+## 2018 ICPC World Finals — 11 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -188,7 +188,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | H | Single Cut of Failure | `2018/H/H.html` |
 | [x] | I | Triangles | `2018/I/I.html` |
 | [x] | J | Uncrossed Knight's Tour | `2018/J/J.html` |
-| [ ] | K | Wireless is the New Fiber | `2018/K/K.html` |
+| [x] | K | Wireless is the New Fiber | `2018/K/K.html` |
 
 ## 2019 ICPC World Finals — 0 / 11
 
