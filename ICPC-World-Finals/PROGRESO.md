@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **61 / 200**
+Total de problemas: **200** · Completados: **62 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -88,7 +88,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Stacking Plates | `2012/K/K.html` |
 | [x] | L | Takeover Wars | `2012/L/L.html` |
 
-## 2013 ICPC World Finals — 5 / 11
+## 2013 ICPC World Finals — 6 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -97,7 +97,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | C | Surely You Congest | `2013/C/C.html` |
 | [x] | D | Factors | `2013/D/D.html` |
 | [x] | E | Harvard | `2013/E/E.html` |
-| [ ] | F | Low Power | `2013/F/F.html` |
+| [x] | F | Low Power | `2013/F/F.html` |
 | [ ] | G | Map Tiles | `2013/G/G.html` |
 | [ ] | H | Matrxka | `2013/H/H.html` |
 | [ ] | I | Pirate Chest | `2013/I/I.html` |
