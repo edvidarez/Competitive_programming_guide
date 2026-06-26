@@ -1,20 +1,20 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **3 / 200**
+Total de problemas: **200** · Completados: **4 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
 > El agente debe actualizar este archivo en cada commit.
 
 
-## 2008 ICPC World Finals — 3 / 11
+## 2008 ICPC World Finals — 4 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
 | [x] | A | Air Conditioning Machinery | `2008/A/A.html` |
 | [x] | B | Always an Integer | `2008/B/B.html` |
 | [x] | C | Conveyor Belt | `2008/C/C.html` |
-| [ ] | D | The Hare and the Hounds | `2008/D/D.html` |
+| [x] | D | The Hare and the Hounds | `2008/D/D.html` |
 | [ ] | E | Huffman Codes | `2008/E/E.html` |
 | [ ] | F | Glenbow Museum | `2008/F/F.html` |
 | [ ] | G | Net Loss | `2008/G/G.html` |
