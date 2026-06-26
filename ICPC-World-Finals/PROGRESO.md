@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **123 / 200**
+Total de problemas: **200** · Completados: **124 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -174,7 +174,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Tarot Sham Boast | `2017/K/K.html` |
 | [x] | L | Visual Python++ | `2017/L/L.html` |
 
-## 2018 ICPC World Finals — 6 / 11
+## 2018 ICPC World Finals — 7 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -184,7 +184,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | D | Gem Island | `2018/D/D.html` |
 | [x] | E | Getting a Jump on Crime | `2018/E/E.html` |
 | [x] | F | Go with the Flow | `2018/F/F.html` |
-| [ ] | G | Panda Preserve | `2018/G/G.html` |
+| [x] | G | Panda Preserve | `2018/G/G.html` |
 | [ ] | H | Single Cut of Failure | `2018/H/H.html` |
 | [ ] | I | Triangles | `2018/I/I.html` |
 | [ ] | J | Uncrossed Knight's Tour | `2018/J/J.html` |
