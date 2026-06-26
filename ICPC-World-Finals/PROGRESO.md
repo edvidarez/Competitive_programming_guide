@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **148 / 200**
+Total de problemas: **200** · Completados: **149 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -206,7 +206,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Miniature Golf | `2019/J/J.html` |
 | [x] | K | Traffic Blights | `2019/K/K.html` |
 
-## 2020 ICPC World Finals — 9 / 15
+## 2020 ICPC World Finals — 10 / 15
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -219,7 +219,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | G | Opportunity Cost | `2020/G/G.html` |
 | [x] | H | QC QC | `2020/H/H.html` |
 | [x] | I | Quests | `2020/I/I.html` |
-| [ ] | J | 'S No Problem | `2020/J/J.html` |
+| [x] | J | 'S No Problem | `2020/J/J.html` |
 | [ ] | K | Space Walls | `2020/K/K.html` |
 | [ ] | L | Sweep Stakes | `2020/L/L.html` |
 | [ ] | M | Trailing Digits | `2020/M/M.html` |
