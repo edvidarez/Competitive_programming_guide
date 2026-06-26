@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **11 / 200**
+Total de problemas: **200** · Completados: **12 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -23,11 +23,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | The Sky is the Limit | `2008/J/J.html` |
 | [x] | K | Steam Roller | `2008/K/K.html` |
 
-## 2009 ICPC World Finals — 0 / 11
+## 2009 ICPC World Finals — 1 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | A Careful Approach | `2009/A/A.html` |
+| [x] | A | A Careful Approach | `2009/A/A.html` |
 | [ ] | B | My Bad | `2009/B/B.html` |
 | [ ] | C | The Return of Carl | `2009/C/C.html` |
 | [ ] | D | Conduit Packing | `2009/D/D.html` |
