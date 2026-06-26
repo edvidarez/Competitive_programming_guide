@@ -69,6 +69,14 @@ en `TEMPLATE.html`):
 - Incluye **Entrada**, **Salida** y un bloque de **Límites** bien resaltado
   (tiempo, memoria, y cada restricción de las variables como `1 ≤ n ≤ 10^5`).
 - Incluye el/los **ejemplos** de entrada y salida tal cual el PDF.
+- **🖼️ IMÁGENES CLAVE (obligatorio):** si el PDF tiene figuras/diagramas
+  necesarios para entender el problema (formas, ejemplos visuales, esquemas),
+  **extráelas del PDF y embébelas** en la Vista 1, justo donde el texto las
+  menciona, con un `<figure>` y un pie de figura traducido. Úsalas también en
+  la Vista 2 si ayudan al razonamiento. Embébelas como **data URI base64** para
+  que el `.html` siga siendo autocontenido. Si la figura es vectorial (no es
+  raster embebido), **renderiza la región** de la página (ver Detalles técnicos).
+  No inventes diagramas: usa los del PDF.
 
 ### Vista 2 — Upsolving (socrática)
 - Empieza con un **resumen mínimo**: quita la historia y todo lo que no sea
@@ -103,6 +111,21 @@ en `TEMPLATE.html`):
 - Para leer los PDFs puedes usar, por ejemplo, `pymupdf` (`import fitz`) o
   `pdftotext`. Algunos encabezados "Problem X" del PDF son imágenes; ubica el
   problema por su página/título si el texto no aparece.
+- **Extraer figuras del PDF** (para la regla de imágenes clave):
+  - Si la figura es una imagen raster embebida: `page.get_images()` +
+    `doc.extract_image(xref)`.
+  - Si es **vectorial** (lo más común en estos PDFs), renderiza solo su región:
+    ```python
+    import fitz, base64
+    doc = fitz.open("problems.pdf"); page = doc[NUM_PAGINA]
+    # ubica la franja con page.search_for("Figure 1") y/o page.get_drawings()
+    clip = fitz.Rect(x0, y0, x1, y1)              # recorta SOLO la figura
+    pix = page.get_pixmap(dpi=300, clip=clip); pix.save("fig.png")
+    uri = "data:image/png;base64," + base64.b64encode(open("fig.png","rb").read()).decode()
+    # pega 'uri' en el src del <img> del HTML
+    ```
+  - Recorta sin texto del enunciado alrededor; usa DPI ~300 para que se vea
+    nítido. Borra el `.png` temporal: en el repo va embebido en el `.html`.
 - Procedencia de los PDFs: [icpcarchive.github.io](https://github.com/icpcarchive/icpcarchive.github.io),
   carpeta `World Finals/ICPC World Finals/`. Aquí se copió **solo** `problems.pdf`
   de cada año.
