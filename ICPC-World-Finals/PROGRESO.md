@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **79 / 200**
+Total de problemas: **200** · Completados: **80 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -121,11 +121,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Surveillance | `2014/K/K.html` |
 | [x] | L | Wire Crossing | `2014/L/L.html` |
 
-## 2015 ICPC World Finals — 0 / 13
+## 2015 ICPC World Finals — 1 / 13
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Amalgamated Artichokes | `2015/A/A.html` |
+| [x] | A | Amalgamated Artichokes | `2015/A/A.html` |
 | [ ] | B | Asteroids | `2015/B/B.html` |
 | [ ] | C | Catering | `2015/C/C.html` |
 | [ ] | D | Cutting Cheese | `2015/D/D.html` |
