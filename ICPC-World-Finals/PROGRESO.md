@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **68 / 200**
+Total de problemas: **200** · Completados: **69 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -104,12 +104,12 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Pollution Solution | `2013/J/J.html` |
 | [x] | K | Up a Tree | `2013/K/K.html` |
 
-## 2014 ICPC World Finals — 1 / 12
+## 2014 ICPC World Finals — 2 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
 | [x] | A | Baggage | `2014/A/A.html` |
-| [ ] | B | Buffed Buffet | `2014/B/B.html` |
+| [x] | B | Buffed Buffet | `2014/B/B.html` |
 | [ ] | C | Crane Balancing | `2014/C/C.html` |
 | [ ] | D | Game Strategy | `2014/D/D.html` |
 | [ ] | E | Maze Reduction | `2014/E/E.html` |
