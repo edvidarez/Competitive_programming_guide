@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **110 / 200**
+Total de problemas: **200** · Completados: **111 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -157,7 +157,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | L | Swap Space | `2016/L/L.html` |
 | [x] | M | What Really Happened on Mars? | `2016/M/M.html` |
 
-## 2017 ICPC World Finals — 5 / 12
+## 2017 ICPC World Finals — 6 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -166,7 +166,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | C | Mission Improbable | `2017/C/C.html` |
 | [x] | D | Money for Nothing | `2017/D/D.html` |
 | [x] | E | Need for Speed | `2017/E/E.html` |
-| [ ] | F | Posterize | `2017/F/F.html` |
+| [x] | F | Posterize | `2017/F/F.html` |
 | [ ] | G | Replicate Replicate Rfplicbte | `2017/G/G.html` |
 | [ ] | H | Scenery | `2017/H/H.html` |
 | [ ] | I | Secret Chamber at Mount Rushmore | `2017/I/I.html` |
