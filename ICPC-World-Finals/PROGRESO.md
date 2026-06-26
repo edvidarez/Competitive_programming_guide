@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **17 / 200**
+Total de problemas: **200** · Completados: **18 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -23,7 +23,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | The Sky is the Limit | `2008/J/J.html` |
 | [x] | K | Steam Roller | `2008/K/K.html` |
 
-## 2009 ICPC World Finals — 6 / 11
+## 2009 ICPC World Finals — 7 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -33,7 +33,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | D | Conduit Packing | `2009/D/D.html` |
 | [x] | E | Fare and Balanced | `2009/E/E.html` |
 | [x] | F | Deer-Proof Fence | `2009/F/F.html` |
-| [ ] | G | House of Cards | `2009/G/G.html` |
+| [x] | G | House of Cards | `2009/G/G.html` |
 | [ ] | H | The Ministers' Major Mess | `2009/H/H.html` |
 | [ ] | I | Struts and Springs | `2009/I/I.html` |
 | [ ] | J | Subway Timing | `2009/J/J.html` |
