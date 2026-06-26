@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **129 / 200**
+Total de problemas: **200** · Completados: **130 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -190,12 +190,12 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Uncrossed Knight's Tour | `2018/J/J.html` |
 | [x] | K | Wireless is the New Fiber | `2018/K/K.html` |
 
-## 2019 ICPC World Finals — 1 / 11
+## 2019 ICPC World Finals — 2 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
 | [x] | A | Azulejos | `2019/A/A.html` |
-| [ ] | B | Beautiful Bridges | `2019/B/B.html` |
+| [x] | B | Beautiful Bridges | `2019/B/B.html` |
 | [ ] | C | Checks Post Facto | `2019/C/C.html` |
 | [ ] | D | Circular DNA | `2019/D/D.html` |
 | [ ] | E | Dead-End Detector | `2019/E/E.html` |
