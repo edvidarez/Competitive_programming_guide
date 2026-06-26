@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **84 / 200**
+Total de problemas: **200** · Completados: **85 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -121,7 +121,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Surveillance | `2014/K/K.html` |
 | [x] | L | Wire Crossing | `2014/L/L.html` |
 
-## 2015 ICPC World Finals — 5 / 13
+## 2015 ICPC World Finals — 6 / 13
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -130,7 +130,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | C | Catering | `2015/C/C.html` |
 | [x] | D | Cutting Cheese | `2015/D/D.html` |
 | [x] | E | Evolution in Parallel | `2015/E/E.html` |
-| [ ] | F | Keyboarding | `2015/F/F.html` |
+| [x] | F | Keyboarding | `2015/F/F.html` |
 | [ ] | G | Pipe Stream | `2015/G/G.html` |
 | [ ] | H | Qanat | `2015/H/H.html` |
 | [ ] | I | Ship Traffic | `2015/I/I.html` |
