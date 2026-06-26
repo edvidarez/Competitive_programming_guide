@@ -1,13 +1,13 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **9 / 200**
+Total de problemas: **200** · Completados: **10 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
 > El agente debe actualizar este archivo en cada commit.
 
 
-## 2008 ICPC World Finals — 9 / 11
+## 2008 ICPC World Finals — 10 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -20,7 +20,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | G | Net Loss | `2008/G/G.html` |
 | [x] | H | Painter | `2008/H/H.html` |
 | [x] | I | Password Suspects | `2008/I/I.html` |
-| [ ] | J | The Sky is the Limit | `2008/J/J.html` |
+| [x] | J | The Sky is the Limit | `2008/J/J.html` |
 | [ ] | K | Steam Roller | `2008/K/K.html` |
 
 ## 2009 ICPC World Finals — 0 / 11
