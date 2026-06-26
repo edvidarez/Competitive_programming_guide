@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **75 / 200**
+Total de problemas: **200** · Completados: **76 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -104,7 +104,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Pollution Solution | `2013/J/J.html` |
 | [x] | K | Up a Tree | `2013/K/K.html` |
 
-## 2014 ICPC World Finals — 8 / 12
+## 2014 ICPC World Finals — 9 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -116,7 +116,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | F | Messenger | `2014/F/F.html` |
 | [x] | G | Metal Processing Plant | `2014/G/G.html` |
 | [x] | H | Pachinko | `2014/H/H.html` |
-| [ ] | I | Sensor Network | `2014/I/I.html` |
+| [x] | I | Sensor Network | `2014/I/I.html` |
 | [ ] | J | Skiing | `2014/J/J.html` |
 | [ ] | K | Surveillance | `2014/K/K.html` |
 | [ ] | L | Wire Crossing | `2014/L/L.html` |
