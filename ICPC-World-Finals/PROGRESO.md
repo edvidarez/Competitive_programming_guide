@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **44 / 200**
+Total de problemas: **200** · Completados: **45 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -71,11 +71,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Pyramids | `2011/J/J.html` |
 | [x] | K | Trash Removal | `2011/K/K.html` |
 
-## 2012 ICPC World Finals — 0 / 12
+## 2012 ICPC World Finals — 1 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Asteroid Rangers | `2012/A/A.html` |
+| [x] | A | Asteroid Rangers | `2012/A/A.html` |
 | [ ] | B | Curvy Little Bottles | `2012/B/B.html` |
 | [ ] | C | Bus Tour | `2012/C/C.html` |
 | [ ] | D | Fibonacci Words | `2012/D/D.html` |
