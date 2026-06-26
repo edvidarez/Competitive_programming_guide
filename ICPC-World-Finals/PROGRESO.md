@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **117 / 200**
+Total de problemas: **200** · Completados: **118 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -174,11 +174,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Tarot Sham Boast | `2017/K/K.html` |
 | [x] | L | Visual Python++ | `2017/L/L.html` |
 
-## 2018 ICPC World Finals — 0 / 11
+## 2018 ICPC World Finals — 1 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Catch the Plane | `2018/A/A.html` |
+| [x] | A | Catch the Plane | `2018/A/A.html` |
 | [ ] | B | Comma Sprinkler | `2018/B/B.html` |
 | [ ] | C | Conquer The World | `2018/C/C.html` |
 | [ ] | D | Gem Island | `2018/D/D.html` |
