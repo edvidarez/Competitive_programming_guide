@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **99 / 200**
+Total de problemas: **200** · Completados: **100 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -139,7 +139,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | L | Weather Report | `2015/L/L.html` |
 | [x] | M | Window Manager | `2015/M/M.html` |
 
-## 2016 ICPC World Finals — 7 / 13
+## 2016 ICPC World Finals — 8 / 13
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -150,7 +150,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | E | Forever Young | `2016/E/E.html` |
 | [x] | F | Longest Rivers | `2016/F/F.html` |
 | [x] | G | Oil | `2016/G/G.html` |
-| [ ] | H | Polygonal Puzzle | `2016/H/H.html` |
+| [x] | H | Polygonal Puzzle | `2016/H/H.html` |
 | [ ] | I | Road Times | `2016/I/I.html` |
 | [ ] | J | Spin Doctor | `2016/J/J.html` |
 | [ ] | K | String Theory | `2016/K/K.html` |
