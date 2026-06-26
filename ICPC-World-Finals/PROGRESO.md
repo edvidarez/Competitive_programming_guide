@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **56 / 200**
+Total de problemas: **200** · Completados: **57 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -88,11 +88,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Stacking Plates | `2012/K/K.html` |
 | [x] | L | Takeover Wars | `2012/L/L.html` |
 
-## 2013 ICPC World Finals — 0 / 11
+## 2013 ICPC World Finals — 1 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Self-Assembly | `2013/A/A.html` |
+| [x] | A | Self-Assembly | `2013/A/A.html` |
 | [ ] | B | Hey, Better Bettor | `2013/B/B.html` |
 | [ ] | C | Surely You Congest | `2013/C/C.html` |
 | [ ] | D | Factors | `2013/D/D.html` |
