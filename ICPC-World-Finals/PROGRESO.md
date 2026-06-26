@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **116 / 200**
+Total de problemas: **200** · Completados: **117 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -157,7 +157,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | L | Swap Space | `2016/L/L.html` |
 | [x] | M | What Really Happened on Mars? | `2016/M/M.html` |
 
-## 2017 ICPC World Finals — 11 / 12
+## 2017 ICPC World Finals — 12 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -172,7 +172,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | I | Secret Chamber at Mount Rushmore | `2017/I/I.html` |
 | [x] | J | Son of Pipe Stream | `2017/J/J.html` |
 | [x] | K | Tarot Sham Boast | `2017/K/K.html` |
-| [ ] | L | Visual Python++ | `2017/L/L.html` |
+| [x] | L | Visual Python++ | `2017/L/L.html` |
 
 ## 2018 ICPC World Finals — 0 / 11
 
