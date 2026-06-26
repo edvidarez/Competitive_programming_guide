@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **29 / 200**
+Total de problemas: **200** · Completados: **30 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -39,7 +39,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Subway Timing | `2009/J/J.html` |
 | [x] | K | Suffix-Replacement Grammars | `2009/K/K.html` |
 
-## 2010 ICPC World Finals — 7 / 11
+## 2010 ICPC World Finals — 8 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -50,7 +50,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | E | Channel | `2010/E/E.html` |
 | [x] | F | Contour Mapping | `2010/F/F.html` |
 | [x] | G | The Islands | `2010/G/G.html` |
-| [ ] | H | Rain | `2010/H/H.html` |
+| [x] | H | Rain | `2010/H/H.html` |
 | [ ] | I | Robots on Ice | `2010/I/I.html` |
 | [ ] | J | Chocolate | `2010/J/J.html` |
 | [ ] | K | Paperweight | `2010/K/K.html` |
