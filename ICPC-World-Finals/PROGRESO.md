@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **166 / 200**
+Total de problemas: **200** · Completados: **167 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -243,11 +243,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Take On Meme | `2021/K/K.html` |
 | [x] | L | Where Am I? | `2021/L/L.html` |
 
-## 2022 ICPC World Finals — 0 / 11
+## 2022 ICPC World Finals — 1 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | P | Turning Red | `2022/P/P.html` |
+| [x] | P | Turning Red | `2022/P/P.html` |
 | [ ] | Q | Doing the Container Shuffle | `2022/Q/Q.html` |
 | [ ] | R | Zoo Management | `2022/R/R.html` |
 | [ ] | S | Bridging the Gap | `2022/S/S.html` |
