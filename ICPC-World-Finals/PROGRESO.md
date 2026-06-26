@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **91 / 200**
+Total de problemas: **200** · Completados: **92 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -121,7 +121,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Surveillance | `2014/K/K.html` |
 | [x] | L | Wire Crossing | `2014/L/L.html` |
 
-## 2015 ICPC World Finals — 12 / 13
+## 2015 ICPC World Finals — 13 / 13
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -137,7 +137,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Tile Cutting | `2015/J/J.html` |
 | [x] | K | Tours | `2015/K/K.html` |
 | [x] | L | Weather Report | `2015/L/L.html` |
-| [ ] | M | Window Manager | `2015/M/M.html` |
+| [x] | M | Window Manager | `2015/M/M.html` |
 
 ## 2016 ICPC World Finals — 0 / 13
 
