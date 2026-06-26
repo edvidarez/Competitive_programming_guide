@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **94 / 200**
+Total de problemas: **200** · Completados: **95 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -139,13 +139,13 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | L | Weather Report | `2015/L/L.html` |
 | [x] | M | Window Manager | `2015/M/M.html` |
 
-## 2016 ICPC World Finals — 2 / 13
+## 2016 ICPC World Finals — 3 / 13
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
 | [x] | A | Balanced Diet | `2016/A/A.html` |
 | [x] | B | Branch Assignment | `2016/B/B.html` |
-| [ ] | C | Ceiling Function | `2016/C/C.html` |
+| [x] | C | Ceiling Function | `2016/C/C.html` |
 | [ ] | D | Clock Breaking | `2016/D/D.html` |
 | [ ] | E | Forever Young | `2016/E/E.html` |
 | [ ] | F | Longest Rivers | `2016/F/F.html` |
