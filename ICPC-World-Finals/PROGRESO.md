@@ -1,13 +1,13 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **7 / 200**
+Total de problemas: **200** · Completados: **8 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
 > El agente debe actualizar este archivo en cada commit.
 
 
-## 2008 ICPC World Finals — 7 / 11
+## 2008 ICPC World Finals — 8 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -18,7 +18,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | E | Huffman Codes | `2008/E/E.html` |
 | [x] | F | Glenbow Museum | `2008/F/F.html` |
 | [x] | G | Net Loss | `2008/G/G.html` |
-| [ ] | H | Painter | `2008/H/H.html` |
+| [x] | H | Painter | `2008/H/H.html` |
 | [ ] | I | Password Suspects | `2008/I/I.html` |
 | [ ] | J | The Sky is the Limit | `2008/J/J.html` |
 | [ ] | K | Steam Roller | `2008/K/K.html` |
