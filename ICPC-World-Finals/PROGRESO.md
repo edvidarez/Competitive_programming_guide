@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **153 / 200**
+Total de problemas: **200** · Completados: **154 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -206,7 +206,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Miniature Golf | `2019/J/J.html` |
 | [x] | K | Traffic Blights | `2019/K/K.html` |
 
-## 2020 ICPC World Finals — 14 / 15
+## 2020 ICPC World Finals — 15 / 15
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -224,7 +224,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | L | Sweep Stakes | `2020/L/L.html` |
 | [x] | M | Trailing Digits | `2020/M/M.html` |
 | [x] | N | What's Our Vector, Victor? | `2020/N/N.html` |
-| [ ] | O | Which Planet is This?! | `2020/O/O.html` |
+| [x] | O | Which Planet is This?! | `2020/O/O.html` |
 
 ## 2021 ICPC World Finals — 0 / 12
 
