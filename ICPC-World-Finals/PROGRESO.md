@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **37 / 200**
+Total de problemas: **200** · Completados: **38 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -55,7 +55,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Chocolate | `2010/J/J.html` |
 | [x] | K | Paperweight | `2010/K/K.html` |
 
-## 2011 ICPC World Finals — 4 / 11
+## 2011 ICPC World Finals — 5 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -63,7 +63,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | B | Affine Mess | `2011/B/B.html` |
 | [x] | C | Ancient Messages | `2011/C/C.html` |
 | [x] | D | Chips Challenge | `2011/D/D.html` |
-| [ ] | E | Coffee Central | `2011/E/E.html` |
+| [x] | E | Coffee Central | `2011/E/E.html` |
 | [ ] | F | Machine Works | `2011/F/F.html` |
 | [ ] | G | Magic Sticks | `2011/G/G.html` |
 | [ ] | H | Mining Your Own Business | `2011/H/H.html` |
