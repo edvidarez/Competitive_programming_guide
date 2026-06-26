@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **42 / 200**
+Total de problemas: **200** · Completados: **43 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -55,7 +55,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Chocolate | `2010/J/J.html` |
 | [x] | K | Paperweight | `2010/K/K.html` |
 
-## 2011 ICPC World Finals — 9 / 11
+## 2011 ICPC World Finals — 10 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -68,7 +68,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | G | Magic Sticks | `2011/G/G.html` |
 | [x] | H | Mining Your Own Business | `2011/H/H.html` |
 | [x] | I | Mummy Madness | `2011/I/I.html` |
-| [ ] | J | Pyramids | `2011/J/J.html` |
+| [x] | J | Pyramids | `2011/J/J.html` |
 | [ ] | K | Trash Removal | `2011/K/K.html` |
 
 ## 2012 ICPC World Finals — 0 / 12
