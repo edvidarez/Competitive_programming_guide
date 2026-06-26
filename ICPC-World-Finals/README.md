@@ -91,6 +91,17 @@ en `TEMPLATE.html`):
   - La **última pista ES el upsolving completo**: explicación paso a paso del
     algoritmo, por qué es correcto, y la complejidad.
 
+### 🧮 Matemáticas con LaTeX (obligatorio)
+- **Toda fórmula o expresión matemática va en LaTeX**, renderizada con
+  **MathJax** (ya incluido y **autohospedado** en
+  `assets/mathjax/tex-svg.js`; la plantilla ya lo carga).
+- Escribe matemáticas en línea entre `\( ... \)` y en bloque entre `\[ ... \]`.
+  Ejemplos: `\(1 \le n \le 10^5\)`, `\(\frac{n^4-6n^3+24}{24}\)`,
+  `\(O(n\log n)\)`, `\(P(n)\equiv 0 \pmod D\)`.
+- **No uses `<code>` para matemáticas.** `<code>` es solo para nombres de
+  variables de programa, cadenas de salida, archivos y tokens literales.
+- El **pseudocódigo** se queda en `<pre>` (MathJax no lo procesa, así debe ser).
+
 ### 🚫 Reglas de contenido (estrictas)
 - **NUNCA** muestres código de una solución.
 - Solo se permite **pseudocódigo** para describir el algoritmo.
@@ -106,8 +117,10 @@ en `TEMPLATE.html`):
 
 ## 🔧 Detalles técnicos
 
-- Los `LETRA.html` deben ser **autocontenidos**: sin dependencias externas
-  (todo el CSS/JS va dentro del archivo, como en la plantilla).
+- Los `LETRA.html` deben ser **autocontenidos**: todo el CSS/JS va dentro del
+  archivo y las **imágenes embebidas** como data URI. La **única** dependencia
+  compartida es MathJax, autohospedado en `assets/mathjax/tex-svg.js` y referido
+  con ruta relativa `../../assets/mathjax/tex-svg.js` (no se usa ningún CDN).
 - Para leer los PDFs puedes usar, por ejemplo, `pymupdf` (`import fitz`) o
   `pdftotext`. Algunos encabezados "Problem X" del PDF son imágenes; ubica el
   problema por su página/título si el texto no aparece.
