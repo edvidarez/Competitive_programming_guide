@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **154 / 200**
+Total de problemas: **200** · Completados: **155 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -226,11 +226,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | N | What's Our Vector, Victor? | `2020/N/N.html` |
 | [x] | O | Which Planet is This?! | `2020/O/O.html` |
 
-## 2021 ICPC World Finals — 0 / 12
+## 2021 ICPC World Finals — 1 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Crystal Crosswind | `2021/A/A.html` |
+| [x] | A | Crystal Crosswind | `2021/A/A.html` |
 | [ ] | B | Dungeon Crawler | `2021/B/B.html` |
 | [ ] | C | Fair Division | `2021/C/C.html` |
 | [ ] | D | Guardians of the Gallery | `2021/D/D.html` |
