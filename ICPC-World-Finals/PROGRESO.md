@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **53 / 200**
+Total de problemas: **200** · Completados: **54 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -71,7 +71,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Pyramids | `2011/J/J.html` |
 | [x] | K | Trash Removal | `2011/K/K.html` |
 
-## 2012 ICPC World Finals — 9 / 12
+## 2012 ICPC World Finals — 10 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -84,7 +84,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | G | Minimum Cost Flow | `2012/G/G.html` |
 | [x] | H | Room Service | `2012/H/H.html` |
 | [x] | I | A Safe Bet | `2012/I/I.html` |
-| [ ] | J | Shortest Flight Path | `2012/J/J.html` |
+| [x] | J | Shortest Flight Path | `2012/J/J.html` |
 | [ ] | K | Stacking Plates | `2012/K/K.html` |
 | [ ] | L | Takeover Wars | `2012/L/L.html` |
 
