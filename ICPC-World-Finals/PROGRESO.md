@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **138 / 200**
+Total de problemas: **200** · Completados: **139 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -190,7 +190,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Uncrossed Knight's Tour | `2018/J/J.html` |
 | [x] | K | Wireless is the New Fiber | `2018/K/K.html` |
 
-## 2019 ICPC World Finals — 10 / 11
+## 2019 ICPC World Finals — 11 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -204,7 +204,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | H | Hobson's Trains | `2019/H/H.html` |
 | [x] | I | Karel the Robot | `2019/I/I.html` |
 | [x] | J | Miniature Golf | `2019/J/J.html` |
-| [ ] | K | Traffic Blights | `2019/K/K.html` |
+| [x] | K | Traffic Blights | `2019/K/K.html` |
 
 ## 2020 ICPC World Finals — 0 / 15
 
