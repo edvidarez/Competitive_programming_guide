@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **173 / 200**
+Total de problemas: **200** · Completados: **174 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -243,7 +243,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | K | Take On Meme | `2021/K/K.html` |
 | [x] | L | Where Am I? | `2021/L/L.html` |
 
-## 2022 ICPC World Finals — 7 / 11
+## 2022 ICPC World Finals — 8 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -254,7 +254,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | T | Carl's Vacation | `2022/T/T.html` |
 | [x] | U | Toy Train Tracks | `2022/U/U.html` |
 | [x] | V | Three Kinds of Dice | `2022/V/V.html` |
-| [ ] | W | Riddle of the Sphinx | `2022/W/W.html` |
+| [x] | W | Riddle of the Sphinx | `2022/W/W.html` |
 | [ ] | X | Quartets | `2022/X/X.html` |
 | [ ] | Y | Compression | `2022/Y/Y.html` |
 | [ ] | Z | Archaeological Recovery | `2022/Z/Z.html` |
