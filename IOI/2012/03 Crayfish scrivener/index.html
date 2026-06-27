@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2012 · Tarea 3 — Crayfish scrivener</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .trace{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+  .trace th,.trace td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:left}
+  .trace th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .trace td.ret{color:var(--accent2);font-weight:700}
+  .trace td.txt{font-family:ui-monospace,Menlo,Consolas,monospace;color:#cdd6f4}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+  .ptag.type{color:var(--warn);border-color:var(--warn)}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2012 · Día 1 · Sirmione – Montichiari, Italia</div>
+    <h1>Tarea <span class="num">3</span> — Crayfish scrivener</h1>
+    <p class="note">El escribano cangrejo · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Dicen que Leonardo admiraba mucho a Johannes Gutenberg, el herrero alemán
+       que inventó la imprenta de tipos móviles, y que le rindió homenaje
+       diseñando una máquina llamada el <em>escribano cangrejo</em> —
+       <em>il gambero scrivano</em> —, un aparato de escritura muy simple. Se
+       parece un poco a una máquina de escribir moderna y solo acepta dos
+       órdenes: una para teclear el siguiente carácter y otra para deshacer las
+       órdenes más recientes. Lo notable del escribano cangrejo es que su orden
+       de deshacer es extremadamente poderosa: <strong>un «deshacer» también
+       cuenta como una orden en sí misma, y puede deshacerse</strong>.</p>
+
+    <h2>El planteamiento</h2>
+    <p>Tu tarea es construir una versión en software del escribano cangrejo:
+       empieza con un texto vacío y acepta una secuencia de órdenes que introduce
+       el usuario, además de consultas sobre posiciones específicas de la versión
+       actual del texto. Debes ofrecer estas cuatro rutinas:</p>
+    <ul>
+      <li><code>Init()</code> — se llama una sola vez al inicio de la ejecución,
+          sin argumentos. Sirve para inicializar tus estructuras de datos.
+          <strong>Nunca</strong> tendrá que deshacerse.</li>
+      <li><code>TypeLetter(L)</code> — agrega al final del texto una sola letra
+          minúscula \(L\) elegida del conjunto \(a, \dots, z\).</li>
+      <li><code>UndoCommands(U)</code> — deshace las últimas \(U\) órdenes, para
+          un entero positivo \(U\).</li>
+      <li><code>GetLetter(P)</code> — devuelve la letra que está en la posición
+          \(P\) del texto actual, para un índice no negativo \(P\). La primera
+          letra del texto tiene índice \(0\). <strong>(Esta consulta no es una
+          orden y, por lo tanto, la orden de deshacer la ignora.)</strong></li>
+    </ul>
+
+    <p>Tras la llamada inicial a <code>Init()</code>, las demás rutinas pueden
+       llamarse cero o más veces en cualquier orden. Se garantiza que \(U\) nunca
+       excederá el número de órdenes recibidas previamente, y que \(P\) será menor
+       que la longitud actual del texto (la cantidad de letras del texto en ese
+       momento).</p>
+
+    <p>En cuanto a <code>UndoCommands(U)</code>, deshace las \(U\) órdenes
+       anteriores <strong>en orden inverso</strong>:</p>
+    <ul>
+      <li>si la orden por deshacer es <code>TypeLetter(L)</code>, entonces quita
+          la \(L\) del final del texto actual;</li>
+      <li>si la orden por deshacer es <code>UndoCommands(X)</code> para algún
+          valor \(X\), entonces <strong>vuelve a hacer</strong> (re-hace) las \(X\)
+          órdenes anteriores en su orden original.</li>
+    </ul>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>interactiva (reactiva)</strong>: no lees de la
+       entrada estándar ni escribes a la salida estándar. Entregas exactamente un
+       archivo, llamado <code>scrivener.c</code>, <code>scrivener.cpp</code> o
+       <code>scrivener.pas</code>, que implementa las rutinas descritas arriba con
+       las firmas de abajo. El evaluador (grader) las va llamando una por una y, en
+       cada <code>GetLetter</code>, tu rutina debe responder la letra correcta
+       <em>antes</em> de que llegue la siguiente orden. Puedes implementar otras
+       rutinas auxiliares para uso interno. Tu programa <strong>no debe</strong>
+       interactuar de ninguna forma con la entrada/salida estándar ni con ningún
+       otro archivo.</p>
+
+    <div class="sig">
+      <span class="tag">Firmas a implementar (C / C++)</span>
+<pre>void Init();
+void TypeLetter(char L);
+void UndoCommands(int U);
+char GetLetter(int P);
+//  Init        : inicializa estructuras; se llama una vez; nunca se deshace.
+//  TypeLetter  : anexa la letra minúscula L (a..z) al final del texto.
+//  UndoCommands: deshace las últimas U ÓRDENES (U &gt; 0); deshacer un Undo re-hace.
+//  GetLetter   : devuelve la letra en la posición P (0-indexada) del texto actual.
+//                NO es una orden: la orden de deshacer la ignora.</pre>
+    </div>
+
+    <div class="sig">
+      <span class="tag">Firmas a implementar (Pascal)</span>
+<pre>procedure Init;
+procedure TypeLetter(L : Char);
+procedure UndoCommands(U : LongInt);
+function  GetLetter(P : LongInt) : Char;</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> El grader de muestra lee la entrada
+      con este formato: la línea 1 trae el número total de órdenes y consultas;
+      después, en cada línea, viene <code>T</code> seguido de un espacio y una
+      letra minúscula (una orden <code>TypeLetter</code>), o <code>U</code> seguido
+      de un espacio y un entero (un <code>UndoCommands</code>), o <code>P</code>
+      seguido de un espacio y un entero (un <code>GetLetter</code>). El grader
+      imprime los caracteres devueltos por <code>GetLetter</code>, cada uno en su
+      propia línea.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2 segundos de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Total de órdenes y consultas</td><td><span class="badge">\(1 \le N \le 1\,000\,000\)</span></td></tr>
+        <tr><td>Letras tecleadas</td><td><span class="badge">minúsculas \(a, \dots, z\)</span></td></tr>
+        <tr><td>Argumento de <code>UndoCommands</code></td><td><span class="badge">\(U \le\) órdenes previas</span></td></tr>
+        <tr><td>Argumento de <code>GetLetter</code></td><td><span class="badge">\(0 \le P &lt;\) longitud actual</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). Una fila por subtarea. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td>
+              <td>El total de órdenes y consultas está entre \(1\) y \(100\) (inclusive)
+                  y <strong>no</strong> habrá llamadas a <code>UndoCommands</code>.</td></tr>
+          <tr><td>2</td><td class="pts">7</td>
+              <td>El total de órdenes y consultas está entre \(1\) y \(100\) (inclusive)
+                  y <strong>ningún</strong> <code>UndoCommands</code> será deshecho.</td></tr>
+          <tr><td>3</td><td class="pts">22</td>
+              <td>El total de órdenes y consultas está entre \(1\) y \(5\,000\) (inclusive).</td></tr>
+          <tr><td>4</td><td class="pts">26</td>
+              <td>El total de órdenes y consultas está entre \(1\) y \(1\,000\,000\)
+                  (inclusive). <strong>Todas</strong> las llamadas a <code>GetLetter</code>
+                  ocurren <em>después</em> de todas las de <code>TypeLetter</code> y
+                  <code>UndoCommands</code>.</td></tr>
+          <tr><td>5</td><td class="pts">40</td>
+              <td>El total de órdenes y consultas está entre \(1\) y \(1\,000\,000\)
+                  (inclusive). Sin restricciones extra (las consultas se intercalan
+                  libremente).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Una posible secuencia de llamadas, junto con el estado del texto después de
+       cada una:</p>
+    <table class="trace">
+      <thead><tr><th>Llamada</th><th>Devuelve</th><th>Texto actual</th></tr></thead>
+      <tbody>
+        <tr><td><code>Init()</code></td><td></td><td class="txt"></td></tr>
+        <tr><td><code>TypeLetter(a)</code></td><td></td><td class="txt">a</td></tr>
+        <tr><td><code>TypeLetter(b)</code></td><td></td><td class="txt">ab</td></tr>
+        <tr><td><code>GetLetter(1)</code></td><td class="ret">b</td><td class="txt">ab</td></tr>
+        <tr><td><code>TypeLetter(d)</code></td><td></td><td class="txt">abd</td></tr>
+        <tr><td><code>UndoCommands(2)</code></td><td></td><td class="txt">a</td></tr>
+        <tr><td><code>UndoCommands(1)</code></td><td></td><td class="txt">abd</td></tr>
+        <tr><td><code>GetLetter(2)</code></td><td class="ret">d</td><td class="txt">abd</td></tr>
+        <tr><td><code>TypeLetter(e)</code></td><td></td><td class="txt">abde</td></tr>
+        <tr><td><code>UndoCommands(1)</code></td><td></td><td class="txt">abd</td></tr>
+        <tr><td><code>UndoCommands(5)</code></td><td></td><td class="txt">ab</td></tr>
+        <tr><td><code>TypeLetter(c)</code></td><td></td><td class="txt">abc</td></tr>
+        <tr><td><code>GetLetter(2)</code></td><td class="ret">c</td><td class="txt">abc</td></tr>
+        <tr><td><code>UndoCommands(2)</code></td><td></td><td class="txt">abd</td></tr>
+        <tr><td><code>GetLetter(2)</code></td><td class="ret">d</td><td class="txt">abd</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Fíjate en las dos órdenes <code>UndoCommands</code> del medio:
+       el <code>UndoCommands(1)</code> deshace al <code>UndoCommands(2)</code>
+       previo, así que <em>re-hace</em> las \(2\) órdenes que aquel había deshecho
+       (regresa el texto a <code>abd</code>). Más abajo, el
+       <code>UndoCommands(2)</code> final deshace el <code>TypeLetter(c)</code> y el
+       <code>UndoCommands(5)</code>; deshacer ese <code>UndoCommands(5)</code>
+       re-hace las \(5\) órdenes que había deshecho, dejando el texto en
+       <code>abd</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag type">Interactivo</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Árbol persistente / versiones</span>
+      <span class="ptag">Binary lifting (k-ésimo ancestro)</span>
+      <span class="ptag">Online / reactiva</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Implementa una máquina de escribir persistente: <code>TypeLetter(L)</code>
+       anexa una letra, <code>UndoCommands(U)</code> deshace las últimas \(U\)
+       <strong>órdenes</strong> (y un <code>UndoCommands</code> es también una orden,
+       así que deshacer un Undo equivale a re-hacer), y <code>GetLetter(P)</code>
+       devuelve la \(P\)-ésima letra (0-indexada) del texto actual. Hasta \(10^6\)
+       órdenes/consultas, intercaladas en cualquier orden.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 10^6\) con consultas intercaladas (subtarea 5) cierra la
+                puerta a re-simular y exige \(O(1)\) o \(O(\log N)\) por operación.
+                Las subtareas chicas (\(\le 100\), \(\le 5\,000\)) y la #4 (todas las
+                consultas al final) te dejan validar la idea con estructuras más
+                simples antes de optimizar.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es realmente «el texto»?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que cada estado del texto es solo «el texto
+           anterior más una letra al final»? Si dibujaras todos los estados que
+           han existido, ¿qué forma tendrían?</p>
+        <p>Cada <code>TypeLetter(L)</code> toma un texto y le pega una letra al
+           final: el nuevo estado <em>cuelga</em> del anterior. Eso es un árbol (un
+           <em>trie</em> de versiones): cada nodo guarda <strong>una letra</strong>
+           y un puntero a su <strong>padre</strong> (el texto sin la última letra).
+           La raíz es un centinela del texto vacío. El estado actual es simplemente
+           <strong>un puntero a un nodo</strong>, y la profundidad de ese nodo es la
+           longitud del texto menos \(1\).</p>
+        <p>¿Notaste que así <code>TypeLetter</code> nunca destruye estados viejos?
+           Eso será clave para deshacer y re-hacer.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1 y 2 (los primeros 12 puntos)</summary>
+      <div class="body">
+        <p class="q">Si <strong>no</strong> hay <code>UndoCommands</code> (subtarea 1),
+           ¿no basta con un arreglo dinámico al que le haces <em>push</em>? Y si hay
+           Undos pero <strong>ninguno se deshace</strong> (subtarea 2), ¿qué pasa si
+           guardas el historial en una pila?</p>
+        <ul>
+          <li><strong>Subtarea 1</strong> (\(\le 100\), sin Undo): un arreglo;
+              <code>TypeLetter</code> hace <em>push_back</em> y <code>GetLetter(P)</code>
+              indexa directo. \(O(1)\) por operación.</li>
+          <li><strong>Subtarea 2</strong> (\(\le 100\), ningún Undo se deshace): una
+              pila simple basta. <code>TypeLetter</code> empuja; <code>UndoCommands(U)</code>
+              quita las últimas \(U\) órdenes re-simulando (registra cada orden para
+              poder revertirla). Como ningún Undo se deshace, no hay re-hacer anidado
+              que complique las cosas. Es \(O(N\cdot U)\), holgado con \(N\le 100\).</li>
+        </ul>
+        <p>Estas dos versiones te dan 12 puntos, pero <em>se rompen</em> en cuanto un
+           Undo deba deshacerse. ¿Por qué?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — El corazón del problema: deshacer un Undo</summary>
+      <div class="body">
+        <p class="q">¿Qué significa deshacer un <code>UndoCommands(X)</code>?
+           Re-hacer \(X\) órdenes. Si intentas re-simular eso con una pila, los Undos
+           de Undos de Undos se anidan… ¿no explota?</p>
+        <p>Aquí está el truco que lo vuelve \(O(1)\). Numera las órdenes
+           \(0, 1, 2, \dots\) y lleva un contador <code>n_commands</code>. Para cada
+           orden \(k\) guarda <code>base[k]</code> = el <strong>nodo del estado en el
+           que estabas justo ANTES</strong> de ejecutar esa orden \(k\).</p>
+        <p>Entonces «deshacer las últimas \(U\) órdenes» es exactamente «volver al
+           estado previo a la orden \((\texttt{n\_commands}-U)\)»: basta con saltar a
+           <code>base[n_commands - U]</code>. Como los nodos del árbol nunca se
+           destruyen, ese puntero te devuelve el texto exacto que había en ese momento
+           — <em>incluyendo</em> cualquier re-hacer anidado, sin re-simular nada.</p>
+        <p class="q">¿Y el detalle fino? El propio <code>UndoCommands</code> <strong>es
+           una orden</strong>: ¿no deberías registrarlo también para que los Undos
+           futuros cuenten bien?</p>
+        <p>Sí. Con el modelo trie + <code>base[]</code>, cada orden cuesta \(O(1)\),
+           y <code>GetLetter</code> puede resolverse subiendo el árbol nivel por nivel
+           desde el nodo actual: \(O(\text{profundidad})\). Eso ya basta para la
+           <strong>subtarea 3</strong> (\(\le 5\,000\)): \(O(N^2)\approx 2.5\times10^7\),
+           perfectamente aceptable.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 4 (todas las consultas al final)</summary>
+      <div class="body">
+        <p class="q">Si te garantizan que <strong>todas</strong> las
+           <code>GetLetter</code> llegan después de procesar todas las órdenes, ¿qué
+           cambia? El texto final ya está fijo: ¿no puedes «aplanarlo» una vez?</p>
+        <p>Procesas todas las órdenes con el modelo trie + <code>base[]</code>
+           (\(O(1)\) cada una). Al terminar, sube desde el nodo actual hasta la raíz
+           volcando las letras a un arreglo (y lo inviertes). A partir de ahí cada
+           <code>GetLetter(P)</code> es un acceso \(O(1)\) al arreglo. Total \(O(N)\):
+           <strong>no necesitas binary lifting</strong> para estos 26 puntos.</p>
+        <p>El obstáculo real aparece en la subtarea 5: las consultas se intercalan,
+           así que el texto cambia <em>entre</em> consultas y no puedes aplanar una
+           sola vez. ¿Cómo respondes <code>GetLetter(P)</code> rápido sobre un nodo
+           que va cambiando?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 5: el k-ésimo ancestro veloz</summary>
+      <div class="body">
+        <p class="q">Responder <code>GetLetter(P)</code> es subir desde el nodo
+           actual (profundidad \(D\)) hasta el ancestro a profundidad \(P\), es decir
+           subir \(D - P\) niveles. Subir de uno en uno es \(O(N)\) por consulta —
+           demasiado con \(10^6\). ¿Cómo subes muchos niveles de golpe?</p>
+        <p>Con <strong>binary lifting</strong> (saltos por potencias de \(2\)): cada
+           nodo guarda <code>up[i]</code> = su ancestro a distancia \(2^i\) hacia
+           arriba. Para subir \(d = D - P\) niveles, descompón \(d\) en binario y salta
+           por los bits encendidos. Cada consulta cuesta \(O(\log N)\).</p>
+        <p class="q">¿Y cómo construyes esa tabla al crear un nodo nuevo en
+           <code>TypeLetter</code>, sin recorrer todo el árbol?</p>
+        <p>La recurrencia clásica: <code>up[0]</code> = el padre; y
+           <code>up[i] = up[i-1].up[i-1]</code> (subir \(2^i\) = subir \(2^{i-1}\) dos
+           veces). Solo llenas los niveles que existan (mientras \(2^i\) no rebase la
+           profundidad). Eso es \(O(\log N)\) por <code>TypeLetter</code>.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Modelo.</strong> Representa la evolución del texto como un árbol
+           de versiones (trie). Cada nodo guarda: su letra <code>L</code>, su
+           profundidad <code>depth</code> y la tabla de saltos <code>up[0..LOG]</code>
+           (ancestros a distancia \(2^i\)). La raíz es un centinela con
+           <code>depth = -1</code> y letra <code>'\0'</code>, de modo que el nodo de la
+           primera letra tiene <code>depth = 0</code>. Mantienes:</p>
+        <ul>
+          <li><code>cur</code> — el nodo del estado actual (texto actual).</li>
+          <li><code>base[k]</code> — el nodo <code>cur</code> que había
+              <strong>antes</strong> de ejecutar la \((k\!+\!1)\)-ésima orden.</li>
+          <li><code>n_commands</code> — cuántas órdenes se han ejecutado.</li>
+        </ul>
+
+        <p><strong>Operaciones.</strong></p>
+        <ul>
+          <li><code>TypeLetter(L)</code>: registra <code>base[n_commands] = cur</code>,
+              incrementa <code>n_commands</code>, crea un nodo hijo de <code>cur</code>
+              con letra \(L\) (profundidad <code>cur.depth + 1</code>), construye su
+              tabla <code>up[]</code> y mueve <code>cur</code> a ese hijo.</li>
+          <li><code>UndoCommands(U)</code>: el destino es
+              <code>n = base[n_commands - U]</code> (el estado previo a la orden
+              \(\texttt{n\_commands}-U\)). Registra este propio Undo como orden
+              (<code>base[n_commands] = cur</code>, incrementa <code>n_commands</code>)
+              y haz <code>cur = n</code>. Así este Undo también es deshacible/re-hacible
+              en \(O(1)\).</li>
+          <li><code>GetLetter(P)</code>: sube <code>cur</code> un total de
+              \(d = \texttt{cur.depth} - P\) niveles con los saltos binarios y devuelve
+              la letra del nodo al que llegas. <strong>No</strong> es una orden: no toca
+              <code>base[]</code> ni <code>n_commands</code>.</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> Deshacer las últimas \(U\) órdenes
+           debe dejar el texto exactamente como estaba antes de la orden
+           \(\texttt{n\_commands}-U\). Como <code>base[k]</code> guarda <em>ese mismo
+           nodo</em> y los nodos del árbol persistente nunca se destruyen, saltar a él
+           restaura el texto correcto — incluida la semántica «deshacer un Undo =
+           re-hacer \(X\) órdenes», que aquí sale gratis porque cada estado intermedio
+           ya vive como un nodo del árbol. Registrar el propio <code>UndoCommands</code>
+           como orden garantiza que los Undos posteriores cuenten bien.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>LOG = 20                      // 2^20 &gt; 10^6
+
+estructura Nodo:
+    L            // letra
+    depth        // profundidad (raíz: -1)
+    up[0..LOG]   // up[i] = ancestro a distancia 2^i
+
+raiz = Nodo(L='\0', depth=-1)     // centinela del texto vacío
+cur  = raiz
+n_commands = 0
+base = arreglo de nodos           // base[k] = estado previo a la orden k
+
+funcion construir_saltos(nodo, padre):
+    nodo.up[0] = padre
+    i = 1
+    mientras (1 &lt;&lt; i) &lt;= nodo.depth + 1:   // no salir del árbol
+        nodo.up[i] = nodo.up[i-1].up[i-1]
+        i += 1
+
+funcion Init():
+    raiz = Nodo('\0', -1);  cur = raiz;  n_commands = 0
+
+funcion TypeLetter(L):
+    base[n_commands] = cur;  n_commands += 1
+    hijo = Nodo(L, cur.depth + 1)
+    construir_saltos(hijo, cur)
+    cur = hijo
+
+funcion UndoCommands(U):
+    destino = base[n_commands - U]      // estado previo a la orden (n_commands - U)
+    base[n_commands] = cur;  n_commands += 1
+    cur = destino
+
+funcion GetLetter(P):
+    d = cur.depth - P                   // niveles a subir
+    n = cur
+    para shift = LOG hasta 0:
+        si (d &gt;&gt; shift) &amp; 1:
+            n = n.up[shift]
+    regresa n.L</pre>
+        </div>
+
+        <p><strong>Cómo se sube de subtarea en subtarea:</strong> arreglo/pila para
+           las #1–#2 (12 pts); trie + <code>base[]</code> con <code>GetLetter</code>
+           subiendo nivel a nivel para la #3 (22 pts, \(O(N^2)\)); aplanar el texto
+           final a un arreglo para la #4 (26 pts, \(O(N)\)); y binary lifting para la
+           #5 verdaderamente online (40 pts). El mismo código de la #5 cubre todas.</p>
+
+        <p><strong>Complejidad:</strong> <code>TypeLetter</code> \(O(\log N)\)
+           (construir la fila de saltos), <code>UndoCommands</code> \(O(1)\),
+           <code>GetLetter</code> \(O(\log N)\). Global \(O(N\log N)\) en tiempo y
+           memoria (cada nodo guarda hasta \(\sim 20\) punteros de ancestros, más el
+           arreglo <code>base</code> de tamaño \(N\)). Con \(N = 10^6\) corre muy por
+           debajo del límite (medido \(\approx 0.19\) s en el caso más grande).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Notas de implementación (C++)</span>
+<pre>• Reserva los nodos en un arreglo/pool propio (no liberes: el grader no lo
+  necesita) para evitar el costo de new por cada TypeLetter con 10^6 nodos.
+• base[] tiene tamaño hasta N; up[] son ~20 punteros por nodo: cuida el
+  límite de memoria, pero entra de sobra en 256 MB.
+• Trampa clásica: una pila ingenua que RE-EJECUTA órdenes al deshacer es
+  incorrecta (o exponencial) con Undos de Undos. El truco base[n_commands - U]
+  lo evita por completo. Y NO olvides registrar el propio Undo como orden.
+• El compile script oficial usa -static (falla en macOS/clang); quitarlo no
+  afecta la lógica.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
