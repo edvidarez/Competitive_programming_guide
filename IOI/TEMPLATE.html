@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  PLANTILLA DE TAREA · IOI (International Olympiad in Informatics)
+  ============================================================================
+  Cómo usar esta plantilla (instrucciones para el agente de IA):
+
+  1. Copia este archivo DENTRO de la carpeta de la tarea, con el nombre
+     index.html.  Ejemplo:  IOI/2024/01 Nile/index.html
+     (junto a su statement.pdf oficial, que vive en la misma carpeta).
+
+  2. Reemplaza todos los marcadores {{...}}:
+       {{ANIO}}    -> 2024
+       {{NUM}}     -> 1            (número de tarea, como en el sitio oficial)
+       {{TITULO}}  -> Nile
+       {{DIA}}     -> Día 1 / Día 2 / Práctica   (si se conoce; si no, bórralo)
+       {{LIMITE_TIEMPO}} / {{LIMITE_MEMORIA}}    (vienen en el PDF)
+       {{PUNTOS}}  -> 100          (el total de la tarea; casi siempre 100)
+
+  3. Llena las dos vistas. NO toques el <style> ni el <script> salvo necesidad;
+     ya implementan el cambio de vista y las pistas progresivas.
+
+  4. ⚠️ DIFERENCIAS CLAVE DEL IOI respecto a ICPC (LÉELAS):
+       - Muchas tareas son INTERACTIVAS / FUNCIONALES: NO lees de stdin ni
+         escribes a stdout; IMPLEMENTAS funciones con una firma dada y el
+         "grader" las llama. Usa la sección «Detalles de implementación» para
+         las firmas. Si la tarea es de E/S clásica (batch), borra esa sección
+         y deja «Entrada» / «Salida». Si es interactiva (comunicación por
+         turnos), descríbelo en «Comunicación con el evaluador».
+       - El puntaje es POR SUBTAREAS con crédito parcial. La sección
+         «Subtareas» es OBLIGATORIA: una fila por subtarea con sus puntos y
+         sus restricciones. Es la columna vertebral del razonamiento IOI.
+       - Algunas tareas son OUTPUT-ONLY (entregas archivos de salida). Si es el
+         caso, dilo en «Detalles de implementación».
+
+  5. Reglas de contenido (OBLIGATORIAS):
+       - Todo en ESPAÑOL MEXICANO, sencillo y claro.
+       - Vista 1 = el enunciado COMPLETO traducido, con límites y SUBTAREAS.
+       - Vista 2 = resumen mínimo + pistas socráticas de lo general a lo
+         específico; razona SUBTAREA POR SUBTAREA (qué idea da cada bloque de
+         puntos) y la última pista ES el upsolving completo (100 puntos).
+       - NUNCA muestres código de una solución. Solo PSEUDOCÓDIGO. Si hay un
+         truco propio de un lenguaje, que sea SOLO C++ y bien señalado.
+       - Las pistas deben "preguntar" ("¿Ya pensaste en...?"), no afirmar.
+
+  6. FÓRMULAS / MATEMÁTICAS (OBLIGATORIO): toda fórmula o expresión matemática
+     va en LaTeX, renderizada con MathJax (ya incluido, autohospedado en
+     ../../assets/mathjax/tex-svg.js). Escribe matemáticas en línea entre
+     \( ... \)  (y en bloque entre \[ ... \] si hace falta). Ejemplos:
+        \(n(n-1)/2\),  \(1 \le N \le 10^5\),  \(O(N\log N)\),  \(\bmod\ 10^9+7\).
+     - NO uses <code> para matemáticas; <code> es solo para nombres de
+       funciones/variables, tipos y tokens literales (p. ej. <code>solve()</code>).
+     - El PSEUDOCÓDIGO sigue en <pre> (MathJax no lo toca; así debe ser).
+
+  7. IMÁGENES CLAVE (OBLIGATORIO): si el PDF tiene figuras/diagramas necesarios
+     para entender la tarea, EXTRÁELAS y EMBÉBELAS en el HTML (Vista 1, donde el
+     texto las menciona; y en Vista 2 si ayudan). Embébelas como data URI
+     base64 para que el .html siga siendo AUTOCONTENIDO. Ejemplo con pymupdf:
+         import fitz, base64
+         doc = fitz.open("statement.pdf"); page = doc[NUM_PAGINA]
+         clip = fitz.Rect(x0, y0, x1, y1)             # recorta SOLO la figura
+         pix = page.get_pixmap(dpi=300, clip=clip); pix.save("fig.png")
+         uri = "data:image/png;base64," + base64.b64encode(open("fig.png","rb").read()).decode()
+     Usa <figure><img ...><figcaption>…</figcaption></figure>. NO inventes
+     diagramas: usa los del PDF.
+  ============================================================================
+-->
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI {{ANIO}} · Tarea {{NUM}} — {{TITULO}}</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI {{ANIO}} · {{DIA}}</div>
+    <h1>Tarea <span class="num">{{NUM}}</span> — {{TITULO}}</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>{{ Aquí va la traducción COMPLETA y fiel del enunciado al español
+       mexicano. Mantén el contexto/historia, pero escríbelo claro y fácil. }}</p>
+
+    <!-- FIGURA CLAVE (obligatoria si el PDF la tiene). Embebe base64. Borra si no aplica. -->
+    <figure>
+      <img alt="{{ describe la figura para accesibilidad }}"
+           src="data:image/png;base64,{{ PEGA_AQUI_EL_BASE64 }}">
+      <figcaption>{{ pie de figura traducido, p. ej. "Figura 1: ..." }}</figcaption>
+    </figure>
+
+    <!-- ===== TAREA FUNCIONAL / INTERACTIVA =====
+         Casi todas las tareas IOI piden IMPLEMENTAR funciones. Pon aquí sus
+         firmas y qué hace cada una. Si la tarea es de E/S clásica (batch),
+         BORRA este bloque y usa «Entrada» / «Salida» de abajo. -->
+    <h2>Detalles de implementación</h2>
+    <p>{{ Qué debes implementar y cómo te llama el evaluador. }}</p>
+    <div class="sig">
+      <span class="tag">Firma(s) a implementar</span>
+<pre>{{
+  // describe las firmas en C++ tal como las da el PDF, p. ej.:
+  std::vector&lt;int&gt; resolver(int N, std::vector&lt;int&gt; A);
+}}</pre>
+    </div>
+
+    <!-- ===== TAREA DE E/S CLÁSICA (batch): usa esto en lugar de lo anterior =====
+    <h2>Entrada</h2>
+    <p>{{ formato de entrada traducido }}</p>
+    <h2>Salida</h2>
+    <p>{{ formato de salida traducido }}</p>
+    -->
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>{{LIMITE_TIEMPO}}</td></tr>
+        <tr><td>Límite de memoria</td><td>{{LIMITE_MEMORIA}}</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">{{PUNTOS}} puntos</span></td></tr>
+        <tr><td>{{ variable, ej. N }}</td><td><span class="badge">{{ rango, ej. \(1 \le N \le 10^5\) }}</span></td></tr>
+        <!-- una fila por cada restricción global importante -->
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). Una fila por subtarea. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">{{ p }}</td><td>{{ ej. \(N \le 100\) }}</td></tr>
+          <tr><td>2</td><td class="pts">{{ p }}</td><td>{{ ... }}</td></tr>
+          <tr><td>3</td><td class="pts">{{ p }}</td><td>{{ ... }}</td></tr>
+          <!-- agrega tantas filas como subtareas tenga la tarea -->
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada / llamada</h4><pre>{{ ejemplo (entrada del grader o llamada a la función) }}</pre></div>
+      <div class="io"><h4>Salida / retorno</h4><pre>{{ salida o valor de retorno esperado }}</pre></div>
+    </div>
+    <p class="note">{{ Explicación breve del ejemplo si el PDF la trae. }}</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking/IDDFS, BFS/DFS, Strings, Estructuras de datos, Flujos,
+         Bitmask, Simulación, Parsing, Fuerza bruta, Two pointers, Hashing,
+         Interactivo, Divide y vencerás, Sqrt decomposition. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">{{ tag 1 }}</span>
+      <span class="ptag">{{ tag 2 }}</span>
+      <span class="ptag">{{ tag 3 }}</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>{{ La tarea en 2–4 líneas: SOLO lo esencial. Qué te dan, qué función
+       debes implementar / qué calcular. Sin la historia. }}</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>{{ ej. \(N \le 10^5\) sugiere \(O(N\log N)\); pista de las
+                subtareas: la #1 con \(N\le 100\) admite fuerza bruta. }}</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste si esto se puede ver como {{ grafo / DP /
+           geometría / ... }}? ¿Qué representa cada {{ objeto }} de la tarea?</p>
+        <p>{{ Empuja hacia la abstracción correcta sin revelar el algoritmo. }}</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por las subtareas chicas</summary>
+      <div class="body">
+        <p class="q">¿Qué te regala la subtarea con \(N\) pequeña? ¿Una fuerza
+           bruta \(O(2^N)\) o \(O(N^2)\) te da esos primeros puntos?</p>
+        <p>{{ En IOI casi siempre conviene razonar de la subtarea más fácil a la
+           más difícil: cada bloque de puntos suele esconder una idea nueva. }}</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave</summary>
+      <div class="body">
+        <p class="q">¿Y si te fijas en {{ propiedad escondida }}? ¿Notaste que
+           {{ invariante / monotonía / simetría }} siempre se cumple?</p>
+        <p>{{ La idea no obvia que destraba el caso general. }}</p>
+      </div>
+    </details>
+
+    <!-- Agrega tantas pistas intermedias como necesite la tarea. -->
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>{{ Explicación completa, paso a paso y por qué es correcta. Si ayuda,
+           describe cómo se sube de subtarea en subtarea hasta el 100. }}</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>{{
+  funcion Resolver(...):
+      ...
+      regresa respuesta
+}}</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> {{ tiempo y memoria, p. ej. \(O(N\log N)\) }}</p>
+
+        <!-- SOLO si aplica un truco específico de C++ (y solo C++): -->
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>{{ p. ej. __int128 para el producto, bitset para acelerar la DP }}</pre>
+          <p class="note">Inclúyelo únicamente si de verdad hace falta. Nunca
+             pongas la solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

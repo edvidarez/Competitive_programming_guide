@@ -16,10 +16,14 @@ y el [archivo IOI de Codeforces](https://ioi.contest.codeforces.com/)).
 IOI/
 ├── README.md
 ├── download_ioi.py        ← descargador idempotente (regenera todo)
+├── TEMPLATE.html          ← plantilla a copiar para cada tarea (como index.html)
+├── PROGRESO.md            ← checklist de avance (142 tareas)
+├── assets/mathjax/        ← MathJax autohospedado (lo usa cada index.html)
 │
 ├── 2024/
 │   ├── 01 Nile/
-│   │   └── statement.pdf       ← enunciado oficial  (SÍ se versiona)
+│   │   ├── statement.pdf       ← enunciado oficial            (SÍ se versiona)
+│   │   └── index.html          ← traducción + upsolving       (lo genera el agente)
 │   ├── 02 Message/
 │   │   └── statement.pdf
 │   ├── ... 06 Sphinx's Riddle/
@@ -31,11 +35,37 @@ IOI/
 └── ...
 ```
 
-- **Una carpeta por tarea** (`NN Nombre/`), con el `statement.pdf` oficial.
+- **Una carpeta por tarea** (`NN Nombre/`), con el `statement.pdf` oficial y,
+  cuando se trabaje, su `index.html` (las dos vistas: enunciado + upsolving).
 - Cada año numera sus tareas como en el sitio oficial (`problem1`, `problem2`, …).
 - Todo lo que **no** es enunciado (tests, soluciones, práctica) vive en
   `<año>/_local/` y está **ignorado por git** — se conserva en tu disco para uso
   personal pero **no se publica** en GitHub.
+
+---
+
+## 🤖 Traducción y upsolving (workflow)
+
+Igual que en [`../ICPC-World-Finals/`](../ICPC-World-Finals/), cada tarea puede
+tener una página HTML autoexplicativa con **dos vistas**: el enunciado traducido
+al español mexicano y una guía socrática de pistas que lleva al upsolving sin
+spoilear de golpe. Para cada tarea:
+
+1. Abre [`PROGRESO.md`](PROGRESO.md) y elige la primera tarea sin marcar.
+2. Lee su `statement.pdf` (en la carpeta de la tarea).
+3. Copia la plantilla a esa carpeta como `index.html`:
+   `cp TEMPLATE.html "2024/01 Nile/index.html"`.
+4. Rellena las **dos vistas** siguiendo las reglas dentro de `TEMPLATE.html`.
+5. Verifica que abre bien y que el botón cambia entre las dos vistas.
+6. Marca la tarea en `PROGRESO.md` (y actualiza las cuentas) y haz commit,
+   p. ej. `IOI 2024/01: traducción y upsolving (Nile)`.
+
+> ⚠️ **Diferencias del IOI** (ya integradas en la plantilla): el puntaje es por
+> **subtareas** con crédito parcial (sección obligatoria), y muchas tareas son
+> **interactivas/funcionales** (implementas funciones, no lees stdin). El
+> razonamiento de la Vista 2 va **subtarea por subtarea** hasta los 100 puntos.
+> Regla estricta (como en ICPC): **nunca** código de solución, solo
+> pseudocódigo; matemáticas en LaTeX con MathJax; todo autocontenido.
 
 > ⚠️ El `.gitignore` de la raíz excluye `IOI/*/_local/`. No quites esa regla:
 > ahí viven las soluciones y los casos de prueba que no deben subirse.
