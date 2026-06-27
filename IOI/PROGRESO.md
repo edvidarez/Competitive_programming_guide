@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **58 / 142**
+Total de tareas: **142** · Completadas: **59 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -118,11 +118,11 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Elephants | `2011/05 Elephants/index.html` |
 | [x] | 6 | Parrots | `2011/06 Parrots/index.html` |
 
-## IOI 2012 — 0 / 6
+## IOI 2012 — 1 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
-| [ ] | 1 | Pebbling odometer | `2012/01 Pebbling odometer/index.html` |
+| [x] | 1 | Pebbling odometer | `2012/01 Pebbling odometer/index.html` |
 | [ ] | 2 | Parachute rings | `2012/02 Parachute rings/index.html` |
 | [ ] | 3 | Crayfish scrivener | `2012/03 Crayfish scrivener/index.html` |
 | [ ] | 4 | Ideal city | `2012/04 Ideal city/index.html` |

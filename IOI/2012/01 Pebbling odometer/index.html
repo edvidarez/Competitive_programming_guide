@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2012 · Tarea 1 — Pebbling odometer</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .asm{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+  .ptag.type{color:var(--warn);border-color:var(--warn)}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2012 · Día 1 · Sirmione – Montichiari, Italia</div>
+    <h1>Tarea <span class="num">1</span> — Pebbling odometer</h1>
+    <p class="note">El odómetro de piedritas · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Leonardo inventó el odómetro original: un carrito que medía distancias
+       dejando caer piedritas conforme giraban sus ruedas. Al contar las piedras se
+       obtenía el número de vueltas de la rueda, y con eso la distancia recorrida.
+       Como científicos de la computación, le agregamos control por software al
+       odómetro y le extendimos sus funciones. Tu tarea es <strong>programar el
+       odómetro</strong> según las reglas que se describen abajo.</p>
+
+    <h2>La rejilla de operación</h2>
+    <p>El odómetro se mueve sobre una rejilla cuadrada imaginaria de
+       \(256 \times 256\) celdas unitarias. Cada celda puede contener
+       <strong>a lo más 15 piedras</strong> y se identifica por un par de
+       coordenadas \((\text{fila}, \text{columna})\), donde cada coordenada está en
+       el rango \(0, \dots, 255\). Dada una celda \((i, j)\), sus celdas adyacentes
+       son (si existen) \((i-1, j)\), \((i+1, j)\), \((i, j-1)\) y \((i, j+1)\).
+       Cualquier celda que esté en la primera o última fila, o en la primera o
+       última columna, se llama <strong>borde</strong>. El odómetro
+       <strong>siempre empieza en la celda \((0, 0)\)</strong> (la esquina
+       noroeste), <strong>mirando al norte</strong>.</p>
+
+    <h2>Detalles de implementación — el lenguaje del odómetro</h2>
+    <p>Esta es una tarea de <strong>síntesis de programa</strong> (estilo
+       <em>output-only</em>): no lees de la entrada estándar ni escribes a la salida
+       estándar. Lo que entregas es un <strong>programa escrito en el lenguaje
+       propio del odómetro</strong> (un ensamblador minúsculo). El mismo programa se
+       ejecuta sobre muchas rejillas distintas y debe cumplir el objetivo de su
+       subtarea en todas ellas.</p>
+
+    <h3>Comandos básicos</h3>
+    <ul>
+      <li><code>left</code> — gira 90° a la <strong>izquierda</strong> (sentido
+          antihorario) y permanece en la celda actual (p. ej., si miraba al sur,
+          después mira al este).</li>
+      <li><code>right</code> — gira 90° a la <strong>derecha</strong> (sentido
+          horario) y permanece en la celda actual (p. ej., si miraba al oeste,
+          después mira al norte).</li>
+      <li><code>move</code> — avanza una unidad hacia adelante (en la dirección a la
+          que mira) hacia la celda adyacente. Si esa celda no existe (ya se alcanzó
+          el borde en esa dirección), <strong>el comando no tiene efecto</strong>.</li>
+      <li><code>get</code> — quita una piedra de la celda actual. Si la celda no
+          tiene piedras, no tiene efecto.</li>
+      <li><code>put</code> — agrega una piedra a la celda actual. Si la celda ya
+          tiene 15 piedras, no tiene efecto. El odómetro nunca se queda sin
+          piedras.</li>
+      <li><code>halt</code> — termina la ejecución.</li>
+    </ul>
+    <p>El odómetro ejecuta los comandos en el orden en que aparecen. A lo más un
+       comando por línea. Las líneas vacías se ignoran. El símbolo <code>#</code>
+       indica un comentario: todo el texto que le sigue, hasta el fin de la línea,
+       se ignora. Si el odómetro llega al final del programa, la ejecución termina.</p>
+
+    <h3>Ejemplo 1</h3>
+    <p>El siguiente programa lleva al odómetro a la celda \((0, 2)\), mirando al
+       este. (Nota que el primer <code>move</code> se ignora, porque el odómetro
+       está en la esquina noroeste mirando al norte.)</p>
+    <div class="io"><pre>move    # sin efecto
+right
+# ahora el odómetro mira al este
+move
+move</pre></div>
+
+    <h3>Etiquetas, bordes y piedras</h3>
+    <p>Para alterar el flujo del programa según el estado actual, puedes usar
+       <strong>etiquetas</strong>: cadenas sensibles a mayúsculas de a lo más 128
+       símbolos tomados de \(a,\dots,z\), \(A,\dots,Z\), \(0,\dots,9\). Los nuevos
+       comandos relacionados con etiquetas (donde \(L\) denota cualquier etiqueta
+       válida) son:</p>
+    <ul>
+      <li><code>L:</code> (es decir, \(L\) seguida de dos puntos) — declara la
+          ubicación de la etiqueta \(L\) dentro del programa. Todas las etiquetas
+          declaradas deben ser únicas. Declarar una etiqueta no tiene efecto.</li>
+      <li><code>jump L</code> — continúa la ejecución saltando
+          <strong>incondicionalmente</strong> a la línea con la etiqueta \(L\).</li>
+      <li><code>border L</code> — salta a la línea con la etiqueta \(L\)
+          <strong>si el odómetro está en un borde mirando hacia la orilla</strong>
+          de la rejilla (es decir, si un <code>move</code> no tendría efecto); en
+          caso contrario, la ejecución continúa normalmente y este comando no tiene
+          efecto.</li>
+      <li><code>pebble L</code> — salta a la línea con la etiqueta \(L\)
+          <strong>si la celda actual contiene al menos una piedra</strong>; en caso
+          contrario, la ejecución continúa normalmente.</li>
+    </ul>
+
+    <h3>Ejemplo 2</h3>
+    <p>El siguiente programa localiza la primera piedra (la más al oeste) de la fila
+       0 y se detiene ahí; si no hay piedras en la fila 0, se detiene en el borde al
+       final de la fila. Usa dos etiquetas, <code>leonardo</code> y
+       <code>davinci</code>.</p>
+    <div class="io"><pre>right
+leonardo:
+pebble davinci    # piedra encontrada
+border davinci    # fin de la fila
+move
+jump leonardo
+davinci:
+halt</pre></div>
+    <p>El odómetro empieza girando a la derecha. El ciclo inicia con la declaración
+       <code>leonardo:</code> y termina con <code>jump leonardo</code>. En el ciclo,
+       el odómetro revisa si hay una piedra o el borde al final de la fila; si no,
+       avanza de la celda \((0, j)\) a la adyacente \((0, j+1)\). (El <code>halt</code>
+       no es estrictamente necesario aquí, pues el programa termina de todos modos.)</p>
+
+    <div class="sig">
+      <span class="tag">Juego de instrucciones (el «lenguaje» que entregas)</span>
+<pre>Comandos:   left | right | move | get | put | halt
+Etiquetas:  L:            declara la etiqueta L
+            jump   L      salto incondicional a L
+            border L      salta a L si un move no tendría efecto (mirando al borde)
+            pebble L      salta a L si la celda actual tiene >= 1 piedra
+Comentario: # ...hasta fin de línea         Líneas vacías: se ignoran
+Inicio:     celda (0,0), mirando al norte    Rejilla: 256x256, 0..15 piedras/celda</pre>
+    </div>
+
+    <h3>Cómo se mide tu programa</h3>
+    <p>Cada subtarea especifica un comportamiento que el odómetro debe cumplir y las
+       restricciones que debe satisfacer tu solución. Hay dos magnitudes:</p>
+    <ul>
+      <li><strong>Tamaño del programa \(P\)</strong> — el programa debe ser
+          suficientemente corto. El tamaño es el <strong>número de comandos</strong>.
+          Las declaraciones de etiquetas, los comentarios y las líneas en blanco
+          <em>no</em> cuentan en el tamaño.</li>
+      <li><strong>Longitud de ejecución \(L\)</strong> — el programa debe terminar
+          suficientemente rápido. La longitud es el <strong>número de pasos
+          realizados</strong>: cada ejecución de un comando cuenta como un paso,
+          tenga efecto o no; las declaraciones de etiquetas, los comentarios y las
+          líneas en blanco no cuentan como paso.</li>
+    </ul>
+    <p>En el Ejemplo 1, el tamaño es \(P = 4\) y la longitud es \(L = 4\). En el
+       Ejemplo 2, el tamaño es \(P = 6\) y, ejecutado sobre una rejilla con una sola
+       piedra en \((0, 10)\), la longitud es \(L = 43\) pasos:
+       <code>right</code>, 10 iteraciones del ciclo (cada una de 4 pasos:
+       <code>pebble</code>, <code>border</code>, <code>move</code>,
+       <code>jump</code>), y finalmente <code>pebble</code> y <code>halt</code>.</p>
+
+    <h2>Tu tarea</h2>
+    <p>Debes entregar un programa en el lenguaje del odómetro (descrito arriba) que
+       haga que el odómetro se comporte como se pide. Cada subtarea (abajo) define un
+       comportamiento exigido y los límites de \(P\) y \(L\) que tu programa debe
+       respetar. Recuerda: <strong>el mismo programa</strong> debe funcionar para
+       todas las rejillas de entrada de esa subtarea.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tamaño de la rejilla</td><td><span class="badge">\(256 \times 256\) celdas</span></td></tr>
+        <tr><td>Piedras por celda</td><td><span class="badge">\(0 \le\) piedras \(\le 15\)</span></td></tr>
+        <tr><td>Posición / dirección inicial</td><td>celda \((0,0)\), mirando al norte</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Evaluación</td><td>por <strong>tamaño \(P\)</strong> y <strong>longitud \(L\)</strong> (no por tiempo/memoria clásicos)</td></tr>
+        <tr><td>Archivos a entregar</td><td>exactamente uno por subtarea, máximo \(5\) MiB cada uno</td></tr>
+        <tr><td>Envíos máximos</td><td>128</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p>Cada subtarea es un comportamiento distinto; un mismo programa debe cumplirlo
+       en <strong>todas</strong> las rejillas de prueba de esa subtarea.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Objetivo</th><th>Límites</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td><td class="pts">9</td>
+            <td>Hay \(x\) piedras en \((0,0)\) y \(y\) en \((0,1)\); las demás celdas
+                vacías. Termina en \((0,0)\) si \(x \le y\), y en \((0,1)\) si
+                \(x > y\). No importa la dirección final ni cuántas piedras queden ni
+                dónde.</td>
+            <td>\(P \le 100\)<br>\(L \le 1\,000\)</td>
+          </tr>
+          <tr>
+            <td>2</td><td class="pts">12</td>
+            <td>Igual que la 1, pero al terminar la celda \((0,0)\) debe contener
+                <strong>exactamente \(x\)</strong> piedras y \((0,1)\)
+                <strong>exactamente \(y\)</strong>.</td>
+            <td>\(P \le 200\)<br>\(L \le 2\,000\)</td>
+          </tr>
+          <tr>
+            <td>3</td><td class="pts">19</td>
+            <td>Hay exactamente dos piedras en la fila 0: una en \((0,x)\) y otra en
+                \((0,y)\), con \(x \ne y\) y \(x+y\) par. Termina en el punto medio
+                \((0,(x+y)/2)\). El estado final de la rejilla no importa.</td>
+            <td>\(P \le 100\)<br>\(L \le 200\,000\)</td>
+          </tr>
+          <tr>
+            <td>4</td><td class="pts">hasta 32</td>
+            <td>Hay a lo más 15 piedras en la rejilla, ninguna par en la misma celda.
+                Júntalas todas en la esquina noroeste: si había \(x\) piedras, al
+                final debe haber exactamente \(x\) en \((0,0)\) y ninguna en otra
+                celda. Puntaje según \(L_{\max}\): \(32\) si \(L \le 200\,000\);
+                \(32 - 32\log_{10}\!\left(L/200\,000\right)\) si
+                \(200\,000 < L < 2\,000\,000\); \(0\) si \(L \ge 2\,000\,000\).</td>
+            <td>\(P \le 200\)</td>
+          </tr>
+          <tr>
+            <td>5</td><td class="pts">hasta 28</td>
+            <td>Cualquier cantidad \(0\dots15\) por celda. Termina en una celda
+                \((i,j)\) que sea un <strong>mínimo global</strong> (toda otra celda
+                tiene al menos tantas piedras). Tras correr, la rejilla debe quedar
+                <strong>idéntica</strong> a como estaba. Puntaje según el tamaño
+                \(P\): \(28\) si \(P \le 444\); \(28 - 28\log_{10}\!\left(P/444\right)\)
+                si \(444 < P < 4\,440\); \(0\) si \(P \ge 4\,440\).</td>
+            <td>\(L \le 44\,400\,000\)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note-box">
+      <strong>Simulador.</strong> Junto con la tarea se entrega un simulador
+      (<code>simulator.py</code>) al que le pasas tu programa y una rejilla de
+      entrada. Las rejillas se describen con líneas «\(R\) \(C\) \(P\)»: la celda en
+      la fila \(R\), columna \(C\) tiene \(P\) piedras (las no listadas tienen 0).
+      Opciones útiles: <code>-g</code> (cargar rejilla), <code>-s</code> (rejilla más
+      chica para depurar), <code>-m</code> (limitar pasos) y <code>-c</code> (modo
+      compilado: genera y compila un pequeño programa en C, mucho más rápido cuando
+      esperas más de ~10 000 000 pasos).
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag type">Síntesis de programa</span>
+      <span class="ptag">Construcción / ad hoc</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Recorrido en serpentina (boustrophedon)</span>
+      <span class="ptag">Compartir código (code sharing)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>No resuelves <em>una</em> instancia: escribes <strong>un solo programa</strong>
+       en el ensamblador del odómetro (<code>left/right/move/get/put/halt</code> +
+       saltos <code>jump/border/pebble</code>) que debe cumplir el objetivo de su
+       subtarea para <strong>todas</strong> las rejillas. Se puntúa por el tamaño
+       \(P\) (número de comandos) y/o la longitud \(L\) (pasos ejecutados), no por
+       tiempo de CPU.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El robot solo «ve» dos cosas: si está en un borde
+                (<code>border</code>) y si la celda tiene piedra (<code>pebble</code>).
+                Con eso construyes todo. Las subtareas escalan la idea:
+                comparar dos celdas (S1) → además restaurar el estado (S2) →
+                localizar y bisecar (S3) → recorrer toda la rejilla en serpentina
+                (S4) → barrer por valor candidato y <em>reponer</em> sin alterar la
+                rejilla (S5). \(P\) y \(L\) son holgados: las referencias de los
+                autores dan 100 sin exprimir constantes.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo se piensa el odómetro?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que tu programa no conoce los valores concretos,
+           solo puede preguntar «¿hay borde?» y «¿hay piedra?»? ¿Qué
+           «subrutinas» reutilizables te conviene tener en la cabeza?</p>
+        <p>Conviene pensar en <strong>gadgets</strong> (bloques reutilizables) y en
+           usar las piedras como <strong>banderas o contadores</strong> (gracias a
+           que <code>get</code> y <code>put</code> <em>saturan</em>: <code>get</code>
+           en vacío y <code>put</code> en 15 no hacen nada). Tres gadgets aparecen en
+           casi todas las subtareas:</p>
+        <div class="pseudo asm">
+          <span class="tag">Gadgets base (en el propio ensamblador)</span>
+<pre># media vuelta (180°)
+right
+right
+
+# escanear una fila hasta encontrar piedra o borde (es el Ejemplo 2)
+scan:
+pebble found      # ¿piedra aquí?
+border found      # ¿fin de la fila?
+move
+jump scan
+found:</pre>
+        </div>
+        <p>Con «media vuelta» + «escaneo de fila» + bajar una fila armas la
+           <strong>serpentina</strong> (izquierda→derecha, bajas, derecha→izquierda…)
+           que recorre toda la rejilla. Eso es la columna vertebral de S4 y S5.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (9 pts): comparar dos celdas</summary>
+      <div class="body">
+        <p class="q">Quieres saber si \(x \le y\) sin un «comparador». ¿Qué pasa si
+           le quitas <em>una</em> piedra a cada celda por turnos y miras cuál se
+           vacía primero?</p>
+        <p>Mira al este (para alternar entre \((0,0)\) y \((0,1)\)) y, en cada
+           vuelta, haz <code>get</code> en \((0,0)\) y <code>get</code> en \((0,1)\).
+           La celda que se queda <strong>sin piedras primero</strong> es la del
+           mínimo. Detectas «se vació» con <code>pebble</code> (si NO salta, la celda
+           está vacía).</p>
+        <ul>
+          <li>Si \((0,0)\) se vacía primero (o empatan) \(\Rightarrow x \le y\):
+              deja que el programa termine parado en \((0,0)\) (cae al final del
+              programa ahí).</li>
+          <li>Si \((0,1)\) se vacía primero \(\Rightarrow x > y\): muévete a
+              \((0,1)\) y haz <code>halt</code>.</li>
+        </ul>
+        <p class="note">La referencia logra esto con \(P = 13\) y \(L \le 153\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (12 pts): además, deja la rejilla intacta</summary>
+      <div class="body">
+        <p class="q">El conteo de la S1 <em>destruye</em> las piedras que quitaste.
+           Si supieras <strong>cuántas vueltas</strong> diste, ¿podrías reponerlas
+           exactamente?</p>
+        <p>Usa una tercera celda, p. ej. \((0,2)\), como <strong>contador</strong>:
+           cada iteración del conteo haz un <code>put</code> ahí. Al terminar, esa
+           celda guarda el número de piedras que le quitaste a cada lado; recorre el
+           contador hacia abajo (un <code>get</code> en el contador por cada
+           <code>put</code> que devuelves a \((0,0)\) y a \((0,1)\)) hasta restaurar
+           el estado exacto. Así \((0,0)=x\) y \((0,1)=y\) al final.</p>
+        <p class="note">Referencia: \(P = 57\), \(L \le 390\). Es S1 + «restaurar con
+           contador».</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3 (19 pts): el punto medio</summary>
+      <div class="body">
+        <p class="q">Tienes dos piedras en la fila 0 y quieres parar justo en medio.
+           ¿Cómo «converges» al centro avanzando por los dos extremos a la vez?</p>
+        <p>Primero <strong>localiza</strong> la primera piedra avanzando de 1 en 1
+           (gadget de escaneo). Luego haz una especie de <strong>bisección
+           física</strong>: usa marcas (<code>put</code>) que rebotan entre los dos
+           extremos, acercándose <strong>de 2 en 2</strong> hacia el centro hasta que
+           ambas marcas coinciden. Que \(x+y\) sea par es justo lo que garantiza que
+           el centro caiga en una celda exacta.</p>
+        <p class="note">Referencia: \(P = 28\), \(L \le 32\,708\) (muy por debajo del
+           tope \(200\,000\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 4 (hasta 32 pts): recorrer toda la rejilla</summary>
+      <div class="body">
+        <p class="q">Ahora las piedras (≤15) están dispersas. ¿Cómo las visitas
+           todas con un programa de tamaño constante, y cómo las arrastras a
+           \((0,0)\)?</p>
+        <p>Recorre la rejilla completa en <strong>serpentina</strong>. Cada vez que
+           encuentras una piedra: <code>get</code>, ve a la <strong>columna 0 de esa
+           misma fila</strong> y <code>put</code>. Cuando terminas todas las filas,
+           recorre la <strong>columna 0 de abajo hacia arriba</strong> empujando todo
+           a \((0,0)\). Como hay a lo más 15 piedras, mover «de a una hasta la
+           columna 0» es barato.</p>
+        <p>El reto es \(L\): recorrer \(256 \times 256\) celdas son decenas de miles
+           de pasos por pasada, y el tope es \(200\,000\). El truco para no pasarte es
+           <strong>desenrollar el escaneo</strong> (varios <code>move</code> por cada
+           <code>pebble</code>, en vez de revisar piedra en cada paso).</p>
+        <p class="note">Referencia: \(P = 81\), \(L \le 194\,876\) — apenas debajo de
+           \(200\,000\), lo justo para los 32 puntos. Está afinada: no hay que
+           «mejorarla».</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Subtarea 5 y los 100 puntos</summary>
+      <div class="body">
+        <p><strong>Cómo se arma el 100.</strong> Cada subtarea aporta una idea y las
+           cinco referencias suman \(9+12+19+32+28 = 100\):</p>
+        <ul>
+          <li><strong>S1</strong> (\(P=13\)): comparar dos celdas decrementando ambas.</li>
+          <li><strong>S2</strong> (\(P=57\)): lo mismo + contador en \((0,2)\) para
+              restaurar el estado.</li>
+          <li><strong>S3</strong> (\(P=28\)): localizar y bisecar al punto medio.</li>
+          <li><strong>S4</strong> (\(P=81\), \(L\le194\,876\)): serpentina con
+              escaneo desenrollado, empujando cada piedra a \((0,0)\).</li>
+          <li><strong>S5</strong> (\(P=435 \le 444\)): lo que sigue.</li>
+        </ul>
+
+        <h3>Subtarea 5 — encontrar el mínimo y dejar la rejilla intacta</h3>
+        <p><strong>Idea.</strong> Hallar el mínimo es fácil (quitar una piedra por
+           celda); lo difícil es <strong>devolver</strong> todas las piedras
+           quitadas para que la rejilla quede idéntica. La solución del editorial
+           prueba cada valor candidato \(m = 0, 1, \dots, 14\) en orden. Para el
+           candidato \(m\), recorre <strong>toda la rejilla en serpentina</strong> y
+           en cada celda:</p>
+        <ol>
+          <li>hace <code>get</code> exactamente \(m\) veces;</li>
+          <li>pregunta <code>pebble</code>:
+            <ul>
+              <li>si <strong>todavía queda</strong> piedra, la celda tenía
+                  \(> m\) piedras → repón con \(m\) <code>put</code> y sigue a la
+                  siguiente celda;</li>
+              <li>si <strong>quedó vacía</strong>, la celda tenía
+                  <strong>exactamente \(m\)</strong> (los valores menores ya se
+                  descartaron en pasadas previas) → este es el mínimo global; salta a
+                  la etiqueta <code>end_m</code>.</li>
+            </ul>
+          </li>
+        </ol>
+        <p><strong>El truco que baja \(P\): reposición compartida en cascada.</strong>
+           En vez de escribir la rutina «devuelve \(m\) piedras» dentro de cada uno de
+           los 15 bloques, se comparte una sola cascada de <code>put</code>. Caer en
+           <code>end_m</code> ejecuta exactamente \(m\) veces <code>put</code> (uno
+           por cada nivel hasta <code>end_1</code>), devolviendo las \(m\) piedras
+           justo en la celda del mínimo, y al llegar a <code>end_0</code> el programa
+           termina ahí. Si todas las celdas tienen 15, cae en una etiqueta final
+           vacía y termina donde esté.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (Subtarea 5)</span>
+<pre>para m = 0, 1, ..., 14:          # candidato a mínimo, en orden creciente
+    recorre TODA la rejilla en serpentina:
+        en cada celda:
+            repetir m veces: get             # intenta quitar m piedras
+            si la celda AÚN tiene piedra (pebble):
+                repetir m veces: put         # tenía > m: restáurala y sigue
+                continúa con la siguiente celda
+            si NO (quedó vacía):
+                # la celda tenía EXACTAMENTE m  (los < m ya se descartaron)
+                ir a  end_m                  # repón m piedras aquí y termina
+
+# --- reposición COMPARTIDA en cascada (una sola copia para los 15 niveles) ---
+end_14: put
+end_13: put
+        ...
+end_1:  put
+end_0:                  # llegar a end_m ejecuta exactamente m puts y termina
+15_scan_all:            # si todas las celdas tienen 15, cae aquí y termina</pre>
+        </div>
+
+        <p>Así, la celda donde paras tiene el mínimo, y como en toda celda con
+           \(>m\) repusiste lo quitado y en la celda del mínimo también repones sus
+           \(m\) piedras vía la cascada, <strong>la rejilla queda idéntica</strong>.</p>
+
+        <div class="pseudo asm">
+          <span class="tag">El núcleo en el ensamblador (esquema, no es el programa completo)</span>
+<pre># bloque del candidato m, recorriendo una fila hacia el este
+m_scan_row:
+get                 #  <-- repetido m veces (desenrollado)
+pebble m_continue   # ¿sobró piedra? entonces la celda tenía > m
+jump end_m          # no sobró: ¡mínimo encontrado aquí!
+m_continue:
+put                 #  <-- repetido m veces: repón lo quitado
+border m_next_row   # ¿fin de la fila? cambia de fila (serpentina)
+move
+jump m_scan_row</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Procesamos los candidatos en orden
+           \(0,1,2,\dots\): cuando probamos \(m\), ninguna celda tiene menos de \(m\)
+           (esos casos habrían parado en una pasada anterior). Entonces una celda
+           queda vacía tras \(m\) <code>get</code> <strong>si y solo si</strong>
+           tenía exactamente \(m\) piedras, que es el mínimo global. Toda celda que
+           no es el mínimo recupera sus piedras con sus \(m\) <code>put</code>; la
+           celda del mínimo las recupera con la cascada <code>end_m → end_0</code>.</p>
+
+        <p><strong>Complejidad (presupuesto, no asintótica).</strong> Cada pasada
+           recorre \(O(256^2)\) celdas; hay a lo más 15 pasadas, así que
+           \(L = O(15 \cdot 256^2) \approx 2\times10^7\) pasos (la referencia mide
+           \(L \le 20.6\)M, dentro del tope \(44.4\)M). El tamaño es
+           \(O(15)\) bloques que <strong>comparten</strong> la reposición, lo que da
+           \(P = 435 \le 444\) y, por tanto, los 28 puntos.</p>
+
+        <div class="note-box">
+          <strong>Dirección al óptimo (sin perseguir la constante mínima).</strong>
+          Lo que hace que \(P\) entre en el presupuesto es <em>compartir</em> la
+          rutina de reposición: sin la cascada, escribir «devuelve \(m\)» dentro de
+          cada bloque dispararía \(P\). Una vez con \(P = 435 \le 444\) ya tienes los
+          28 puntos; igual en S4, \(L \le 194\,876 < 200\,000\) ya da 32. No vale la
+          pena exprimir más la constante: las referencias de los autores ya logran el
+          100/100 sobre los tests oficiales.
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
