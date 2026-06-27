@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2014 · Tarea 1 — Rail</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2014 · Día 1 · Taipéi, Taiwán</div>
+    <h1>Tarea <span class="num">1</span> — Rail</h1>
+    <p class="note">Rail (Ferrocarril) · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Taiwán tiene una gran línea de ferrocarril que conecta las costas
+       occidental y oriental de la isla. La línea está formada por
+       <strong>bloques</strong>. Los bloques consecutivos están numerados
+       \(0, 1, 2, \dots\), empezando por el extremo <em>oeste</em>. Cada bloque
+       tiene, en su parte <strong>norte</strong>, una vía de un solo sentido que
+       va hacia el <strong>oeste</strong>; en su parte <strong>sur</strong>, una
+       vía de un solo sentido que va hacia el <strong>este</strong>; y,
+       opcionalmente, una estación de tren entre ambas.</p>
+
+    <p>Hay tres tipos de bloque:</p>
+    <ul>
+      <li>Un bloque <strong>tipo C</strong> tiene una estación a la que
+          <strong>entras por la vía norte</strong> y de la que
+          <strong>sales por la vía sur</strong>.</li>
+      <li>Un bloque <strong>tipo D</strong> tiene una estación a la que
+          <strong>entras por la vía sur</strong> y de la que
+          <strong>sales por la vía norte</strong>.</li>
+      <li>Un bloque <strong>vacío</strong> no tiene estación.</li>
+    </ul>
+
+    <p>Por ejemplo, en la figura de abajo el bloque 0 es vacío, el bloque 1 es
+       tipo C y el bloque 5 es tipo D. Los bloques se conectan entre sí
+       horizontalmente. Las vías de bloques adyacentes se unen mediante
+       <strong>conectores</strong>, dibujados como rectángulos sombreados.</p>
+
+    <figure>
+      <img alt="Línea de ferrocarril con vía norte hacia el oeste y vía sur hacia el este; estaciones tipo C y D en varios bloques, y conectores entre bloques."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAr0AAACmCAIAAABYyKD+AAAACXBIWXMAAAsSAAALEgHS3X78AAAgAElEQVR42u2dezyU6f//7xnGYTDOOSUhh5Awcgg5r0K05bSRSNSmw26rnU67Om7a2k219fnwSSK1ZZMi1YYhSiXkkOMm1YqWDuTMzNy/P+7vZ37zGTOTkIZ5P//oYa7rug/z6n1f876v6329LwSdcFpaWk6fPr1w4UISiXT8+HEU4ERdXd2vv/5qaWkpIyNDpVJBENAKtPosQH/FkZ6enszMzNDQUFVVVW9v74GBAdBEcOwKmZjLDA0N3b59+9tvv9XQ0BAVFSUQCAiCHDt2DKyHle7u7szMzODgYHl5eXFxcTweLyIikpeXB8qAVqDVRDI0NFRQUID1V2JiYtBfMamtrT106BCZTBYVFRUXF8fhcAsXLgSnQdDs6tP6DTU1NQcOHLCwsBATEyORSHg8HkEQBEEkJCROnToFZoSiKIPBKCwsjIqK0tHRERMTk5CQQP6LpKRkUVERSARagVYTA/RXHHn79m1SUpKHh4ekpCSJRMJ+7TBDWrZsGY1GA8sRNLsaf7+hq6srNTV15cqVioqKRCJRXFwc+V8kJCQSEhIE3JK4PYpMpKSkSkpK4JEDrUCrTwr0Vxyh0+nc/E6mLD4+PuA0CKZdIeNraufPn1dQUED4D3d3dz5RvLe398CBAyIiInyoUnR0NF9ZJ2gFWn3Sn8bz588rKipCf8VGaWmpvb09wpdMCpdrytsV8ilUKykp+emnn8zNzUVFRaWlpXE4HOutE4nEvXv3Crg3OjQ0VFhYuHnz5lmzZomLixOJRLb/YCKRmJ2dDW47aAVafepeHvorjjQ1NcXFxbm7uxOJRBKJJCQkxCbLggUL+vr6wIQE0K4+rfv2+vXr1NTUoKAgGRkZCQkJ5suQhITEnj17wLZ4P59EIvHWrVugD2gFWk0M0F99lDMKroPA2tWErqegUCg6OjpEIlFSUhJBkCNHjoBJsYLFvYeHhyspKZFIJBEREQKBAHHvoBVoNfG/lAUFBVh/JSEhAf0Vk9ra2l9//dXOzk5cXFxOTg6Hw7m6usJ6CkGzq88wXQTroUcCrLMHrUArfgD6K45A/gZBtisciqKfK0aDRqM9ePDA0NBQRkYGAbjQ29v74MEDOzs7YWFhUAO0Aq2gv+I36uvrGQzG7NmzQQoBsavP6TcAAAAAADC5wIMEAAAAAACA3wAAAAAAwDgDU5sAAPAv/f39nZ2dPBqIi4uTSCQQCvgoGAzGw4cPeTQQEhIyNzcHoTiC37VrF49q/qx1cHCYmOtmZ2f/ycLSpUv//F9Yo0M+3fd1dnYeHBzkc60yMjIiWQgPD4/8X3Jzc0ErBEGoVGra/+Lr68v8+/Lly2w/kwJuVw8fPty9e/f+/7Jz5879LOzduzctLQ36K4ynT58+YsHT0/PR//L+/Xt+/r4DAwPOzs4To9Xg4GBiYuL5/3Lq1Knz/0tiYiLYFbdaHIIgPEIjcTicINd+/fXXrLU0Go01+JzBYJw4cYJZ8knv6tGjRyYmJvys1aVLl7Kzs7n6p3i8t7f3woULQavt27e/efOGW0sCgUChUNTV1SfmrvjfrgoLC1NTU3n4NxYWFmFhYdBfIQhy+PDh58+fMxN8dXZ2SktLs3Zfa9euNTIy4ttv9OjRIzMzs4m5bn9//+bNm+l0Orf2wsLCJ06cALviWAvxDR8ezmKCx+NZP7LlDf2kVFRUTGoZJ3LZzqTWii2bL2gFfFRnNTg42PdfRERE+ljg/wW3YI2TBfAbJgeVlZUgAmgFWgFgjQD4DcD/ce/ePfDEQSvQChBYeFtjUVERSMQn4EACHoSHh/OYjEBRNCEhgcFggFAIglhaWs6dO5dbLYPBKCkpKS8vB6G++uorKSkpbrWDg4OZmZk8AiAEDX19/fnz5/MYY3/y5AmVSgWhEATx9vZWUlLiYVpUKvXFixcgFIIgBAJh5cqVeDzXN2c6nZ6QkABCcUQYgbhI7rVff/01D7cAj8cPDAyMV1yknJxcU1MTc0VZT09PUVFRQUFBfn7+nTt3hISE7O3tzczM9PX19fX1xcTEpKWlCQQCiUSSk5Pj/7hIISGhAwcOjFdc5KTWindcJIlEevTo0TjGRU52u/pgXOTy5cuZS3UEvL/6+eefGxsbuTWWlpbOysrih7jIt2/fvn//fmhoqLOzs7+/v66urra2tqysrKCggE6n29nZOTg42NvbW1tbM/fe7Ojo0NLSevfu3YTFRYqKijLbQ1wkWy3kb+AXXF1dL1y44Ofnd/HixfPnzxcXFxsZGTk4OGzdutXT09PJyWnz5s3M313QCrQCrYBJiqysrKysLPOjjY0NgiA3btwgEAi3bt2iUCh5eXkUCqW6utrS0jIwMBCzXjc3twsXLoB6/ADEN0wcPT09PGqNjY23b98+Y8aMrKysyMjIV69ePXz48NChQx4eHgiCzJ07V6CChkAr0AoQKCorK7GJTg8Pj8OHD5eUlLS2tn799ddXr15VV1ffsWMHj2lQBEG6u7tBQ/AbpiA7d+4cXjg4OIjNoqWlpaEoevXq1YyMDD8/P9aF11jvL1D9O2gFWgGC5jcYGxuzlsjIyPj7+1+7di09PR2Hw6WmpiIIkpiYODQ0NMKnAAC/YdKTlpZ2584d5sfOzs5du3ZpaGjcvn0bQZDS0tKNGzdevXqV47Fz584VqNB30Aq0AgSKiooKbiMKGRkZGzZsKCsrQxDkxo0b6urqu3btYs19WVhYePnyZdAQ/IYpyMmTJ1evXt3f348gyIULF4yMjKqqqq5du5acnIw1CAsLO3/+PNaAjdmzZz99+nRgYAC0Aq1AK2CK0d/f39TUpK+vz7Hq999/X7VqFfYxNTU1IyOjoqJizpw5ly5dwhqsXr365MmTIOOEAXGRE4enp+eZM2e+/fbbx48foyialZXFNi43ffp0MzOzq1ev+vv7sx1LIBBmzZpVW1vLLSswaAVagVbAJKW2tlZHR4dAIAyvunLlCplMnj59OrPEwsIiPT29vLw8MjLy2LFjBgYGxsbGnp6eICOMN0xBBgcH1dXV4+Pj7e3tb9++zda5M18NuS0aFqghZdAKtAIEBx6TFAkJCcz9R1gxMTEpKCiwtrb+z3/+o6GhwTHoAQC/YdJjZ2fX3Nx8+PBhHnkOvL29KysrOS7CFqgQNtAKtAIEh+FBkRiNjY1VVVVeXl7cDszLyzt8+PDTp08XLFgAMk4YkC+SF5AvcuRAvsgRAvkiPwrIFzlyIF/kyIF8kWMdb0C5I+C1vDcnxPJFsh6rpqaWk5PDeoahoaF169ZpaWmxnrmhoUFeXr6xsZHjdWtra9XV1Wk0GoqiLS0tWHSboaGhk5OTuLh4fHx8fn5+S0vL+/fv+UqrqKgoHlph+SJBKxRFZ86cyUMoLF8k27GCbFfx8fHMpIEcWb58OfRXGPPnz+chFJYvkn/uubOzs6WlJT8/Py4uTlxc3MnJCctlefbs2dbWVhRFaTTa9OnTa2trOZ65sbFRUVHx6dOnrLUzZ87cuHEjZuRMsrOz1dTU2O7q/fv3HMMpmGD5IsGuONZCXOR4kpGR4eXllZSU5OzsjCBIX19fQEBAb29vWVmZjIwMs5mOjs6WLVsiIyNv3LjB8QVLRUVl+/btjx496unpcXNzQxCkvLxcWFhYWVnZ09NTRUUFtAKtQCtgUkMikUgkkoqKio6OTnR0dG5u7tDQkIiISGNj44kTJ0gkkomJiZqaGsdFFiiKhoeHR0VFaWpqspaXlZUtW7bM19f3/PnzYmJiCILk5OSEhIRkZGSQyWTQfDzHG4DxwszMLCMjY+XKlbm5ue3t7fb29oqKijdv3mRLtoMgyHfffdfe3p6SksJW/vz5840bN7a2tmZmZv72229379798ccfEQTBxmmNjY2nTAgbaAVaAQCCIBUVFVhwAzYAEB0dfe/evWPHjmVkZLS0tHzzzTfD51ZSUlI6Ozs3b97MVi4rK3vr1i1ZWVl7e/vXr18znQYzMzPQGfwGfu/ig4KCLC0tLSws4uPjOU52CAsLJyQkREVFtbW1YSU1NTUrV65cvny5k5NTdXV1W1sb66skxhTLCgxagVYAwMwwzeYBtLe3V1dX29vb+/v7h4aG1tXVYVVtbW1btmxJSEjgGPUiLCwcHx9vZmZmaWkZHBzMw2ngsXUTwBuh6OhoBwcHHi34sDY/Pz8kJGQCrotNB3JricPh3N3dWSNrsGPFxcWTk5Pb2tp27dqlra3N7brKysptbW2XLl1ycHCgUqk3b95cv379Tz/9pK+vLyoqWl9f39raypywxI6Vk5NTUFBgG5rjE61qa2ubmprw/4XBYAgLCzM/Igiir68/a9Ys0IpKpfb39+NYQFEUj8cz/7a1tWUbSBBku2pvb29oaBD9Lz09PTIyMqIs6Orqzp49G/orBEHu3r377t07ru+IeLy5ufm0adP47fsODg6SyWRVVVXW2n/9618KCgq+vr6zZ89evXq1mJhYVFSUsrKyj4/Ppk2bFixYEBQUxO3MeDxeTEwsMTFRQUGBQqGIiooOvy6Koq2trYqKikpKSkpKSo2Njebm5koszJgxw9TUFOyK828f+Fw8SE9P57EsGI/HL126lC0it6enx8nJydbWNjAwkHVOmiM9PT1aWlri4uL79u0LDAxkXbtRVFS0atWq2tpa1kIGg0Gn03mH83wuaDQa7yXUBAKB7f1AMLW6e/cua4rc4dja2g5fcCGwdgWMnMzMzL/++ot3fzVjxgx+u+2hoSEhISHWjhRF0dmzZycmJlpbW7MWJicnR0dH9/X1NTU18YiWZU5PnD179t69e7m5uRISEmAe4wkKjB9DQ0MeHh4rV65kMBgoipaWlg6PhGfS1ta2cOFCX19fdXV1ZhA7K1lZWXQ6HbQCrUArQKCg0+msSz9YF0Goq6svW7bMw8Ojvb2d47HY6onS0lLsPH5+fp6enkNDQ6DqOAJ+w3iyceNGBweH/v5+Zgm3Lv7GjRtz5szJz89HUXTVqlUbN27k+PCAVqAVaAUIpuswvHDDhg1hYWEoilKp1Dlz5ty8eZOH04DR29trZ2f33XffgaTgN/Ajf/zxx8yZM9++fctWPryLP378uLW19bNnz7CPHR0d06dPv3PnDmgFWoFWAMCRwsJCdXX1jo4O7OPTp08tLS3/9a9/8XAaMNrb29XV1dPT00FD8Bs+G83Nzb6+vk1NTayFNTU1CgoKFRUVHA9hdvEMBoNCoSxfvpw1YRSKopcvX05JSQGtQCvQCgA4cubMGbbf/oGBgYCAAAqFwsNpwCguLpaXl2dNIYWiaFNTk6+vb3NzM2gLfsMnh8FgJCUlTZ8+PTo6Ghs67unpMTIyOn78OI+jsC5+6dKla9euZUtnhtHX1wdagVagFQBwhKMl02i0iIgIHx8fHk4DxpEjR+bMmdPb24uiaH9/P4VCUVFRSUpKwmKGAPAbJoJXr16tWLFCV1eXSqV+//33Xl5eH7S/gIAAKSkpbuFsoBVoBVoBwMeSnZ0tJSUVGBj4Qb/c3d19+/btVCpVV1d3xYoVr169AvXAb/gMUKnUmTNniomJNTQ08G5JoVCioqJ4R8KDVqAVaAUAH+U0YCMNmzdv3rFjB+/GtbW1oqKiM2fOzMvLG8tFHz9+DH4DMHoYDIa1tbWHh8eMGTOSkpK4NTt27Ji/vz8WIYx18bm5uaAVaAVaAcCoycnJYU5P0Gg0Hx+fEydOcGuclJQ0Y8aMRYsW2djYjGVu4tWrVwEBAeA3CDTR0dFjOTwpKcnS0pJOp1dUVFhaWnp4eDCj2ZkUFBQsWLCANWCtrKwsPz+f42z0JOLdu3c1NTWg1acAtAIA3tBotLy8vLKyMmZJf3+/ra3t3bt32Vo+e/bM3d3d0tKyoqKCRqOZmpqOJVh43759QkJCAv6UCbrfMJbMV729vdOnT7937x72kU6nx8XFKSkpxcTEMK2qpaXF2Nh4+ETaFFhDf+PGDTc3N9Bq3AGtAGAkDLf2v//+28jICNuGG/MtYmJilJSU4uLimI0LCwtnzJgx6njhBQsWYHlXwW8Av2E0/Prrr76+vmyFL1++XLZsmYmJSXFxMYPB8PT0vHr16pSU7qP8BgHXCuwKACaGy5cve3t7MxiM4uJiExMTHx+fly9fsrX58ssvjx49OrpBDjExMRwOt2XLFvAbwG8YzUuhiopKeXk5x9qMjAxNTU1XV9fw8PCpKt3I/QbQCuwKACaMVatWubm5aWpqZmRkcGxQVlamrq7OmoB1hBQVFWFbXWhrawuywrCP9ig5c+YMmUwevv0rxuLFi7Ozs8vKynJycm7cuMH7VNhoM2g1Eq36+vqw5LKT5bvTaLTOzs7PohWCIE+ePOG92RgATCJGYs/p6el//vlnSUlJbm7u4sWLObYxNTU1NDRMTk4exc5h/f39CIK8fPmypaUF9rWC8QZelJeX29jYJCQkdHV1YaNV2traBQUFPA5ZvXr1hQsXsLXCoaGhr1+/5tjst99+ExYWDgwMnHT5ebiNN3w6rV6+fDlv3jw1NbWgoKDJIldxcbG5ufnE2xWKokeOHJGQkHB0dHzz5g28gwKTnQ/a8+vXr0NCQrDcJykpKV9//TWPs+Xl5enq6mIBQ11dXQkJCfPnz+eWmJWJrq4u9rspISGRmJgI4w0AL+bMmRMTE/PgwYMZM2b4+fkdOnRIXl7ezs6OW/vq6uonT574+fk5Ojo+fvx47ty5x48fp9ForG0GBwfDwsJOnz5dW1srJCRkZWX14sUL0IqjVgiCFBQUmJubh4eHP3v2TEZGZmrI9Ym06uvrCwgIuHr16vPnz729vU1NTcvKyuApBiYpI7HnoaGhX3/91cTEpLq62tHRcfny5Y8fP66vr+d2TgcHBykpqV9++cXPz2/GjBkPHjw4ePCgkZERj9v4559/mH1OT09PamoqjDfAeMOIePfuXVxcnKysrKysLIVCYdtNgIm/vz9bwC1b6O8///xjY2Pj7e2NvWgyGIyYmBg1NbUHDx5MmfiG8dIKRdHExERlZeXs7GxmSVxcnLq6+v379yf1eMOn0Kq1tdXKyio0NJS5RPP69euqqqqwrw8wGRm5PbM9C1QqNSgoiOM5m5qaKBSKjIyMnJxcXFwcc68s3iQlJUlJSTF/OiUkJAR2e27wGz5agXfv3snIyBQVFVEoFEVFRRcXl9TUVNZl9PX19Q4ODjzO8PjxYy0trejoaLb0I5cuXZKTkzt79uzU8BvGRSs6nb5x40Z9ff2//vqLrerPP/9UUlLikRZpEvkN46IViqIPHz5UV1ePjY1lK6+srNTU1BxucgDAz4zRnu3t7Vkzrg4MDKSmprq4uCgqKlIolLt378rKymJvbiPB09OT9ZWbRCIVFhaC3wB+w4hISEjw8fHB/u7r68MMUU5OLiIiAguDX7NmzbVr17gdnpGRoaioeP78eY61FRUVM2fOpFAo/L8QfyR+wxi16ujoWLRokbOz8/BdpDEaGhr09PT4Wa6R+w1j1ApF0bS0NFVV1Rs3bnCsbW9vt7e3DwgIwLb2AQA+Z+z2fPXq1XXr1qEoWl5eHhERIScnh7njzJUUS5YsSU5OHsnN0Ol0SUlJVr9BWFh469at4DeA3zAi3NzcLl++zFb44sWLmJgYDQ0NU1NTdXX1zs5OjsfGxMSoqqryzhnS3t6+YMECX1/fnp6eye43jEWrpqamOXPmbNiwgfdg4Js3bxwdHT08PLidZ7L4DWPRisFgREdHa2lpVVVV8bhEf39/SEiIlZUVMzEOAPAh42XPnZ2d6urqpqamGhoaMTExL168YGtw8eJFDw+PkdzS/fv3SSQSgiBEIhGPxxMIBARBdHR0wG8Av+HD9Pb2kkgkbr/odDp9y5Ytc+bMIZFIvr6+2dnZzGG0wcHB1atXm5mZ/f333x+8Sn9/f3BwsImJyXBDn0R+w6i1QlE0Pz9fWVk5Li5uJHcyNDS0bt06Y2Pj4cmYJ4vfMBatenp6/Pz8HBwceKytYCU2NnbGjBklJSXw+wTwIWO3ZwaDkZ2d7evrSyKRDA0Nt27dym088v3799LS0iNJ5LBt2zZhYWFJScng4OC5c+fOnDlTRERETExseFIp8BvAb2AnJyfHzs6ORwNXV9fm5uY3b97ExcUZGxv/+uuvNBqtra3N1tZ2yZIlI59Lw56H6dOnP3z4cJL6DaPTCkXR06dPKykp3bp166PuJzY2VklJ6fbt25PRbxi1Vi9evDA1NV21ahVrJMQHwSLLhg9vAMDnZez2PDQ09PPPPxsbG8fFxb19+/bZs2eLFi3icay1tXV+fv4HL6GnpyckJBQZGfngwQNzc/Pnz5+rqqri8Xg+j68Cv4Ev/Ibt27fz2Arr1atXTk5OrCUDAwM1NTWzZs0aXUhaVlaWiopKWlraZPQbRqEVjUbbuHGjnp7eB/eP5nZL06ZN46sneYR+wyi0QlH04cOHM2bMGOGoDBtVVVUcg3MB4HMxXvbM5nMsWLCAx9DFjh07fvzxR94nb2trw+FwGzZswNJXY0/0ixcv1NTUvL29wW8Av+EDWFlZ8XBOU1JSDh48yFpy7dq1adOm/f7776O+Q76NhP+g3/CxWnV0dCxcuHCMeYqqqqo0NTU3btzIJ5GSI/QbPlYrFEXPnTunrKyMZc8cHa9fv3ZwcPD394dISeCz8+nsef/+/RcuXOB2VG5uro2NDe8zp6SkbN68efgT/eLFCwsLCwHcGxP8Bl4KHDhwgEwmh4aGHjlyJDc3t7W1lUgk8shUGBYWxjqtcPToUTU1NebGhqMGi5Tkt/6dzW8Yo1ZPnz41MjKKjIwc+5Lo169f29vbu7u780OkJEe/YYxa0el0CoWip6dXX18/xtsbGBgIDQ2FSEngM/Kp7fnevXtr1qzhdkhvby+RSHz16lVubu6RI0dCQ0PJZHJMTAxrG9a0OmxP9N9//y2AIQ7gN3xAgZcvX2ZkZMTExKxYsUJbW1tISMjGxiYiIiI2NrawsJAtkM3MzAzzPQcHByMiIshkcnNz87jcJx9Gwg8fbxidViiK5uXlYXvdjte9YXLNmTOHWwKlzz7eMGqtenp6fH19xzd7dGxsrLq6Ot9G0gBTmAmw56GhITKZzHbRwsLC2NjYiIgIGxsbISGhWbNmrVixIiYmJiMjg7cfMPIVUlMYYUhiyhtVVVVVVVVsf5TLly+fPn169+7d1dXVpaWlf/zxR3V1tZycnIGBAZlM1tLSIpFIeDweQZDIyMhTp075+fnt2bMHQRBsvm3U9yAqKorD4QgEQm1t7YIFC6qrq7FVQFNDKzqd7uPjMzAwEB8fHx8fz2AwsF/N0d0DHo/HllmjKFpdXf3111+PZP+nyaIVgiDffvvtH3/8YWtr6+/vjyBIf38/g8EY9W2IiYlhZ+7t7XVxcXn58iW23R8ATAwTYM9CQkISEhIpKSlPnjwpLS2tqanp7u42NjY2MDDAnPWdO3euXbvW29sb/jtGCPgNH0F9fb2hoSGZTCaTycHBwVhhS0sLZospKSlVVVXy8vIGBgby8vLYqkvMiDds2LB06VJh4dGo/eeff4aGhmprayMIYm5uTiKR+NNpGLVWhoaG27dvt7W1FRISQhCkpqZm165du3fvHl3S9JCQkOLiYmbJtGnTpphWhoaGN2/exLRCEMTf33/dunWs6W9HTmJiYlBQkKWlJdM9BacBmGC+//57X19f5sfxsmcajXb//v3NmzdXV1fX1NTg8fizZ886OTlhw8CqqqqsBxoaGvLYyQIAv2Gs/fuCBQu4vThKSUn5+/v7+fk1NDRUV1cLCwv7+flhvsK3336bkJBAJBJHcVFbW1svLy8bG5uprZWZmRmmFYPBkJeXDwoKGsVF6XQ6Nj05tbVydnZm+qCioqLr1q1TUVEZxXULCgpMTExcXFzg0QY+F9ra2thL0fja89DQ0OvXr7W0tCIiInR1dbHI9DVr1nA8UE9P7/79+/B/AX7DJ+H58+eampo8en9fX18pKSnsxRG0Aq1AKwD4LBAIBNZ3Dz09vatXr3JrrKmpefHiRRBt5MA+2h/B+/fvZWRkuNU2NTXx6P1BK9AKtAKAz4KmpmZTUxO3WhkZmc7OTlAJ/IZPQldXF9vWJiPv/UEr0Aq0AoDPAm/PQEpKqqurC1QCv+FT9e88AnawdcAjP1tCQoKZmZm0tLSkpCSZTL5w4QJoxZvk5GRdXV1RUVEjI6PMzEzQihsnTpywtbWVlZWVk5NzdXVlDRQFgElHbm6up6eniooKDodLSUkZxRkkJSV7enrAbwC/ge/6dxRFcTjcyM8mLi6+adOmrKysmzdv2tnZLV++PCcnB7Tixs2bN0NCQsLCwkpKSjw9PZcuXVpaWgpaceTcuXOLFi1KTU1NTU1FEMTV1fXFixfw/AKTlJ6eHhMTk5MnT47+dw6P57G8E/yGjwXiInnh4OBw+/ZtNr+VR3vW/v3169fy8vI8Gi9fvpz5t62tbVpa2t27dydvcPsn1QpBkMOHD7u7u1MoFARBYmJisrOzY2Njz549C1oNp6ioiPm3hYWFnJxcTk7OqlWr4IkGJiNeXl5eXl4fe9SbN28UFBS4PUe8nzJ7e/v8/HxQHsYbRgPblgGSkpI8NrRkSyL2wc6dycDAQGpqant7+6ReEfdJtUJR9P79+6z6uLq6sv46glbcwPJ2KyoqwuMMCBTy8vKsDw5bykhW3r9/TyKRWEvAaYDxhnEDG87i9mqIw+E+dki5urp67ty5dDpdXFw8MTFx0iVpmDCturq6enp6lJSUmCXTpk179eoVaPVBNm3apKen5+bmBs8vILDQ6XRmqjSO3cvoMk3BeAMw0v6dWy2RSOQResORWbNmlZeX3717d8OGDatWrcrNzQWtwK7GUavvv/+eSqVevXpVREQEdAYElp6eHt5LlsBvgPGGT9i/d3d3c6slkUidnZ28J6rZwJYGIAgyf9EDoGkAACAASURBVP786urq2NhYZ2dn0Irj2SQkJP755x9mSVtbm7KyMmjFg2+++eaPP/7Iz8/X0dGBhxcQZDo6OkgkEo/xBh61AIw3jAmsB+dWq62t/eTJk1GffGBggEajgVYcweFwVlZWrOtNsrOz58+fD1pxhMFgREREpKWl3b59W1dXF55cQMB58uQJazZrNjo7O8FvgPGGTwXWgzs6OnKs1dPTq6urU1BQqKmpqa6ulpaWjoyM5DE+vGbNGmdn5xkzZvT09Fy6dCknJ+f8+fOgFTeioqLc3d0PHjzo4eGRkpJSWVkZHx8PWnEkNDT08uXLycnJ3d3d5eXlCIIoKytPmeEZQNDo7u5mus4vXrwoLy+Xl5dXV1fn/Rp2/Pjx7u5uQ0NDAwODuro6PT290XkVAPgNY0JXV5dt27Senp5Hjx5h+xYWFRU9efJES0uLTCYbGhrOmzeP9waYIiIiO3bsaG5ulpSUNDAwSE9PX7JkCWjFjYULF545c2bv3r0//vijjo5OWlralNmsYdy1unjx4sDAwNKlS5kl0dHRu3btgkcYmIzcv3/f1dUV+3vHjh07duwICws7deoUj0MIBIKlpWVRUVFmZuauXbsaGxt1dXVLSkqwvelNTU1Zt35taGiAYTnwGz5h/379+vU//vijurq6tLS0tLR0aGjIxMQE28f9q6++Onjw4I0bN0Z4tuPHj4NWH3XO4OBg5jbToBUP+vv74WkFpgwuLi4oin7UIXg83s7Ozs7ODvv4xRdf/PDDD01NTaWlpdeuXauqqpKQkMB8CENDw9LSUicnJ9AZ/AauDA0NEQiEEdb29vaWlZVhr33V1dVVVVX9/f3q6uqGhoYc93H/7rvveJ9/CgNagVYAwIcMDg6+ffsWcyOYLx4tLS3YA5iZmXn//v2goCAjIyNsUoNMJpuZmY0iET74DVOW/Pz8gYEBT0/P4VWZmZni4uKsyYWOHTt26dIlY2NjY2Njf39/AwMDbW3t+Ph4MTExjiefN29eaWmplZXVVFUvPT3dy8uL40rojRs3lpaWmpqaglYfBOwKACaM4uLi4c+Oqqqqqqrq4sWL+/r60tLSGhoaHj9+XFlZWVFRcfbsWV9fXyw1LQB+A4IgiLW19fTp069cueLg4MBanpeXFxwc3NzczFq4devWrVu3spaQyeQ7d+5wS+zo6OhIpVKncP/e2dkZGBh47tw5NtchJyenpqbm0aNHoNVIALsCgAmDSqXymIYoKCiwsLCYNm2ak5MTzFaA38AZLAjRxcXl6tWrHh4eWGFWVpa3t7elpSVrsAxHnJyc8vLyuPXvDg4O8fHx27dvxz4ODQ0NDAxgK+9Pnz49utw7fJUVceHChatWrerv709LS2N9LN3d3b/99ttx0QqHwzU2Nvr5+Y3i9j52EpR/GLVdIQiyf//+UWR3QBCkrq4OekCA3xi7PXd1dYmJiTHn9XJzcyMjI0fnVQDgN/wfy5Yte/jwoZ+f382bNzF/08/PD4fDLVu27IPHOjo6btu2jVutkpKSmJhYY2Mjg8FISEhITk7etWtXWFjYN998U1VVNbq7dXV1nTVrFp9Ip6ysrK2tfe3aNR8fn/DwcGycZvHixQwGY/jUz+i0MjIyiouLG7UHMEl3bxqdVkJCQgcOHBi1ZxkeHj5v3jzoBAH+Yez2TKPRUlJS9u7dGxwcvHr1ahqNJi0tzWNXFyqVevToUVD+o1/RBI2amhrMn8UiX7B/JSQkamtrP3jswMCAtLR0Z2cnx9ru7u7Vq1erqKgoKSlRKJS6urqpp962bdsIBIK4uLi5ubmpqSlTPRqNBlphFBQUMBgM7O/i4mLWjamePHnS3NwMdgUAn5S6ujoKhaKkpKSiohIREdHd3c2x2du3b2VkZLC930YI2xMtmAhivsjZs2djAWi9vb3Mf4lEor6+/gePFRERsbKyGr6RxJ07d9asWaOhofHmzRsJCYnm5uaYmBgemUYmLx4eHuLi4n19fVVVVeXl5Zh6dnZ2w4MlBVarlpaWtWvXDh8yweZfVFRUwK4A4JOip6cXExPT3NxMJBJfv36toaGxZs2aO3fusDXLzs62sbH5YEIUgA0BzTPt5eWFx///747H40e+v3tQUNCZM2ewv9vb2w8ePGhgYBAaGqqlpVVVVXX58mVnZ+c///xzqkpnaWlJp9MRBBkYGMB+GqWkpLiFIwimVq6urqdOnQoJCWF1HZ4+fWppaampqclqeKAVAHw6rl+/7ubmlpaWVlVVpaWlFRoaamhoePDgwfb2dqxBUlLSihUrQCiYpxgR165dY01ILi0tnZWVNcJju7u7ZWVlk5OTfX19ZWVlIyIiSkpKWBu8ePHCxsZmCqu3ePFiVhMSExNra2sDrVgxMjLC4/ErV6588OCBubn506dPFRQU8Hj8uXPnwK4AYAJgMBiWlpZ///03a2FJSUlERISsrKyvr29SUpK8vHxfX99HnRbmKVAUFVC/obe3l3WtvKioaG9v70gOfPr0KYVCIRKJWlpacXFxHR0dHJuFhITcunWLtWT49P/kJTk5mXXbWR0dHdCKjb1794qIiBCJRFdXV0NDQxkZGTweLyoq+vbtW9AKAD4FbGEK169fX716NceWHR0dcXFxmpqaEhISFArl6dOn4DdAfMOHERcXNzU1ZX4kk8ni4uI82vf19SUnJ7u6umJr6GNjYxUUFCIiIqSlpTm2j4qK+umnn7Bh6q6urk2bNu3Zs2doaGhqqLdw4cLBwUHsbwKBwLYOBbTCJMKc0cLCwtra2q6uLgaDoaWlJSsrC1oBwLgzNDS0e/fuTZs2YVvSoyh64MCBqKgojo2lpaUjIiLk5OSwlRRWVlaurq7Jycl9fX2gJMxT8OLIkSOYryAuLh4bG8u7cXl5uY2NTUJCQldXF/aSp62tXVBQwOOQTZs2nT59mkql6urqhoaGvn79eiqpx9wGhkQi3b17F7Rig06ns+3MKyoq+sMPP4BdAcAn4vXr1yEhIbq6ulQqNT4+/rvvvuPROC8vT1dXFxuu6+rqSkhImD9/fkVFBYw3wDwFL+rr65nrMBsaGj728MTERGy3FW7U1tZKSUkZGxuXlpZOPfW2b9+OLaDguAITtEJR1N/fH4fDMf0GKSmphw8fgl0BwCfl7t27+vr6UlJSvJcrOzg4JCcnj+L84DcI7jwFgiC6urrYJD2JRNLR0fnYwwMDAxsbG4uKioZXMRiMo0ePuri4LF68eP78+WZmZlNPvcWLF4uKiiII4ujoyHG7CtBq6dKlrFEgOBxuJN9OwO0KAMbI/Pnz7ezslixZ4uzsfPToUQaDMbzNnTt3Xr58uXz5cpBrdOAF+ctjeaaZ2aY/CgKB8P333x88eJCtvKamZsGCBdevXy8oKEhJSWlpacnIyJh60s2bN4/BYAgJCS1duhS04oirq+vAwADTaXB1deW2AhO0AoDxIj09vb29PSkpqaCg4Pr16/b29jU1NWxtDhw4sGXLlg++8AAQ38CBa9euIQgy8hWYbPT29qqrq9+7dw/72NfXR6FQVFVVU1NTmW3ev39vaWnZ2NjIduwUCIO3tLREEITbCkzQCkXROXPmMKNAzp8/D3YFAOPIcGuvq6szNzfHooUwUlNTVVVVKRRKf38/VnLnzh0NDQ3mR5ingPiGj6O7u1tUVJRbCtKRcPnyZUNDw8HBwezsbB0dnYiIiOEL7R48eODo6IhlScLIycnJz8+n0+mTWr0ffvhBTk4OtOLBnj17sM3MRERE3rx5A1oBwHhBp9Pz8vJyc3OZJf39/fb29mxZT1AUffv2bUREhI6OTk5OzuDgoIGBwY0bN8Zy3REu2ge/Ycpy5MiRMZ7Bzc2NTCbPnj379u3b3NokJiYGBARgHXp2draamlpZWdlkl66tre3HH38ErXhQUlKCxd4aGBiAXQHA+FJWVqamppaTk4ONPfj6+vIIdczPz589e7aZmdmiRYtAOvAbxgTr69ooSEpKUlVVJRKJ9fX1vFueOHEiODj41q1bampqUyYS/tWrV6AVDxgMhoSEBA6HG74CE7QCgLFTWlqqpqaWnZ0dFBR08uRJ3o1ramqIRKKqqmpSUhJIB37DZ6C+vt7BwcHa2rqqqmrXrl1eXl7MLRC54ePjIyUlJYCduyBr5eTkhCAIM1gBtAKAcXcdpKSkfH19P+jEu7u779u3r7Ky0tra2tHR8YNOOQB+w3gOUURHR6upqSUlJWF9Op1Od3JywhL5cQMbRv7qq6/Wrl3LMXhtjCMfoBV/8tNPPwkLC48kXBG0AgDeD8jwQhqNFh4eHhgYyJyw4MaePXtcXV2xST0GgxEXF6esrBwdHQ0PCPgNE0Fzc7Ovr29TUxNbobKyMrdMf1jnjr0RHj169Isvvnj//j1rg5SUlNElIQGt+Jy3b9+uXLkStAKAMXLmzJmUlBTWks7OTldX12PHjqH/nbDg5jpgTwrbvGpTU5Ovr29zczNoC37DZ+Py5cszZ84cHvfO2rljHD9+3MrKirmI7tWrV0pKSiNJcQpaTUatHj9+DFoBwBipqKhQUlJi/vY3NDRYWFj861//Yjbg5jq0t7erq6tnZmaChuA38CObNm1ycHBgXRk8vHPHKCkpMTY2jo+PR1HU399/27Ztw882tRfUgVagFQBwg6OVbt26NSAgAEXR2NhYc3Pz4R75cNeht7fXzs4uKioKJAW/gU9hMBjBwcEeHh7Yjq7cOneMd+/e+fj4uLi46OrqDk9CwmAwrl69+sGYONAKtAKtgKln8ByttL+/X0dHx8nJyd/fn9te86yuw+DgoLu7e0hICBg8+A18zeDgoJubW1BQ0EiWxr17905eXl5bWzs2NpYtqC0vL8/U1HS4Dz44OAhagVagFTCVbHv46IKJiUl+fj5rCY1Gi4mJ0dTUlJeX5+Y0sLoO2dnZgYGBixYtAtsef78hOjqaRzV/1trb20/AdTMzM9P/Fx8fH+bfV65cwV7+hh/77t07LS0ttqVxHK+7bt26iIiIjo4OCwsLW1vbP//8k1kVFBR0/PhxtmOLi4vz8vL4UCsURaurq7lphcG66aiAa1VRUVHOgoeHR/n/wvp6JMhaMRgMNmXYtGKL3hDk/gpF0cbGRt7PYGVlJR9+XyqVWlxczFZ77NixFStWMNvcuHFj/vz5lpaW79+/Dw8Pj4yM5H1mbHGmtrZ2Z2fn8Np79+7x6NvT09PZIigF3K6G1+KwLSq47V6Bw+EEtjYyMpJGo3HdEAyPP3LkiJiY2PBjc3JyVqxYQSKRXFxcjh8/ju1mNPy6d+7cWb58+ePHj0kkEg6Hq66uPnjw4JMnT7Zs2bJgwQIdHZ2nT59KS0uzHrt582Y1NbXvvvuOD5W8dOlSdnY2j8ZLlixZuHAhaIUgyNq1a1ktp7OzE7t5jP7+/pMnTzI3wRJkrRgMxrp163hr9e9//xv6KwwqlXrp0iU6nc6tva2t7YoVK/jtGx0+fLi1tfWXX35hre3o6NDW1m5oaCgoKPj555/19fUpFMrs2bNRFO3s7JwzZ8758+dtbW05nplOp0dGRubn579///7s2bPOzs5s1/35558bGxt57C23du1aIyMjsCtutQK9H+ZYwOFwHMtzcnJCQkKysrLKysqeP3++ZMmSvr6+4c36+/tXr1598uRJEomElRgYGCQlJZ0/f55KpRobG6uqqv7zzz9sR1VUVBgbG08ZDQVZqz4WREREWD+CVmPUCvqlyYWxsXFFRQVb4T///KOiomJiYnL79u2LFy8mJibq6+tjVdLS0rGxsatXr+7v7x9+tt7e3iVLlrx8+bKsrOzatWsrV67Mzc39qPsRFhYGQ+IN+A3j/0OYkZFhZmYmISGRlpYmISGxePHijo4OtpY//fSTkZGRp6cnW7mGhsaxY8cUFRW9vLzWr19vY2OzZ88eBEGwkY/KykoTExPQCrQCrYApw9y5czG/YWhoCEGQ3bt3W1tbb9y40dvbW1FRMTY2dsaMGWyHLF261NDQ8MCBA2zl79698/DwkJGRSUtLIxKJZmZmGRkZo3AdgA+4ViDBOMLs3LGPoqKi586d27lzp7m5OWuz8vLyf//735WVlRxP8ujRo+7u7n379uFwuNbW1pycHARBTExMlJSU+vr6rly5oqurq6urKykpKSUlBVqBVqAVMBl5//59T09PQ0NDfX19b2+vk5NTW1sbgiDa2trp6enKysooil68ePHRo0empqbDDz9x4oSJiYmvry/rhAKZTA4KCtq9ezdz3AVzHby8vEDwcQQHEnAjLCxMSEiIWy2DwUhKSsIcZABBEEtLy7lz5/KQq6SkpLy8HIRCECQiIoJ3g1OnTjEYDBAKj8evXr2ad5v4+HgQCsPIyMjS0pJHr1VbW1tYWAhCeXt7KykpcasdHBykUqkvXrwAobg+mAjCaymmINeKioryEI5AILDl9P3gma2srHx8fPbt2+fi4sK2nph5bE9Pj7y8PFvqU6w2JiZmy5YtfKtkVFQUD7mEhIQOHDgAWmHwnoTG4XCsS3UEWauhoaEPagX9FZOjR4/y7rXCw8P58xtFRUUdPHhweG1zc7O8vHxPTw/HYxkMhrOz8759+7788ksbG5uRX3f+/Pk8VJKWls7KygK74lEL8Q0TR0FBgZKS0o8//mhjY8PtbTI9Pd3KykpNTW14VWVl5VQKigStQCsAwDA2NuY4v6ampmZpaXnlyhVuo5jz58//8ccf1dXV8/PzQcYJHW8AJgYCgdDY2EihUKqrqw0NDbEJZjYSEhLCwsI4Hl5RUcFjIgC0Aq1AK2CSwgyNHE5YWFhCQsLw8lu3bhkYGDx79oxCoTQ0NMAiiIkEtJ44UlJS2tvb9+zZIywsfOHChdDQUAsLi+3bt5PJZKzBkydP6uvrFy9ePPzY/v7+pqYm5kok0Aq0Aq2AKcPs2bOfPn06MDAwvMrLy2vDhg1PnjyZNWsWVlJcXHzgwIGysrJffvnFx8eHRqNZWlqeO3cOZAS/YQoSFRX1559/Yn5xQEDAsmXLfv/998DAQAUFBQRBUBRNTEwMCgri6DjX1tbq6OgQCATQCrQCrYApBoFAmDVrVm1tLYefKGHhwMDAM2fO7N27F0EQW1vbN2/ebNu2LTU1FbNbYWHh06dPM3PKARMAzFNMHF999RXrgDCBQAgODq6srAwNDUUQhEwm//bbb0uWLOF4rKANJoNWoBUgUPCYqliyZMmJEyewdchhYWGVlZXBwcGszu7cuXP9/f1BQ/AbpiD79u0bXigiIoJNPH/55ZdiYmIeHh5eXl6pqamdnZ2szQQteA20Aq0AgWJ4aGRHR8fFixc9PT0XL14sIiLi4+ODIEhoaCjH4TGOTwEAfsOkR0JCgkdtWVnZzz//3NzcHBAQcO7cOQ0NjXnz5m3ZsiUrKwuZchmmQSvQCgDY/AZsvCErKysqKsrc3FxTU/P3338PCgpqbm4+ePBgaWkpj8MlJSVBwwkD4hv4hTt37pw/f15cXHz58uXLly+n0WgPHjzIzc09dOgQgiC3b9/G4XC3bt3S19fX19eXkpKSkpKSkZERzNR+oBVoBUxeaDRaV1fXu3fvuru7u7q66urqamtrHz16dPv2bQRBDh8+7OzsfOzYMQsLC2ZQjq+vL9u+a8BnBPJFcgXyRX4UkC9y5EC+yBEC+SI/CsgXOUIgX+RYH0wEMmFNVL5I3rVFRUU8ar/44gs+V3J880VOba3GN1/kFNYK8kUigpEvEsPV1ZVH7d27d8frupAvEoF8kVMDa2trHrUQ9A5agVbA1Ia3NfL+sQcmerwB4H8geA20Aq0AsEYA/AZgfDxxALQCrQCwRmBiEIqOjnZwcODRgg9r8/PzQ0JCPvV1r1+/jk1FM0EQhPXvhQsXsuXg+0Tft7CwcNOmTTzCnT67VgiC1NTUNDU1cdQKQ19fn5kpVsC1unbtGu/H0tPTk3VeX2C1QlGUt1Y4HM7T0xP6K4ympqaamhrmozf8GdTQ0GB9p+e37ysjI1NUVLRy5cpPrdXdu3c7Ojp49O3m5ubTpk0Du+L63GFhDsBwbt26RaPReDT44osvYDMVJvX19Y2NjTwa6OnpaWtrg1AIgvz2228cU/FjCAsLb9y4kXc8oICAouixY8d4PIaioqLr168HoTCePXuG+Q3cmDlzpoGBAQj18OHD9vZ2Hg3mzZunqKgIQoHfAAAAAADAWIH4BgAAAAAAwG8AAAAAAAD8hqGhoby8vN7eXvjPA61AK9AKtJpK1NbWNjQ0gA58bldCu3btmlx6CQkJNTU1WVpaXrlypaurS05OTkFBAcwItAKtQCvQarIjLS0dHh4eFRVVW1srJCQ0ffp0jrtfAp/ZrtDJCZVKFRERwePxRCJRQUEhODg4MzOzu7sbBUAr0Aq0Aq0mLQMDA1988QUOhxMXFxcVFSWTyYcOHaqrqwNl+MeukMkrWVFREeuufRISEmJiYjo6Ojt37iwpKWEwGGBVoBVoBVqBVpMOGo22dOlSIpGIaUUgEKSlpaWkpDw8PJKSkt6+fQsSfV67Qia1ZCUlJcM3/AUjA61AK9AKtJpKrsPw38WoqKjCwkLwtz6LXY2n3xAdHc2H80AiIiIHDx7s6+vjq/9p0Aq0Aq1Aq8miFcqvaX4cHBzKysrAribYrib3eMOtW7eGO6REIpFIJOro6GzevLmwsJB1S2JBBrQCrUAr0Gqy0NfXZ2trKy4uzhYMSCKRiESiu7t7XFxcU1MTCPVZ7GoS+w2ZmZkSEhJgT6AVaAVagVZT2GkA14rf7Gqy5pnOy8tzc3PDYm6JRKKnp6eXl5ejoyNTQQC0Aq1AK9Bq0jE4OLho0aK8vDxZWdm+vj5zc/Mvv/zS3d1dT08PxOETu5qUfgOVSl22bJmenp6/vz/YE2gFWoFWoNWUcRp8fX1LSkoWLVr05ZdfOjo6Dh+BBz67XU2+7RyHhoZwONzLly/BnkAr0Aq0Aq2mEo2NjYcOHdLV1QUp+NmuYD9MAAAAAABGCuxrBQAAAAAA+A0AAAAAAIDfAAAAAAAA+A0AAAAAAIDfAAAAAAAA+A0AAAAAAIyR3NzcJUuWKCkpiYqKqqure3t75+fn8/MNC8P/GQAAAAB8FrZt2xYTEyMqKmplZaWkpNTe3n737t05c+Y4ODjw7T1D/gYAAADg06Kvr19fX89WqKSk9OrVK0GWJTExcdWqVdbW1n/88YeamhpWyGAw3r17Jy8vz7e3DeMNAAAAYyIzM9PLywtBkB07duzbtw8E4Qgej1+xYgVribS0tCALMjg4uH37dgkJifT0dCUlJVah+NlpAL8BAABe0On0/fv337t3r6ampr29XUxMTF1d3dPTc8OGDcrKyqAPgiDt7e3h4eGSkpLd3d2gBg8IBMKZM2dAByZUKvXVq1eBgYHS0tIXL158/PixuLi4lZWVo6MjDofjaxeQ326osbExMDBQWVlZTExMR0dn586dvb29YGGXL1/esGGDjY2NpKQkDocLCAgATT5Id3f3xYsXAwICNDQ0REREpKWlbW1tT506xWAwQJwRMjQ0FB0dXV5ePnPmTA8PD0tLy9bW1p9++snIyKiurg70QRAkIiICj8d/++23IAXwUTx8+BBBEHl5eWNj44CAgH379u3YscPZ2dnOzq6trY2vb52vthKvqqqSkZHB4XBeXl6bNm0yMzNDEMTKyqq3t1fAN1knk8kIgpBIJGzHF39/f9h4/oMcOXIEQRARERErKytfX98FCxYICwsjCOLl5UWn00GfkcBgMJ49e8ZaMjAwEBgYiCBIUFAQ6HP69GkEQa5du4YZ244dO0ATjujp6REIhP37969atSoyMjIuLu7NmzcCrsn69esRBBESEtLT08vLy+vq6qqsrHR1dUUQxMnJiZ/vnL/8BgsLCwRBEhMTsY90Ov2rr75CEGTv3r0CbmF5eXl//fUXg8HIzMwEv2GEXLp06eTJkx0dHcyS6urqadOmIQhy/vx50GfUYIvEXFxcBFyHpqYmKSmp0NBQppMKfgMPv4HtlVVSUlLAH8N169YhCCIsLFxbW8ss7O7uVlVVRRCkpKSEb++cj+YpysrKiouLTUxMQkJC/m8SBY8/dOgQHo+Pi4sT8HUfDg4Os2bN4vNJL35j2bJlX3/9NWvslYGBATaefPv2bdBn1KSlpSEI8sUXXwiyCAwGY+XKlTIyMpjHAPBm5cqV2dnZra2tvb29jx8/Xr9+fW9v74oVKwoLCwVWExkZGQRB9PX19fX1mYUSEhLYkAM2i8Gf8FFcJJVKRRBk0aJFrIVqamrGxsbl5eUNDQ3DPVYA+FgwN0JUVBSk+Ci++eab/v7+zs7OkpKSlpaWqKgoAZ/R/+WXXwoKCm7duiXgiwJGyLZt25h/GxoaHj9+XFpaev/+/TExMXZ2doKpCfaLhnkPw/2J/v5+vr1zPhpvwFb3DncOsBn9hoYGePaAMYKiaHJyMoIgixcvBjU+ilOnTsXFxV24cOHJkydkMtnFxQULFhFMqqqqfvjhh7Vr12KvhsAoCAsLQxDkwYMHAquAk5MTDoerq6sbGhpisy4EQTQ1NcFv+DCdnZ0IpxW9mPPV0dEBTxowRnbv3n3//v2lS5e6uLiAGh9Fd3c3g8FobW29cOHCixcvFi1alJSUJLDe54oVK1RVVQ8dOgSGMWqwjn1gYEBgFZg+ffqXX375+vXr/fv3MwszMzOpVKq8vLyzszP4DQDwmfntt992795tZmaWmJgIaowCHA6nrKzs7++flZWFoiiFQhFMHeh0ekVFBRYUifsv2KzN/v37cTjc6tWrwVo+CBZjpK2tLcgiHD9+fObMmbt3754/f/769es9PT2XLFlCIBASEhIkJSX59rb5aKQRG2nARh1YwUYahk8CAcDI+eWXX6KioshkcnZ2NolEAkHGgqGhoYqKSmtra3t7u6KioqB9fTwej42xs1JduZ7UMQAAAmFJREFUXX3//n0TExMymSywE/bcePjwoaioqLGxMbOkpKQkMjISQRC2DJKChqqq6sOHD/fs2ZORkVFSUkIikby9vbdv325ubs7Pt81HfgMW2TA8h/lff/2F/DfKAQBGwa5du3bv3m1tbX3jxg2IYhs7XV1dbW1tQkJCEhISAvj18Xj8qVOn2ApjY2Pv37/v4eEBeaY5Di1s2bJFW1tbU1OTRCI1NTWVl5ejKOrl5bVx40YBF0dBQeHYsWPHjh2bTI8A/9yKk5MTgiA3b95kLWxpaamoqJg+fTr4DcDo2Lx58+7dux0cHCD0fRTcv38fi9Ji8ubNm+DgYDqd7ubmRiQSQSLggzg7O4eHhxOJxLKysoyMjL///tvFxeXs2bNXrlwhEAigz6SDj8YbzMzMLCwsiouLk5OTg4ODEQRhMBjff/89g8FYs2YNpC4APhYGg7F27dr//Oc/bm5u6enp4uLioMnHkp+fv23bNh0dHQ0NDRkZmVevXpWWlvb19Wlqap48eRL0AUaCqalpfHw86DBl4K99tB8/fmxra9vV1bV48WJNTc3CwsLS0lJLS8u8vDwB7/QvX76ckZGBIEhzc3Nubu7MmTPt7e0RBFFQUDh8+DDYMUcOHTr0/fff4/F4f39/ERER1qo5c+Z89913INEHqa2tTUhIyM/Pf/78eUdHh6SkpL6+vpeX1/r166WkpEAfAAC/4fPT2Nj4ww8/5OTkdHZ2Tp8+PSAgANtpVMD/n3bu3Mm6VoeJhobGs2fPwI45snXr1oMHD3KscnNzY5sRAwAAACal3wAAAAAAAN/y/wC1Hm8Gf58qKwAAAABJRU5ErkJggg==">
+      <figcaption>Figura 1: ejemplo del sistema de vías (bloques 0 a 6). La vía
+        norte (arriba) solo viaja al oeste; la vía sur (abajo) solo viaja al este.
+        Estación 3 en el bloque 1 (tipo C), estación 0 en el bloque 2 (tipo C),
+        estación 2 en el bloque 3 (tipo C) y estación 1 en el bloque 5 (tipo D);
+        los bloques 0, 4 y 6 están vacíos. Los rectángulos sombreados son los
+        conectores.</figcaption>
+    </figure>
+
+    <p>El sistema de vías tiene estaciones numeradas de \(0\) a \(n-1\). Suponemos
+       que se puede ir de cualquier estación a cualquier otra siguiendo las vías.
+       Por ejemplo, se puede ir de la estación 0 a la estación 2 empezando en el
+       bloque 2, pasando por los bloques 3 y 4 por la vía sur, luego pasando por la
+       estación 1, después por el bloque 4 por la vía norte, y finalmente llegando
+       a la estación 2 en el bloque 3.</p>
+
+    <p>Como hay varias rutas posibles, la <strong>distancia</strong> de una
+       estación a otra se define como el <strong>número mínimo de conectores</strong>
+       por los que pasa la ruta. Por ejemplo, la ruta más corta de la estación 0 a
+       la 2 va por los bloques 2-3-4-5-4-3 y pasa por \(5\) conectores, así que la
+       distancia es \(5\).</p>
+
+    <p>Una computadora administra el sistema. Por desgracia, tras un apagón ya no
+       sabe dónde están las estaciones ni de qué tipo de bloque son. La
+       <strong>única</strong> pista que conserva es el número de bloque de la
+       estación 0, que <strong>siempre está en un bloque tipo C</strong>. Por
+       fortuna, la computadora puede consultar la distancia de cualquier estación
+       a cualquier otra. Por ejemplo, puede preguntar «¿cuál es la distancia de la
+       estación 0 a la estación 2?» y recibirá \(5\).</p>
+
+    <div class="note-box">
+      <strong>Ojo con las vías de un solo sentido:</strong> la vía norte solo va
+      al oeste y la sur solo al este. Solo cambias de una vía a la otra
+      <em>dentro de una estación</em>: en una tipo C bajas de la norte a la sur, y
+      en una tipo D subes de la sur a la norte. Por eso una ruta puede tener que
+      «pasarse» de largo y regresar, como en el ejemplo 2-3-4-5-4-3.
+    </div>
+
+    <h2>La tarea</h2>
+    <p>Debes implementar una función <code>findLocation</code> que determine, para
+       cada estación, el <strong>número de bloque</strong> y el <strong>tipo de
+       bloque</strong> en el que está.</p>
+
+    <!-- ===== TAREA INTERACTIVA ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>interactiva</strong>: no lees de la entrada
+       estándar ni escribes en la salida estándar. Entregas <strong>exactamente un
+       archivo</strong>, llamado <code>rail.c</code>, <code>rail.cpp</code> o
+       <code>rail.pas</code>, que implemente <code>findLocation</code>. En C/C++
+       debes incluir el encabezado <code>rail.h</code>. El evaluador (grader)
+       llama a tu función y tú, a tu vez, puedes hacerle preguntas con
+       <code>getDistance</code>.</p>
+
+    <div class="sig">
+      <span class="tag">Firma a implementar — findLocation</span>
+<pre>// C / C++
+void findLocation(int n, int first, int location[], int stype[]);
+
+// Pascal
+procedure findLocation(n, first : longint;
+                       var location, stype : array of longint);</pre>
+    </div>
+
+    <ul>
+      <li><code>n</code> — el número de estaciones.</li>
+      <li><code>first</code> — el número de bloque de la estación 0.</li>
+      <li><code>location</code> — arreglo de tamaño \(n\); debes poner en
+          <code>location[i]</code> el número de bloque de la estación \(i\).</li>
+      <li><code>stype</code> — arreglo de tamaño \(n\); debes poner en
+          <code>stype[i]</code> el tipo de bloque de la estación \(i\):
+          <strong>\(1\) para tipo C</strong> y <strong>\(2\) para tipo D</strong>.</li>
+    </ul>
+
+    <p>Para ayudarte a hallar las posiciones y los tipos, puedes llamar a la
+       función <code>getDistance</code>:</p>
+
+    <div class="sig">
+      <span class="tag">Función que te da el evaluador — getDistance</span>
+<pre>// C / C++
+int getDistance(int i, int j);
+
+// Pascal
+function getDistance(i, j : longint) : longint;</pre>
+    </div>
+
+    <ul>
+      <li><code>getDistance(i, j)</code> regresa la distancia de la estación
+          \(i\) a la estación \(j\).</li>
+      <li><code>getDistance(i, i)</code> regresa \(0\).</li>
+      <li><code>getDistance(i, j)</code> regresa \(-1\) si \(i\) o \(j\) está
+          fuera del rango \(0 \le \cdot \le n-1\).</li>
+    </ul>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> El grader incluido lee la entrada
+      con este formato: línea 1 = el número de subtarea; línea 2 = \(n\); luego,
+      para cada \(i\) (\(0 \le i \le n-1\)), una línea con
+      <code>stype[i]</code> (1 para tipo C, 2 para tipo D) y <code>location[i]</code>.
+      El grader imprime <code>Correct</code> si los <code>location[]</code> y
+      <code>stype[]</code> que calculó tu programa al regresar de
+      <code>findLocation</code> coinciden con la entrada, o <code>Incorrect</code>
+      si no.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de bloques</td><td><span class="badge">\(\le 1\,000\,000\) en todas las subtareas</span></td></tr>
+        <tr><td>Número de estaciones \(n\)</td><td><span class="badge">\(1 \le n \le 5\,000\)</span></td></tr>
+        <tr><td>Estación 0</td><td><span class="badge">siempre en un bloque tipo C; su bloque es <code>first</code></span></td></tr>
+      </table>
+    </div>
+    <p class="note">En algunas subtareas el número de llamadas a
+       <code>getDistance</code> está limitado (el límite varía por subtarea). Si tu
+       programa lo excede, recibe «respuesta incorrecta». El PDF original de esta
+       tarea no imprime los límites de tiempo/memoria; los mostrados son los
+       oficiales de la competencia.</p>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">8</td>
+              <td>\(n \le 100\). <strong>Todas</strong> las estaciones excepto la
+                  0 están en bloques tipo D. Llamadas a <code>getDistance</code>
+                  ilimitadas.</td></tr>
+          <tr><td>2</td><td class="pts">22</td>
+              <td>\(n \le 100\). Todas las estaciones a la <em>derecha</em> de la
+                  estación 0 están en bloques tipo D, y todas las que están a la
+                  <em>izquierda</em> están en bloques tipo C. Llamadas a
+                  <code>getDistance</code> ilimitadas.</td></tr>
+          <tr><td>3</td><td class="pts">26</td>
+              <td>\(n \le 5\,000\). Sin restricciones adicionales sobre los tipos.</td></tr>
+          <tr><td>4</td><td class="pts">44</td>
+              <td>\(n \le 5\,000\). Sin restricciones adicionales sobre los tipos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>El caso de la Figura 1 tiene \(n = 4\) estaciones:</p>
+    <ul>
+      <li>Estación 0: tipo C, bloque 2.</li>
+      <li>Estación 1: tipo D, bloque 5.</li>
+      <li>Estación 2: tipo C, bloque 3.</li>
+      <li>Estación 3: tipo C, bloque 1.</li>
+    </ul>
+    <p>El evaluador llama a <code>findLocation(4, 2, location, stype)</code> (note
+       que <code>first = 2</code> es el bloque de la estación 0). Tu programa hace
+       preguntas con <code>getDistance</code> —por ejemplo,
+       <code>getDistance(0, 2)</code> regresa \(5\),
+       <code>getDistance(0, 1)</code> regresa \(3\) y
+       <code>getDistance(1, 2)</code> regresa \(2\)— y debe terminar con
+       <code>location = [2, 5, 3, 1]</code> y <code>stype = [1, 2, 1, 1]</code>.</p>
+
+    <div class="example">
+      <div class="io"><h4>Entrada del grader</h4><pre>3        (subtarea)
+4        (n)
+1 2      (estación 0: tipo C, bloque 2)
+2 5      (estación 1: tipo D, bloque 5)
+1 3      (estación 2: tipo C, bloque 3)
+1 1      (estación 3: tipo C, bloque 1)</pre></div>
+      <div class="io"><h4>Salida del grader</h4><pre>Correct</pre></div>
+    </div>
+    <p class="note">El grader imprime <code>Correct</code> porque los
+       <code>location[]</code> y <code>stype[]</code> que tu
+       <code>findLocation</code> calculó coinciden con la entrada.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Ad hoc / constructivo</span>
+      <span class="ptag">Geometría en 1D</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Conjuntos ordenados</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(n\) estaciones sobre una recta de bloques. Cada estación es
+       <strong>tipo C</strong> (entra por el norte, sale por el sur — «mira al
+       este») o <strong>tipo D</strong> (entra por el sur, sale por el norte —
+       «mira al oeste»). La vía norte solo va al oeste y la sur solo al este;
+       <code>getDistance(i, j)</code> da la longitud de la ruta dirigida mínima
+       (en conectores) de la estación \(i\) a la \(j\). Sabes que la estación 0 es
+       tipo C y está en el bloque <code>first</code>. Debes determinar la posición
+       y el tipo de <em>cada</em> estación, usando pocas llamadas a
+       <code>getDistance</code>. (Interactiva: tú haces las preguntas; el grader
+       responde.)</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 5\,000\) y el límite de llamadas hacen que el objetivo sea
+                \(O(n)\) o \(O(n\log n)\) preguntas, no \(O(n^2)\). Las subtareas 1
+                y 2 te <em>regalan la estructura</em> (de un lado todo D, del otro
+                todo C) para que veas que cada <code>getDistance</code> con un
+                extremo conocido es una «regla» que mide directo sobre una vía. Las
+                subtareas 3 y 4 quitan esa estructura: ahí necesitas el modelo
+                completo de las vías y procesar las estaciones por cercanía. La
+                subtarea 4 (la de más puntos) premia gastar pocas preguntas: la
+                solución modelo usa \(3(n-1)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué <em>es</em> realmente <code>getDistance</code>?</summary>
+      <div class="body">
+        <p class="q">Antes de buscar nada: ¿puedes escribir <code>getDistance</code>
+           como una fórmula sobre las posiciones y los tipos? ¿Qué hace exactamente
+           cada estación a una ruta?</p>
+        <p>Piensa en cada vía como un sentido fijo: <strong>norte = oeste</strong>
+           (solo decrece el bloque), <strong>sur = este</strong> (solo crece). Una
+           estación <strong>C</strong> en el bloque \(c\) <em>voltea</em> de norte a
+           sur (entras por arriba en \(c\), sales por abajo en \(c\)); una
+           <strong>D</strong> en \(d\) voltea de sur a norte. <em>Solo</em> en las
+           estaciones cambias de vía. Una ruta de \(i\) a \(j\) sale por la
+           <strong>salida</strong> de \(i\) (sur si \(i\) es C, norte si es D) y
+           termina en la <strong>entrada</strong> de \(j\) (norte si \(j\) es C, sur
+           si es D). Cada paso de un bloque al vecino cuesta un conector. ¿Cuántos
+           casos distintos hay según la vía de salida y la de entrada?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Los 4 casos cerrados de la distancia</summary>
+      <div class="body">
+        <p class="q">Combinando «salgo por sur o por norte» con «entro por norte o
+           por sur» salen \(4\) casos. ¿Cuáles son directos (una sola vía) y cuáles
+           obligan a un «volteo» intermedio?</p>
+        <p>Sea \(a\) la posición de la estación \(i\) y \(b\) la de \(j\):</p>
+        <ul>
+          <li><strong>Sur → Sur</strong> (\(i\) es C, \(j\) es D), con \(b \ge a\):
+              vas directo al este, \(\;b - a\).</li>
+          <li><strong>Norte → Norte</strong> (\(i\) es D, \(j\) es C), con
+              \(b \le a\): vas directo al oeste, \(\;a - b\).</li>
+          <li><strong>Sur → Norte</strong> (\(i\) es C, \(j\) es C): vas al este
+              hasta la <em>primera D</em> en \(d \ge \max(a,b)\), volteas y regresas
+              al oeste: \(\;2d - a - b\).</li>
+          <li><strong>Norte → Sur</strong> (\(i\) es D, \(j\) es D): vas al oeste
+              hasta la <em>primera C</em> en \(c \le \min(a,b)\), volteas y vas al
+              este: \(\;a + b - 2c\).</li>
+        </ul>
+        <p>Comprueba con la figura: \(\text{getDistance}(0,2)\) es C→C (estación 0
+           en \(2\), estación 2 en \(3\)); la D más cercana \(\ge 3\) está en
+           \(d = 5\), así que da \(2\cdot 5 - 2 - 3 = 5\). ¡Coincide!</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas 1 y 2: cuando ya conoces la estructura</summary>
+      <div class="body">
+        <p class="q">Si te <em>prometen</em> que todas las estaciones a la derecha
+           de la 0 son D y todas a la izquierda son C, ¿qué te dice una sola
+           pregunta con un extremo fijo?</p>
+        <p>La estación 0 es C en <code>first</code> (su salida es la vía sur, hacia
+           el este). Para una <strong>D</strong> en \(p\) a la derecha
+           (\(p \ge \text{first}\)) el caso es <strong>Sur → Sur</strong>:
+           \(\text{getDistance}(0, k) = p - \text{first}\), o sea
+           \(p = \text{first} + \text{getDistance}(0, k)\). ¡Lees la posición
+           directo! Eso resuelve la <strong>subtarea 1</strong> (todas D, todas a la
+           derecha por conectividad) con \(n-1\) preguntas.</p>
+        <p>Para la <strong>subtarea 2</strong>, las de la izquierda son C. Una C en
+           \(q\) a la izquierda se mide bien desde <em>ella</em>: pregunta
+           \(\text{getDistance}(k, 0)\), que es <strong>Norte → ... </strong> no:
+           mejor usa que la estación 0 (entrada norte en <code>first</code>) y la C
+           en \(q<\text{first}\) están enlazadas por un tramo de vía norte; en la
+           práctica, con la estructura conocida cada pregunta con la 0 como extremo
+           vuelve a ser una «regla» que mide directo sobre una sola vía y te da
+           \(q\). La idea de fondo: <strong>con la estructura dada, una
+           <code>getDistance</code> de extremo conocido = una resta de
+           posiciones.</strong></p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 3–4: procesa por cercanía y mantén los extremos</summary>
+      <div class="body">
+        <p class="q">Sin estructura, no sabes el tipo de cada estación. Pero
+           empieza por <code>d0[k] = getDistance(0, k)</code> para todas. ¿Cuál es
+           la estación con <code>d0</code> mínimo, y de qué tipo es seguro?</p>
+        <p>La de <code>d0</code> mínimo es la <strong>primera D a la derecha</strong>
+           de <code>first</code>, en \(\text{first} + d0_{\min}\) (caso Sur→Sur
+           directo). Procesa el resto en orden <strong>creciente de
+           <code>d0</code></strong>, manteniendo dos «anclas»: \(L_C\) = la C más a
+           la izquierda ya descubierta y \(R_D\) = la D más a la derecha ya
+           descubierta (con \(L_C < R_D\)).</p>
+        <p>Para la estación \(k\) en turno, mide \(d_l = \text{getDistance}(k, L_C)\)
+           y \(d_r = \text{getDistance}(k, R_D)\). Te dan <strong>dos posiciones
+           candidatas exactas</strong>: si \(k\) fuera C, sería \(p_C = R_D - d_r\)
+           (Sur→Sur directo hacia \(R_D\)); si fuera D, sería \(p_D = L_C + d_l\)
+           (Norte→Norte directo hacia \(L_C\)). La pregunta clave: <strong>¿cómo
+           decides cuál de las dos es la verdadera?</strong></p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La trampa de la desambiguación</summary>
+      <div class="body">
+        <p class="q">Tentación: «predigo la distancia <em>cruzada</em> (el
+           \(d_l\) de la hipótesis C, o el \(d_r\) de la hipótesis D) y veo cuál
+           coincide». ¿Por qué eso falla?</p>
+        <p>Porque la distancia cruzada necesita el punto de <em>volteo</em> (la C o
+           la D intermedia), ¡y ese volteo puede no estar descubierto todavía! Para
+           una D lejana a la derecha, la C que la «destraba» puede aparecer mucho
+           después en el orden, así que tu predicción cruzada no cuadra <em>aunque
+           la posición sea correcta</em>.</p>
+        <p>El discriminador <strong>fiable</strong> es el propio
+           \(d0[k] = \text{getDistance}(0, k)\) que ya mediste: su estación de
+           volteo (la D/C intermedia) <strong>siempre</strong> tiene \(d0\)
+           estrictamente menor que \(k\), o sea que <em>ya está descubierta</em>.
+           Así que predice \(d0\) para cada hipótesis con los 4 casos cerrados —
+           usando solo estaciones ya descubiertas— y quédate con la que coincida con
+           el \(d0[k]\) medido.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Es una tarea «ad hoc» que se resuelve por
+           capas, de la estación más cercana hacia afuera, con
+           <strong>\(3(n-1)\) llamadas</strong> y \(O(n\log n)\) tiempo.</p>
+
+        <p><strong>Paso 1 — sondeo inicial (\(n-1\) llamadas).</strong> Calcula
+           \(d0[i] = \text{getDistance}(0, i)\) para toda \(i \ne 0\). La estación 0
+           es C en <code>first</code> y la estación con \(d0\) mínimo es la primera
+           D a la derecha, en \(\text{first} + d0_{\min}\). Inicializa los conjuntos
+           ordenados de C descubiertas \(\{\text{first}\}\) y de D descubiertas
+           \(\{\text{first}+d0_{\min}\}\); las anclas \(L_C = \text{first}\) (C más a
+           la izquierda) y \(R_D = \text{first}+d0_{\min}\) (D más a la derecha).</p>
+
+        <p><strong>Paso 2 — capas por cercanía (\(2(n-1)\) llamadas).</strong>
+           Procesa las demás estaciones en orden creciente de \(d0\). Para cada
+           \(k\):</p>
+        <ol>
+          <li>Mide \(d_l = \text{getDistance}(k, L_C)\) y
+              \(d_r = \text{getDistance}(k, R_D)\) (2 llamadas).</li>
+          <li>Candidatas <em>exactas</em>: \(p_C = R_D - d_r\) (si \(k\) es C) y
+              \(p_D = L_C + d_l\) (si \(k\) es D). Son válidas porque, al procesar
+              \(k\), siempre \(p_C \le R_D\) y \(p_D \ge L_C\) (es directa, una sola
+              vía).</li>
+          <li><strong>Desambigua con \(d0[k]\):</strong> predice el \(d0\) que
+              tendría cada hipótesis con los 4 casos cerrados, usando <em>solo</em>
+              estaciones ya descubiertas (el volteo siempre lo está, ver Pista 5):
+              <ul>
+                <li>Hipótesis C en \(p_C\): caso Sur→Sur/Sur→Norte desde
+                    <code>first</code>; con \(D_x\) = D descubierta más cercana
+                    \(\ge \max(\text{first}, p_C)\), el predicho es
+                    \(2 D_x - \text{first} - p_C\).</li>
+                <li>Hipótesis D en \(p_D\): si \(p_D \ge \text{first}\) es Sur→Sur
+                    directo, predicho \(p_D - \text{first}\); si \(p_D < \text{first}\)
+                    usa el caso Norte→Sur con la C descubierta de volteo.</li>
+              </ul>
+              Elige la hipótesis cuyo \(d0\) predicho <strong>coincide</strong> con
+              el \(d0[k]\) medido.</li>
+          <li>Inserta \(k\) en el conjunto C o D según el tipo elegido y, si hace
+              falta, actualiza \(L_C\) (si es C más a la izquierda) o \(R_D\) (si es
+              D más a la derecha).</li>
+        </ol>
+
+        <p><strong>Por qué es correcto.</strong> Las candidatas \(p_C\) y \(p_D\)
+           son exactas para su tipo (medición directa sobre una vía), así que solo
+           falta decidir el tipo. La distancia <em>cruzada</em> no sirve como juez
+           porque su volteo puede no estar descubierto; el \(d0[k]\) sí, porque su
+           estación de volteo tiene \(d0\) estrictamente menor y ya fue procesada.
+           Por conectividad, toda D tiene una C a su izquierda y toda C una D a su
+           derecha, así que las anclas \(L_C\), \(R_D\) siempre existen y los
+           volteos requeridos por \(d0\) ya están en los conjuntos. Procesar en
+           orden de \(d0\) garantiza el invariante.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion findLocation(n, first, location, stype):
+    location[0] = first;  stype[0] = C
+    para i en 1..n-1:  d0[i] = getDistance(0, i)        // (n-1) llamadas
+
+    m = argmin_{i>=1} d0[i]                             // primera D a la derecha
+    location[m] = first + d0[m];  stype[m] = D
+    Cset = { first };   Dset = { first + d0[m] }        // conjuntos ordenados
+    Lc = first;         Rd = first + d0[m]
+
+    para cada k (k != 0, k != m) en orden creciente de d0[k]:
+        dl = getDistance(k, Lc)                          // 2 llamadas por k
+        dr = getDistance(k, Rd)
+        pC = Rd - dr                                     // candidata si k es C
+        pD = Lc + dl                                     // candidata si k es D
+
+        // predicir d0 de cada hipotesis con SOLO estaciones ya descubiertas
+        Dx = menor elemento de Dset con Dx >= max(first, pC)
+        pred_C = 2*Dx - first - pC
+        si pD >= first: pred_D = pD - first
+        si no:          Cx = mayor elemento de Cset con Cx <= min(first, pD)
+                        pred_D = first + pD - 2*Cx
+
+        si pred_C == d0[k]:
+            location[k] = pC;  stype[k] = C;  insertar pC en Cset
+            si pC < Lc: Lc = pC
+        si no:                              // pred_D == d0[k]
+            location[k] = pD;  stype[k] = D;  insertar pD en Dset
+            si pD > Rd: Rd = pD
+
+    // stype: 1 para C, 2 para D al escribir el arreglo</pre>
+        </div>
+
+        <p><strong>Cómo se sube de subtarea en subtarea.</strong> Con la estructura
+           regalada (subtareas 1–2) el sondeo \(d0\) ya da las posiciones directo
+           (Pista 3). Las subtareas 3–4 quitan la estructura y obligan al esquema de
+           anclas + desambiguación por \(d0\); la 4 (más puntos) exige pocas
+           llamadas, y \(3(n-1)\) entra en su límite. Una <strong>única</strong>
+           solución cubre las cuatro.</p>
+
+        <p><strong>Complejidad.</strong> Llamadas a <code>getDistance</code>:
+           exactamente \((n-1) + 2(n-2) = 3n-5\) en el peor caso
+           (\(=14\,995\) para \(n = 5\,000\), dentro de la cota \(3(n-1)\)). Tiempo \(O(n\log n)\) por los
+           conjuntos ordenados y las búsquedas binarias (\(\text{lower\_bound}\) /
+           \(\text{upper\_bound}\)) que localizan la D más cercana \(\ge x\) y la C
+           más cercana \(\le x\). Memoria \(O(n)\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Notas de implementación (C++)</span>
+<pre>· Usa std::set&lt;int&gt; (o vectores ordenados) para Cset/Dset y
+  lower_bound/upper_bound al ubicar el volteo mas cercano.
+· En macOS/libc++, &lt;bits/stdc++.h&gt; NO arrastra &lt;set&gt;/&lt;map&gt;:
+  incluyelos explicitamente. No compiles con -static.
+· Lleva las formulas (2*Dx, etc.) en long long por seguridad: los bloques
+  llegan a 1e6 y 2*Dx ~ 2e6 (sin overflow real, pero no cuesta nada).
+· first = location[0]; stype usa 1 = C, 2 = D al escribir el arreglo.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
