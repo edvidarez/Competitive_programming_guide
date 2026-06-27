@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2010 · Tarea 5 — Memory</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2010 · Día 2 · Waterloo, Canadá</div>
+    <h1>Tarea <span class="num">5</span> — Memory</h1>
+    <p class="note">El juego de memoria (encontrar parejas) · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El juego de <strong>Memory</strong> (memorama) se juega con 50 cartas. Cada carta
+       tiene impresa en su cara una de las letras de la <strong>A</strong> a la
+       <strong>Y</strong> (ASCII 65 a 89), de modo que <strong>cada letra aparece en
+       exactamente dos cartas</strong>. Las cartas se barajan en un orden aleatorio y se
+       reparten <em>boca abajo</em> sobre la mesa.</p>
+
+    <figure>
+      <img alt="Tablero de Memory: 15 cartas boca abajo con dorso amarillo y dos cartas con la letra A volteadas boca arriba; un cursor señala la segunda A."
+           src="data:image/jpeg;base64,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">
+      <figcaption>El juego de Memory: las cartas están boca abajo y Jack voltea dos a la
+        vez. Aquí ambas cartas boca arriba muestran la letra <strong>A</strong>: es una
+        pareja.</figcaption>
+    </figure>
+
+    <p>Jack juega volteando <strong>dos cartas boca arriba</strong> para que sus letras
+       queden visibles. Por cada una de las 25 letras, Jack recibe un dulce de su mamá
+       <strong>la primera vez</strong> que ve las dos copias de esa letra al mismo tiempo
+       en las dos cartas volteadas. Por ejemplo, la primera vez que Jack voltea las dos
+       cartas que contienen la letra <strong>M</strong>, recibe un dulce. Sin importar si
+       las letras coincidieron o no, Jack <strong>vuelve a poner ambas cartas boca
+       abajo</strong>. El proceso se repite hasta que Jack obtiene los 25 dulces — uno por
+       cada letra.</p>
+
+    <p>Debes implementar un procedimiento <code>play</code> que juegue la partida. Tu
+       implementación debe llamar al procedimiento <code>faceup(C)</code>, que está
+       implementado por el evaluador (<em>grader</em>). <code>C</code> es un número entre
+       1 y 50 que indica la carta que quieres voltear boca arriba. <strong>La carta no
+       debe estar ya boca arriba.</strong> <code>faceup(C)</code> devuelve el carácter
+       impreso en la carta <code>C</code>.</p>
+
+    <p>Después de <strong>cada segunda llamada</strong> a <code>faceup</code>, el evaluador
+       voltea automáticamente ambas cartas boca abajo de nuevo.</p>
+
+    <p>Tu procedimiento <code>play</code> <strong>solo puede terminar una vez que Jack haya
+       recibido los 25 dulces</strong>. Se permite hacer llamadas a <code>faceup(C)</code>
+       incluso después del momento en que Jack obtiene el último dulce.</p>
+
+    <!-- ===== TAREA FUNCIONAL / INTERACTIVA ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional con evaluador interactivo</strong>: no lees de
+       entrada estándar ni escribes a salida estándar. Implementas el procedimiento
+       <code>play</code> y te comunicas con el evaluador a través de la función
+       <code>faceup</code> que él te ofrece.</p>
+
+    <div class="sig">
+      <span class="tag">Tú implementas</span>
+<pre>void play(void);            // C: memory.c / memory.cpp   (Pascal: procedure play)</pre>
+    </div>
+
+    <div class="sig">
+      <span class="tag">El evaluador provee (tú solo la llamas)</span>
+<pre>char faceup(int C);         // C en [1..50]; la carta C NO debe estar ya boca arriba.
+                            // Devuelve la letra ('A'..'Y') impresa en la carta C.</pre>
+    </div>
+
+    <p>Reglas del protocolo de comunicación:</p>
+    <ul>
+      <li>Hay <strong>50 cartas</strong> y <strong>25 letras</strong> (de la
+          <strong>A</strong> a la <strong>Y</strong>, ASCII 65 a 89); cada letra aparece en
+          <strong>exactamente 2 cartas</strong>.</li>
+      <li>Tras <strong>cada segunda llamada</strong> a <code>faceup</code>, el evaluador
+          voltea automáticamente las dos cartas boca abajo. Es decir, las llamadas se
+          agrupan de dos en dos.</li>
+      <li>Jack recibe un dulce la <strong>primera vez</strong> que las dos cartas de una
+          pareja muestran <em>simultáneamente</em> las dos copias de una misma letra.</li>
+      <li><code>play()</code> solo puede terminar cuando se han conseguido los 25 dulces.</li>
+    </ul>
+
+    <div class="note-box">
+      <strong>Archivos (entorno oficial):</strong> implementas
+      <code>memory.c</code> / <code>memory.cpp</code> / <code>memory.pas</code>. La
+      interfaz del concursante está en <code>memory.h</code> (o <code>memory.pas</code>) y
+      la del evaluador en <code>grader.h</code> (o <code>graderlib.pas</code>). Hay un
+      <em>evaluador de ejemplo</em> (<code>grader.c</code>/<code>grader.cpp</code>) y una
+      entrada de ejemplo <code>grader.in.1</code>: una sola línea con 50 caracteres que
+      indican las letras de las cartas, en orden de la 1 a la 50. Si tu implementación es
+      correcta, la salida del evaluador será <code>OK n</code>, donde <code>n</code> es el
+      número de llamadas a <code>faceup(C)</code>.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Número de cartas</td><td><span class="badge">50</span></td></tr>
+        <tr><td>Número de letras</td><td><span class="badge">25 (A..Y, ASCII 65..89)</span></td></tr>
+        <tr><td>Cartas por letra</td><td><span class="badge">exactamente 2</span></td></tr>
+        <tr><td>Argumento de <code>faceup</code></td><td><span class="badge">\(1 \le C \le 50\), carta no boca arriba</span></td></tr>
+        <tr><td>Meta para terminar</td><td><span class="badge">25 dulces</span></td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+    <p class="note">El enunciado no fija un número explícito de segundos ni de MB; la
+       Subtarea 1 pide simplemente terminar “dentro del límite de tiempo”, y la Subtarea 2
+       impone una cota dura sobre el número de llamadas a <code>faceup</code>.</p>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td><td class="pts">50</td>
+            <td>Implementa <em>cualquier</em> estrategia que respete las reglas del juego y
+                lo termine dentro del límite de tiempo. Por ejemplo, existe una estrategia
+                sencilla que siempre hace exactamente
+                \(2\cdot(49+48+\dots+2+1) = 2450\) llamadas a <code>faceup(C)</code>.</td>
+          </tr>
+          <tr>
+            <td>2</td><td class="pts">50</td>
+            <td>Implementa una estrategia que termine <em>cualquier</em> partida posible con
+                <strong>a lo sumo 100 llamadas</strong> a <code>faceup(C)</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>La siguiente es una secuencia posible de llamadas que tu procedimiento
+       <code>play</code> podría hacer, con sus explicaciones. (Las cartas se voltean boca
+       abajo automáticamente tras cada segunda llamada.)</p>
+    <div class="io">
+<pre>Llamada       Valor devuelto   Explicación
+faceup(1)     'B'              La carta 1 contiene B.
+faceup(7)     'X'              La carta 7 contiene X. Las letras no son iguales.
+                               El evaluador voltea las cartas 1 y 7 boca abajo.
+faceup(7)     'X'              La carta 7 contiene X.
+faceup(15)    'O'              La carta 15 contiene O. Las letras no son iguales.
+                               El evaluador voltea las cartas 7 y 15 boca abajo.
+faceup(50)    'X'              La carta 50 contiene X.
+faceup(7)     'X'              La carta 7 contiene X. Jack obtiene su primer dulce.
+                               El evaluador voltea las cartas 50 y 7 boca abajo.
+faceup(7)     'X'              La carta 7 contiene X.
+faceup(50)    'X'              La carta 50 contiene X. Letras iguales, pero Jack NO
+                               obtiene dulce (ya tenía el de la X).
+                               El evaluador voltea las cartas 7 y 50 boca abajo.
+faceup(2)     'B'              La carta 2 contiene B.
+                  ...
+            (se omitieron algunas llamadas)
+                  ...
+faceup(1)     'B'              La carta 1 contiene B.
+faceup(2)     'B'              La carta 2 contiene B. Jack obtiene su 25.º dulce.</pre>
+    </div>
+    <p class="note">Nota: el dulce de cada letra se da <strong>una sola vez</strong>, la
+       primera vez que se ven sus dos copias juntas; volver a ver la pareja después no da
+       más dulces. La partida termina cuando se han conseguido los 25.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Funcional (grader)</span>
+      <span class="ptag">Constructivo</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Implementas <code>play()</code> en un memorama de 50 cartas (25 letras, cada una en
+       2 cartas). Volteas cartas con <code>faceup(C)</code>, que te <strong>devuelve la
+       letra</strong> de la carta; cada 2 volteos el evaluador las regresa boca abajo.
+       Debes conseguir los 25 dulces (juntar las 25 parejas). La Subtarea 2 exige hacerlo
+       en <strong>≤ 100 llamadas</strong> a <code>faceup</code>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Solo hay \(50\) cartas y \(25\) letras, y
+                <strong><code>faceup</code> te dice qué letra hay en cada carta</strong>.
+                La Subtarea 1 (50 pts) admite la fuerza bruta de “probar todas las
+                parejas” (\(2450\) volteos). La Subtarea 2 (50 pts) pone una cota dura de
+                \(100\) volteos: \(50\) cartas que mirar \(+\) \(50\) para cobrar — justo
+                \(2\) por carta. Ese “2 por carta” es la pista de que hay que
+                <em>leer</em> cada carta una vez y luego emparejar.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué te está regalando <code>faceup</code>?</summary>
+      <div class="body">
+        <p class="q">¿De verdad necesitas “adivinar” dónde está cada pareja? Fíjate en qué
+           te <em>devuelve</em> <code>faceup(C)</code>… ¿es solo “igual / distinto”, o es
+           algo más?</p>
+        <p>El humano que juega memorama no ve la letra hasta voltear, y debe
+           <em>memorizar</em>. Pero aquí <code>faceup(C)</code> te entrega la letra exacta
+           de la carta. Eso convierte el juego de “memoria” en un juego de
+           <strong>información perfecta</strong>: puedes anotar todo lo que ves.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (50 pts): lo trivial que sí funciona</summary>
+      <div class="body">
+        <p class="q">Si ignoras por completo la letra devuelta, ¿cuántas parejas de cartas
+           distintas hay? ¿Voltear todas garantiza ver cada pareja igual?</p>
+        <p>Probar <em>todas</em> las parejas \((i,j)\) con dos for anidados visita las
+           \(\binom{50}{2}=1225\) parejas; cada visita son 2 volteos, así que
+           \(2\cdot 1225 = 2450\) llamadas. Como cada pareja de cartas iguales se voltea en
+           algún momento, consigues los 25 dulces. Eso resuelve la Subtarea 1, pero
+           <strong>no mira la letra devuelta</strong>, y por eso desperdicia muchísimos
+           volteos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (50 pts): separa “descubrir” de “cobrar”</summary>
+      <div class="body">
+        <p class="q">Como cada 2 volteos las cartas regresan boca abajo, las parejas de
+           volteos son <em>independientes</em>: no puedes mantener nada boca arriba entre
+           ellas. Entonces, ¿para qué sirve voltear si igual se tapa? ¿Y si en una primera
+           pasada solo <strong>lees y anotas</strong>, sin preocuparte por hacer dulces?</p>
+        <p>Divide el problema en dos fases:</p>
+        <ul>
+          <li><strong>Descubrir:</strong> voltea las 50 cartas una vez (en parejas
+              cualesquiera, p. ej. \((1,2),(3,4),\dots\)) y anota, para cada letra, en qué
+              dos cartas vive. Son <strong>50 volteos</strong>. Quizá ganes algún dulce de
+              casualidad; da igual.</li>
+          <li><strong>Cobrar:</strong> ya sabes dónde está cada pareja. Para cada letra,
+              voltea sus dos cartas conocidas seguidas: la segunda llamada de ese par
+              dispara el dulce. Son otros <strong>50 volteos</strong>.</li>
+        </ul>
+        <p>Total: \(50 + 50 = 100\). Justo la cota. ¿Ves por qué leer la letra devuelta es
+           lo que te permite no “buscar a ciegas”?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Una sola estrategia resuelve <strong>ambas subtareas a la vez</strong>: hace
+           exactamente 100 llamadas en todo tablero, lo cual cumple el límite de tiempo
+           (Subtarea 1) y la cota de 100 llamadas (Subtarea 2).</p>
+
+        <h3>Idea</h3>
+        <p>El valor que devuelve <code>faceup</code> es información: lee primero, cobra
+           después.</p>
+        <ol>
+          <li><strong>Ronda 1 — Reconocimiento (50 llamadas).</strong> Voltea cada carta
+              \(i=1,\dots,50\) una vez. Por cada <code>faceup(i)</code> obtienes una letra
+              \(\ell\); la conviertes a índice \(0\dots24\) con \(\ell-\)<code>'A'</code> y
+              guardas la posición \(i\) en una tabla <code>pos[\(\ell\)][0..1]</code>: la
+              primera copia vista va a \([0]\), la segunda a \([1]\). Al terminar conoces
+              las dos posiciones de las 25 letras. (Por como agrupa el evaluador, los pares
+              de volteo aquí son \((1,2),(3,4),\dots\); puede que ganes algún dulce de
+              casualidad, es irrelevante.)</li>
+          <li><strong>Ronda 2 — Cobro (50 llamadas).</strong> Para cada letra
+              \(\ell=0,\dots,24\), llama <code>faceup(pos[\(\ell\)][0])</code> seguido de
+              <code>faceup(pos[\(\ell\)][1])</code>. Esas dos cartas tienen la misma letra,
+              así que la segunda llamada del par hace que el evaluador detecte la pareja y
+              otorgue el dulce (si no se ganó antes). Tras 25 pares, los 25 dulces.</li>
+        </ol>
+
+        <h3>Por qué es correcto</h3>
+        <ul>
+          <li>En la Ronda 1, <code>faceup</code> devuelve la letra de cada carta, así que la
+              tabla <code>pos</code> queda completa y exacta: cada una de las 25 letras
+              tiene sus dos cartas registradas.</li>
+          <li>En la Ronda 2 cobramos <strong>las 25 letras</strong>, incluidas las que ya
+              hubiéramos visto de casualidad en la Ronda 1: volver a juntar una pareja ya
+              conseguida es legal y no rompe nada (no da un segundo dulce, pero tampoco
+              cuesta de más en el peor caso). Así garantizamos los 25 dulces antes de que
+              <code>play()</code> termine.</li>
+          <li>Nunca volteamos una carta que ya esté boca arriba: dentro de cada par usamos
+              dos cartas distintas, y entre pares el evaluador ya las tapó.</li>
+          <li>El conteo es \(50+50=100\) en <em>todo</em> barajado: peor caso = caso medio
+              = 100. Cumple la cota de la Subtarea 2 y, por ser constante, el límite de
+              tiempo de la Subtarea 1.</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>procedimiento play():
+    pos[0..24][0..1] = DESCONOCIDO        // DESCONOCIDO marca "aún no visto"
+
+    // Ronda 1: descubrir (50 llamadas)
+    para i = 1 .. 50:
+        letra = faceup(i)                 // el grader devuelve la letra de la carta i
+        L = letra - 'A'                   // índice 0..24
+        si pos[L][0] == DESCONOCIDO:
+            pos[L][0] = i                 // primera copia de la letra
+        si no:
+            pos[L][1] = i                 // segunda copia
+
+    // Ronda 2: cobrar (50 llamadas)
+    para L = 0 .. 24:
+        faceup(pos[L][0])                 // 1.ª carta de la pareja
+        faceup(pos[L][1])                 // 2.ª carta -> el grader detecta la pareja
+                                          //   y otorga el dulce de L
+    // se hicieron 100 llamadas; los 25 dulces están conseguidos -> play() puede terminar</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(1)\) en la práctica — exactamente \(100\)
+           llamadas a <code>faceup</code> y \(O(50)\) trabajo, con memoria
+           \(O(25\cdot 2)\) enteros para la tabla <code>pos</code>. El número de volteos es
+           constante e independiente del barajado.</p>
+
+        <div class="note-box">
+          <strong>Trampas comunes:</strong>
+          (1) No usar la letra devuelta por <code>faceup</code> te deja en la solución de
+          2450 llamadas y pierdes la Subtarea 2.
+          (2) Indexa las cartas desde 1 (no 0): usar 0 como “desconocido” en la tabla evita
+          confundirlo con una posición válida.
+          (3) Cobra las 25 letras, también las que viste por accidente en la Ronda 1.
+          (4) No vuelvas a voltear una carta que ya esté boca arriba (p. ej. el mismo
+          <code>C</code> dos veces seguidas): el evaluador lo rechaza.
+          (5) No termines <code>play()</code> antes de los 25 dulces.
+        </div>
+
+        <p class="note">Micro-optimización posible: en la Ronda 2 saltarse las parejas ya
+           descubiertas por casualidad en la Ronda 1. No mejora el peor caso (sigue siendo
+           100) y complica el código, así que no vale la pena.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
