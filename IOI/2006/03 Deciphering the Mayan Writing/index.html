@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2006 · Tarea 3 — Deciphering the Mayan Writing</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2006 · Día 1 · Mérida, México</div>
+    <h1>Tarea <span class="num">3</span> — Deciphering the Mayan Writing</h1>
+    <p class="note">Descifrando la escritura maya · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Descifrar la escritura maya ha resultado una tarea más difícil de lo que
+       imaginaron las primeras investigaciones. Tras casi doscientos años, muy
+       poco de ella se entendía realmente. Solo en las últimas tres décadas se han
+       logrado avances de verdad.</p>
+
+    <p>La escritura maya se basa en pequeños dibujos llamados <strong>glifos</strong>,
+       que representan sonidos. Las palabras mayas se escriben normalmente juntando
+       glifos en distintas posiciones.</p>
+
+    <p>Uno de los varios problemas al descifrar la escritura maya surge del
+       <strong>orden de lectura</strong>. Al acomodar varios glifos para formar una
+       palabra, los escribas mayas a veces decidían la posición de cada glifo más
+       por su gusto estético que por una regla fija. Por eso, aunque hoy se conoce
+       el sonido de muchos glifos, a veces los arqueólogos no están seguros de cómo
+       pronunciar una palabra escrita.</p>
+
+    <p>Los arqueólogos buscan una palabra especial \(W\). Conocen los glifos que la
+       forman, pero no todas las maneras posibles de acomodarlos. Como supieron que
+       vendrías al IOI'06, te pidieron ayuda: te darán los \(g\) glifos de \(W\) y
+       una secuencia \(S\) con todos los glifos (en el orden en que aparecen) de los
+       grabados que están estudiando. Ayúdalos contando el número de posibles
+       apariciones de la palabra \(W\).</p>
+
+    <h3>La tarea</h3>
+    <p>Escribe un programa que, dados los glifos de \(W\) y la secuencia \(S\) de
+       glifos de los grabados, cuente el número de posibles apariciones de \(W\) en
+       \(S\); es decir, toda secuencia de \(g\) glifos <strong>consecutivos</strong>
+       en \(S\) que sea una <strong>permutación</strong> de los glifos de \(W\).</p>
+
+    <div class="note-box">
+      <strong>Lo que de verdad importa:</strong> como cualquier reacomodo de los
+      glifos de \(W\) cuenta como una aparición válida, no importa el <em>orden</em>
+      de los glifos dentro de la ventana, sino solo <em>cuántas veces aparece cada
+      glifo</em>. Una ventana de \(g\) glifos consecutivos de \(S\) cuenta si tiene
+      exactamente los mismos glifos que \(W\), con las mismas multiplicidades.
+    </div>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer los siguientes datos del archivo <code>writing.in</code>:</p>
+    <ul>
+      <li><strong>Línea 1:</strong> contiene 2 enteros separados por espacio que
+          representan \(g\) y \(|S|\).</li>
+      <li><strong>Línea 2:</strong> contiene \(g\) caracteres consecutivos que
+          representan los glifos de \(W\). Los caracteres válidos son <code>'a'</code>–<code>'z'</code>
+          y <code>'A'</code>–<code>'Z'</code>; las mayúsculas y minúsculas se
+          consideran <strong>distintas</strong>.</li>
+      <li><strong>Línea 3:</strong> contiene \(|S|\) caracteres consecutivos que
+          representan los glifos de los grabados. Los caracteres válidos son
+          <code>'a'</code>–<code>'z'</code> y <code>'A'</code>–<code>'Z'</code>;
+          las mayúsculas y minúsculas se consideran <strong>distintas</strong>.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir los siguientes datos en el archivo <code>writing.out</code>:</p>
+    <ul>
+      <li><strong>Línea 1:</strong> debe contener el conteo de posibles apariciones
+          de \(W\) en \(S\).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No indicado en esta hoja del enunciado oficial</td></tr>
+        <tr><td>Límite de memoria</td><td>No indicado en esta hoja del enunciado oficial</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de glifos de \(W\)</td><td><span class="badge">\(1 \le g \le 3\,000\)</span></td></tr>
+        <tr><td>Longitud de la secuencia \(S\)</td><td><span class="badge">\(g \le |S| \le 3\,000\,000\)</span></td></tr>
+        <tr><td>Alfabeto de glifos</td><td><span class="badge">\(52\) símbolos: <code>a</code>–<code>z</code> y <code>A</code>–<code>Z</code> (mayúsculas \(\ne\) minúsculas)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">El enunciado solo menciona explícitamente un bloque de 50 puntos
+       con \(g \le 10\). El resto del desglose por grupos proviene de la tabla de
+       calificación de la solución oficial; los grupos se califican <strong>en bloque</strong>
+       (no caso por caso) y suman 100.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Grupo</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">0</td><td>Caso de ejemplo (\(g=4\), \(|S|=11\)).</td></tr>
+          <tr><td>2</td><td class="pts">50</td><td>Todos los casos con \(g \le 10\). Es lo único que el enunciado garantiza explícitamente.</td></tr>
+          <tr><td>3–6</td><td class="pts">5 c/u</td><td>Casos medianos: desde \(g=50\) con \(|S|\) creciente hasta \(50\,000\), hasta \(g=1\,000\) con \(|S|\approx 1.5\times10^6\).</td></tr>
+          <tr><td>7</td><td class="pts">30</td><td>Casos grandes: \(g\) de \(2\,000\) a \(3\,000\), \(|S|\) de \(2\times10^6\) a \(3\times10^6\).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      <strong>Nota para programadores de Pascal:</strong> por defecto en FreePascal
+      una variable de tipo <code>string</code> tiene un límite de 255 caracteres. Si
+      quieres usar cadenas más largas, agrega la directiva <code>{$H+}</code> justo
+      debajo de la línea <code>program ...;</code>.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>writing.in</h4><pre>4 11
+cAda
+AbrAcadAbRa</pre></div>
+      <div class="io"><h4>writing.out</h4><pre>2</pre></div>
+    </div>
+    <p class="note">Aquí \(W=\)<code>cAda</code> tiene los glifos \(\{a, c, d, A\}\)
+       (uno de cada uno). Recorriendo todas las ventanas de longitud \(4\) en
+       \(S=\)<code>AbrAcadAbRa</code>, solo dos son una permutación de \(W\):
+       <code>Acad</code> y <code>cadA</code> (las que aparecen en
+       <code>Abr<strong>Acad</strong>AbRa</code> y <code>AbrA<strong>cadA</strong>bRa</code>).
+       Las demás contienen <code>b</code> o <code>R</code>, glifos ajenos a \(W\).
+       Por eso la respuesta es \(2\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Strings</span>
+      <span class="ptag">Ventana deslizante</span>
+      <span class="ptag">Conteo / multiconjunto</span>
+      <span class="ptag">Two pointers</span>
+      <span class="ptag">E/S rápida</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un patrón \(W\) de \(g\) caracteres y un texto \(S\) de hasta
+       \(3\times10^6\) caracteres, sobre un alfabeto de \(52\) símbolos
+       (<code>a</code>–<code>z</code> y <code>A</code>–<code>Z</code>, distinguiendo
+       mayúsculas). Cuenta cuántas ventanas de \(g\) caracteres consecutivos de
+       \(S\) son un <strong>anagrama</strong> de \(W\) (misma multiplicidad de cada
+       glifo). Es el clásico <em>"find all anagrams of a pattern in a text"</em>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(|S|\) llega a \(3\times10^6\) ⇒ se necesita algo lineal \(O(|S|)\)
+                y <strong>E/S rápida</strong>. \(g\) llega a \(3\,000\), así que
+                <em>enumerar permutaciones de \(W\) es imposible</em>: hay que
+                comparar multiconjuntos. El bloque de \(50\) pts con \(g\le 10\) se
+                alcanza incluso con una solución cuadrática; los \(100\) pts exigen
+                la lineal.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué significa de verdad "permutación de \(W\)"?</summary>
+      <div class="body">
+        <p class="q">Si cualquier reacomodo de los glifos de \(W\) cuenta como
+           aparición, ¿de verdad importa el orden dentro de la ventana? ¿O solo
+           importa <em>qué glifos</em> y <em>cuántos de cada uno</em>?</p>
+        <p>Dos cadenas de la misma longitud son una permutación una de la otra si y
+           solo si tienen el mismo <strong>multiconjunto</strong> de caracteres: el
+           mismo conteo de cada glifo. Olvídate del orden; piensa en
+           <strong>histogramas de frecuencias</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La trampa: no enumeres permutaciones</summary>
+      <div class="body">
+        <p class="q">¿Te tentó generar todas las formas de acomodar \(W\) y buscarlas
+           en \(S\)? Con \(g\) hasta \(3\,000\), ¿cuántas permutaciones hay?</p>
+        <p>Demasiadas (factorial): inviable. La Pista 1 te salva: no necesitas
+           ninguna permutación concreta, solo el conteo de glifos de \(W\). Guarda un
+           arreglo <code>need[52]</code> con cuántas veces aparece cada glifo en
+           \(W\). Recuerda: el alfabeto tiene <strong>52</strong> símbolos, no 26
+           (<code>A</code> y <code>a</code> son distintos).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Primeros 50 puntos (\(g \le 10\))</summary>
+      <div class="body">
+        <p class="q">Para cada posición de inicio en \(S\), ¿cuánto cuesta comparar
+           el histograma de esa ventana contra <code>need</code>? Con \(g\le 10\),
+           ¿importa que sea cuadrático?</p>
+        <p>Una solución directa: para cada una de las \(|S|-g+1\) ventanas, cuenta
+           sus glifos y compáralos con <code>need</code>. Eso es \(O(|S|\cdot g)\) o
+           \(O(|S|\cdot 52)\). Con \(g\le 10\) es chico y te regala los \(50\) pts del
+           grupo 2, pero con \(|S|=3\times10^6\) y \(g\) grande se cae. ¿Cómo
+           <strong>reusar</strong> el trabajo entre una ventana y la siguiente?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Ventana deslizante de tamaño fijo</summary>
+      <div class="body">
+        <p class="q">Al pasar de la ventana \([i,\,i+g-1]\) a \([i+1,\,i+g]\), ¿qué
+           cambia realmente? ¿No es solo que <em>entra un glifo por la derecha</em> y
+           <em>sale uno por la izquierda</em>?</p>
+        <p>Mantén <code>have[52]</code> con el conteo de la ventana actual. Avanzar la
+           ventana un paso son dos operaciones \(O(1)\): <code>have[entra]++</code> y
+           <code>have[sale]--</code>. El reto es decidir, también en \(O(1)\), si
+           <code>have</code> ya coincide con <code>need</code> sin recorrer los 52
+           símbolos cada vez. ¿Cómo medir "qué tan iguales" son los dos arreglos con
+           un solo número?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Lleva un contador <strong><code>diff</code></strong> = número de los \(52\)
+           símbolos \(c\) para los que <code>have[c] != need[c]</code>. El invariante
+           clave es:</p>
+        <p style="text-align:center">la ventana es permutación de \(W\)
+           \(\iff\) <code>diff == 0</code>.</p>
+        <p>Al inicio <code>have</code> es todo ceros, así que <code>diff</code> es el
+           número de símbolos con <code>need[c] != 0</code>. Mantener
+           <code>diff</code> en \(O(1)\) al añadir o quitar un glifo usa el patrón
+           estándar de comparar <em>antes y después</em> de modificar
+           <code>have[c]</code>:</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>// --- preparación ---
+leer g, |S|, luego la cadena W y la cadena S
+need[0..51] = 0;  have[0..51] = 0
+para cada glifo c de W:  need[idx(c)] += 1
+diff = cantidad de símbolos con need[c] != 0     // = símbolos con have!=need al arrancar
+matches = 0
+
+// idx(c): 'a'..'z' -> 0..25 ;  'A'..'Z' -> 26..51
+
+// añadir el glifo c a la ventana (mantiene diff)
+funcion ADD(c):
+    if have[c] == need[c]:  diff += 1     // estaban iguales, dejarán de estarlo
+    have[c] += 1
+    if have[c] == need[c]:  diff -= 1     // ahora quedaron iguales
+
+// quitar el glifo c de la ventana (mantiene diff)
+funcion REMOVE(c):
+    if have[c] == need[c]:  diff += 1
+    have[c] -= 1
+    if have[c] == need[c]:  diff -= 1
+
+// --- barrido lineal con ventana fija de tamaño g ---
+para i de 0 a |S|-1:
+    ADD( idx(S[i]) )
+    if i >= g:                 // la ventana excedió g: saca el más viejo
+        REMOVE( idx(S[i-g]) )
+    if i >= g-1 and diff == 0: // ventana ya llena (g glifos) y coincide
+        matches += 1
+
+escribir matches</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> <code>diff</code> cuenta exactamente
+           los símbolos donde los histogramas difieren. Si vale \(0\), todos los \(52\)
+           conteos coinciden, así que la ventana tiene los mismos glifos que \(W\) con
+           las mismas multiplicidades ⇒ es una permutación de \(W\). Cada <code>ADD</code>/<code>REMOVE</code>
+           ajusta <code>diff</code> comparando el conteo del símbolo afectado justo
+           antes y justo después de cambiarlo, que es la única casilla que pudo variar.
+           El conteo de la ventana solo se valida cuando ya tiene \(g\) glifos
+           (\(i \ge g-1\)): así se evita el off-by-one de contar ventanas a medio
+           llenar.</p>
+
+        <p>Es equivalente a la "cola con condición de error" de la solución oficial
+           (la cola es la ventana; la condición de error es tener un glifo de más o un
+           glifo ajeno a \(W\)), pero fijar la longitud de la ventana en \(g\) y usar el
+           contador <code>diff</code> evita el manejo explícito de vaciar la cola.</p>
+
+        <p><strong>Complejidad:</strong> cada carácter de \(S\) entra y sale de la
+           ventana exactamente una vez, con trabajo \(O(1)\) por evento ⇒
+           \(O(|S|)\) en tiempo. Memoria \(O(1)\) para los dos arreglos de \(52\)
+           (más el buffer de lectura). El caso más grande,
+           \(|S|=3\times10^6\), corre en \(\sim 0.02\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (E/S rápida)</span>
+<pre>Con |S| hasta 3·10^6, leer carácter a carácter con cin/scanf puede ser el
+cuello de botella. Lee TODO el archivo de un jalón con fread a un buffer y
+parsea con punteros, saltando los espacios/saltos de línea entre las 3 líneas:
+
+  static char buf[3000005];
+  int n = fread(buf, 1, sizeof(buf), f);   // f = fopen("writing.in","rb")
+
+Mapea cada glifo con idx(c): 'a'..'z' -> c-'a' ;  'A'..'Z' -> c-'A'+26.
+La respuesta (a lo sumo |S|-g+1 ≈ 3·10^6) cabe en 32 bits; usar long es
+seguridad de sobra. NO subas el límite de tiempo: si tarda, el algoritmo es
+cuadrático, no lento de E/S.</pre>
+          <p class="note">En Pascal recuerda <code>{$H+}</code> para cadenas de más de
+             255 caracteres.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
