@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **85 / 142**
+Total de tareas: **142** · Completadas: **86 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -162,14 +162,14 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Sorting | `2015/05 Sorting/index.html` |
 | [x] | 6 | Horses | `2015/06 Horses/index.html` |
 
-## IOI 2016 — 3 / 6
+## IOI 2016 — 4 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Detecting Molecules | `2016/01 Detecting Molecules/index.html` |
 | [x] | 2 | Roller Coaster Railroad | `2016/02 Roller Coaster Railroad/index.html` |
 | [x] | 3 | Shortcut | `2016/03 Shortcut/index.html` |
-| [ ] | 4 | Paint By Numbers | `2016/04 Paint By Numbers/index.html` |
+| [x] | 4 | Paint By Numbers | `2016/04 Paint By Numbers/index.html` |
 | [ ] | 5 | Unscrambling a Messy Bug | `2016/05 Unscrambling a Messy Bug/index.html` |
 | [ ] | 6 | Aliens | `2016/06 Aliens/index.html` |
 

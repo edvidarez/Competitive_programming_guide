@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2016 · Tarea 4 — Paint By Numbers</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+  .grid{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.18em}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2016 · Día 2</div>
+    <h1>Tarea <span class="num">4</span> — Paint By Numbers</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p><em>Paint By Numbers</em> (también conocido como <em>nonograma</em> o
+       <em>pinta por números</em>) es un juego de lógica muy conocido. Aquí
+       consideramos una versión sencilla de <strong>una sola dimensión</strong>.
+       Te dan una fila de \(n\) celdas, numeradas \(0\) a \(n-1\) de izquierda a
+       derecha. Debes pintar cada celda de <strong>negro</strong> o de
+       <strong>blanco</strong>. Usamos <code>X</code> para una celda negra y
+       <code>_</code> para una celda blanca.</p>
+
+    <p>Te dan una secuencia \(c = [c_0, \dots, c_{k-1}]\) de \(k\) enteros
+       positivos: las <strong>pistas</strong>. Debes pintar las celdas de modo que
+       las celdas negras formen <strong>exactamente \(k\) bloques</strong> de
+       celdas consecutivas, y además el \(i\)-ésimo bloque (desde la izquierda,
+       contando desde \(0\)) tenga exactamente \(c_i\) celdas negras.</p>
+
+    <p>Por ejemplo, si las pistas son \(c = [3, 4]\), el puzzle resuelto debe tener
+       exactamente dos bloques de celdas negras consecutivas: primero uno de
+       longitud \(3\) y luego otro de longitud \(4\). Así, si \(n = 10\) y
+       \(c = [3, 4]\), una solución que satisface las pistas es
+       <span class="grid">_XXX__XXXX</span>. Nota que
+       <span class="grid">XXXX_XXX__</span> <strong>no</strong> satisface las
+       pistas, porque los bloques de negros no están en el orden correcto. Tampoco
+       <span class="grid">__XXXXXXX_</span> las satisface, porque ahí hay un
+       <strong>solo</strong> bloque de negros, no dos separados.</p>
+
+    <p>Te entregan un puzzle <strong>parcialmente resuelto</strong>. Es decir,
+       conoces \(n\) y \(c\), y además sabes que algunas celdas
+       <em>tienen</em> que ser negras y algunas <em>tienen</em> que ser blancas.
+       Tu tarea es <strong>deducir información adicional</strong> sobre las
+       celdas.</p>
+
+    <p>Concretamente, una <strong>solución válida</strong> es una que satisface las
+       pistas y además concuerda con los colores de las celdas conocidas. Tu
+       programa debe encontrar las celdas que están pintadas de
+       <strong>negro en toda solución válida</strong> y las celdas que están
+       pintadas de <strong>blanco en toda solución válida</strong>.</p>
+
+    <p>Puedes suponer que la entrada es tal que <strong>existe al menos una
+       solución válida</strong>.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar la siguiente función (método):</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar (C++)</span>
+<pre>std::string solve_puzzle(std::string s, std::vector&lt;int&gt; c);</pre>
+    </div>
+    <ul>
+      <li><code>s</code>: cadena de longitud \(n\). Para cada \(i\)
+          (\(0 \le i \le n-1\)) el carácter \(i\) es:
+        <ul>
+          <li><code>X</code>, si la celda \(i\) <strong>tiene que ser negra</strong>;</li>
+          <li><code>_</code>, si la celda \(i\) <strong>tiene que ser blanca</strong>;</li>
+          <li><code>.</code>, si <strong>no hay información</strong> sobre la celda \(i\).</li>
+        </ul>
+      </li>
+      <li><code>c</code>: arreglo de longitud \(k\) que contiene las pistas, como
+          se definió arriba.</li>
+    </ul>
+    <p>La función debe <strong>devolver</strong> una cadena de longitud \(n\). Para
+       cada \(i\) (\(0 \le i \le n-1\)) el carácter \(i\) de la cadena de salida
+       debe ser:</p>
+    <ul>
+      <li><code>X</code>, si la celda \(i\) es negra en <strong>toda</strong> solución válida;</li>
+      <li><code>_</code>, si la celda \(i\) es blanca en <strong>toda</strong> solución válida;</li>
+      <li><code>?</code>, en otro caso (es decir, si existen dos soluciones válidas
+          tales que la celda \(i\) es negra en una de ellas y blanca en la otra).</li>
+    </ul>
+
+    <p>En el lenguaje C la firma es un poco distinta:</p>
+    <div class="sig">
+      <span class="tag">Firma en C</span>
+<pre>void solve_puzzle(int n, char* s, int k, int* c, char* result);</pre>
+    </div>
+    <ul>
+      <li><code>n</code>: longitud de la cadena <code>s</code> (número de celdas);</li>
+      <li><code>k</code>: longitud del arreglo <code>c</code> (número de pistas);</li>
+      <li>los demás parámetros son los mismos que arriba;</li>
+      <li>en lugar de devolver una cadena de \(n\) caracteres, la función debe
+          escribir la respuesta en la cadena <code>result</code>.</li>
+    </ul>
+
+    <p>Los códigos ASCII de los caracteres usados en este problema son:
+       <code>X</code> = 88, <code>_</code> = 95, <code>.</code> = 46,
+       <code>?</code> = 63.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2.0 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de pistas</td><td><span class="badge">\(1 \le k \le n\)</span></td></tr>
+        <tr><td>Longitud de cada pista</td><td><span class="badge">\(1 \le c_i \le n\)</span> para cada \(0 \le i \le k-1\)</td></tr>
+      </table>
+    </div>
+    <p class="note">Los valores de tiempo y memoria provienen del paquete oficial
+       del problema (<code>problem.xml</code>).</p>
+
+    <h2>Subtareas</h2>
+    <p class="note">En todas las subtareas se cumple \(1 \le k \le n\) y
+       \(1 \le c_i \le n\) para cada \(0 \le i \le k-1\).</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">7</td><td>\(n \le 20\), \(k = 1\), <code>s</code> contiene solo <code>.</code> (puzzle vacío)</td></tr>
+          <tr><td>2</td><td class="pts">3</td><td>\(n \le 20\), <code>s</code> contiene solo <code>.</code></td></tr>
+          <tr><td>3</td><td class="pts">22</td><td>\(n \le 100\), <code>s</code> contiene solo <code>.</code></td></tr>
+          <tr><td>4</td><td class="pts">27</td><td>\(n \le 100\), <code>s</code> contiene solo <code>.</code> y <code>_</code> (información solo sobre celdas blancas)</td></tr>
+          <tr><td>5</td><td class="pts">21</td><td>\(n \le 100\)</td></tr>
+          <tr><td>6</td><td class="pts">10</td><td>\(n \le 5\,000\), \(k \le 100\)</td></tr>
+          <tr><td>7</td><td class="pts">10</td><td>\(n \le 200\,000\), \(k \le 100\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>solve_puzzle("..........", [3, 4])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>"??X???XX??"</pre></div>
+    </div>
+    <p class="note">Estas son todas las soluciones válidas del puzzle:
+       <span class="grid">XXX_XXXX__</span>, <span class="grid">XXX__XXXX_</span>,
+       <span class="grid">XXX___XXXX</span>, <span class="grid">_XXX_XXXX_</span>,
+       <span class="grid">_XXX__XXXX</span>, <span class="grid">__XXX_XXXX</span>.
+       Se observa que las celdas con índices (base 0) \(2\), \(6\) y \(7\) son
+       negras en cada solución válida. Cada una de las demás celdas
+       <em>puede</em> ser negra, pero no tiene por qué serlo. Por eso la respuesta
+       correcta es <span class="grid">??X???XX??</span>.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>solve_puzzle("........", [3, 4])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>"XXX_XXXX"</pre></div>
+    </div>
+    <p class="note">Aquí la solución entera queda determinada de forma única, así
+       que la respuesta correcta es <span class="grid">XXX_XXXX</span>.</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>solve_puzzle("..._._....", [3])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>"???___????"</pre></div>
+    </div>
+    <p class="note">En este ejemplo podemos deducir que la celda \(4\) también
+       tiene que ser blanca: no hay manera de meter tres celdas negras
+       consecutivas entre las celdas blancas de los índices \(3\) y \(5\). Por eso
+       la respuesta correcta es <span class="grid">???___????</span>.</p>
+
+    <h3>Ejemplo 4</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>solve_puzzle(".X........", [3])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>"?XX?______"</pre></div>
+    </div>
+    <p class="note">Solo hay dos soluciones válidas que concuerdan con la
+       descripción: <span class="grid">XXX_______</span> y
+       <span class="grid">_XXX______</span>. Por lo tanto la respuesta correcta es
+       <span class="grid">?XX?______</span>.</p>
+
+    <h2>Evaluador de ejemplo</h2>
+    <p>El evaluador de ejemplo lee la entrada con el siguiente formato:</p>
+    <ul>
+      <li>línea 1: la cadena \(s\);</li>
+      <li>línea 2: el entero \(k\) seguido de \(k\) enteros \(c_0, \dots, c_{k-1}\).</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Strings</span>
+      <span class="ptag">Sumas de prefijos</span>
+      <span class="ptag">Arreglo de diferencias</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Nonograma de <strong>una sola fila</strong>. Te dan una cadena \(s\) (con
+       <code>X</code> = negra forzada, <code>_</code> = blanca forzada,
+       <code>.</code> = desconocida) y las pistas \(c=[c_0,\dots,c_{k-1}]\)
+       (longitudes de los \(k\) bloques negros consecutivos, en ese orden).
+       Implementa <code>solve_puzzle(s, c)</code> que, para
+       <strong>cada celda</strong>, decida si es <code>X</code> (negra en toda
+       solución válida), <code>_</code> (blanca en toda solución válida) o
+       <code>?</code> (varía entre soluciones). Se garantiza \(\ge 1\) solución.
+       Es una tarea <strong>funcional</strong>: el evaluador llama tu función
+       <em>una vez</em> con todos los datos.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Las subtareas marcan el camino: con \(n \le 20\) cabe fuerza bruta;
+                con \(n \le 100\) basta algo \(O(n^2)\) o \(O(n\,k^2)\); pero las
+                subtareas 6–7 (\(n \le 2\cdot10^5\), \(k \le 100\)) exigen un
+                \(O(n\,k)\) con sumas de prefijos y arreglo de diferencias.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar una "solución"?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué es exactamente una solución válida? ¿No es
+           simplemente una forma de <em>colocar</em> los \(k\) bloques en la fila,
+           en orden, separados por al menos un blanco?</p>
+        <p>Una solución queda determinada por dónde empieza cada bloque. El bloque
+           \(i\) ocupa \(c_i\) celdas consecutivas; entre dos bloques consecutivos
+           debe haber <strong>al menos un blanco</strong>; lo que queda fuera de
+           los bloques es blanco. Además debe respetar los forzados: ninguna
+           <code>X</code> puede quedar fuera de un bloque, y ningún <code>_</code>
+           puede quedar cubierto por un bloque.</p>
+        <p>Con esa lente, la pregunta "¿la celda \(x\) es siempre negra / siempre
+           blanca?" se vuelve: <em>¿existe alguna colocación válida que la deje
+           negra? ¿Existe alguna que la deje blanca?</em></p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas chicas: fuerza bruta (subtareas 1–2)</summary>
+      <div class="body">
+        <p class="q">Con \(n \le 20\), ¿de cuántas formas distintas puedes colocar
+           los bloques? ¿Te alcanza con enumerarlas todas?</p>
+        <p>Subtarea 1 (\(k=1\), vacío): hay un solo bloque de longitud \(c_0\); sus
+           inicios posibles van de \(0\) a \(n-c_0\). La <strong>intersección</strong>
+           de todas esas posiciones del bloque te da las celdas siempre negras; el
+           resto son <code>?</code>.</p>
+        <p>Subtarea 2 (\(n \le 20\), vacío): puedes enumerar todas las colocaciones
+           (o probar las \(2^{n}\) coloraciones y filtrar las válidas) y, por cada
+           celda, ver si apareció negra en alguna y blanca en alguna. Lento pero
+           suficiente para \(n \le 20\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — "Siempre negra" con un greedy (subtarea 3)</summary>
+      <div class="body">
+        <p class="q">Para cada bloque, ¿qué pasa si lo empujas lo más a la
+           <em>izquierda</em> posible y luego lo más a la <em>derecha</em> posible?
+           ¿Qué celdas quedan cubiertas en ambos extremos?</p>
+        <p>Coloca todos los bloques pegados a la izquierda (cada bloque \(i\) en su
+           posición mínima) y guarda el rango \([L_i, L_i+c_i-1]\). Coloca todos los
+           bloques pegados a la derecha y guarda \([R_i, R_i+c_i-1]\). La
+           <strong>intersección</strong> \([R_i,\,L_i+c_i-1]\) (si no es vacía) son
+           las celdas que el bloque \(i\) cubre <em>sí o sí</em>: negras en toda
+           solución. Esto da, para puzzles vacíos, todas las <code>X</code> de la
+           salida.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — "Siempre blanca": el caso de los '_' (subtarea 4)</summary>
+      <div class="body">
+        <p class="q">El Ejemplo 3 es la clave: entre dos blancos forzados muy
+           juntos no cabe el bloque. ¿Cómo deduces que una celda es blanca en
+           <em>toda</em> solución?</p>
+        <p>Con celdas <code>_</code> ya no basta el greedy de negras: hay que
+           deducir blancas forzadas. Una celda \(x\) es blanca en toda solución si
+           <strong>ninguna</strong> colocación válida la cubre con un bloque. El
+           caso clásico es \(n=13\), \(c=(3,1,1,3)\),
+           <span class="grid">...._..._....</span>
+           \(\to\) <span class="grid">?XX?_X_X_?XX?</span>: los blancos forzados
+           parten la fila y obligan a ciertas celdas. Truco útil: pon
+           <em>centinelas</em> blancos imaginarios en los extremos para tratar los
+           bordes igual que los separadores internos.</p>
+        <p>¿Notas que tanto "¿puede ser negra?" como "¿puede ser blanca?" se
+           reducen a preguntas de <strong>alcanzabilidad</strong>: "¿caben los
+           primeros \(t\) bloques a la izquierda de aquí y los \(k-t\) restantes a
+           la derecha?"</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — El caso general con 'X' y una DP de alcanzabilidad (subtarea 5)</summary>
+      <div class="body">
+        <p class="q">Cuando hay <code>X</code>, <code>_</code> y <code>.</code>
+           mezclados, ¿cómo respondes en bloque "¿caben los primeros \(t\) bloques
+           en las primeras \(j\) celdas, respetando los forzados"?</p>
+        <p>Define una DP hacia adelante \(P[t][j]\) = "¿se pueden colocar
+           exactamente los primeros \(t\) bloques dentro de las primeras \(j\)
+           celdas, respetando los forzados de ese prefijo?". La recurrencia mira la
+           última celda \(j-1\): o es blanca (hereda \(P[t][j-1]\)), o es el
+           <em>final</em> del bloque \(t-1\) (que ocupa \([\,j-c_{t-1},\,j-1]\),
+           sin pisar ningún <code>_</code>, con separador válido, y hereda
+           \(P[t-1][\cdot]\)). Simétricamente, \(Q[t][j]\) hacia atrás. Para
+           \(n \le 100\), una versión \(O(n^2)\) o \(O(n\,k^2)\) ya da los 21
+           puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 6 — Escalar a \(n \le 2\cdot10^5\) (subtareas 6–7)</summary>
+      <div class="body">
+        <p class="q">Tu DP es \(O(n\,k)\) en celdas, pero cada chequeo "¿hay un
+           <code>X</code>/<code>_</code> forzado en el intervalo \([a,b]\)?" no
+           puede costar \(O(n)\). ¿Cómo lo haces \(O(1)\)? Y al marcar "esta celda
+           puede ser negra" para muchos tramos, ¿cómo evitas el \(O(n)\) por
+           tramo?</p>
+        <p>Dos herramientas estándar: <strong>sumas de prefijos</strong> del número
+           de <code>X</code> y de <code>_</code> forzadas, para responder cada
+           consulta de intervalo en \(O(1)\); y un <strong>arreglo de
+           diferencias</strong> para marcar de un golpe todos los tramos
+           \([i, i+c-1]\) que pueden ser negros (un \(+1\) en \(i\) y un \(-1\) en
+           \(i+c\), y un barrido final). Con \(k \le 100\) garantizado, esto da el
+           \(O(n\,k)\) que entra holgado en tiempo.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <h3>Idea central</h3>
+        <p>Para cada celda decidimos por separado dos preguntas:
+           <strong>¿puede ser blanca?</strong> y <strong>¿puede ser negra?</strong>
+           (cada una en alguna solución válida). Combinándolas:</p>
+        <ul>
+          <li>puede negra <strong>y</strong> puede blanca \(\Rightarrow\) <code>?</code></li>
+          <li>solo puede negra \(\Rightarrow\) <code>X</code></li>
+          <li>solo puede blanca \(\Rightarrow\) <code>_</code></li>
+        </ul>
+        <p>Como existe \(\ge 1\) solución, toda celda recibe al menos una etiqueta.
+           Ambas preguntas se contestan con dos DP de alcanzabilidad y dos
+           preprocesos baratos.</p>
+
+        <h3>Los cuatro ingredientes</h3>
+        <ol>
+          <li><strong>Sumas de prefijos</strong> de <code>X</code> forzadas
+              (<code>blk</code>) y de <code>_</code> forzadas (<code>wht</code>).
+              Con ellas, en \(O(1)\), sabemos si un intervalo \([a,b]\) contiene
+              algún negro forzado o algún blanco forzado.</li>
+          <li><strong>DP hacia adelante</strong> \(P[t][j]\): ¿caben los primeros
+              \(t\) bloques en las primeras \(j\) celdas? La recurrencia considera
+              las dos únicas posibilidades de la celda \(j-1\): blanca, o final del
+              bloque \(t-1\).</li>
+          <li><strong>DP hacia atrás</strong> \(Q[t][j]\): lo simétrico, los
+              últimos \(t\) bloques en las últimas \(j\) celdas (separador a la
+              derecha).</li>
+          <li><strong>Arreglo de diferencias</strong> para marcar, de golpe, todas
+              las celdas que algún bloque colocable puede pintar de negro.</li>
+        </ol>
+
+        <h3>¿Puede una celda \(x\) ser blanca?</h3>
+        <p>Solo si no es <code>X</code> forzada. Entonces la celda blanca actúa de
+           separador: probamos cada corte \(t\) en \(0..k\) y vemos si los primeros
+           \(t\) bloques caben estrictamente a su izquierda
+           (\(P[t][x]\), celdas \(0..x-1\)) y los \(k-t\) restantes caben
+           estrictamente a su derecha (\(Q[k-t][n-1-x]\), celdas \(x+1..n-1\)). Si
+           algún \(t\) cumple ambas, la celda <em>puede</em> ser blanca.</p>
+
+        <h3>¿Puede una celda ser negra?</h3>
+        <p>Para cada pista \(t\) (longitud \(c\)) probamos cada inicio \(i\) del
+           bloque \([i,\,i+c-1]\): el tramo no debe cubrir ningún <code>_</code>
+           forzado; las celdas separadoras \(i-1\) e \(i+c\) (si existen) no deben
+           ser <code>X</code> forzadas; los primeros \(t\) bloques deben caber a la
+           izquierda del separador (\(P[t][i-1]\)) y los últimos \(k-t-1\) a la
+           derecha (\(Q[k-t-1][\cdot]\)). Si todo se cumple, <em>todas</em> las
+           celdas \([i, i+c-1]\) pueden ser negras: las marcamos con el arreglo de
+           diferencias y al final un barrido nos dice, en \(O(1)\) amortizado por
+           celda, si la celda puede ser negra.</p>
+
+        <p class="note">Las celdas forzadas salen consistentes solas: una
+           <code>X</code> forzada nunca se cuenta como blanca (la saltamos) y,
+           como hay solución, algún bloque la cubre, así que sale <code>X</code>.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion solve_puzzle(s, c):
+    n = longitud(s);   k = longitud(c)
+    # sumas de prefijos: 'X' forzadas (blk) y '_' forzadas (wht)
+    blk[0..n], wht[0..n]                       # blk[j] = #('X' en 0..j-1), idem wht
+    blanco_en(a, b) = wht[b+1] - wht[a]        # #('_' forzados en el intervalo [a, b])
+
+    # ---------- DP hacia ADELANTE ----------
+    # P[t][j] = ¿caben los primeros t bloques dentro de las primeras j celdas?
+    para j en 0..n:   P[0][j] = (blk[j] == 0)            # 0 bloques no cubren ninguna 'X'
+    para t en 1..k:
+        cc = c[t-1]
+        para j en 0..n:
+            ok = falso
+            si j ≥ 1 y s[j-1] ≠ 'X':                     # celda j-1 blanca
+                ok = P[t][j-1]
+            si (no ok) y j ≥ cc:                         # el bloque ocupa [j-cc, j-1]
+                ini = j - cc
+                si blanco_en(ini, j-1) == 0:             # no pisa ningún '_' forzado
+                    sep = ini - 1                        # separador a la izquierda
+                    si sep &lt; 0:          ok = P[t-1][0]   # bloque pegado al inicio
+                    sino si s[sep] ≠ 'X': ok = P[t-1][sep]
+            P[t][j] = ok
+
+    # ---------- DP hacia ATRAS (espejo) ----------
+    # Q[t][j] = ¿caben los últimos t bloques dentro de las últimas j celdas (n-j..n-1)?
+    para j en 0..n:   Q[0][j] = (blk[n] - blk[n-j] == 0)
+    para t en 1..k:
+        cc = c[k-t]
+        para j en 0..n:
+            celda = n - j                                # primera celda de la ventana
+            ok = falso
+            si j ≥ 1 y s[celda] ≠ 'X':                   # esa celda blanca
+                ok = Q[t][j-1]
+            si (no ok) y j ≥ cc:                         # el bloque ocupa [celda, celda+cc-1]
+                fin = celda + cc - 1
+                si blanco_en(celda, fin) == 0:
+                    sep = fin + 1                        # separador a la derecha
+                    si sep &gt; n-1:        ok = Q[t-1][0]
+                    sino si s[sep] ≠ 'X': ok = Q[t-1][n-1-sep]
+            Q[t][j] = ok
+
+    puede_blanca[0..n-1] = falso
+    puede_negra[0..n-1]  = falso
+
+    # ---------- ¿puede ser BLANCA? ----------
+    para x en 0..n-1:
+        si s[x] == 'X': continuar                        # forzada negra: nunca blanca
+        para t en 0..k:                                  # x parte las pistas en t | k-t
+            si P[t][x] y Q[k-t][n-1-x]:
+                puede_blanca[x] = verdadero;  romper
+
+    # ---------- ¿puede ser NEGRA?  (arreglo de diferencias) ----------
+    dif[0..n] = 0
+    para t en 0..k-1:
+        cc = c[t]
+        para i en 0..(n-cc):                             # bloque t en [i, i+cc-1]
+            fin = i + cc - 1
+            si blanco_en(i, fin) ≠ 0: continuar
+            si i &gt; 0     y s[i-1]   == 'X': continuar     # separador izq. no puede ser negro
+            si fin+1 &lt; n y s[fin+1] == 'X': continuar     # separador der. tampoco
+            izqOK = (i == 0) ? (t == 0)     : P[t][i-1]
+            si no izqOK: continuar
+            rc = n - 2 - fin
+            derOK = (rc &lt; 0) ? (k-t-1 == 0) : Q[k-t-1][rc]
+            si no derOK: continuar
+            dif[i] += 1;   dif[fin+1] -= 1               # marca todo el tramo [i, fin]
+    suma = 0
+    para x en 0..n-1:
+        suma += dif[x]
+        si suma &gt; 0: puede_negra[x] = verdadero
+
+    # ---------- salida ----------
+    para x en 0..n-1:
+        si puede_negra[x] y puede_blanca[x]: ans[x] = '?'
+        sino si puede_negra[x]:              ans[x] = 'X'
+        sino:                                ans[x] = '_'
+    devolver ans</pre>
+        </div>
+
+        <h3>¿Por qué es correcto?</h3>
+        <ul>
+          <li>Las sumas de prefijos hacen \(O(1)\) la pregunta "¿hay un forzado
+              <code>X</code>/<code>_</code> en \([a,b]\)?", base de todas las
+              verificaciones de colocación.</li>
+          <li>\(P\) y \(Q\) son <em>exactamente</em> alcanzabilidad: la recurrencia
+              agota las dos únicas posibilidades de la última celda del prefijo
+              (blanca, o final del último bloque) y respeta forzados y separadores,
+              así que son verdaderas si y solo si existe una colocación legal de
+              esos bloques en ese rango.</li>
+          <li>Una celda \(x\) es blanca en <em>alguna</em> solución si y solo si las
+              pistas pueden partirse en un prefijo que cabe estrictamente a su
+              izquierda y un sufijo que cabe estrictamente a su derecha, con \(x\)
+              de separador: justo \(P[t][x] \wedge Q[k-t][n-1-x]\) para algún
+              \(t\).</li>
+          <li>Una celda es negra en <em>alguna</em> solución si y solo si pertenece
+              a algún bloque colocable; el paso de diferencias enumera cada
+              colocación factible (extremos verificados con \(P\) y \(Q\)) y marca
+              su tramo. Si nunca se marca, es blanca en toda solución.</li>
+          <li>La garantía de \(\ge 1\) solución asegura que cada celda recibe al
+              menos una de las dos etiquetas, así que la combinación da exactamente
+              <code>X</code> / <code>_</code> / <code>?</code>.</li>
+        </ul>
+        <p class="note">La respuesta del problema es única por celda; una
+           implementación independiente de este \(O(n\,k)\) coincide carácter a
+           carácter con las respuestas oficiales en los 137 casos del paquete
+           (incluido \(n = 200\,000\)), corriendo en \(\sim 0.14\) s en el peor
+           test.</p>
+
+        <h3>Cómo se sube de subtarea en subtarea</h3>
+        <ul>
+          <li><strong>1–3</strong> (vacío): el greedy "más a la izquierda vs. más a
+              la derecha" da las celdas siempre negras; este \(O(n\,k)\) lo
+              generaliza.</li>
+          <li><strong>4</strong> (solo <code>_</code>): además hay que deducir
+              blancas forzadas; la DP de alcanzabilidad ya las captura (centinelas
+              en los extremos).</li>
+          <li><strong>5</strong> (general con <code>X</code>): aquí ya hace falta
+              \(P\)/\(Q\); un \(O(n^2)\) o \(O(n\,k^2)\) basta para \(n \le 100\).</li>
+          <li><strong>6–7</strong> (\(n\) grande): exigen el \(O(n\,k)\) eficiente
+              con sumas de prefijos y arreglo de diferencias; las versiones
+              \(O(n^2)\) se quedan fuera.</li>
+        </ul>
+
+        <p><strong>Complejidad:</strong> \(O(n\,k)\) en tiempo y \(O(n\,k)\) en
+           memoria. Con \(k \le 100\) y \(n \le 2\cdot10^5\): \(\sim 2\cdot10^7\)
+           operaciones; medido \(\sim 0.14\) s en el peor test.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Las tablas P y Q de booleanos ocupan ~40 MB en total (n*k bits *
+2 si usas char): seguro bajo el límite de memoria. Si un juez fuera
+estricto en memoria, comprime cada fila de P/Q a un std::bitset
+(1 bit por celda) y reconstruye la recurrencia con desplazamientos.
+Aquí NO hace falta: el O(n*k) directo entra holgado.</pre>
+          <p class="note">Inclúyelo solo si de verdad hace falta; con los límites de
+             IOI 2016 el arreglo directo entra sin problema.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
