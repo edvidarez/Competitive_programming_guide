@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2016 · Tarea 1 — Detecting Molecules</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2016 · Día 1</div>
+    <h1>Tarea <span class="num">1</span> — Detecting Molecules</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Petr trabaja para una empresa que construyó una máquina para detectar moléculas.
+       Cada molécula tiene un peso entero positivo. La máquina tiene un <strong>rango de
+       detección</strong> \([l, u]\), donde \(l\) y \(u\) son enteros positivos. La máquina
+       puede detectar un conjunto de moléculas <em>si y solo si</em> ese conjunto contiene un
+       subconjunto de moléculas cuyo peso total cae dentro del rango de detección.</p>
+
+    <p>Formalmente, considera \(n\) moléculas con pesos \(w_0, \dots, w_{n-1}\). La detección
+       tiene éxito si existe un conjunto de índices distintos \(I = \{i_1, \dots, i_m\}\) tal que
+       \[ l \le w_{i_1} + \dots + w_{i_m} \le u. \]</p>
+
+    <p>Por las particularidades de la máquina, se garantiza que el ancho entre \(l\) y \(u\) es
+       <strong>mayor o igual</strong> que la diferencia de peso entre la molécula más pesada y la
+       más ligera. Formalmente,
+       \[ u - l \ \ge\ w_{\max} - w_{\min}, \]
+       donde \(w_{\max} = \max(w_0, \dots, w_{n-1})\) y \(w_{\min} = \min(w_0, \dots, w_{n-1})\).</p>
+
+    <p>Tu tarea es escribir un programa que <strong>encuentre cualquier subconjunto</strong> de
+       moléculas con peso total dentro del rango de detección, o bien que determine que <strong>no
+       existe</strong> tal subconjunto.</p>
+
+    <!-- ===== TAREA FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar <strong>una</strong> función (método). El evaluador la llama
+       <strong>una sola vez</strong> con todos los datos:</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int[] find_subset(int l, int u, int[] w);</pre>
+    </div>
+    <ul>
+      <li><code>l</code> y <code>u</code>: los extremos del rango de detección.</li>
+      <li><code>w</code>: los pesos de las moléculas.</li>
+      <li>Si el subconjunto pedido <strong>existe</strong>, la función debe regresar un arreglo con
+          los <strong>índices</strong> de las moléculas que forman cualquiera de esos subconjuntos.
+          Si hay varias respuestas correctas, regresa cualquiera.</li>
+      <li>Si el subconjunto pedido <strong>no existe</strong>, la función debe regresar un arreglo
+          <strong>vacío</strong>.</li>
+    </ul>
+    <p>Para el lenguaje C la firma es ligeramente distinta:</p>
+    <div class="sig">
+      <span class="tag">Firma en C</span>
+<pre>int find_subset(int l, int u, int[] w, int n, int[] result);</pre>
+    </div>
+    <ul>
+      <li><code>n</code>: la cantidad de elementos en <code>w</code> (es decir, el número de
+          moléculas); los demás parámetros son iguales a los de arriba.</li>
+      <li>En lugar de regresar un arreglo de \(m\) índices, la función debe <strong>escribir</strong>
+          los índices en las primeras \(m\) celdas del arreglo <code>result</code> y luego regresar
+          \(m\).</li>
+      <li>Si el subconjunto no existe, no debe escribir nada en <code>result</code> y debe regresar
+          \(0\).</li>
+    </ul>
+    <p>Tu programa puede escribir los índices en el arreglo de retorno (o en <code>result</code>, en
+       C) <strong>en cualquier orden</strong>.</p>
+    <p class="note">Usa los archivos de plantilla provistos para los detalles de implementación de
+       tu lenguaje de programación.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de moléculas</td><td><span class="badge">\(1 \le n \le 200\,000\)</span></td></tr>
+        <tr><td>Pesos y rango</td><td><span class="badge">\(1 \le w_i,\ u,\ l < 2^{31}\)</span></td></tr>
+        <tr><td>Garantía del rango</td><td><span class="badge">\(u - l \ge w_{\max} - w_{\min}\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (copiadas EXACTAS del PDF) -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">9</td>
+              <td>\(1 \le n \le 100\), \(\ 1 \le w_i \le 100\), \(\ 1 \le u, l \le 1000\),
+                  y <strong>todos</strong> los \(w_i\) son iguales.</td></tr>
+          <tr><td>2</td><td class="pts">10</td>
+              <td>\(1 \le n \le 100\), \(\ 1 \le w_i, u, l \le 1000\), y
+                  \(\max(w_0,\dots,w_{n-1}) - \min(w_0,\dots,w_{n-1}) \le 1\).</td></tr>
+          <tr><td>3</td><td class="pts">12</td>
+              <td>\(1 \le n \le 100\) y \(1 \le w_i, u, l \le 1000\).</td></tr>
+          <tr><td>4</td><td class="pts">15</td>
+              <td>\(1 \le n \le 10\,000\) y \(1 \le w_i, u, l \le 10\,000\).</td></tr>
+          <tr><td>5</td><td class="pts">23</td>
+              <td>\(1 \le n \le 10\,000\) y \(1 \le w_i, u, l \le 500\,000\).</td></tr>
+          <tr><td>6</td><td class="pts">31</td>
+              <td>\(1 \le n \le 200\,000\) y \(1 \le w_i, u, l < 2^{31}\).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>find_subset(15, 17, [6, 8, 8, 7])</pre></div>
+      <div class="io"><h4>Retorno (uno válido)</h4><pre>[1, 3]</pre></div>
+    </div>
+    <p class="note">Hay cuatro moléculas con pesos \(6, 8, 8, 7\). La máquina detecta subconjuntos con
+       peso total entre \(15\) y \(17\) (nota que \(17 - 15 \ge 8 - 6\)). El peso de las moléculas
+       \(1\) y \(3\) es \(w_1 + w_3 = 8 + 7 = 15\), así que la función puede regresar
+       <code>[1, 3]</code>. Otras respuestas correctas son <code>[1, 2]</code>
+       (\(w_1 + w_2 = 8 + 8 = 16\)) y <code>[2, 3]</code> (\(w_2 + w_3 = 8 + 7 = 15\)).</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>find_subset(14, 15, [5, 5, 6, 6])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[]   (arreglo vacío)</pre></div>
+    </div>
+    <p class="note">Buscamos un subconjunto con peso total entre \(14\) y \(15\) (de nuevo,
+       \(15 - 14 \ge 6 - 5\)). No existe ningún subconjunto con peso total en ese rango, así que la
+       función debe regresar un arreglo vacío.</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>find_subset(10, 20, [15, 17, 16, 18])</pre></div>
+      <div class="io"><h4>Retorno (uno válido)</h4><pre>[0]</pre></div>
+    </div>
+    <p class="note">Buscamos un subconjunto con peso total entre \(10\) y \(20\) (otra vez,
+       \(20 - 10 \ge 18 - 15\)). Cualquier subconjunto de exactamente un elemento tiene peso total
+       entre \(10\) y \(20\), así que las respuestas correctas posibles son <code>[0]</code>,
+       <code>[1]</code>, <code>[2]</code> y <code>[3]</code>.</p>
+
+    <h2>Evaluador de ejemplo</h2>
+    <p>El evaluador de ejemplo (sample grader) lee la entrada con el siguiente formato:</p>
+    <div class="io"><pre>línea 1: tres enteros  n   l   u
+línea 2: n enteros     w0  w1  …  w(n-1)</pre></div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Ordenamiento + prefijos</span>
+      <span class="ptag">Ventana deslizante (two pointers)</span>
+      <span class="ptag">DP / Mochila (subtareas)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(n\) pesos positivos \(w_0,\dots,w_{n-1}\) y un rango \([l,u]\) con la garantía
+       \(u-l \ge w_{\max}-w_{\min}\). Implementa <code>find_subset</code>, que debe regresar los
+       índices de <em>cualquier</em> subconjunto cuya suma de pesos caiga en \([l,u]\), o un arreglo
+       <strong>vacío</strong> si no existe ninguno. Es <strong>funcional</strong> (el grader llama la
+       función una vez) y con <strong>juez especial</strong>: cualquier subconjunto válido se acepta,
+       no hay respuesta única.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Con \(n \le 2\cdot10^5\) y \(w_i < 2^{31}\), la suma de un subconjunto puede llegar a
+                \(\approx 2\cdot10^5 \cdot 2^{31} \approx 4.3\cdot10^{14}\): <strong>no cabe en 32
+                bits</strong> (¡overflow!) y la mochila \(O(n\cdot u)\) es imposible porque \(u\) es
+                gigante. La frontera de \(n \le 2\cdot10^5\) grita \(O(n\log n)\). Las subtareas chicas
+                (\(u,l \le 1000\)) sí admiten DP tipo mochila.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué dimensión conviene fijar?</summary>
+      <div class="body">
+        <p class="q">Un subconjunto puede tener cualquier tamaño. ¿Y si en vez de pensar en
+           <em>qué</em> elementos tomar, primero fijas <em>cuántos</em> tomas?</p>
+        <p>Llama \(k\) al tamaño del subconjunto. Para un \(k\) fijo, ¿cuál sería la suma más pequeña
+           posible con \(k\) elementos? ¿Y la más grande? ¿Te ayudaría tener los pesos
+           <strong>ordenados</strong>?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por las subtareas 1 y 2 (casos especiales)</summary>
+      <div class="body">
+        <p class="q">Subtarea 1: <em>todos</em> los \(w_i\) son iguales a un valor \(w\). Entonces
+           tomar \(k\) moléculas da siempre suma \(k\cdot w\). ¿Puedes recorrer \(k = 1,\dots,n\) y
+           ver si \(l \le k\cdot w \le u\)?</p>
+        <p class="q">Subtarea 2: \(w_{\max}-w_{\min} \le 1\), o sea solo hay dos pesos posibles
+           (digamos \(a\) y \(a{+}1\)). ¿Qué pasa si tomas \(k_1\) de los mínimos y \(k_2\) de los
+           máximos y barres todas las combinaciones \(k_1 + k_2 \le n\)?</p>
+        <p>Estas dos ya valen \(19\) puntos y te empujan a la idea central: <strong>fijar el tamaño y
+           controlar la suma alcanzable</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas 3 y 4: la mochila clásica</summary>
+      <div class="body">
+        <p class="q">Con \(n \le 10^4\) y \(u \le 10^4\), ¿reconoces un problema de mochila? ¿Y si
+           marcas qué sumas de peso son alcanzables con algún subconjunto?</p>
+        <p>Define \(\text{alc}[s] = \text{verdadero}\) si alguna selección de moléculas suma exactamente
+           \(s\). Procesas las moléculas una por una actualizando ese arreglo (tipo mochila 0/1). Al
+           final buscas cualquier \(s \in [l,u]\) marcado como alcanzable y reconstruyes el subconjunto.
+           Cuesta \(O(n\cdot u)\) en tiempo y \(O(u)\) en memoria. Sirve mientras \(u\) sea chico.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 5 y el muro de la subtarea 6</summary>
+      <div class="body">
+        <p class="q">Subtarea 5: \(u \le 5\cdot10^5\). La mochila \(O(n\cdot u)\) empieza a apretar.
+           ¿Puedes acelerarla con un <strong>bitset</strong> (desplazas y haces OR) para ganar un
+           factor de 64? ¿O un greedy \(O(n^2)\)?</p>
+        <p class="q">Subtarea 6: \(u\) puede ser casi \(2^{31}\). El arreglo de la mochila <em>no
+           cabe</em> en memoria ni en tiempo. ¿Qué propiedad del problema (¡esa garantía rara
+           \(u-l \ge w_{\max}-w_{\min}\)!) te permitiría olvidarte de la mochila por completo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave (la garantía del rango)</summary>
+      <div class="body">
+        <p class="q">Ordena los pesos de menor a mayor. Para un tamaño \(k\) fijo: la suma
+           <strong>mínima</strong> es la de los \(k\) más ligeros (\(\text{minSum}[k]\)) y la
+           <strong>máxima</strong> es la de los \(k\) más pesados (\(\text{maxSum}[k]\)). ¿No es cierto
+           que cualquier suma alcanzable con \(k\) elementos cae entre esos dos extremos?</p>
+        <p class="q">Ahora desliza una <strong>ventana contigua</strong> de \(k\) elementos sobre el
+           arreglo ordenado, desde los \(k\) más ligeros hacia los \(k\) más pesados. En cada paso
+           sacas un peso y metes el siguiente: la suma cambia en a lo más \(w_{\max}-w_{\min}\). Como la
+           garantía dice \(u-l \ge w_{\max}-w_{\min}\), ese salto <strong>nunca</strong> es más ancho
+           que el intervalo \([l,u]\). ¿Qué implica eso si arrancas con suma \(\le u\) y terminas con
+           suma \(\ge l\)?</p>
+        <p>Implica que la suma no puede "brincar por encima" de \([l,u]\): forzosamente alguna ventana
+           cae dentro. Esa es toda la solución.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea (greedy sobre los pesos ordenados).</strong> Ordena los índices por peso
+           ascendente y calcula sumas de prefijo \(\text{pref}[\cdot]\). Para cada tamaño \(k\):</p>
+        <ul>
+          <li>Suma mínima con \(k\) elementos: \(\ \text{minSum}[k] = \text{pref}[k]\) (los \(k\)
+              menores).</li>
+          <li>Suma máxima con \(k\) elementos: \(\ \text{maxSum}[k] = \text{pref}[n]-\text{pref}[n-k]\)
+              (los \(k\) mayores).</li>
+        </ul>
+        <p>Existe un subconjunto de tamaño \(k\) con suma en \([l,u]\) <strong>si y solo si</strong>
+           \[ \text{minSum}[k] \le u \quad\text{y}\quad \text{maxSum}[k] \ge l. \]
+           Recorre \(k = 1,\dots,n\) y toma el <strong>primer</strong> \(k\) que cumpla esa condición.
+           Si ninguno la cumple, <strong>no existe</strong> subconjunto: regresa vacío.</p>
+
+        <p><strong>Reconstrucción.</strong> Para ese \(k\), desliza una ventana contigua de tamaño
+           \(k\) sobre el arreglo ordenado. La ventana más a la izquierda tiene suma
+           \(\text{minSum}[k] \le u\); la más a la derecha tiene suma \(\text{maxSum}[k] \ge l\). Cada
+           paso cambia la suma en a lo más \(w_{\max}-w_{\min} \le u-l\), así que alguna ventana
+           intermedia cae en \([l,u]\). Regresa los <strong>índices originales</strong> de esa ventana.</p>
+
+        <p><strong>Por qué es correcto.</strong></p>
+        <ul>
+          <li><em>Necesidad:</em> toda suma de tamaño \(k\) está entre \(\text{minSum}[k]\) y
+              \(\text{maxSum}[k]\). Si \(\text{minSum}[k] > u\) toda suma se pasa de \(u\); si
+              \(\text{maxSum}[k] < l\) toda suma queda por debajo de \(l\). En ambos casos ese \(k\) es
+              imposible.</li>
+          <li><em>Suficiencia:</em> si \(\text{minSum}[k]\le u\) y \(\text{maxSum}[k]\ge l\), la
+              trayectoria de sumas al deslizar la ventana empieza \(\le u\), termina \(\ge l\) y avanza
+              en saltos de tamaño \(\le u-l\); por eso no puede esquivar el intervalo \([l,u]\).</li>
+          <li><em>Completitud:</em> todo subconjunto tiene algún tamaño \(k\); si ningún \(k\) cumple la
+              condición, no hay solución de ningún tamaño, así que la respuesta vacía es correcta.</li>
+        </ul>
+
+        <p class="note"><strong>Erratas del editorial oficial:</strong> el PDF escribe
+           "\(\text{maxSum}[k] \le l\)", pero la condición correcta (y la que usa el código de
+           referencia) es \(\text{maxSum}[k] \ge l\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion find_subset(l, u, w):
+    n   = longitud(w)
+    ord = [0, 1, …, n-1] ordenado por w[ord[i]] ascendente
+    pref[0] = 0
+    para i en 0 … n-1:
+        pref[i+1] = pref[i] + w[ord[i]]        # acumular en 64 bits
+
+    para k en 1 … n:
+        minSum = pref[k]                        # k pesos menores
+        maxSum = pref[n] - pref[n-k]            # k pesos mayores
+        si minSum <= u  y  maxSum >= l:
+            # deslizar ventana contigua de tamaño k
+            para i en 0 … n-k:
+                s = pref[i+k] - pref[i]
+                si l <= s <= u:
+                    regresa [ ord[i], ord[i+1], …, ord[i+k-1] ]
+            # (la garantía asegura encontrar alguna ventana válida)
+
+    regresa []     # ningún tamaño funciona: no existe subconjunto</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(n\log n)\) por el ordenamiento (el barrido de \(k\), los
+           prefijos y la reconstrucción son \(O(n)\)). Memoria \(O(n)\). Este único greedy resuelve
+           <strong>todas</strong> las subtareas de forma uniforme y es la única solución que cabe en la
+           subtarea 6 dentro del límite de tiempo.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (obligatorio en la subtarea 6)</span>
+<pre>// l, u y cada w[i] caben en int (< 2^31), pero la SUMA de hasta
+// 2·10^5 pesos llega a ~4.3·10^14. Declara los prefijos y las sumas
+// de ventana como enteros de 64 bits:
+//        long long  pref[N+1], s;
+// Con int se desborda en los casos grandes (overflow silencioso).</pre>
+          <p class="note">Es el único detalle dependiente del lenguaje: usar acumuladores de 64 bits.
+             Nunca escribas la solución completa en código real; lo de arriba es solo el tipo de dato.</p>
+        </div>
+
+        <p class="note"><strong>Sobre la verificación:</strong> es un juez especial. Cualquier conjunto
+           de índices distintos con suma en \([l,u]\) es válido (y los índices pueden ir en cualquier
+           orden), así que no se compara contra una salida fija: se valida el invariante (índices
+           distintos en \([0,n)\) y suma dentro del rango).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
