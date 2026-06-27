@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2025 · Problema 06 — Flechas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">30ª OMI · 2025 · Día 2</div>
+    <h1>Problema <span class="num">06</span> — Flechas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://dmoj.olimpiadadeinformatica.org.mx/problem/omi30d2p2">DMOJ</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Este problema iba a ser la clase de historia de Juan, que se iba a tratar
+       sobre la IOI de \(1997\) en Sudáfrica. Sin embargo, la lección fue censurada
+       por el resto del comité, y así llegó a ti el siguiente enunciado:</p>
+
+    <p>Abraham es un valiente explorador que va a donde ningún programador ha ido
+       antes. En su siguiente expedición, planea investigar un laberinto muy curioso.
+       Él sabe que el laberinto es una cuadrícula de \(n \times n\) que tiene una
+       flecha en cada casilla. Cada flecha apunta en una de \(4\) direcciones
+       posibles: arriba, abajo, izquierda o derecha. Si Abraham pisa una casilla, es
+       forzado a seguir las flechas desde esa casilla. Cada flecha mueve a Abraham
+       una casilla en la dirección en la que apunta y si llega a una flecha que
+       apunta hacia afuera del laberinto, él podrá escapar.</p>
+
+    <p>Abraham no sabe cómo están orientadas las flechas del laberinto, pero tiene
+       otro tipo de información. En su mapa del laberinto, algunas casillas están
+       pintadas de negro y otras de blanco. Él cree que las casillas negras cumplen
+       que si pisa en cualquiera de ellas inicialmente, nunca podrá escapar del
+       laberinto, mientras que si pisa cualquier casilla blanca, en algún momento
+       podrá escapar.</p>
+
+    <p>La suposición de Abraham podría ser incorrecta, pues hay ciertos acomodos de
+       casillas negras y blancas para los cuales es imposible que se cumplan las
+       condiciones especificadas para todas las casillas simultáneamente, sin importar
+       cómo estén orientadas las flechas. La siguiente imagen es un ejemplo de esto.</p>
+
+    <figure>
+      <img alt="Laberinto de 2×2 con dos casillas negras en diagonal y dos blancas; a la derecha, las blancas con flechas que apuntan hacia afuera."
+           src="data:image/png;base64,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">
+      <figcaption>Se muestra un mapa que representa un laberinto en el cual las
+         casillas blancas pueden satisfacer lo que Abraham supone. Si él se para en
+         cualquiera de ellas, las flechas mostradas lo sacan del laberinto, pero es
+         imposible que se quede atrapado al iniciar en una casilla negra sin importar
+         qué orientaciones le demos a las flechas no mostradas.</figcaption>
+    </figure>
+
+    <h3>Problema</h3>
+    <p>Abraham te pide que lo ayudes diciéndole si para una cierta coloración de las
+       casillas en su mapa existe un acomodo de flechas que concuerda con su creencia
+       para cada casilla de la cuadrícula (tanto negra como blanca).</p>
+
+    <h2>Entrada</h2>
+    <ul>
+      <li>La primera línea contiene un entero positivo \(n\).</li>
+      <li>Cada una de las siguientes \(n\) líneas contiene \(n\) caracteres, cada uno
+          \(0\) o \(1\). El \(0\) denota una casilla negra y el \(1\) una casilla
+          blanca. Estas \(n\) líneas describen la cuadrícula.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Imprime <code>SI</code> si se pueden orientar las flechas de forma que Abraham
+       nunca pueda escapar al pararse inicialmente en una casilla negra y que
+       eventualmente escape si inicialmente se para en una casilla blanca.</p>
+    <p>Imprime <code>NO</code> si lo anterior no es posible.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span> (parcial)</td></tr>
+        <tr><td>Tamaño de la cuadrícula</td><td><span class="badge">\(2 \le n \le 1000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">10</td><td>\(n = 2\).</td></tr>
+          <tr><td>2</td><td class="pts">25</td><td>Se garantiza que las casillas negras forman una región conexa y que al menos dos esquinas del laberinto son negras.</td></tr>
+          <tr><td>3</td><td class="pts">25</td><td>Se garantiza que las casillas blancas forman una región conexa y que menos de \(4n - 4\) celdas son negras.</td></tr>
+          <tr><td>4</td><td class="pts">40</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+001
+001
+111</pre></div>
+      <div class="io"><h4>Salida</h4><pre>SI</pre></div>
+    </div>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2
+01
+10</pre></div>
+      <div class="io"><h4>Salida</h4><pre>NO</pre></div>
+    </div>
+
+    <p>El primer ejemplo corresponde a la siguiente coloración (mostrada a la
+       izquierda) junto con un acomodo posible de orientaciones de las flechas:</p>
+
+    <figure>
+      <img alt="Laberinto de 3×3: a la izquierda la coloración (bloque 2×2 de casillas negras arriba a la izquierda y el resto blancas); a la derecha, una asignación de flechas válida."
+           src="data:image/png;base64,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hIaGYvz48Thx4gTi4uIUNwmBxYWoErv9w7ygoCCMHz8e33//Pbp37664A1VJBAcHu6dY16hRA5s3b8amTZvQoEEDVRfL8PBw6HQ6aDQavPDCC/jpp58wdepUxc7YY3EhqsQGDBiA48eP4/Lly5g+fTqqVq0qd1EdrVaLffv24fjx40hPT0eXLl38YhJC48aNcfr0aZw5cwYbNmzAQw89pOhiqf6/OBF5TafToUmTJoq4AOxL4eHhaNKkid9MQsCt6yv16tVDvXr1FF1UbmNxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin2NxISIin9MIIYQc9NTtO3M++eSTaN26tZxWpYMHD2LPnj0IDAxEr1698OCDD8pdVGnt2rXIzMxEREQE+vXr5xe3IM/Ozsby5csBACaTCfHx8XIXVUpOTkZCQgIAYNCgQX7xcCuXy4XPP/8cWVlZiIyMxIsvvih3UaXff/8dGzZsQF5eHp566im0atVK7qJKBw4cwHfffQcA8LZE+KS4EFW0BQsWYOTIkXJYlRYtWoRhw4bJYaIK4W2JKNXX12bNmskhonIXFBSEbt26yWHV6tq1K6pUqSKHicrdY489Joc8VqozFyIiorsp1ZkLERHR3bC4EBGRz7G4EBGRz7G4EBGRz/0fZOi2Kgc6b1IAAAAASUVORK5CYII=">
+      <figcaption>Figura: coloración del primer ejemplo (izquierda) y un acomodo
+         válido de flechas (derecha).</figcaption>
+    </figure>
+
+    <p>El segundo ejemplo se mencionó en la historia del problema como un caso en que
+       es imposible satisfacer lo pedido para todas las casillas al mismo tiempo.</p>
+
+    <h2>Nota</h2>
+    <p>Un conjunto de casillas forma una <strong>región conexa</strong> si existe un
+       camino (moviéndose entre casillas que comparten un borde) entre cada par de
+       ellas que solo pasa por casillas del conjunto. En particular, las casillas
+       negras forman una región conexa si entre cada par de casillas negras hay un
+       camino que solo pasa por casillas negras. Similarmente, las casillas blancas
+       forman una región conexa si entre cada par de casillas blancas hay un camino
+       que solo pasa por casillas blancas.</p>
+    <p>En el primer caso de ejemplo, tanto las casillas blancas como las negras forman
+       una región conexa.</p>
+    <p>En el segundo caso de ejemplo, las casillas negras no forman una región conexa
+       porque cualquier camino entre ellas pasa por una casilla blanca también.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">BFS/DFS</span>
+      <span class="ptag">Componentes conexas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes una cuadrícula \(n \times n\) con celdas negras (<code>0</code>) y
+       blancas (<code>1</code>). A cada celda le pondrás una flecha (arriba, abajo,
+       izquierda o derecha). Al pararte en una celda sigues sus flechas; si una flecha
+       apunta hacia afuera de la cuadrícula, escapas. Decide si existe una orientación
+       de las flechas tal que desde toda celda negra <em>nunca</em> escapas y desde
+       toda celda blanca <em>sí</em> escapas. Imprime <code>SI</code> o <code>NO</code>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 1000\) significa hasta \(10^6\) celdas: necesitas algo
+                \(O(n^2)\) (lineal en el número de celdas). La subtarea 1 (\(n = 2\))
+                se puede analizar a mano y sirve para descubrir las dos reglas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué significa, en términos de flechas, que una
+           celda «nunca escape»? Cada celda apunta a una sola vecina (o hacia afuera):
+           es un <em>grafo funcional</em> donde sigues una única arista a la vez.</p>
+        <p>Una celda escapa si, siguiendo flechas, en algún momento sales del
+           tablero. Una celda nunca escapa si su recorrido se queda dentro para
+           siempre. Pregúntate: ¿hacia dónde puede apuntar la flecha de una celda que
+           quieres mantener atrapada?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por las negras (y por \(n = 2\))</summary>
+      <div class="body">
+        <p class="q">¿Una celda negra puede apuntar hacia una celda blanca? Si lo
+           hace, y la blanca termina escapando, ¿no escaparía también la negra que la
+           apuntó?</p>
+        <p>Como toda blanca escapa y salir del tablero también es escapar, la flecha
+           de una negra solo puede llevar a otra celda que <em>tampoco</em> escape:
+           es decir, a otra <strong>negra</strong>. Mira el ejemplo \(n = 2\) con
+           negras en diagonal: ninguna negra tiene una negra al lado, así que es
+           imposible atraparlas. ¿Qué condición local sobre cada negra detecta eso?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La regla de las negras</summary>
+      <div class="body">
+        <p class="q">¿Notaste que basta con que cada negra tenga al menos una vecina
+           negra (ortogonal, dentro del tablero)?</p>
+        <p>Si cada negra apunta a una negra vecina, el recorrido se queda atrapado
+           dentro del conjunto finito de negras y, por ser finito, tarde o temprano
+           cae en un ciclo: nunca escapa. Y es necesario: una negra sin ninguna vecina
+           negra solo podría apuntar a una blanca o hacia afuera, y en ambos casos
+           escaparía. Conclusión parcial: si existe <em>alguna</em> negra sin vecina
+           negra, la respuesta es <code>NO</code>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La regla de las blancas</summary>
+      <div class="body">
+        <p class="q">Una blanca debe escapar. ¿Puede apuntar a una negra? No, porque
+           las negras nunca escapan. Entonces, ¿qué necesita una blanca para poder
+           salir realmente?</p>
+        <p>Cada blanca solo puede apuntar a otra blanca o hacia afuera. Para que
+           escape necesita una cadena de blancas que termine saliendo por el borde.
+           Es decir: cada blanca debe poder <strong>llegar al borde del tablero
+           caminando solo por blancas</strong>. Si una componente de blancas está
+           totalmente encerrada por negras (no toca ningún borde), esas blancas no
+           tienen salida. ¿Cómo verificas eso de un golpe para todas las blancas?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La respuesta es <code>SI</code> si y solo si se cumplen <strong>dos
+           condiciones independientes</strong>. Son independientes porque la flecha de
+           cada celda depende solo de su propio color, así que las decisiones de
+           negras y blancas nunca se estorban.</p>
+
+        <p><strong>Condición A (negras atrapadas).</strong> Toda celda negra debe
+           tener al menos una vecina ortogonal negra dentro del tablero.
+           Justificación: la flecha de una negra debe ir a una celda que tampoco
+           escape; apuntar hacia afuera o hacia una blanca implica escapar (las
+           blancas escapan), así que la única opción es una negra vecina. Es
+           suficiente: orientando cada negra hacia una negra vecina, el camino queda
+           encerrado en el conjunto finito de negras y nunca sale. Si <em>alguna</em>
+           negra no tiene vecina negra (por ejemplo, una negra aislada), la respuesta
+           es <code>NO</code>.</p>
+
+        <p><strong>Condición B (blancas con salida).</strong> Toda celda blanca debe
+           poder alcanzar el borde del tablero moviéndose solo por celdas blancas
+           (adyacencia ortogonal). Equivalente: ninguna componente conexa de blancas
+           queda totalmente rodeada por negras. Justificación: una blanca solo apunta a
+           otra blanca o hacia afuera, así que para escapar necesita una ruta de
+           blancas que termine en una blanca del borde apuntando hacia afuera. Si su
+           componente toca el borde, se construye un árbol generador de esa componente
+           dirigido hacia una blanca del borde (cada blanca apunta a su «padre» en el
+           árbol, y la raíz del borde apunta hacia afuera): todas escapan. Si no toca
+           ningún borde, es imposible y la respuesta es <code>NO</code>.</p>
+
+        <p>Para verificar la condición B de forma global, haz un <strong>BFS/DFS
+           multi-fuente</strong> que arranque desde todas las blancas del borde y se
+           propague por blancas. Las blancas que queden sin visitar son justo las que
+           no alcanzan el borde.</p>
+
+        <p><strong>Cómo se sube de subtarea en subtarea:</strong></p>
+        <ul>
+          <li><strong>Subtarea 1 (\(n = 2\)):</strong> solo hay \(4\) celdas; las dos
+              reglas (o un análisis a mano de los casos) resuelven todo.</li>
+          <li><strong>Subtarea 2:</strong> con las negras conexas y dos esquinas
+              negras, la condición A casi siempre se cumple sola y el foco está en las
+              blancas; la solución general la cubre sin cambios.</li>
+          <li><strong>Subtarea 3:</strong> con las blancas conexas y pocas negras
+              (\(\lt 4n-4\)), la condición B se vuelve fácil de razonar, pero la misma
+              solución general la resuelve.</li>
+          <li><strong>Subtarea 4:</strong> sin restricciones, aplicar las dos
+              condiciones tal cual da los 100 puntos.</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer n y la cuadrícula g[0..n-1][0..n-1]   // '0' = negra, '1' = blanca
+
+// --- Condición A: cada negra tiene una vecina negra ---
+para cada celda (i, j):
+    si g[i][j] == NEGRA:
+        tieneVecinaNegra = falso
+        para cada vecina ortogonal (ni, nj) dentro del tablero:
+            si g[ni][nj] == NEGRA:
+                tieneVecinaNegra = verdadero
+        si no tieneVecinaNegra:
+            imprimir "NO"; terminar
+
+// --- Condición B: toda blanca alcanza el borde por blancas ---
+visit[][] = falso
+cola C vacía
+para cada celda (i, j) en el borde del tablero:
+    si g[i][j] == BLANCA y no visit[i][j]:
+        visit[i][j] = verdadero
+        encolar (i, j) en C
+
+mientras C no esté vacía:
+    (x, y) = desencolar de C
+    para cada vecina ortogonal (nx, ny) dentro del tablero:
+        si g[nx][ny] == BLANCA y no visit[nx][ny]:
+            visit[nx][ny] = verdadero
+            encolar (nx, ny) en C
+
+para cada celda (i, j):
+    si g[i][j] == BLANCA y no visit[i][j]:
+        imprimir "NO"; terminar
+
+imprimir "SI"</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(n^2)\) en tiempo y \(O(n^2)\) en memoria
+           (cada celda se mira un número constante de veces).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa BFS iterativo con una cola (no DFS recursivo): con n = 1000 hay
+hasta 10^6 celdas y la recursión podría desbordar la pila.</pre>
+          <p class="note">Inclúyelo únicamente si de verdad hace falta. Nunca pongas
+             la solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

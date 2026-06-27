@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2025 · Problema 08 — Yarbolica</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">30ª OMI · 2025 · Día 2</div>
+    <h1>Problema <span class="num">08</span> — Yarbolica</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://dmoj.olimpiadadeinformatica.org.mx/problem/omi30d2p4">DMOJ</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Yarbolica es una ciudad única en Jalisco conocida porque, entre cada par de
+       casas, existe un único camino simple. Por estas propiedades, Santiago se dio
+       cuenta de que la estructura de la ciudad puede ser representada como un
+       <strong>árbol</strong>. Debido a esto, recientemente decidieron renombrarla de
+       Yahualica a Y<strong>arbol</strong>ica. Entre sus habitantes más célebres está
+       Ma Inés — la querida maestra de matemáticas del pueblo. Ella tiene \(n\) amigas
+       numeradas del \(1\) al \(n\) que viven en las casas \(1, 2, \dots, n\) de
+       Yarbolica respectivamente. Hay \(n-1\) caminos directos bidireccionales que
+       conectan esas \(n\) casas.</p>
+
+    <p>La maestra y sus amigas son aficionadas a las telenovelas turcas, y actualmente
+       hay \(k\) novelas transmitiéndose en Yarbolica, numeradas de la \(1\) a la \(k\).
+       La amiga \(j\) ha visto algunas de las \(k\) novelas; representemos esas novelas
+       con el conjunto \(C_j\). Digamos que la suma total de novelas turcas que ha visto
+       alguna de las amigas es \(s\).</p>
+
+    <p>Ma Inés ya cumplió 80 y ahora más que nunca le encantaría pasar su tiempo con sus
+       amigas. En el \(i\)-ésimo de los siguientes \(q\) días, Ma Inés va a hacer una
+       reunión con todas las amigas que vivan en casas ubicadas en el camino simple
+       entre las casas \(a_i\) y \(b_i\), incluyendo a las casas \(a_i\) y \(b_i\)
+       (recuerda que en Yarbolica hay un único camino simple entre cada par de casas).</p>
+
+    <p>Como no le gusta excluir a ninguna amiga, en cada reunión solo van a hablar de las
+       novelas turcas que <strong>todas</strong> las amigas invitadas vean. Es decir, si
+       Ma Inés hace una reunión con un conjunto \(D\) de amigas, solo van a hablar de las
+       novelas que pertenezcan a la intersección de \(C_d\) (para todo \(d\) en \(D\)).</p>
+
+    <p>Determina, para todos los días \(i\) \((1 \le i \le q)\), la cantidad de novelas
+       turcas que se hablarán en la reunión \(i\).</p>
+
+    <h2>Entrada</h2>
+    <ul>
+      <li>En la primera línea, un único entero \(t\): la cantidad de casos de prueba.</li>
+      <li>En la primera línea de cada caso de prueba, 4 enteros \(n, k, s, q\): que
+          representan respectivamente las cantidades de amigas de Ma Inés, novelas turcas,
+          \(s\), y reuniones en total.</li>
+      <li>En la \(i\)-ésima de las siguientes \(n-1\) líneas, 2 enteros \(u_i\) \(v_i\):
+          que representan que en Yarbolica hay un camino directo bidireccional entre las
+          casas \(u_i\) y \(v_i\).</li>
+      <li>En la \(i\)-ésima de las siguientes \(s\) líneas, 2 enteros \(x_i\) \(c_i\): que
+          representan que la amiga \(x_i\) ve la novela turca \(c_i\), o dicho de otro
+          modo: \(c_i \in C_{x_i}\).</li>
+      <li>En la \(i\)-ésima de las siguientes \(q\) líneas, 2 enteros \(a_i\) \(b_i\): los
+          extremos del camino que define a las amigas invitadas a la reunión \(i\).</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Para cada uno de los \(t\) casos de prueba, imprime una línea de enteros separados
+       por espacios: la cantidad de novelas turcas que se hablarán durante las reuniones
+       \(1, 2, \dots, q\).</p>
+
+    <h2>Límites</h2>
+    <p>Sea \(N\) la suma de \(n\) sobre todos los casos de prueba. Similarmente, sean
+       \(K, S, Q\) las sumas de \(k, s, q\) respectivamente sobre todos los casos de
+       prueba.</p>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en la fuente (consulta el juez)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en la fuente (consulta el juez)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Casos de prueba</td><td><span class="badge">\(1 \le t \le 10^4\)</span></td></tr>
+        <tr><td>Tamaños por caso</td><td><span class="badge">\(1 \le n, k, s, q\)</span></td></tr>
+        <tr><td>Sumas globales</td><td><span class="badge">\(N, K, S, Q \le 3 \times 10^5\)</span></td></tr>
+        <tr><td>Caminos del árbol</td><td><span class="badge">\(1 \le u_i, v_i \le n\) \((1 \le i \le n-1)\)</span></td></tr>
+        <tr><td>Quién ve qué</td><td><span class="badge">\(1 \le x_i \le n\), \(1 \le c_i \le k\) \((1 \le i \le s)\)</span></td></tr>
+        <tr><td>Consultas</td><td><span class="badge">\(1 \le a_i, b_i \le n\) \((1 \le i \le q)\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">7</td><td>\(N, K, Q \le 250\), \(S \le 10^4\).</td></tr>
+          <tr><td>2</td><td class="pts">8</td><td>\(k = 1\).</td></tr>
+          <tr><td>3</td><td class="pts">8</td><td>\(k \le 30\), \(u_i = i\), \(v_i = i+1\) y \(a_j \le b_j\) \((1 \le i \le n-1,\ 1 \le j \le q)\). Es decir, el árbol es una línea.</td></tr>
+          <tr><td>4</td><td class="pts">6</td><td>\(k \le 30\).</td></tr>
+          <tr><td>5</td><td class="pts">16</td><td>\(K, Q \le 5000\).</td></tr>
+          <tr><td>6</td><td class="pts">16</td><td>\(N, K, S \le 5000\).</td></tr>
+          <tr><td>7</td><td class="pts">16</td><td>\(u_i = i\), \(v_i = i+1\) y \(a_j \le b_j\) \((1 \le i \le n-1,\ 1 \le j \le q)\). Es decir, el árbol es una línea.</td></tr>
+          <tr><td>8</td><td class="pts">23</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2
+4 3 6 4
+4 2
+2 1
+3 2
+2 3
+2 2
+2 1
+3 1
+3 2
+4 2
+4 1
+3 4
+2 3
+2 2
+2 7 13 2
+1 2
+1 2
+1 3
+2 1
+2 2
+2 3
+2 4
+2 5
+2 6
+2 7
+1 4
+1 5
+1 6
+1 7
+2 1
+2 2</pre></div>
+      <div class="io"><h4>Salida</h4><pre>0 1 2 3
+6 7</pre></div>
+    </div>
+    <p class="note"><strong>Primer caso.</strong> El árbol tiene la casa \(2\) en el centro,
+       unida a \(1\), \(3\) y \(4\). Los conjuntos son \(C_1=\{\}\), \(C_2=\{1,2,3\}\),
+       \(C_3=\{1,2\}\), \(C_4=\{2\}\). Las reuniones: \((4,1)\) recorre \(4\!-\!2\!-\!1\) y
+       como \(C_1\) es vacío la intersección es \(0\); \((3,4)\) recorre \(3\!-\!2\!-\!4\)
+       con intersección \(\{2\}\), o sea \(1\); \((2,3)\) da \(\{1,2\}\), o sea \(2\); y
+       \((2,2)\) es solo la casa \(2\), así que la respuesta es \(|C_2|=3\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">DFS</span>
+      <span class="ptag">Componentes conexas</span>
+      <span class="ptag">Descomposición sqrt</span>
+      <span class="ptag">Intersección de conjuntos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes un árbol de \(n\) nodos; cada nodo \(j\) trae un conjunto de colores
+       (novelas) \(C_j\). Para cada consulta \((a,b)\) debes contar cuántos colores
+       aparecen en <strong>todos</strong> los nodos del camino simple \(a\to b\); es
+       decir, el tamaño de la intersección \(\bigcap C_d\) sobre el camino. La suma de
+       todos los \(|C_j|\) es \(s\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Las sumas globales son lo que manda: \(N, K, S, Q \le 3\times 10^5\).
+                Eso pide algo cercano a lineal o \(O((N+Q)\sqrt{N})\). La subtarea 1
+                (\(N,K,Q\le 250\)) admite fuerza bruta; \(k=1\) y \(k\le 30\) abren la
+                puerta a máscaras de bits; el árbol-línea y \(K,Q\) o \(N,K,S\) chicos
+                dan pasos intermedios hacia la idea general.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en cada novela como un "color" y en cada amiga como
+           un nodo que guarda un subconjunto de colores? Entonces la respuesta de
+           \((a,b)\) es el número de colores que aparecen en <strong>todos</strong> los
+           nodos del camino \(a\to b\). ¿Qué significa, en el árbol, que un color esté
+           en todo el camino?</p>
+        <p>Olvida la historia: tienes un árbol, conjuntos por nodo, y consultas de
+           "tamaño de la intersección a lo largo de un camino".</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: la fuerza bruta honesta</summary>
+      <div class="body">
+        <p class="q">Con \(N,K,Q\le 250\), ¿no basta con recorrer el camino de cada
+           consulta y contar a mano los colores comunes?</p>
+        <p>Para cada consulta encuentra el camino \(a\to b\) (sube por padres hasta el
+           \(\text{LCA}\) o haz un BFS). Lleva un contador por color: recorre los nodos
+           del camino sumando \(+1\) por cada color que ven; al final, un color cuenta si
+           su contador es igual a la longitud del camino. Eso ya te da los 7 puntos.
+           ¿Cuánto cuesta? Más o menos longitud del camino por tamaño de los conjuntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (k = 1): un solo color</summary>
+      <div class="body">
+        <p class="q">Si solo hay una novela, la respuesta es \(0\) o \(1\). ¿Cuándo es
+           \(1\)? ¿Y cómo verificas rápido que <em>todos</em> los nodos del camino la han
+           visto?</p>
+        <p>La respuesta es \(1\) sii ningún nodo del camino "rompe" (todos tienen la
+           novela). Puedes contar cuántos nodos del camino NO la tienen (con sumas sobre
+           el árbol / distancias entre marcados), o ver si \(a\) y \(b\) caen en la misma
+           parte conexa formada por los nodos que sí la tienen. Esta idea de
+           "conectividad de los que tienen el color" es la semilla del caso general.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 3, 4 y 7: pocos colores o árbol-línea (máscaras)</summary>
+      <div class="body">
+        <p class="q">Con \(k\le 30\), ¿puedes guardar el conjunto \(C_u\) como una
+           <strong>máscara de bits</strong> de 30 bits? Entonces la intersección sobre un
+           camino es solo un <strong>AND</strong> de máscaras, y la respuesta es el
+           <em>popcount</em> del AND. ¿Cómo calculas el AND a lo largo de un camino?</p>
+        <p>Si el árbol es una <strong>línea</strong> (subtareas 3 y 7), un AND sobre un
+           rango contiguo se resuelve con una <em>sparse table</em> de AND o reduciendo
+           por bits (para cada bit, la respuesta es \(1\) en el rango si no hay ningún
+           cero). En un árbol general con \(k\le 30\) (subtarea 4) usa <em>binary
+           lifting</em> guardando el AND de las máscaras hacia los ancestros, y combina
+           las dos mitades \(a\to\text{LCA}\) y \(\text{LCA}\to b\). Con esto sumas
+           subtareas 3, 4 y la 7 parcial. Pero \(k\) puede llegar a \(3\times10^5\): la
+           máscara ya no cabe.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave: cada color es un bosque</summary>
+      <div class="body">
+        <p class="q">Fija un color \(c\) y mira \(S_c\) = el conjunto de nodos que lo
+           tienen. ¿Cuándo cuenta \(c\) para la consulta \((a,b)\)? Exacto: cuando todo
+           el camino \(a\to b\) está dentro de \(S_c\). Como el camino entre dos nodos del
+           árbol es único, ¿no equivale eso a que \(a\) y \(b\) estén en la
+           <strong>misma componente conexa</strong> del bosque inducido por \(S_c\)?</p>
+        <p>Si \(a\) y \(b\) están en la misma componente (un subárbol conexo todo de color
+           \(c\)), el único camino entre ellos vive dentro de esa componente, así que
+           todos sus nodos tienen \(c\). Y al revés. ¿Notaste que \(\sum_c |S_c| = s\)?
+           Entonces la suma de tamaños de todas las componentes, sobre todos los colores,
+           también es \(s\): el trabajo total es manejable.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 6 — Un id de componente por (nodo, color) con un DFS</summary>
+      <div class="body">
+        <p class="q">¿Y si a cada par (nodo, color) le pones un <strong>identificador
+           global único</strong> de su componente? Entonces \(\text{comps}[u]\) es el
+           conjunto de ids del nodo \(u\), y la respuesta de \((a,b)\) es simplemente
+           \(|\text{comps}[a]\cap\text{comps}[b]|\). ¿Por qué basta comparar solo los dos
+           extremos y no todo el camino?</p>
+        <p>Porque dos extremos comparten un id sii están en la misma componente de ese
+           color, y eso ya implica que todo el camino tiene el color (Pista 5). Para
+           asignar los ids con un DFS: al entrar a \(u\), para cada color \(c\) de \(u\),
+           si su padre también tiene \(c\) (es el ancestro inmediato con ese color),
+           hereda el id del padre; si no, abre un id nuevo. Mantén, por color, "el último
+           nodo del camino actual que tiene ese color" para detectar al padre, y
+           restáuralo al regresar del subárbol.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Reformulación.</strong> La respuesta de \((a,b)\) es el número de
+           colores \(c\) tales que el camino \(a\to b\) está completamente contenido en
+           \(S_c\) (los nodos con color \(c\)). Como los caminos del árbol son únicos,
+           eso equivale a que \(a\) y \(b\) pertenezcan a la <strong>misma componente
+           conexa</strong> del bosque inducido por \(S_c\).</p>
+
+        <p><strong>Paso 1 — Ids de componente.</strong> Damos a cada par (nodo, color)
+           un id global único de su componente con un DFS. Recorremos el árbol desde la
+           raíz manteniendo, por color \(c\): <code>onlast[c]</code> = el último nodo del
+           camino raíz→actual que tiene color \(c\), y <code>curcomp[c]</code> = el id de
+           componente activo de \(c\). Al entrar a \(u\), para cada color \(c\) de \(u\):
+           si <code>onlast[c]</code> es justo el padre de \(u\), entonces \(u\) está en la
+           misma componente que el padre y hereda <code>curcomp[c]</code>; si no, crea un
+           id nuevo. Guardamos ese id en <code>comps[u]</code>. Al salir del subárbol,
+           restauramos <code>onlast[c]</code> y <code>curcomp[c]</code> a como estaban.
+           Los ids son únicos por (color, componente), así que un id compartido entre dos
+           nodos significa "mismo color, misma componente".</p>
+
+        <p><strong>Paso 2 — Responder \(|\text{comps}[a]\cap\text{comps}[b]|\).</strong>
+           Ordenamos cada lista <code>comps[u]</code>. Si los conjuntos fueran chicos,
+           una simple fusión de dos listas ordenadas bastaría, pero un nodo puede tener
+           hasta \(\sim s\) colores, así que usamos <strong>descomposición por raíz
+           cuadrada</strong>. Elegimos un umbral \(B\) (p. ej. \(\approx 1000\)). Un nodo
+           es "pesado" si \(|\text{comps}[u]|\ge B\); hay a lo más \(s/B\) de ellos. Para
+           cada nodo pesado precomputamos, contra <em>todos</em> los nodos, el tamaño de
+           la intersección (marcando sus ids en un arreglo y recorriendo los ids de cada
+           otro nodo). Una consulta \((a,b)\): si \(a\) o \(b\) es pesado, lee el valor
+           precomputado; si ambos son ligeros, fusiona sus dos listas (cuesta a lo más
+           \(2B\)).</p>
+
+        <p><strong>Cómo se sube de subtarea en subtarea:</strong> la fuerza bruta da la
+           subtarea 1; \(k=1\) es conectividad de un solo color (subtarea 2); \(k\le 30\)
+           son máscaras de bits con AND sobre el camino —línea o binary lifting—
+           (subtareas 3, 4, 7); con \(K,Q\) o \(N,K,S\) chicos puedes responder con la
+           fusión directa de listas sin el preproceso pesado (subtareas 5 y 6); y la
+           descomposición sqrt completa cierra la subtarea 8 hasta los 100.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer arbol y listas cols[u]   // colores de cada nodo
+onlast[c] = 0 ; curcomp[c] = 0 ; nextId = 0
+
+funcion DFS(u, padre):
+    para cada color c en cols[u]:
+        guardar (onlast[c], curcomp[c])      // para restaurar al salir
+        si padre != 0 y onlast[c] == padre:  // el padre tambien tiene c
+            id = curcomp[c]                  // misma componente que el padre
+        si no:
+            id = ++nextId                    // nueva componente
+        curcomp[c] = id
+        comps[u].agregar(id)
+        onlast[c] = u
+    para cada hijo v de u (v != padre):
+        DFS(v, u)
+    para cada color c en cols[u]:            // al salir del subarbol
+        restaurar (onlast[c], curcomp[c])
+
+DFS(raiz, 0)
+ordenar cada lista comps[u]
+
+// Preproceso de nodos pesados (|comps[u]| >= B); hay <= s/B
+para cada nodo pesado h:
+    marca[c] = verdadero para cada c en comps[h]
+    para todo nodo v:  pre[h][v] = sum( marca[c] : c en comps[v] )
+    limpiar marca
+
+// Consultas
+para cada (a, b):
+    si a es pesado:        respuesta = pre[a][b]
+    sino si b es pesado:   respuesta = pre[b][a]
+    sino:                  respuesta = |comps[a] ∩ comps[b]|   // fusion ordenada
+    imprimir respuesta</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> El DFS y el ordenado son \(O(s\log s)\). El
+           preproceso de pesados cuesta \(O(\tfrac{s}{B}\cdot N)\) en tiempo y memoria, y
+           las consultas ligeras \(O(Q\cdot B)\). Con \(B\approx\sqrt{N}\) queda del
+           orden de \(O\!\big((N+Q)\sqrt{N}\big)\); en la práctica un \(B\) fijo cercano a
+           \(1000\) equilibra tiempo y memoria.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (sí hace falta)</span>
+<pre>// El arbol puede ser una LINEA de hasta 3·10^5 nodos: un DFS recursivo
+// se desborda la pila. Hazlo ITERATIVO (pila explicita con eventos
+// "entrar"/"salir") o aumenta el tamano de pila del programa.</pre>
+          <p class="note">Lo verifiqué: un DFS recursivo se cae (segmentation fault) en
+             un árbol-línea grande; la versión iterativa lo resuelve sin problema.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

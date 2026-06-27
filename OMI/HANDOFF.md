@@ -84,6 +84,11 @@ _Última actualización: 2026-06-27._
     orientación inicial, mochila) y el objetivo.
   - Vista 2: el razonamiento y el “pseudocódigo” final usan **primitivas de
     Karel**, no C++. Pon la etiqueta «Karel». La plantilla ya trae el bloque.
+- **Excepción — tareas interactivas:** aunque la mayoría es E/S clásica, alguna
+  tarea moderna es **interactiva** (p. ej. 2025 «Baterías»: minimizas el número
+  de **consultas** a una función del evaluador). En esos casos describe el
+  **protocolo/funciones** y el **presupuesto de consultas** por subtarea, y la
+  etiqueta «Interactivo». No fuerces el molde de stdin/stdout.
 
 ---
 
@@ -207,8 +212,21 @@ primitivas de Karel) y complejidad.
      Busca en omegaUp por título o déjalo al final.
    - DMOJ (2025): el `statement.md` ya trae el enunciado completo e imágenes en
      `images/`; el HTML original está en `_local/statement.html` por si acaso.
-8. **Verifica el HTML** tras escribirlo: sin marcadores `{{…}}` sin rellenar, las
-   dos vistas presentes, el toggle funcionando y MathJax renderizando.
+8. **`meta.json` puede NO traer límites** de tiempo/memoria (las tareas de DMOJ).
+   Búscalos en `_local/statement.html` (la página de DMOJ los muestra) o en el
+   propio enunciado; ponlos en la Vista 1.
+9. **`statement.md` a veces trae glitches de OCR/markdown:** exponentes rotos
+   (`10^5` se ve como `105`), typos, o un encabezado (p. ej. «Salida») embebido
+   dentro de un item de «Entrada». **Corrígelos como errata obvia** en la
+   transcripción (sin cambiar el contenido); el `statement.md` fuente se queda
+   como está (es la fuente cruda).
+10. **Casos:** pares `SubX_NN.in` / `SubX_NN.out` agrupados por subtarea. Algunos
+    problemas son **special-judge** (varias respuestas válidas): compara
+    semánticamente, no por texto. Si una tarea **no tiene casos** (p. ej. 2025
+    «Yarbolica»), verifica con **fuerza bruta / pruebas aleatorias** contra tu
+    solución o la de referencia (`_local/solution.*`).
+11. **Verifica el HTML** tras escribirlo: sin marcadores `{{…}}` sin rellenar, las
+    dos vistas presentes, el toggle funcionando y MathJax renderizando.
 
 ---
 

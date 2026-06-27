@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2025 · Problema 07 — Baterías</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">30ª OMI · 2025 · Día 2</div>
+    <h1>Problema <span class="num">07</span> — Baterías</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.pdf">statement.pdf</a>
+       · Sitio oficial: <a class="pdf" href="https://www.olimpiadadeinformatica.org.mx/OMI/">olimpiadadeinformatica.org.mx</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <p class="note"><strong>Este es un problema interactivo.</strong></p>
+
+    <h2>El problema</h2>
+    <p>Tras el primer día de examen, regresan todos cansados al Holiday Inn en el
+       que se hospedan todas las delegaciones. Juan en particular está tan cansado
+       que, aunque sea de día, se acuesta y se queda dormido.</p>
+    <p>Juan despertó a mitad de la noche, varias horas después. Al tratar de
+       prender las luces, se da cuenta de que todo el hotel se quedó sin energía
+       eléctrica. Para colmo, Juan se quedó sin batería en el celular, está
+       sumamente hambriento y necesita comer a la brevedad, pero dados sus
+       problemas de orientación en la oscuridad, no lo puede hacer si no hay luz.</p>
+    <p>Tú eres compañero de cuarto de Juan y realmente quieres ayudarle. Para tu
+       buena suerte, en la habitación hay una linterna y \(n\) baterías. Recuerdas
+       que cuando les mostraron la habitación les dijeron que había \(a\) baterías
+       que sí funcionaban y \(b\) baterías que no. La linterna de la que disponen
+       tiene capacidad para <strong>DOS</strong> baterías, y solo prenderá si
+       <strong>ambas</strong> baterías ingresadas funcionan.</p>
+    <p>Tú quieres encontrar \(2\) baterías que funcionen, y para ello puedes
+       introducir \(2\) baterías en la linterna. Si ambas baterías funcionan, la
+       linterna prenderá, y si no, no lo hará.</p>
+    <p>Como buen informático que eres, te preguntas cómo podrías probar las
+       baterías tal que, con la menor cantidad de intentos, la linterna prenda y
+       se la puedas dar a Juan para que se pueda bañar.</p>
+    <p>¡Por favor, enciende la linterna con la mínima cantidad de intentos!</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Deberás implementar la siguiente función:</p>
+    <div class="io"><pre>void busca_baterias(int n, int a);</pre></div>
+    <p>Esta función recibe dos parámetros:</p>
+    <ul>
+      <li>Un entero \(n\), la cantidad de baterías.</li>
+      <li>Un entero \(a\), la cantidad de baterías válidas.</li>
+    </ul>
+    <p>Y regresa \(1\) si la linterna se enciende, \(0\) si no es así.</p>
+    <p>En tu código, podrás invocar la siguiente función para hacer una pregunta:</p>
+    <div class="io"><pre>int linterna(int i, int j);</pre></div>
+    <p>La función recibe los siguientes parámetros:</p>
+    <ul>
+      <li>Un entero \(i\), ingresas la batería \(i\).</li>
+      <li>Un entero \(j\), ingresas la batería \(j\).</li>
+    </ul>
+    <p>Cuando llames esta función, los valores tienen que ser mayores o iguales a
+       \(1\) y menores o iguales a \(n\), y el valor de \(i\) debe ser distinto al
+       de \(j\). De lo contrario, la linterna no prenderá. La función regresa un
+       entero, un \(1\) si la linterna se enciende y un \(0\) en caso contrario.</p>
+    <p>Para poder llevar a cabo la interacción, debes incluir la librería
+       <code>baterias.h</code> en tu código, con el siguiente comando:
+       <code>#include "baterias.h"</code>. En los archivos adjuntos también
+       encontrarás un archivo que emula el evaluador para poder probar tu código.</p>
+
+    <h3>Evaluador adaptativo</h3>
+    <p>El evaluador es <strong>adaptativo</strong>: esto significa que los estados
+       de las baterías no están fijos al inicio del proceso y pueden cambiar
+       dependiendo de tus preguntas. Sin embargo, se garantiza que siempre existen
+       \(a\) baterías que funcionan y que cada respuesta es consistente con todas
+       las preguntas previas.</p>
+
+    <h2>Ejemplo</h2>
+    <p>El evaluador corre tu programa y llama la función
+       <code>busca_baterias(3, 2)</code>. Digamos que las baterías \(1\) y \(3\)
+       son las que funcionan, y el resto no. Estas son todas las posibles llamadas
+       que puede hacer tu código en este caso:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Parámetros</th><th>Proceso</th><th>Valor que regresa</th></tr></thead>
+        <tbody>
+          <tr><td><code>linterna(1, 2)</code></td><td>Preguntas por la batería 1 y la batería 2</td><td class="pts">0</td></tr>
+          <tr><td><code>linterna(1, 3)</code></td><td>Preguntas por la batería 1 y la batería 3</td><td class="pts">1</td></tr>
+          <tr><td><code>linterna(2, 1)</code></td><td>Preguntas por la batería 2 y la batería 1</td><td class="pts">0</td></tr>
+          <tr><td><code>linterna(2, 3)</code></td><td>Preguntas por la batería 2 y la batería 3</td><td class="pts">0</td></tr>
+          <tr><td><code>linterna(3, 1)</code></td><td>Preguntas por la batería 3 y la batería 1</td><td class="pts">1</td></tr>
+          <tr><td><code>linterna(3, 2)</code></td><td>Preguntas por la batería 3 y la batería 2</td><td class="pts">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Consideraciones</h2>
+    <ul>
+      <li>\(2 \le n \le 30\).</li>
+      <li>\(2 \le a \le n\).</li>
+      <li>\(a + b = n\).</li>
+      <li>Las baterías están indexadas a partir del \(1\).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Cantidad de baterías</td><td><span class="badge">\(2 \le n \le 30\)</span></td></tr>
+        <tr><td>Baterías que funcionan</td><td><span class="badge">\(2 \le a \le n\), con \(a+b=n\)</span></td></tr>
+        <tr><td>Pregunta válida</td><td>\(1 \le i,j \le n\) y \(i \ne j\)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tiempo / memoria</td><td>No se especifican en el enunciado (lo que se mide es el <strong>número de llamadas</strong> a <code>linterna</code>).</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">4</td><td>\(a = 2\).</td></tr>
+          <tr><td>2</td><td class="pts">6</td><td>\(a = 3\).</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>\(a = b\).</td></tr>
+          <tr><td>4</td><td class="pts">15</td><td>\(a = b + 1\).</td></tr>
+          <tr><td>5</td><td class="pts">18</td><td>\(a > b\) y <em>no conoces</em> \(a\): se te da en la entrada como \(a = -1\), y a lo más puedes usar \(b + 2\) llamadas a <code>linterna()</code>.</td></tr>
+          <tr><td>6</td><td class="pts">20</td><td>No conoces \(a\) (se te da como \(a = -1\)). Puedes usar a lo más \(n^2/a\) llamadas a <code>linterna()</code>.</td></tr>
+          <tr><td>7</td><td class="pts">25</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Evaluador de prueba</h2>
+    <p>En el apartado de Adjuntos viene un documento llamado <code>grader.cpp</code>
+       que ayuda a simular tu código. Dentro de ese documento encontrarás la
+       función que deberás programar; no hace falta preocuparse por lo que esté
+       fuera del recuadro señalado, que contiene las funciones que el programa usa
+       para calificar tu código. Cuando quieras probar, corre el documento completo.</p>
+    <p>El programa leerá un entero \(N\), seguido de \(N\) enteros
+       \(a_1, a_2, \dots, a_n\), que indican si la \(i\)-ésima batería funciona:</p>
+    <ul>
+      <li><code>1</code> = batería que sí funciona.</li>
+      <li><code>0</code> = batería que no funciona.</li>
+    </ul>
+    <p>Si das una entrada válida, el documento te dirá si tu código generó una
+       respuesta correcta o errónea, además del número de preguntas que le tomó
+       obtenerla. Una vez que tengas tu código finalizado, deberás copiar lo que
+       escribiste en la sección «TU CÓDIGO VA AQUÍ» y pegarlo en un documento
+       nuevo; después, quita las <code>//</code> de
+       <code>#include "baterias.h"</code> para dejarlo listo para enviar.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Adversario adaptativo</span>
+      <span class="ptag">Casillero (pigeonhole)</span>
+      <span class="ptag">Vertex cover / Grafos</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(n\) baterías: \(a\) sirven y \(b=n-a\) no. Una consulta
+       <code>linterna(i,j)</code> regresa \(1\) si y solo si <em>ambas</em>
+       baterías son buenas. Quieres provocar un \(1\) (encender la linterna)
+       usando la menor cantidad de consultas, contra un adversario adaptativo que
+       solo está obligado a mantener que existen \(a\) baterías buenas consistentes
+       con todas tus respuestas. En unas subtareas conoces \(a\); en otras te lo
+       ocultan (\(a=-1\)).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 30\) es chiquito: el costo se mide en <strong>número de
+                consultas</strong>, no en tiempo. La clave es pensar qué conjuntos
+                de pares te <em>garantizan</em> un \(1\) sin importar dónde escondió
+                el adversario las \(b\) baterías malas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar al adversario?</summary>
+      <div class="body">
+        <p class="q">¿Qué te dice un \(0\)? Si <code>linterna(i,j)=0</code>, ¿qué
+           aprendiste exactamente sobre \(i\) y \(j\)?</p>
+        <p>Un \(0\) significa "al menos una de \(\{i,j\}\) es mala". Piensa en un
+           grafo: cada consulta es una <strong>arista</strong> \(\{i,j\}\).</p>
+        <p class="q">Si quieres que el adversario <em>nunca</em> pueda contestar
+           solo ceros, ¿qué propiedad debe tener el conjunto de aristas que estás
+           dispuesto a preguntar? Pista de la pista: el adversario solo necesita
+           escoger \(b\) baterías malas que "toquen" (cubran) todas tus aristas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La condición de victoria (vertex cover)</summary>
+      <div class="body">
+        <p>Las baterías buenas forman un conjunto donde <em>ninguna</em> arista que
+           preguntaste tiene sus dos extremos buenos (si los tuviera, esa consulta
+           habría dado \(1\) y ya habrías ganado). Es decir, el conjunto de malas
+           (de tamaño \(\le b\)) es una <strong>cubierta por vértices</strong> de tu
+           grafo de consultas.</p>
+        <p class="q">Entonces, ¿qué necesitas para <em>forzar</em> un \(1\)? Si tu
+           grafo de consultas no se puede cubrir con \(b\) vértices, el adversario
+           se queda sin escapatoria.</p>
+        <p>Conclusión: te conviene que el grafo de consultas tenga
+           <strong>número de cubierta por vértices \(\ge b+1\)</strong>, y entre
+           todos los grafos así, uno con <em>pocas</em> aristas (pocas consultas).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Cuando SÍ conoces \(a\) (subtareas 1, 2, 3, 4, 7)</summary>
+      <div class="body">
+        <p class="q">Un grafo formado por <strong>cliques disjuntas</strong> (grupos
+           donde preguntas todos los pares internos) tiene cubierta por vértices
+           igual a \(\sum (\text{tamaño}_i - 1)\). Si usas \(k\) cliques que cubren
+           las \(n\) baterías, esa suma es \(n-k\). ¿Qué \(k\) te deja la cubierta
+           justo en \(b+1\)?</p>
+        <p>\(n-k \ge b+1 \iff k \le n-b-1 = a-1\). Así que basta con repartir las
+           \(n\) baterías en \(a-1\) cliques y preguntar todos los pares dentro de
+           cada una: el adversario no podrá cubrir todo con \(b\) malas, y en algún
+           momento se verá obligado a contestar \(1\).</p>
+        <p class="q">¿Cómo armas \(a-1\) cliques de forma cómoda? Truco de índices:
+           agrupa por residuo módulo \(a-1\) (es decir, conecta \(i\) con
+           \(i+(a-1), i+2(a-1),\dots\)).</p>
+        <p>Para minimizar consultas conviene que las cliques estén
+           <strong>balanceadas</strong> (tamaño \(\approx n/(a-1)\)), lo que da del
+           orden de \(\tfrac{n^2}{2(a-1)}\) consultas en el peor caso. Esto cubre la
+           subtarea 1 (\(a=2\): una sola clique, todos los pares), la 2 (\(a=3\):
+           pares e impares), la 3, la 4 y la 7 (\(a\) general conocido).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Cuando NO conoces \(a\) (subtarea 6, límite \(n^2/a\))</summary>
+      <div class="body">
+        <p class="q">Sin conocer \(a\) no sabes en cuántas cliques repartir. ¿Y si
+           las construyes <em>sobre la marcha</em>, fusionando grupos poco a poco?</p>
+        <p>Mantén una colección de <strong>grupos</strong>; al inicio, cada batería
+           es su propio grupo. Invariante: dentro de cada grupo ya probaste todos
+           los pares y dieron \(0\) (cada grupo es una clique de fallos), así que
+           <strong>cada grupo contiene a lo más una batería buena</strong>.</p>
+        <p class="q">Si tuvieras solo \(a-1\) grupos pero hay \(a\) buenas, ¿qué
+           dice el principio del casillero?</p>
+        <p>Que dos buenas caerían en el mismo grupo… pero eso es imposible (las
+           probaste y darían \(1\)). Por lo tanto, antes de bajar a \(a-1\) grupos,
+           <strong>alguna fusión necesariamente enciende la linterna</strong>. Fusiona
+           siempre los dos grupos más pequeños (estilo Huffman) probando todos los
+           pares cruzados; quedas con cliques balanceadas y gastas a lo más del
+           orden de \(\tfrac{n^2}{2(a-1)} \le n^2/a\) consultas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La cota fina de la subtarea 5 (\(a>b\), \(\le b+2\))</summary>
+      <div class="body">
+        <p class="q">Si \(a>b\) (las buenas son mayoría estricta), ¿qué pasa si
+           pruebas <strong>parejas disjuntas</strong> \((1,2),(3,4),(5,6),\dots\)?</p>
+        <p>Cada pareja que da \(0\) "esconde" al menos una mala. Si las primeras
+           \(b+1\) parejas dieran todas \(0\), tendrías \(b+1\) malas… pero solo hay
+           \(b\). Contradicción: alguna de las primeras \(b+1\) parejas debe encender
+           (cuando \(n \ge 2b+2\)).</p>
+        <p class="q">¿Y el caso justo \(a=b+1\) (con \(n=2b+1\) impar)? Ahí solo
+           caben \(b\) parejas y sobra una batería.</p>
+        <p>Si esas \(b\) parejas dan \(0\), la batería sobrante es buena con certeza
+           (es la \((b{+}1)\)-ésima buena). Pruébala contra los dos miembros de
+           cualquier pareja: a lo más \(2\) consultas más, total \(b+2\). La fusión
+           "más pequeños primero" de la Pista 4 hace exactamente esto de forma
+           automática y respeta el presupuesto \(b+2\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La idea unificadora es: <strong>el conjunto de pares que preguntas debe
+           tener cubierta por vértices \(\ge b+1\)</strong>; en cuanto la tenga, el
+           adversario no puede esconder las malas para cubrir todo y se ve forzado a
+           regresar un \(1\). Hay dos regímenes según conozcas \(a\) o no.</p>
+
+        <h3>Caso A: \(a\) conocido (subtareas 1, 2, 3, 4, 7)</h3>
+        <p>Reparte las \(n\) baterías en \(a-1\) cliques (grupos) y pregunta todos
+           los pares dentro de cada grupo. La cubierta por vértices de \(a-1\)
+           cliques que cubren \(n\) vértices es \(n-(a-1)=b+1>b\), así que ganas.
+           La forma cómoda de armarlas es por residuo módulo \(s=a-1\): conectar
+           \(i\) con \(i+s, i+2s,\dots\) Cada clase de residuo se vuelve una clique.
+           Con cliques balanceadas el peor caso es \(\approx \tfrac{n^2}{2(a-1)}\).
+           Casos extremos: \(a=2\Rightarrow\) una sola clique \(=\) todos los pares
+           \(\binom{n}{2}\) (subtarea 1); \(a=3\Rightarrow\) pares vs impares
+           (subtarea 2).</p>
+
+        <h3>Caso B: \(a\) desconocido, \(a=-1\) (subtareas 5 y 6)</h3>
+        <p>No sabes en cuántas cliques repartir, así que las construyes fusionando.
+           Empiezas con \(n\) grupos unitarios. Repetidamente tomas los dos grupos
+           <strong>más pequeños</strong>, pruebas todos sus pares cruzados y, si
+           ninguno enciende, los unes (el resultado sigue siendo una clique de
+           fallos, con a lo más una buena). Como cada grupo tiene \(\le 1\) buena y
+           hay \(a\) buenas, no puedes llegar a \(a-1\) grupos sin que antes una
+           fusión encienda la linterna. Fusionar "los más pequeños primero" deja
+           cliques balanceadas: el peor caso es \(\approx \tfrac{n^2}{2(a-1)} \le
+           n^2/a\) (subtarea 6) y, cuando \(a>b\), las primeras fusiones son parejas
+           disjuntas que encienden dentro de \(b+2\) consultas (subtarea 5).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion busca_baterias(n, a):
+    si a != -1:                      # ---- Caso A: a conocido ----
+        s = max(1, a - 1)
+        para i de 1 a n:
+            j = i + s
+            mientras j <= n:
+                si linterna(i, j) == 1: regresa 1   # encendió
+                j = j + s
+        regresa 0                    # (no debería pasar)
+
+    sino:                            # ---- Caso B: a desconocido ----
+        grupos = [ [1], [2], ..., [n] ]   # cada batería sola
+        mientras tamaño(grupos) >= 2:
+            ordena grupos por tamaño ascendente
+            P = grupos[0];  Q = grupos[1]
+            para x en P:
+                para y en Q:
+                    si linterna(x, y) == 1: regresa 1   # encendió
+            R = P ++ Q                 # une (clique de fallos, <=1 buena)
+            quita P y Q de grupos;  agrega R
+        regresa 0</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> En el Caso A, las \(a-1\) cliques
+           tienen cubierta por vértices \(b+1\): ninguna selección de \(b\) malas
+           cubre todas las aristas, luego alguna arista tiene sus dos extremos
+           buenos y, al preguntarla, enciende. En el Caso B, mientras no enciendas,
+           cada grupo es una clique de fallos (\(\le 1\) buena); si quedaran
+           \(a-1\) grupos habría a lo más \(a-1<a\) buenas, contradicción, así que
+           una fusión enciende antes.</p>
+
+        <p><strong>Complejidad.</strong> Consultas en el peor caso
+           \(O\!\left(\tfrac{n^2}{a}\right)\) (en concreto
+           \(\approx \tfrac{n^2}{2(a-1)}\)); para \(a=2\) son \(\binom{n}{2}\)
+           consultas, que es inevitable. Trabajo extra por consulta \(O(1)\)
+           amortizado (la ordenación por tamaño es despreciable con
+           \(n\le 30\)). Esta estrategia obtiene los \(100\) puntos: usa el Caso A
+           cuando te dan \(a\) (subtareas 1–4 y 7) y el Caso B cuando \(a=-1\)
+           (subtareas 5 y 6).</p>
+
+        <p class="note">Verificación: se probó esta estrategia contra un evaluador
+           adaptativo local (que responde \(0\) siempre que aún exista un conjunto
+           de \(a\) baterías buenas consistente) sobre los \(105\) casos oficiales:
+           enciende en los \(105\) y respeta todos los presupuestos de consultas
+           (subtarea 5 \(\le b+2\); subtarea 6 \(\le n^2/a\)).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

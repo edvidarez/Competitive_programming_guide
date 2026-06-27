@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **0 / 190**
+Total de problemas: **190** · Completados: **8 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -342,15 +342,15 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 6 | Día 2 | Asesino | `2024/06 Asesino/index.html` |
 | [ ] | 7 | Día 2 | Lotería estilo OMI | `2024/07 Lotería estilo OMI/index.html` |
 
-## 30ª OMI · 2025 — 0 / 8
+## 30ª OMI · 2025 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | El fucho | `2025/01 El fucho/index.html` |
-| [ ] | 2 | Día 1 | Magos | `2025/02 Magos/index.html` |
-| [ ] | 3 | Día 1 | Matriz | `2025/03 Matriz/index.html` |
-| [ ] | 4 | Día 1 | Mimo y Yuyú | `2025/04 Mimo y Yuyú/index.html` |
-| [ ] | 5 | Día 2 | Mariachis y la Resonancia | `2025/05 Mariachis y la Resonancia/index.html` |
-| [ ] | 6 | Día 2 | Flechas | `2025/06 Flechas/index.html` |
-| [ ] | 7 | Día 2 | Baterías | `2025/07 Baterías/index.html` |
-| [ ] | 8 | Día 2 | Yarbolica | `2025/08 Yarbolica/index.html` |
+| [x] | 1 | Día 1 | El fucho | `2025/01 El fucho/index.html` |
+| [x] | 2 | Día 1 | Magos | `2025/02 Magos/index.html` |
+| [x] | 3 | Día 1 | Matriz | `2025/03 Matriz/index.html` |
+| [x] | 4 | Día 1 | Mimo y Yuyú | `2025/04 Mimo y Yuyú/index.html` |
+| [x] | 5 | Día 2 | Mariachis y la Resonancia | `2025/05 Mariachis y la Resonancia/index.html` |
+| [x] | 6 | Día 2 | Flechas | `2025/06 Flechas/index.html` |
+| [x] | 7 | Día 2 | Baterías | `2025/07 Baterías/index.html` |
+| [x] | 8 | Día 2 | Yarbolica | `2025/08 Yarbolica/index.html` |
