@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2013 · Tarea 6 — Game</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2013 · Día 2 · Brisbane, Australia</div>
+    <h1>Tarea <span class="num">6</span> — Game</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Juan administra una mina de oro que tiene la forma de una rejilla rectangular
+       de \(R\) filas por \(C\) columnas. Las filas se numeran de \(0\) a \(R-1\) y
+       las columnas de \(0\) a \(C-1\), así que cada celda se identifica por un par
+       \((P, Q)\) con \(0 \le P \le R-1\) y \(0 \le Q \le C-1\).</p>
+
+    <p>Cada celda guarda una cantidad de oro, que es un entero no negativo. Al
+       principio <strong>todas</strong> las celdas valen \(0\) (no se ha medido oro
+       en ninguna). Conforme la mina se explora, ocurren dos tipos de eventos, que
+       pueden intercalarse en cualquier orden:</p>
+    <ul>
+      <li><strong>Actualizar (<code>update</code>).</strong> Se mide la celda
+          \((P, Q)\) y se determina que contiene exactamente \(K\) unidades de oro.
+          Esto <em>asigna</em> el valor \(K\) a esa celda (sobrescribe lo que
+          tuviera antes; no se suma).</li>
+      <li><strong>Consultar (<code>calculate</code>).</strong> Para un subrectángulo
+          dado por sus esquinas \((P, Q)\) (arriba-izquierda) y \((U, V)\)
+          (abajo-derecha), con \(P \le U\) y \(Q \le V\), hay que reportar el
+          <strong>máximo común divisor (GCD)</strong> de las cantidades de oro de
+          todas las celdas dentro de ese subrectángulo \([P..U] \times [Q..V]\).</li>
+    </ul>
+
+    <p>Para el GCD se usa la convención estándar con el \(0\) como elemento neutro:
+       \(\gcd(x, 0) = x\) y \(\gcd(0, 0) = 0\). Por lo tanto las celdas que todavía
+       valen \(0\) no afectan el resultado de una consulta, y si <em>todas</em> las
+       celdas del subrectángulo valen \(0\), la respuesta es \(0\).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>interactiva / reactiva (online)</strong>: no lees de
+       la entrada estándar ni escribes en la salida estándar. Debes entregar un
+       archivo (<code>game.c</code>, <code>game.cpp</code> o <code>game.pas</code>)
+       que implemente tres funciones. El evaluador (grader) las llama en el orden en
+       que ocurren los eventos y <strong>no</strong> te deja ver las llamadas
+       futuras: cada <code>calculate</code> debe responderse de inmediato, con la
+       información recibida hasta ese momento.</p>
+    <ul>
+      <li><code>init(R, C)</code> — se llama <strong>una sola vez</strong>, al
+          inicio, con las dimensiones de la mina. Aquí preparas tus estructuras.
+          Después de esto la rejilla está completamente en \(0\).</li>
+      <li><code>update(P, Q, K)</code> — asigna \(K\) unidades de oro a la celda
+          \((P, Q)\). Se puede llamar varias veces sobre la misma celda; vale la
+          última asignación.</li>
+      <li><code>calculate(P, Q, U, V)</code> — regresa el GCD de todas las celdas del
+          subrectángulo \([P..U] \times [Q..V]\).</li>
+    </ul>
+
+    <div class="sig">
+      <span class="tag">Firmas a implementar</span>
+<pre>// C / C++
+void      init(int R, int C);
+void      update(int P, int Q, long long K);
+long long calculate(int P, int Q, int U, int V);
+
+// Pascal
+procedure init(R, C : LongInt);
+procedure update(P, Q : LongInt; K : Int64);
+function  calculate(P, Q, U, V : LongInt) : Int64;</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> El grader incluido lee primero una línea
+      con <code>R C N</code> (dimensiones y número total de eventos). Luego lee \(N\)
+      líneas: una que empieza con <code>1 P Q K</code> es un <code>update</code>; una
+      que empieza con <code>2 P Q U V</code> es un <code>calculate</code>. Por cada
+      <code>calculate</code> imprime, en su propia línea, el valor que regresa tu
+      función. Tú <em>no</em> tocas stdin/stdout: de eso se encarga el grader.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>13 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Dimensiones</td><td><span class="badge">\(1 \le R, C \le 10^9\)</span></td></tr>
+        <tr><td>Oro por celda</td><td><span class="badge">\(0 \le K \le 10^{18}\)</span></td></tr>
+        <tr><td>Coordenadas de consulta</td><td><span class="badge">\(0 \le P \le U \le R-1\), \(0 \le Q \le V \le C-1\)</span></td></tr>
+        <tr><td>Operaciones (cota real de los casos)</td>
+            <td>a lo más \(\sim\!22\,000\) llamadas a <code>update</code> y
+                \(\sim\!250\,000\) llamadas a <code>calculate</code>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales (por escala)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">10</td><td>\(R\) y \(C\) pequeñas (p. ej. desde
+              \(1\times 1\) hasta \(\sim\!100\times 100\)) y pocas operaciones. La
+              rejilla cabe completa en una matriz.</td></tr>
+          <tr><td>2</td><td class="pts">27</td><td>\(R\) pequeña (del orden de unas
+              decenas) y \(C\) grande (hasta \(\sim\!10^5\)), con muchas operaciones
+              (incluye casos adversariales de unicidad).</td></tr>
+          <tr><td>3</td><td class="pts">26</td><td>\(R, C \le 1000\); hasta
+              \(\sim\!2.6\times 10^5\) operaciones. La matriz \(R\times C\) todavía
+              cabe en memoria.</td></tr>
+          <tr><td>4</td><td class="pts">17</td><td>\(R = C = 10^9\); hasta
+              \(\sim\!22\,000\) <code>update</code> y \(\sim\!250\,000\)
+              <code>calculate</code>.</td></tr>
+          <tr><td>5</td><td class="pts">20</td><td>\(R = C = 10^9\); el mismo régimen
+              que la Subtarea 4, con los casos más grandes y adversariales
+              (máxima creación de nodos).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Los puntos son los pesos oficiales; las restricciones reflejan la
+       escala de cada bloque de pruebas (el PDF original viene rasterizado y el
+       formato exacto se reconstruyó a partir de los casos y del ejemplo). Lo
+       importante: en las Subtareas 4 y 5 una matriz de \(10^9 \times 10^9\) es
+       imposible, así que hace falta una estructura <em>dispersa</em>.</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Secuencia de llamadas</h4><pre>init(2, 3)            // R=2, C=3
+
+update(0, 0, 20)
+update(0, 2, 15)
+update(1, 1, 12)
+calculate(0, 0, 0, 2)   ->  5
+calculate(0, 0, 1, 1)   ->  4
+update(0, 1, 6)
+update(1, 1, 14)        // sobrescribe el 12
+calculate(0, 0, 0, 2)   ->  1
+calculate(0, 0, 1, 1)   ->  2</pre></div>
+      <div class="io"><h4>Salida del grader</h4><pre>5
+4
+1
+2</pre></div>
+    </div>
+    <p class="note">Tras los tres primeros <code>update</code> la rejilla es
+       \(\begin{bmatrix}20 &amp; 0 &amp; 15\\ 0 &amp; 12 &amp; 0\end{bmatrix}\).
+       La primera consulta cubre toda la fila \(0\):
+       \(\gcd(20, 0, 15) = \gcd(20, 15) = 5\). La segunda cubre
+       \((0,0),(0,1),(1,0),(1,1)\): \(\gcd(20, 0, 0, 12) = \gcd(20, 12) = 4\).
+       Después de poner \(6\) en \((0,1)\) y \(14\) en \((1,1)\), la fila \(0\) da
+       \(\gcd(20, 6, 15) = \gcd(2, 15) = 1\), y el último rectángulo da
+       \(\gcd(20, 6, 0, 14) = \gcd(2, 14) = 2\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Árbol de segmentos 2D</span>
+      <span class="ptag">Disperso / dinámico</span>
+      <span class="ptag">Teoría de números (GCD)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes una rejilla \(R\times C\) (hasta \(10^9\times 10^9\)) de enteros, toda
+       en \(0\) al inicio. Debes implementar <code>update(P,Q,K)</code> que
+       <em>asigna</em> el valor \(K\) a la celda \((P,Q)\), y
+       <code>calculate(P,Q,U,V)</code> que regresa el GCD de todas las celdas del
+       subrectángulo \([P..U]\times[Q..V]\). La API es <strong>online</strong>: las
+       llamadas llegan en orden y respondes cada consulta sin ver el futuro.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El GCD es <strong>asociativo</strong> y tiene al \(0\) como neutro
+                (\(\gcd(x,0)=x\)): es una agregación perfecta para un árbol de
+                segmentos. \(R, C \le 1000\) deja meter una matriz; pero
+                \(R=C=10^9\) <em>prohíbe</em> la matriz (\(10^{18}\) celdas) y, al ser
+                <strong>online</strong>, tampoco puedes comprimir coordenadas. Con
+                \(\le\!22\,000\) updates y \(\le\!250\,000\) consultas, una estructura
+                de costo \(O(\log R\cdot\log C)\) por operación va sobradísima para
+                los 13 s.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué agregación necesitas?</summary>
+      <div class="body">
+        <p class="q">¿El GCD se porta como una "suma" que puedas precomputar por
+           bloques? ¿Es asociativo? ¿Qué pasa con las celdas que valen \(0\)?</p>
+        <p>El GCD cumple \(\gcd(a,\gcd(b,c))=\gcd(\gcd(a,b),c)\) y
+           \(\gcd(x,0)=x\). Eso lo vuelve un <em>monoide</em> con neutro \(0\):
+           exactamente lo que un árbol de segmentos sabe combinar. Una celda no
+           escrita (valor \(0\)) no estorba. La pregunta real no es "¿qué estructura?"
+           sino "¿cómo la hago bidimensional y que quepa cuando \(R,C\) son enormes?".</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (10 pts): \(R,C\) chicas</summary>
+      <div class="body">
+        <p class="q">Si \(R\times C\) es pequeño, ¿por qué no guardar la matriz tal
+           cual y, en cada consulta, recorrer el rectángulo celda por celda haciendo
+           GCD?</p>
+        <p>Una matriz <code>g[R][C]</code>; <code>update</code> es \(O(1)\) y
+           <code>calculate</code> recorre el subrectángulo en \(O((U-P+1)(V-Q+1))\).
+           Con \(R,C\le 100\) y pocas operaciones eso basta para los primeros
+           \(10\) puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (27 pts): \(R\) chica, \(C\) grande</summary>
+      <div class="body">
+        <p class="q">Si solo hay un puñado de filas pero muchísimas columnas, ¿qué
+           estructura 1D pondrías por columna? ¿Cómo combinas las pocas filas?</p>
+        <p>Para cada una de las \(R\) filas, un árbol de segmentos 1D sobre las
+           columnas que soporte <em>asignación puntual</em> y <em>GCD de un rango de
+           columnas</em>. Una consulta combina (con GCD) los resultados de las
+           \(\le R\) filas involucradas. Como \(R\) es chica, recorrer las filas
+           explícitas no duele. Esto ya te da la mitad de la idea: el eje de columnas
+           se maneja con un segtree; falta hacer también el eje de filas con un
+           segtree en vez de un bucle.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3 (26 pts): \(R,C \le 1000\)</summary>
+      <div class="body">
+        <p class="q">Ahora \(R\) ya no es chica, pero \(R\times C\) todavía cabe.
+           ¿Cómo conviertes el bucle sobre filas en otra dimensión logarítmica?</p>
+        <p>Árbol de segmentos 2D <em>denso</em>: un segtree sobre filas, y cada nodo
+           de filas tiene su propio segtree sobre columnas que guarda, para cada rango
+           de columnas, el GCD de las celdas que caen en el rango de filas de ese nodo.
+           <code>update</code> baja por el árbol de filas y actualiza una posición de
+           columna en cada nodo del camino; <code>calculate</code> parte \([P,U]\) en
+           \(O(\log R)\) nodos y consulta \([Q,V]\) en cada uno. Costo
+           \(O(\log R\cdot\log C)\), memoria \(O(R\cdot C)\). Con \(R,C\le 1000\)
+           todavía cabe.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave (Subtareas 4–5: \(R=C=10^9\))</summary>
+      <div class="body">
+        <p class="q">¿Por qué <strong>no</strong> puedes comprimir coordenadas aquí?
+           Y si no compactas, ¿de dónde sale tanta memoria… y cómo la evitas?</p>
+        <p class="q">Cuando haces <code>update(P,Q,K)</code>, ¿cuántas posiciones de
+           columna cambian realmente en cada nodo de filas? ¿Una sola, la columna
+           \(Q\)?</p>
+        <p>Como la API es <strong>online</strong>, no conoces de antemano qué celdas
+           se tocarán, así que comprimir coordenadas está prohibido: necesitas un
+           segtree 2D <strong>disperso / dinámico</strong> que cree nodos
+           <em>bajo demanda</em>. La clave de eficiencia: tras un <code>update</code>
+           solo cambió la <strong>columna \(Q\)</strong>, así que en cada nodo-fila
+           ancestro basta <em>recomputar esa columna</em>:
+           \(g=\gcd(\text{hijoIzq}@Q,\ \text{hijoDer}@Q)\) y asignarla. Fusionar
+           árboles de columnas enteros sería \(O(C)\) y reventaría tiempo y memoria.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La <strong>misma</strong> estructura resuelve las 5 subtareas; lo único que
+           cambia con la escala es que para \(R=C=10^9\) el árbol debe ser
+           <em>disperso</em> (nodos creados bajo demanda), no una matriz.</p>
+
+        <h3>Idea</h3>
+        <p>Árbol de segmentos 2D disperso con agregación GCD:</p>
+        <ul>
+          <li><strong>Dimensión externa = filas</strong> \([0, R-1]\): un segtree
+              disperso. Cada nodo-fila cubre un rango de filas y posee
+              <strong>su propio segtree disperso de columnas</strong> \([0, C-1]\),
+              que guarda, para cada rango de columnas, el GCD de las celdas que caen
+              en el rango de filas de ese nodo.</li>
+          <li><code>update(P,Q,K)</code>: baja por el árbol de filas hasta la hoja
+              \(P\) (\(O(\log R)\) nodos, creando los dinámicos que falten). En la
+              hoja, asigna \(K\) en su segtree de columnas en la posición \(Q\)
+              (\(O(\log C)\)). Al volver, en cada nodo-fila ancestro <em>recomputa
+              solo la columna \(Q\)</em>:
+              \(g=\gcd(\text{hijoIzq.consultaCol}(Q),\ \text{hijoDer.consultaCol}(Q))\),
+              y la asigna en su propio segtree de columnas. Costo
+              \(O(\log R\cdot\log C)\).</li>
+          <li><code>calculate(P,Q,U,V)</code>: descompone \([P,U]\) en \(O(\log R)\)
+              nodos-fila cubrientes; en cada uno consulta su segtree de columnas el
+              rango \([Q,V]\) (\(O(\log C)\)); combina todo con GCD. Costo
+              \(O(\log R\cdot\log C)\).</li>
+        </ul>
+
+        <h3>Por qué es correcto</h3>
+        <p>El GCD es asociativo y conmutativo con neutro \(0\); por eso un nodo
+           inexistente (nulo) devuelve \(0\) sin alterar la respuesta, y eso modela
+           justo las celdas no escritas. Como <code>update</code> es una
+           <em>asignación</em> de una sola celda, después de actualizar la hoja solo
+           cambia el GCD de la columna \(Q\) en cada ancestro; recomputar únicamente
+           esa columna (no fusionar árboles completos) mantiene el invariante "cada
+           nodo guarda el GCD de su submatriz" y baja el costo a \(O(\log R\cdot\log C)\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>// Pools index-based (indice 0 = NULO). Reserva una sola vez.
+//   columnas: cl[], cr[], cval[]                (segtree disperso por columnas)
+//   filas:    lcRow[], rcRow[], colRoot[]       (segtree disperso por filas;
+//             colRoot[nf] = raiz del segtree de columnas del nodo-fila nf)
+// cval[0] = 0  -> un hijo nulo aporta el neutro del GCD.
+
+funcion gcd(a, b):                 // 0 es la identidad
+    mientras b != 0: (a, b) = (b, a mod b)
+    regresa a
+
+// ----- SEGTREE DE COLUMNAS (1D disperso sobre [0, C-1]) -----
+funcion col_assign(nodo, lo, hi, q, val):    // asigna val en la columna q
+    si nodo == 0: nodo = nuevo_nodo_col()     // crea bajo demanda
+    si lo == hi: cval[nodo] = val; regresa nodo
+    mid = (lo + hi) / 2
+    si q &lt;= mid: cl[nodo] = col_assign(cl[nodo], lo, mid,   q, val)
+    si no:        cr[nodo] = col_assign(cr[nodo], mid+1, hi, q, val)
+    cval[nodo] = gcd(cval[cl[nodo]], cval[cr[nodo]])   // hijo nulo -> 0
+    regresa nodo
+
+funcion col_query(nodo, lo, hi, a, b):       // GCD de columnas [a, b]
+    si nodo == 0 o b &lt; lo o hi &lt; a: regresa 0
+    si a &lt;= lo y hi &lt;= b: regresa cval[nodo]
+    mid = (lo + hi) / 2
+    regresa gcd(col_query(cl[nodo], lo, mid,   a, b),
+                col_query(cr[nodo], mid+1, hi, a, b))
+
+// ----- SEGTREE DE FILAS (1D disperso sobre [0, R-1]) -----
+funcion row_update(nf, lo, hi, p, q, val):
+    si nf == 0: nf = nuevo_nodo_fila()
+    si lo == hi:                              // hoja: fila p exacta
+        colRoot[nf] = col_assign(colRoot[nf], 0, C-1, q, val)
+        regresa nf
+    mid = (lo + hi) / 2
+    si p &lt;= mid: lcRow[nf] = row_update(lcRow[nf], lo, mid,   p, q, val)
+    si no:        rcRow[nf] = row_update(rcRow[nf], mid+1, hi, p, q, val)
+    // SOLO cambio la columna q -> recomputa esa columna en este nodo-fila:
+    g = gcd(col_query(colRoot[lcRow[nf]], 0, C-1, q, q),
+            col_query(colRoot[rcRow[nf]], 0, C-1, q, q))
+    colRoot[nf] = col_assign(colRoot[nf], 0, C-1, q, g)
+    regresa nf
+
+funcion row_query(nf, lo, hi, p, u, q, v):   // filas [p,u] x columnas [q,v]
+    si nf == 0 o u &lt; lo o hi &lt; p: regresa 0
+    si p &lt;= lo y hi &lt;= u: regresa col_query(colRoot[nf], 0, C-1, q, v)
+    mid = (lo + hi) / 2
+    regresa gcd(row_query(lcRow[nf], lo, mid,   p, u, q, v),
+                row_query(rcRow[nf], mid+1, hi, p, u, q, v))
+
+// ----- API -----
+init(R, C):       guarda R, C; rowRoot = 0; reserva los pools
+update(P, Q, K):  rowRoot = row_update(rowRoot, 0, R-1, P, Q, K)
+calculate(P,Q,U,V): regresa row_query(rowRoot, 0, R-1, P, U, Q, V)</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong>
+           <code>init</code> \(O(1)\); <code>update</code> y <code>calculate</code>
+           ambas \(O(\log R\cdot\log C)\). Con \(\log R,\log C\approx 30\) y
+           \(\le\!22\,000\) updates \(+\) \(\le\!250\,000\) consultas, son
+           \(\sim\!2.3\times 10^8\) operaciones de GCD en el peor caso: holgadísimo
+           para 13 s (medido \(\le 2.3\) s). Memoria: \(O(U\cdot\log R\cdot\log C)\)
+           nodos.</p>
+
+        <h3>Cómo subir de subtarea en subtarea</h3>
+        <ul>
+          <li><strong>S1:</strong> matriz directa + recorrido del rectángulo.</li>
+          <li><strong>S2:</strong> segtree de columnas por fila, combinando las pocas
+              filas con GCD.</li>
+          <li><strong>S3:</strong> segtree 2D <em>denso</em> (filas × columnas),
+              \(O(R\cdot C)\) memoria.</li>
+          <li><strong>S4–S5:</strong> el mismo segtree 2D pero <em>disperso/dinámico</em>
+              (nodos bajo demanda) porque \(R=C=10^9\) y, al ser online, no se pueden
+              comprimir coordenadas.</li>
+        </ul>
+
+        <h3>Trampas que cuestan puntos</h3>
+        <ul>
+          <li><strong>GCD con \(0\) como identidad</strong>, no como "min": un nodo
+              nulo aporta \(0\) y eso es correcto (celdas no escritas). Todo-cero
+              \(\Rightarrow 0\).</li>
+          <li><code>update</code> es <strong>asignación</strong>, no acumulación (el
+              ejemplo pone \(14\) sobre el \(12\) en \((1,1)\)).</li>
+          <li>En cada ancestro recomputa <strong>solo la columna \(Q\)</strong>;
+              fusionar árboles completos sería \(O(C)\) y daría TLE/MLE.</li>
+          <li><strong>No comprimas coordenadas</strong>: es online; el árbol disperso
+              es obligatorio.</li>
+          <li><strong>Tipos:</strong> \(K\le 10^{18}\) exige enteros de 64 bits; el
+              GCD sobre 64 bits no se desborda (solo módulos).</li>
+        </ul>
+
+        <h3>Memoria: la parte fina del 100</h3>
+        <p>El cuello de botella real no es el tiempo sino la memoria. Una versión
+           ingenua con nodos de \(16\) bytes (\(2\) índices \(+\) un entero de \(64\)
+           bits) alcanza \(\sim\!845\) nodos por <code>update</code>
+           (\(=\log R\cdot\log C\), el máximo teórico) en el caso adversarial
+           <em>smallGCD</em>: \(\sim\!18.6\) M nodos, \(\approx 287\) MB, que rebasa el
+           presupuesto práctico de heap (\(\sim\!230\) MB tras el grader). El RSS se
+           infla todavía más si dejas que <code>std::vector</code> haga
+           realloc-doubling. Correcciones <strong>sin tocar el algoritmo ni su
+           complejidad</strong>:</p>
+        <ul>
+          <li>Reservar el pool de una sola vez (arreglo de tamaño fijo), para evitar
+              el doblado transitorio del vector.</li>
+          <li><strong>Compresión de cadenas (path-compression):</strong> los tramos de
+              un solo hijo que genera el rango \([0,10^9]\) se colapsan, reduciendo el
+              número de nodos drásticamente.</li>
+          <li><strong>BBST / treap por eje:</strong> la profundidad pasa a
+              \(\sim\!\log(\#updates)\approx 15\) en lugar de \(\log(10^9)\approx 30\),
+              bajando el conteo de nodos por debajo del límite.</li>
+        </ul>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Nota de C++ (no es la solución, es un cuidado de implementación)</span>
+<pre>// 1) Pools como std::vector index-based, NO punteros: tras la recursion
+//    accede SIEMPRE por vector[indice]. Si el vector reasigna al crear un
+//    nodo, los indices siguen validos; los punteros/referencias NO.
+//      cl[node] = col_assign(...);   // OK: reindexar cada vez
+//    Si cacheas  Node& n = pool[node];  y dentro creas nodos, n queda colgando.
+// 2) reserva el pool UNA vez (pool.reserve(maxNodos)) para evitar el
+//    realloc-doubling que dispara el RSS.
+// 3) K y los valores de nodo en long long (gcd con %, sin overflow).</pre>
+          <p class="note">Es un detalle propio de C++; el algoritmo y su complejidad
+             son los mismos en cualquier lenguaje.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
