@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2011 · Tarea 1 — Tropical Garden</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socraticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2011 · Día 1 · Pattaya City, Tailandia</div>
+    <h1>Tarea <span class="num">1</span> — Tropical Garden</h1>
+    <p class="note">Jardín tropical · cuenta rutas en un grafo funcional ·
+       PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El botánico Somhed lleva con frecuencia grupos de estudiantes a uno de los
+       jardines tropicales más grandes de Tailandia. El paisaje del jardín se compone
+       de \(N\) <strong>fuentes</strong> (numeradas \(0, 1, \dots, N-1\)) y \(M\)
+       <strong>senderos</strong>. Cada sendero conecta un par <em>distinto</em> de
+       fuentes distintas y se puede recorrer en ambos sentidos. De cada fuente sale
+       al menos un sendero. Estos senderos lucen hermosas colecciones botánicas que
+       Somhed quiere admirar. Cada grupo puede empezar su recorrido en
+       <strong>cualquier</strong> fuente.</p>
+
+    <p>Como a Somhed le encantan las plantas tropicales bonitas, desde cualquier
+       fuente él y sus estudiantes toman el sendero <strong>más bello</strong> que
+       sale de ella, <strong>salvo</strong> que ese sea el sendero recién recorrido y
+       exista una alternativa: en ese caso toman el <strong>segundo más bello</strong>.
+       Por supuesto, si no hay alternativa, regresan caminando por el mismo sendero
+       (lo usan por segunda vez). Como Somhed es un botánico profesional, para él
+       <strong>no hay dos senderos igual de bellos</strong>.</p>
+
+    <p>A sus estudiantes no les interesan mucho las plantas; pero les encantaría
+       almorzar en un restaurante de lujo ubicado junto a la fuente número \(P\).
+       Somhed sabe que sus estudiantes quedarán hambrientos tras tomar
+       <strong>exactamente \(K\)</strong> senderos, donde \(K\) puede ser distinto para
+       cada grupo. Somhed se pregunta cuántas rutas distintas podría elegir para cada
+       grupo, dado que:</p>
+    <ul>
+      <li>cada grupo puede empezar en cualquier fuente;</li>
+      <li>los senderos sucesivos deben elegirse de la forma descrita arriba; y</li>
+      <li>cada grupo debe terminar en la fuente número \(P\) tras recorrer
+          exactamente \(K\) senderos.</li>
+    </ul>
+    <p>Nota que pueden pasar por la fuente número \(P\) antes, durante su ruta, pero
+       de todos modos deben <strong>terminar</strong> su ruta en la fuente \(P\).</p>
+
+    <h3>Tu tarea</h3>
+    <p>Con la información de las fuentes y los senderos, debes encontrar las
+       respuestas para \(Q\) grupos de estudiantes; es decir, \(Q\) valores de \(K\).
+       Escribe un procedimiento <code>count_routes(N, M, P, R, Q, G)</code> que recibe
+       los siguientes parámetros:</p>
+    <ul>
+      <li><code>N</code> — el número de fuentes. Las fuentes se numeran \(0\) a
+          \(N-1\).</li>
+      <li><code>M</code> — el número de senderos. Los senderos se numeran \(0\) a
+          \(M-1\). Vienen en <strong>orden decreciente de belleza</strong>: para
+          \(0 \le i &lt; M-1\), el sendero \(i\) es más bello que el sendero
+          \(i+1\).</li>
+      <li><code>P</code> — la fuente junto a la que está el restaurante de lujo.</li>
+      <li><code>R</code> — un arreglo bidimensional que representa los senderos. Para
+          \(0 \le i &lt; M\), el sendero \(i\) conecta las fuentes
+          <code>R[i][0]</code> y <code>R[i][1]</code>. Recuerda que cada sendero une
+          un par de fuentes distintas y que no hay dos senderos que unan el mismo
+          par.</li>
+      <li><code>Q</code> — el número de grupos de estudiantes.</li>
+      <li><code>G</code> — un arreglo unidimensional de enteros que contiene los
+          valores de \(K\). Para \(0 \le i &lt; Q\), <code>G[i]</code> es el número de
+          senderos \(K\) que tomará el \(i\)-ésimo grupo.</li>
+    </ul>
+    <p>Para \(0 \le i &lt; Q\), tu procedimiento debe encontrar el número de rutas
+       posibles con exactamente <code>G[i]</code> senderos que el grupo \(i\) podría
+       tomar para llegar a la fuente \(P\). Para cada grupo \(i\), tu procedimiento
+       debe llamar al procedimiento <code>answer(X)</code> para reportar que el número
+       de rutas es \(X\). Las respuestas deben darse en el <strong>mismo orden</strong>
+       que los grupos. Si no hay rutas válidas, tu procedimiento debe llamar
+       <code>answer(0)</code>.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar ni
+       escribes a la salida estándar. Implementas el procedimiento
+       <code>count_routes</code>; el evaluador (grader) lo llama una vez con todos los
+       datos, y tú reportas cada respuesta llamando al procedimiento
+       <code>answer</code> que provee el evaluador.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar (garden.c / garden.cpp)</span>
+<pre>void count_routes(int N, int M, int P, int R[][2], int Q, int G[]);
+  // N  : número de fuentes (0 .. N-1)
+  // M  : número de senderos (0 .. M-1), en orden DECRECIENTE de belleza
+  // P  : fuente destino (junto al restaurante)
+  // R  : R[i][0], R[i][1] = extremos del sendero i
+  // Q  : número de grupos (consultas)
+  // G  : G[i] = K = número exacto de senderos del grupo i
+  // Debes llamar answer(X) exactamente Q veces, en el orden de los grupos.</pre>
+    </div>
+    <div class="sig">
+      <span class="tag">Firma que provee el evaluador (gardenlib.h) y tú llamas</span>
+<pre>void answer(int X);
+  // Reporta que el número de rutas del grupo actual es X.
+  // Llámala una vez por grupo, en orden; usa answer(0) si no hay rutas.</pre>
+    </div>
+
+    <h3>Interfaz (API) y evaluador de muestra</h3>
+    <ul>
+      <li>Carpeta de implementación: <code>garden/</code>.</li>
+      <li>A implementar por el concursante: <code>garden.c</code>,
+          <code>garden.cpp</code> o <code>garden.pas</code>.</li>
+      <li>Interfaz del concursante: <code>garden.h</code> o <code>garden.pas</code>.</li>
+      <li>Interfaz del evaluador: <code>gardenlib.h</code> o <code>gardenlib.pas</code>.</li>
+      <li>Evaluador de muestra: <code>grader.c</code> / <code>grader.cpp</code> /
+          <code>grader.pas</code>.</li>
+      <li>Entrada del evaluador de muestra: <code>grader.in.1</code>,
+          <code>grader.in.2</code>, … con el formato:
+        <ul>
+          <li>Línea 1: <code>N</code>, <code>M</code> y <code>P</code>.</li>
+          <li>Líneas 2 a \(M+1\): descripción de los senderos; la línea \(i+2\)
+              contiene <code>R[i][0]</code> y <code>R[i][1]</code>, separados por un
+              espacio, para \(0 \le i &lt; M\).</li>
+          <li>Línea \(M+2\): <code>Q</code>.</li>
+          <li>Línea \(M+3\): el arreglo <code>G</code> como enteros separados por
+              espacio.</li>
+          <li>Línea \(M+4\): el arreglo de <strong>soluciones esperadas</strong> como
+              enteros separados por espacio.</li>
+        </ul>
+      </li>
+      <li>Salida esperada para esa entrada: <code>grader.expect.1</code>,
+          <code>grader.expect.2</code>, … Para esta tarea cada uno de esos archivos
+          debe contener exactamente el texto <code>Correct.</code></li>
+    </ul>
+    <div class="note-box">
+      El evaluador hace una comparación <strong>exacta</strong>: lee las soluciones
+      esperadas embebidas en su entrada y las compara contra tus llamadas a
+      <code>answer</code>. Debes llamar <code>answer</code> <strong>exactamente</strong>
+      \(Q\) veces y en orden; de lo contrario reporta <em>Too few</em> /
+      <em>Too many answers</em> en vez de <code>Correct.</code>
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>5 segundos de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB (la pila cuenta hacia el total; no hay límite explícito de pila)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de fuentes \(N\)</td><td><span class="badge">\(2 \le N \le 150\,000\)</span></td></tr>
+        <tr><td>Número de senderos \(M\)</td><td><span class="badge">\(1 \le M \le 150\,000\)</span></td></tr>
+        <tr><td>Número de grupos \(Q\)</td><td><span class="badge">\(1 \le Q \le 2\,000\)</span></td></tr>
+        <tr><td>Pasos por grupo \(K\) (cada \(G[i]\))</td><td><span class="badge">\(1 \le K \le 10^9\)</span></td></tr>
+        <tr><td>Estructura</td><td>de cada fuente sale \(\ge 1\) sendero; cada sendero une dos fuentes distintas; no hay dos senderos que unan el mismo par.</td></tr>
+      </table>
+    </div>
+    <p class="note">Los rangos de arriba son la envolvente global; cada subtarea
+       restringe \(N\), \(M\), \(Q\) y \(K\) como se ve abajo.</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td class="pts">49</td>
+            <td>\(2 \le N \le 1\,000\); \(1 \le M \le 10\,000\); \(Q = 1\); cada
+                elemento de \(G\) es un entero entre \(1\) y \(100\), inclusive.</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="pts">20</td>
+            <td>\(2 \le N \le 150\,000\); \(1 \le M \le 150\,000\); \(Q = 1\); cada
+                elemento de \(G\) es un entero entre \(1\) y \(10^9\), inclusive.</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td class="pts">31</td>
+            <td>\(2 \le N \le 150\,000\); \(1 \le M \le 150\,000\);
+                \(1 \le Q \le 2\,000\); cada elemento de \(G\) es un entero entre
+                \(1\) y \(10^9\), inclusive.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <p>Considera el caso de la Figura 1, donde \(N = 6\), \(M = 6\), \(P = 0\),
+       \(Q = 1\), \(G[0] = 3\), y</p>
+    <div class="example">
+      <div class="io"><h4>R (sendero i: extremos)</h4><pre>0:  1 2
+1:  0 1
+2:  0 3
+3:  3 4
+4:  4 5
+5:  1 5</pre></div>
+      <div class="io"><h4>Llamada esperada</h4><pre>count_routes(6, 6, 0, R, 1, {3})
+  -> answer(2)</pre></div>
+    </div>
+    <figure>
+      <img alt="Figura 1: grafo del Ejemplo 1 con 6 fuentes (0..5) y 6 senderos etiquetados 0..5 por belleza."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 1. Los senderos están etiquetados por su número (orden
+        decreciente de belleza): el sendero 0 es el más bello, el 1 el segundo, y
+        así sucesivamente.</figcaption>
+    </figure>
+    <p>Hay solamente dos rutas válidas que recorren 3 senderos:</p>
+    <ul>
+      <li>\(1 \to 2 \to 1 \to 0\), y</li>
+      <li>\(5 \to 4 \to 3 \to 0\).</li>
+    </ul>
+    <p>La primera ruta empieza en la fuente \(1\). El sendero más bello desde aquí
+       lleva a la fuente \(2\). En la fuente \(2\) el grupo no tiene opción: debe
+       regresar por el mismo sendero. De vuelta en la fuente \(1\), el grupo ahora
+       evita el sendero \(0\) (el recién usado) y elige el sendero \(1\) en su lugar.
+       Ese sendero sí los lleva a la fuente \(P = 0\). Por lo tanto, el procedimiento
+       debe llamar <code>answer(2)</code>.</p>
+
+    <h3>Ejemplo 2</h3>
+    <p>Considera el caso de la Figura 2, donde \(N = 5\), \(M = 5\), \(P = 2\),
+       \(Q = 2\), \(G[0] = 3\), \(G[1] = 1\), y</p>
+    <div class="example">
+      <div class="io"><h4>R (sendero i: extremos)</h4><pre>0:  1 0
+1:  1 2
+2:  3 2
+3:  1 3
+4:  4 2</pre></div>
+      <div class="io"><h4>Llamadas esperadas</h4><pre>count_routes(5, 5, 2, R, 2, {3, 1})
+  -> answer(1)
+  -> answer(2)</pre></div>
+    </div>
+    <figure>
+      <img alt="Figura 2: grafo del Ejemplo 2 con 5 fuentes (0..4) y 5 senderos etiquetados 0..4 por belleza."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 2. Mismo convenio: los senderos están etiquetados \(0..4\)
+        en orden decreciente de belleza.</figcaption>
+    </figure>
+    <p>Para el primer grupo hay una sola ruta válida que llega a la fuente \(2\) tras
+       recorrer 3 senderos: \(1 \to 0 \to 1 \to 2\). Para el segundo grupo hay dos
+       rutas válidas que llegan a la fuente \(2\) tras recorrer 1 sendero:
+       \(3 \to 2\) y \(4 \to 2\). Por lo tanto, la implementación correcta de
+       <code>count_routes</code> debe llamar primero <code>answer(1)</code> para
+       reportar la respuesta del primer grupo, y luego <code>answer(2)</code> para la
+       del segundo.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Grafo funcional</span>
+      <span class="ptag">Doubling / Binary lifting</span>
+      <span class="ptag">Detección de ciclos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N\) fuentes y \(M\) senderos dados en orden decreciente de belleza.
+       Una caminata avanza siempre por el sendero más bello de la fuente actual,
+       <em>salvo</em> que ese sea el sendero recién usado y haya alternativa
+       (entonces toma el segundo más bello); con una sola opción, regresa por el
+       mismo. Implementa <code>count_routes</code>: para cada uno de los \(Q\) valores
+       de \(K\), cuenta cuántas fuentes de salida \(i \in \{0,\dots,N-1\}\) terminan
+       en la fuente \(P\) tras <strong>exactamente</strong> \(K\) pasos, y reporta cada
+       conteo con <code>answer</code>. Cada ruta queda determinada por su fuente
+       inicial.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>La <strong>S1</strong> (\(N \le 1000\), \(K \le 100\), \(Q=1\)) cabe en
+                una simulación directa de \(K\) pasos por inicio. La
+                <strong>S2</strong> dispara \(K\) hasta \(10^9\) con \(Q=1\): pide
+                <em>saltar</em> pasos (doubling). La <strong>S3</strong> añade
+                \(Q \le 2000\) consultas con \(K\) grande: conviene precomputar por
+                destino y responder cada consulta en \(O(N)\). Un mismo algoritmo
+                \(O(M + N + N\,Q)\) cubre las tres.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿El siguiente paso depende solo de dónde estás?</summary>
+      <div class="body">
+        <p class="q">Desde una fuente, ¿el sendero que tomarás está determinado solo
+           por la fuente actual? Relee la regla: tomas el más bello «salvo que sea el
+           que acabas de usar». ¿Qué información extra, además de la fuente, necesitas
+           para decidir el siguiente paso?</p>
+        <p>Necesitas saber <strong>por dónde llegaste</strong>. Y, mirándolo de cerca,
+           solo importa <em>un bit</em>: si el sendero por el que entraste a la fuente
+           actual es o no su sendero <strong>más bello</strong>. Si llegaste por el más
+           bello, el siguiente paso lo evita y toma el segundo; si no (o si es el
+           inicio), el siguiente paso toma el más bello. Eso sugiere
+           <strong>desdoblar cada fuente en dos estados</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Un grafo donde cada nodo tiene UNA salida</summary>
+      <div class="body">
+        <p class="q">Si partes cada fuente \(u\) en dos estados — «toca tomar el más
+           bello de \(u\)» y «toca tomar el segundo de \(u\)» — ¿cuántas opciones de
+           salida tiene cada estado?</p>
+        <p><strong>Exactamente una.</strong> Eso es un <strong>grafo funcional</strong>
+           sobre \(2N\) nodos: cada nodo tiene grado de salida \(1\). Notación:
+           \(v_u\) (nodo \(u\)) = «llegué <em>no</em> por el sendero más bello de \(u\),
+           o es el inicio» \(\Rightarrow\) el siguiente paso usa el <strong>más
+           bello</strong> de \(u\); \(v'_u\) (nodo \(u+N\)) = «llegué <em>por</em> el
+           más bello de \(u\)» \(\Rightarrow\) el siguiente paso usa el
+           <strong>segundo</strong> (o el más bello si \(u\) tiene grado \(1\)).</p>
+        <p class="q">¿Cómo defines la arista de salida? Si desde un estado tomas el
+           sendero \(t\) y llegas a la fuente \(j\), ¿en cuál de los dos estados de
+           \(j\) caes?</p>
+        <p>Precomputa por fuente sus dos mejores senderos: como los senderos llegan en
+           índice creciente \(=\) belleza decreciente, el <strong>primer</strong>
+           sendero incidente que ves (menor índice) es el mejor (\(bestIdx[u]\),
+           \(bestNbr[u]\)) y el segundo es el segundo (\(secIdx[u]\), \(secNbr[u]\));
+           con grado \(1\), el estado «tomar-segundo» regresa por el mismo sendero. La
+           transición: tras tomar \(t\) y llegar a \(j\), caes en \(v'_j\) si
+           \(t = bestIdx[j]\) (entraste por el más bello de \(j\)) y en \(v_j\) en
+           caso contrario. <strong>La transición compara el índice del sendero, no el
+           vecino.</strong> La salida de la fuente \(i\) es el nodo \(v_i\) (el primer
+           paso siempre es el más bello). Construir todo cuesta \(O(M + N)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 1 (49 pts): simular</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 1000\), \(K \le 100\) y \(Q = 1\), ¿qué pasa si
+           simplemente caminas \(K\) pasos en el grafo funcional desde cada una de las
+           \(N\) fuentes de salida?</p>
+        <p>Una ruta de longitud \(K\) que sale de \(i\) termina en \(P\) si y solo si
+           \(\text{next}^K[v_i] \in \{v_P, v'_P\}\) (terminar «en \(P\)» es caer en
+           cualquiera de sus dos estados). Así que: para cada inicio \(i\), avanza
+           \(K\) veces por la única arista de salida y verifica el nodo final. Cuenta
+           los que caen en \(\{v_P, v'_P\}\) y reporta ese conteo con
+           <code>answer</code>. Cuesta \(O(M + N\cdot K \cdot Q) \approx 10^5\). Eso ya
+           vale los 49 puntos de la S1.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 2 (20 pts): K gigante → doubling</summary>
+      <div class="body">
+        <p class="q">Ahora \(K\) llega a \(10^9\): simular \(K\) pasos uno por uno es
+           imposible. En un grafo funcional, ¿cómo saltas \(2^k\) pasos de golpe sin
+           recorrerlos?</p>
+        <p><strong>Binary lifting (doubling).</strong> Precomputa
+           \(T[v][k] = \text{next}^{2^k}[v]\) por cuadrados sucesivos:
+           \(T[v][0] = \text{next}[v]\) y \(T[v][k] = T[\,T[v][k-1]\,][k-1]\), para
+           \(k = 0 \dots 29\) (basta \(K &lt; 2^{30}\)). Para cada inicio \(i\),
+           descompón \(K\) en sus bits y compón los saltos para obtener
+           \(\text{next}^K[v_i]\) en \(O(\log K)\); cuenta los que caen en
+           \(\{v_P, v'_P\}\). Coste \(O(M + N\log K + N\log K)\) para una consulta. Con
+           esto pasas S1 + S2 (\(69\) puntos), pero la tabla es \(O(N\log K)\) en
+           memoria (\(\approx 2N \cdot 30\) enteros) y, con muchas consultas, el
+           \(\log K\) por inicio empieza a pesar.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 3 (31 pts): muchas consultas → ciclo + BFS reverso</summary>
+      <div class="body">
+        <p class="q">Con \(Q \le 2000\) consultas y \(K\) grande, \(O(N\log K)\) por
+           consulta puede apretar. En un grafo funcional, desde cualquier inicio
+           <em>tarde o temprano entras a un ciclo</em>. Fijando un destino \(t\),
+           ¿puedes precomputar de una sola pasada lo necesario para responder cada
+           consulta en \(O(N)\)?</p>
+        <p>Sí. Para un destino fijo \(t\) solo hay tres casos posibles para cada
+           inicio \(s\): nunca se llega a \(t\); se llega <em>una sola vez</em> a los
+           \(F\) pasos (\(t\) no está en ciclo); o se llega por primera vez a los \(F\)
+           pasos y luego <em>cada \(C\) pasos</em> (\(t\) está en un ciclo de tamaño
+           \(C\)). La distancia \(F_t[s]\) de \(s\) a \(t\) es <strong>única</strong>
+           (es un grafo funcional), así que un <strong>BFS sobre el grafo reverso</strong>
+           desde \(t\) la calcula para todos los \(s\) a la vez. Caminando hacia
+           adelante desde \(t\) a lo más \(2N\) pasos detectas si \(t\) está en ciclo y
+           su tamaño \(C\). Entonces \(\text{next}^K[s] = t\) si y solo si:
+           \(K = F_t[s]\) (si \(t\) no está en ciclo), o \(K \ge F_t[s]\) y
+           \((K - F_t[s]) \bmod C = 0\) (si \(t\) está en ciclo). Haces esto para los
+           dos destinos \(v_P\) y \(v'_P\), y cada consulta se responde en \(O(N)\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Modela todo como el grafo funcional de \(2N\)
+           nodos de la Pista 2 y resuelve con BFS reverso \(+\) detección de ciclo de
+           la Pista 5. Un mismo algoritmo \(O(M + N + N\,Q)\) cubre las tres subtareas.</p>
+
+        <h3>1) Precómputo por fuente</h3>
+        <p>Recorre los senderos en orden de índice (que es belleza decreciente). Para
+           cada fuente \(u\), el primer sendero incidente que aparece es su mejor
+           (\(bestIdx[u], bestNbr[u]\)) y el segundo es su segundo
+           (\(secIdx[u], secNbr[u]\)). Si \(u\) tiene grado \(1\), el «segundo» es el
+           mismo sendero/vecino (regresar). \(O(M + N)\).</p>
+
+        <h3>2) Grafo funcional de \(2N\) nodos</h3>
+        <p>Nodos \(0..N-1\) son los \(v_u\) (toca tomar el mejor); nodos \(N..2N-1\)
+           son los \(v'_u\) (toca tomar el segundo). La arista de salida de cada nodo:</p>
+        <div class="pseudo">
+          <span class="tag">Construcción de next[ ] (grafo funcional)</span>
+<pre>para cada fuente u en 0..N-1:
+    // estado v_u : tomamos el MEJOR sendero de u
+    t = bestIdx[u];   j = bestNbr[u]
+    next[u]     = llegada(j, t)
+    // estado v'_u : tomamos el SEGUNDO (o el mismo si grado 1)
+    t = secIdx[u];    j = secNbr[u]
+    next[u + N] = llegada(j, t)
+
+funcion llegada(j, t):           // entré a la fuente j por el sendero t
+    si t == bestIdx[j]:  regresa j + N     // entré por el mejor de j -> estado v'_j
+    si no:               regresa j         // -> estado v_j</pre>
+        </div>
+        <p>La fuente de salida \(i\) arranca en el nodo \(v_i = i\) (el primer paso
+           siempre es el más bello). Una ruta de longitud \(K\) desde \(i\) termina en
+           \(P\) si y solo si \(\text{next}^K[i] \in \{P,\; P+N\}\).</p>
+
+        <h3>3) Por cada destino: BFS reverso + ciclo</h3>
+        <p>Construye la adyacencia <em>reversa</em> (CSR): para cada nodo \(v\),
+           agrega \(v\) a la lista de \(\text{next}[v]\). Para un destino \(t\):</p>
+        <ul>
+          <li><strong>BFS reverso desde \(t\)</strong> sobre las aristas reversas:
+              \(F_t[s] = \) número de pasos de \(s\) a \(t\) (distancia única; \(-1\)
+              si \(t\) es inalcanzable desde \(s\)).</li>
+          <li><strong>¿\(t\) en ciclo?</strong> Camina hacia adelante desde \(t\) a lo
+              más \(2N\) pasos; si regresas a \(t\), está en un ciclo de tamaño \(C\)
+              (la cantidad de pasos hasta volver). Si no, no está en ciclo.</li>
+        </ul>
+        <p>Haz esto dos veces: con \(t = P\) (estado \(v_P\)) y con \(t = P+N\)
+           (estado \(v'_P\)), guardando \(F^{(0)} = F_P\), \(C^{(0)}\) y
+           \(F^{(1)} = F_{P+N}\), \(C^{(1)}\).</p>
+
+        <h3>4) Responder cada consulta</h3>
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — solución completa</span>
+<pre>procedimiento count_routes(N, M, P, R, Q, G):
+    // --- precómputo (una sola vez) ---
+    para cada fuente u: calcular bestIdx,bestNbr,secIdx,secNbr   // O(M+N)
+    construir next[0..2N-1]                                       // grafo funcional
+    construir adyacencia reversa radj (CSR)                       // O(N)
+
+    para d en {0, 1}:                 // destino 0 -> v_P ; destino 1 -> v'_P
+        t = (d == 0) ? P : P + N
+        F[d] = BFS_reverso(radj, t)    // F[d][s] = dist(s -> t), -1 si inalcanzable
+        C[d] = tamano_de_ciclo(next, t)   // 0 si t no esta en ciclo
+
+    // --- consultas ---
+    para q en 0..Q-1:
+        K = G[q]
+        total = 0
+        para i en 0..N-1:             // un inicio i empieza en el nodo v_i = i
+            si alcanza(F[0], C[0], i, K): total += 1
+            si no si alcanza(F[1], C[1], i, K): total += 1
+            // "si no si": i termina en UN solo nodo, asi que v_P y v'_P
+            // son excluyentes -> no hay doble conteo
+        answer(total)
+
+funcion alcanza(F, C, s, K):
+    f = F[s]
+    si f == -1: regresa falso
+    si C == 0:  regresa (K == f)                       // t no esta en ciclo
+    regresa (K >= f) y ((K - f) mod C == 0)            // t esta en ciclo</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong></p>
+        <ul>
+          <li><strong>Modelado:</strong> el único dato extra que cambia la siguiente
+              arista es «si entré por el sendero más bello de la fuente». Los dos
+              estados \(v_u, v'_u\) lo capturan exactamente, y la transición mira
+              \(bestIdx[j]\) (índice de sendero), no el vecino, así que también es
+              correcta cuando dos rutas distintas llegan a \(j\) por senderos
+              distintos.</li>
+          <li><strong>Grado 1:</strong> el estado «tomar-segundo» cae de vuelta al
+              «tomar-mejor» por el mismo sendero (regresar), tal como exige la regla
+              cuando no hay alternativa.</li>
+          <li><strong>Distancia única:</strong> en un grafo funcional cada nodo tiene
+              una sola salida, así que la distancia de \(s\) a \(t\) es única; el BFS
+              reverso da el \(F\) correcto, sin caminos espurios.</li>
+          <li><strong>Ciclo:</strong> tras entrar al ciclo, \(t\) (si está en él) se
+              vuelve a visitar exactamente cada \(C\) pasos; de ahí la condición
+              \((K-F)\bmod C = 0\) con \(K \ge F\).</li>
+          <li><strong>Sin doble conteo:</strong> tras exactamente \(K\) pasos un inicio
+              \(i\) está en <em>un único</em> nodo; ese nodo es \(v_P\) o \(v'_P\),
+              nunca ambos, así que sumar las dos contribuciones no duplica (por eso el
+              «si no si»).</li>
+        </ul>
+
+        <h3>Traza del Ejemplo 1 (verificación)</h3>
+        <p>\(N=6\), senderos \(0{:}(1,2)\), \(1{:}(0,1)\), \(2{:}(0,3)\),
+           \(3{:}(3,4)\), \(4{:}(4,5)\), \(5{:}(1,5)\). El grafo funcional
+           (nodos \(0..5 = v_u\); \(6..11 = v'_u\)) queda:</p>
+        <div class="io"><pre>next[0]=1   next[1]=8(v'_2)  next[2]=7(v'_1)  next[3]=0   next[4]=3   next[5]=4
+next[6]=9(v'_3)  next[7]=6(v'_0)  next[8]=7(v'_1)  next[9]=10(v'_4)  next[10]=11(v'_5)  next[11]=1</pre></div>
+        <p>Con \(K = 3\) y destino \(P = 0\) (estados objetivo \(v_0 = 0\) y
+           \(v'_0 = 6\)), las trazas de \(3\) pasos desde cada \(v_i\):
+           \(i{=}1\): \(1\to 8\to 7\to 6\) (\(=v'_0\), <strong>sí</strong>: ruta
+           \(1\to 2\to 1\to 0\)); \(i{=}5\): \(5\to 4\to 3\to 0\) (\(=v_0\),
+           <strong>sí</strong>: ruta \(5\to 4\to 3\to 0\)); los demás \(i\) no
+           terminan en \(\{0,6\}\). Conteo \(= 2 \Rightarrow\)
+           <code>answer(2)</code>, justo lo que pide el PDF.</p>
+
+        <p><strong>Complejidad.</strong> Precómputo (best/second \(+\) grafo funcional
+           \(+\) adyacencia reversa CSR) en \(O(M + N)\). Por cada uno de los \(2\)
+           destinos: BFS reverso \(O(N)\) y detección de ciclo \(O(N)\). Cada consulta
+           en \(O(N)\): total \(O(M + N + N\,Q)\). Memoria \(O(N)\) (varios arreglos de
+           tamaño \(2N\)). En el peor caso oficial \(N = 150\,000\), \(Q = 2000\)
+           (\(N\,Q = 3\times 10^8\)) corre en \(\sim 0.41\) s, holgado bajo los \(5\)
+           s. La respuesta es \(\le N\), cabe en <code>int</code>.</p>
+
+        <div class="note-box">
+          <strong>Trampas clásicas.</strong>
+          <ol>
+            <li><strong>Match exacto del evaluador:</strong> no es <em>special judge</em>;
+                compara byte a byte. Llama <code>answer</code> <strong>exactamente</strong>
+                \(Q\) veces y en orden, o reporta <em>Too few/Too many answers</em>.</li>
+            <li><strong>El modelo de 2 nodos es el corazón:</strong> hay que distinguir
+                el estado según si entras por el sendero más bello del destino. La
+                transición mira el <em>índice</em> del sendero (\(bestIdx[j]==t\)), no
+                el vecino.</li>
+            <li><strong>Grado 1:</strong> el estado «tomar-segundo» debe regresar por el
+                mismo sendero; si dejas \(secIdx = -1\) sin manejarlo, se rompe.</li>
+            <li><strong>Orden de belleza:</strong> los senderos vienen en belleza
+                <em>decreciente</em>, así que el primer sendero incidente por fuente
+                (menor índice) es el mejor; solo necesitas los dos primeros.</li>
+            <li><strong>Doble conteo:</strong> un inicio termina en un único nodo; usa
+                «si no si» para no sumar \(v_P\) y \(v'_P\) a la vez (y, a la inversa,
+                no «corrijas» un doble conteo que no existe).</li>
+            <li><strong>Aritmética del módulo:</strong> \(K\) hasta \(10^9\) cabe en
+                <code>int</code>, pero haz \((K-F)\bmod C\) en <code>long long</code>
+                por seguridad; la respuesta (\(\le N\)) cabe en <code>int</code>, como
+                espera el evaluador.</li>
+            <li><strong>Inicio \(i = P\) con \(F = 0\):</strong> solo cuenta si \(P\)
+                está en ciclo y \(K \bmod C = 0\); como \(K \ge 1\), nunca cuenta por el
+                \(F = 0\) directo. La fórmula general ya lo maneja.</li>
+          </ol>
+        </div>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Adyacencia reversa en CSR (no listas por nodo): cuenta grados, prefijo
+sumas, rellena. Evita millones de asignaciones de std::vector y mantiene
+la memoria en O(N). Para el BFS reverso basta una cola y un arreglo F
+inicializado en -1; nada más exótico hace falta.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
