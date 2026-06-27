@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2014 · Tarea 2 — Wall</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2014 · Día 1 · Taipéi, Taiwán</div>
+    <h1>Tarea <span class="num">2</span> — Wall (Muro)</h1>
+    <p class="note">Wall · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Jian-Jia está construyendo un muro apilando ladrillos del mismo tamaño. El
+       muro está formado por <strong>columnas</strong> de ladrillos, numeradas de
+       \(0\) a \(N-1\) de izquierda a derecha. Las columnas pueden tener
+       <strong>alturas distintas</strong>. La <em>altura</em> de una columna es el
+       número de ladrillos que contiene.</p>
+
+    <p>Jian-Jia construye el muro así. Al inicio <strong>ninguna columna tiene
+       ladrillos</strong> (todas están en altura \(0\)). Luego pasa por una serie de
+       <strong>fases</strong> en las que <em>agrega</em> o <em>quita</em> ladrillos.
+       La construcción termina cuando todas las fases han concluido. En cada fase se
+       le dan un <strong>rango de columnas consecutivas</strong> \([\,\text{left},
+       \text{right}\,]\) y una <strong>altura</strong> \(h\), y hace lo siguiente:</p>
+
+    <ul>
+      <li><strong>Fase de agregar.</strong> A las columnas del rango que tengan
+          <em>menos</em> de \(h\) ladrillos, Jian-Jia les agrega ladrillos hasta que
+          tengan <em>exactamente</em> \(h\). No hace nada con las columnas que ya
+          tengan \(h\) o más ladrillos. Es decir, cada columna \(x\) del rango pasa a
+          \(A[x] \leftarrow \max\big(A[x],\,h\big)\).</li>
+      <li><strong>Fase de quitar.</strong> A las columnas del rango que tengan
+          <em>más</em> de \(h\) ladrillos, les quita ladrillos hasta que tengan
+          <em>exactamente</em> \(h\). No hace nada con las columnas que ya tengan
+          \(h\) o menos ladrillos. Es decir, cada columna \(x\) del rango pasa a
+          \(A[x] \leftarrow \min\big(A[x],\,h\big)\).</li>
+    </ul>
+
+    <p>Tu tarea es determinar la <strong>forma final</strong> del muro, es decir, la
+       altura de cada columna después de aplicar todas las fases en orden.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Supongamos que hay \(10\) columnas (\(N=10\)) y \(6\) fases (\(K=6\)). Todos los
+       rangos incluyen ambos extremos:</p>
+
+    <div class="io"><pre>fase   tipo     rango              altura h
+ 0    agregar  columnas 1 a 8     4
+ 1    quitar   columnas 4 a 9     1
+ 2    quitar   columnas 3 a 6     5
+ 3    agregar  columnas 0 a 5     3
+ 4    agregar  columna  2         5
+ 5    quitar   columnas 6 a 7     0</pre></div>
+
+    <p>Como todas las columnas empiezan vacías:</p>
+    <ul>
+      <li><strong>Fase 0</strong> (agregar 1–8 con \(h=4\)): cada columna de la \(1\)
+          a la \(8\) queda con \(4\) ladrillos. Las columnas \(0\) y \(9\) siguen
+          vacías.</li>
+      <li><strong>Fase 1</strong> (quitar 4–9 con \(h=1\)): a las columnas \(4\) a
+          \(8\) se les quitan ladrillos hasta dejarlas en \(1\); la columna \(9\)
+          sigue vacía. Las columnas \(0\) a \(3\), fuera del rango, no cambian.</li>
+      <li><strong>Fase 2</strong> (quitar 3–6 con \(h=5\)): no hay cambios, porque las
+          columnas \(3\) a \(6\) no tienen más de \(5\) ladrillos.</li>
+      <li><strong>Fase 3</strong> (agregar 0–5 con \(h=3\)): las columnas \(0\), \(4\)
+          y \(5\) suben a \(3\) ladrillos (las demás del rango ya tenían \(\ge 3\)).</li>
+      <li><strong>Fase 4</strong> (agregar columna \(2\) con \(h=5\)): la columna \(2\)
+          queda con \(5\) ladrillos.</li>
+      <li><strong>Fase 5</strong> (quitar 6–7 con \(h=0\)): se quitan todos los
+          ladrillos de las columnas \(6\) y \(7\).</li>
+    </ul>
+
+    <p>El muro final, columna por columna (de la \(0\) a la \(9\)), queda así:</p>
+    <div class="io"><pre>columna   0  1  2  3  4  5  6  7  8  9
+altura    3  4  5  4  3  3  0  0  1  0</pre></div>
+
+    <!-- ===== TAREA FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: <em>no</em> lees de la entrada
+       estándar ni escribes en la salida estándar. Debes entregar exactamente un
+       archivo llamado <code>wall.c</code>, <code>wall.cpp</code> o <code>wall.pas</code>;
+       en C/C++ debe incluir el encabezado <code>wall.h</code>. Ese archivo implementa
+       la función <code>buildWall</code>, a la que el evaluador llama
+       <strong>una sola vez</strong> con todos los datos:</p>
+    <ul>
+      <li><code>n</code> — el número de columnas del muro.</li>
+      <li><code>k</code> — el número de fases.</li>
+      <li><code>op</code> — arreglo de longitud \(k\): <code>op[i]</code> es el tipo de
+          la fase \(i\); vale \(1\) para una fase de <strong>agregar</strong> y \(2\)
+          para una fase de <strong>quitar</strong>.</li>
+      <li><code>left</code> y <code>right</code> — arreglos de longitud \(k\): el rango
+          de columnas de la fase \(i\) va de <code>left[i]</code> a <code>right[i]</code>
+          (incluyendo ambos extremos). Siempre se cumple
+          <code>left[i]</code> \(\le\) <code>right[i]</code>.</li>
+      <li><code>height</code> — arreglo de longitud \(k\): <code>height[i]</code> es la
+          altura \(h\) de la fase \(i\).</li>
+      <li><code>finalHeight</code> — arreglo de longitud \(n\): aquí debes
+          <strong>escribir tu resultado</strong>, poniendo en <code>finalHeight[i]</code>
+          el número final de ladrillos de la columna \(i\).</li>
+    </ul>
+
+    <div class="sig">
+      <span class="tag">Firma(s) a implementar</span>
+<pre>// C / C++
+void buildWall(int n, int k, int op[], int left[], int right[],
+               int height[], int finalHeight[]);
+
+// Pascal
+procedure buildWall(n, k : longint;
+                    op, left, right, height : array of longint;
+                    var finalHeight : array of longint);</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> El grader incluido lee la entrada con
+      este formato: la <strong>línea 1</strong> trae <code>n k</code>; cada una de las
+      siguientes \(k\) <strong>líneas</strong> trae <code>op[i] left[i] right[i]
+      height[i]</code>. Construye los arreglos, llama a tu <code>buildWall</code> e
+      imprime las \(n\) alturas finales, <strong>una por línea</strong>.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de columnas \(N\)</td><td><span class="badge">\(1 \le N \le 2\,000\,000\)</span></td></tr>
+        <tr><td>Número de fases \(K\)</td><td><span class="badge">\(1 \le K \le 500\,000\)</span></td></tr>
+        <tr><td>Altura \(h\) de cada fase</td><td><span class="badge">\(0 \le h \le 100\,000\)</span> (entero no negativo)</td></tr>
+        <tr><td>Rango de cada fase</td><td><span class="badge">\(0 \le \text{left}[i] \le \text{right}[i] \le N-1\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <p class="note">Para todas las subtareas, las alturas \(h\) de todas las fases son
+       enteros no negativos \(\le 100\,000\).</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">8</td><td>Sin límites adicionales (en estos casos \(N\) y \(K\) son chicos).</td></tr>
+          <tr><td>2</td><td class="pts">24</td><td><strong>Todas</strong> las fases de agregar van antes que <strong>todas</strong> las fases de quitar.</td></tr>
+          <tr><td>3</td><td class="pts">29</td><td>Sin límites adicionales.</td></tr>
+          <tr><td>4</td><td class="pts">39</td><td>Sin límites adicionales (casos grandes, hasta \(N \approx 2\cdot 10^6\)).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo (llamada al grader)</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada del grader</h4><pre>10 6
+1 1 8 4
+2 4 9 1
+2 3 6 5
+1 0 5 3
+1 2 2 5
+2 6 7 0</pre></div>
+      <div class="io"><h4>Salida del grader</h4><pre>3
+4
+5
+4
+3
+3
+0
+0
+1
+0</pre></div>
+    </div>
+    <p class="note">La primera línea es <code>n k</code>; las \(6\) siguientes son
+       <code>op left right height</code> de cada fase. La salida son las \(10\) alturas
+       finales, una por línea: \(3,4,5,4,3,3,0,0,1,0\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Árbol de segmentos</span>
+      <span class="ptag">Lazy propagation</span>
+      <span class="ptag">Composición de funciones (clamp)</span>
+      <span class="ptag">Estructuras de datos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes un arreglo \(A[0..N-1]\) que arranca todo en \(0\). Hay \(K\) operaciones
+       sobre rangos \([\text{left},\text{right}]\): tipo \(1\) (<em>agregar</em>) hace
+       \(A[x]\leftarrow\max(A[x],h)\) y tipo \(2\) (<em>quitar</em>) hace
+       \(A[x]\leftarrow\min(A[x],h)\) para cada columna \(x\) del rango. Implementa
+       <code>buildWall(...)</code> para devolver el arreglo \(A\) final. Es un problema
+       de <strong>maximizar/minimizar por rango</strong> sin consultas intermedias.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\le 2\cdot10^6\) y \(K\le 5\cdot10^5\) con \(1\) s descartan
+                \(O(N\cdot K)\): hace falta algo cercano a \(O((N+K)\log N)\). La
+                subtarea 1 (\(N,K\) chicos) admite fuerza bruta; la 2 (agregar antes de
+                quitar) sugiere separar el problema en un “máximo de rango” y un “mínimo
+                de rango”; las subtareas 3 y 4 (todo mezclado, datos grandes) piden la
+                idea general.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué operación de rango es cada fase?</summary>
+      <div class="body">
+        <p class="q">Olvida la historia de los ladrillos. Si miras solo el arreglo de
+           alturas, ¿qué le hace exactamente cada fase a cada columna del rango?</p>
+        <p>Una fase de <em>agregar</em> con altura \(h\) es
+           \(A[x]\leftarrow\max(A[x],h)\) (sube el valor hasta \(h\) si estaba por
+           debajo); una de <em>quitar</em> es \(A[x]\leftarrow\min(A[x],h)\) (baja el
+           valor hasta \(h\) si estaba por arriba). Son <strong>maximizar por rango</strong>
+           y <strong>minimizar por rango</strong>. No hay consultas en medio: solo
+           importa el estado final.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(N,K\) chicos): fuerza bruta</summary>
+      <div class="body">
+        <p class="q">Con \(N\) y \(K\) pequeños, ¿qué te impide simular las fases tal
+           cual están escritas?</p>
+        <p>Nada. Mantén el arreglo \(A\) y, para cada fase, recorre las columnas de
+           <code>left</code> a <code>right</code> aplicando \(\max\) o \(\min\) con
+           \(h\). Esto es \(O(N\cdot K)\) en el peor caso y te da los \(8\) puntos de la
+           subtarea 1. Pero con \(N\) hasta \(2\cdot10^6\) y \(K\) hasta \(5\cdot10^5\)
+           esto explota: necesitas no tocar cada columna en cada fase.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (agregar antes de quitar): separa máximo y mínimo</summary>
+      <div class="body">
+        <p class="q">Si <em>todas</em> las fases de agregar ocurren antes que todas las
+           de quitar, ¿puedes calcular para cada columna por separado “a cuánto la
+           subieron” y “a cuánto la bajaron”, y luego combinarlas?</p>
+        <p>Sí. Tras todas las fases de agregar, la columna \(x\) vale
+           \(\mathrm{subió}[x]=\max\) de las \(h\) de las fases de agregar que la cubren
+           (o \(0\) si ninguna). Luego, como todas las de quitar son \(\min\) y el
+           \(\min\) no depende del orden, la columna queda en
+           \(\min\big(\mathrm{subió}[x],\ \mathrm{bajó}[x]\big)\), donde
+           \(\mathrm{bajó}[x]=\min\) de las \(h\) de las fases de quitar que la cubren
+           (o \(+\infty\) si ninguna). Así el problema se vuelve <em>máximo de rango</em>
+           seguido de <em>mínimo de rango</em>, cada uno resoluble con un árbol que solo
+           hace un tipo de actualización. ¿Y si el orden estuviera mezclado? Esa es la
+           dificultad real de las subtareas 3 y 4.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: toda cadena de \(\min/\max\) es un “clamp”</summary>
+      <div class="body">
+        <p class="q">Toma un valor \(v\) y aplícale, en cualquier orden, una mezcla de
+           \(\max(\cdot,a_1),\ \min(\cdot,b_1),\ \max(\cdot,a_2),\dots\). ¿En cuántos
+           números necesitas resumir <em>todo</em> el efecto sobre \(v\)?</p>
+        <p>En solo <strong>dos</strong>. Cualquier composición de \(\min\) y \(\max\)
+           sobre una posición se reduce a un único intervalo \([lo,hi]\) tal que
+           \[v \;\longmapsto\; \operatorname{clamp}(v,lo,hi)=\min\!\big(\max(v,lo),\,hi\big).\]
+           Aplicar \(\max(\cdot,t)\) equivale a usar \([t,\text{BIG}]\); aplicar
+           \(\min(\cdot,t)\) equivale a usar \([0,t]\) (válido porque los valores nunca
+           bajan de \(0\)). Componer dos clamps da otro clamp. <strong>Esa</strong> es
+           la pieza que destraba el caso general: el “lazy” de cada nodo no son dos
+           operaciones con orden ambiguo, sino <em>un</em> par \((lo,hi)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtareas 3–4: árbol de segmentos con lazy de clamp</summary>
+      <div class="body">
+        <p class="q">Si cada nodo del árbol guarda su transform pendiente \([lo,hi]\),
+           ¿cómo aplicas una nueva operación y cómo la empujas a los hijos? Cuidado con
+           el <em>orden</em>: la transform del padre se aplica <strong>después</strong>
+           de la del hijo.</p>
+        <p>Define \(\operatorname{clamp}(v,a,b)=\min(\max(v,a),b)\). La identidad de un
+           nodo es \([0,\text{BIG}]\) con \(\text{BIG}=10^9\) (mayor que cualquier
+           altura, \(\le 10^5\)).</p>
+        <ul>
+          <li><strong>Aplicar</strong> una operación \((a,b)\) a un nodo significa
+              componerla <em>encima</em> de su lazy actual: recorta los dos extremos del
+              nodo con la nueva operación,
+              \(lo\leftarrow\operatorname{clamp}(lo,a,b)\),
+              \(hi\leftarrow\operatorname{clamp}(hi,a,b)\). Para agregar usa
+              \((h,\text{BIG})\); para quitar usa \((0,h)\).</li>
+          <li><strong>Empujar</strong> (push-down) el padre \((lo_p,hi_p)\) a un hijo es
+              lo mismo: aplica \((lo_p,hi_p)\) sobre el lazy del hijo, y luego deja el
+              padre en identidad \([0,\text{BIG}]\).</li>
+        </ul>
+        <p>Como no hay consultas intermedias, <em>no</em> necesitas combinar (merge)
+           valores de hijos. Al final, un recorrido empuja el lazy hasta cada hoja y la
+           altura de la columna \(x\) es \(\operatorname{clamp}(0,lo_x,hi_x)=lo_x\). El
+           error más común es invertir el orden de composición en el push-down: revisa
+           la pista final para la fórmula exacta.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Árbol de segmentos sobre \([0,N-1]\) con
+           <em>lazy de clamp</em>. Cada nodo guarda un par \((lo,hi)\) que representa la
+           transformación pendiente \(v\mapsto\operatorname{clamp}(v,lo,hi)\). La
+           identidad es \([0,\text{BIG}]\) con \(\text{BIG}=10^9\). Cada fase es una
+           actualización por rango; al terminar, un barrido empuja el lazy a todas las
+           hojas y lee el resultado. Total \(O((N+K)\log N)\).</p>
+
+        <p><strong>Las tres reglas (probadas algebraicamente).</strong> Con
+           \(\operatorname{clamp}(v,a,b)=\min(\max(v,a),b)\):</p>
+        <ul>
+          <li><strong>Agregar</strong> \(h\) sobre un nodo (maximizar): aplicar
+              \((a,b)=(h,\text{BIG})\). Da \(lo\leftarrow\max(lo,h)\),
+              \(hi\leftarrow\max(hi,h)\).</li>
+          <li><strong>Quitar</strong> \(h\) (minimizar): aplicar \((a,b)=(0,h)\). Da
+              \(lo\leftarrow\min(lo,h)\), \(hi\leftarrow\min(hi,h)\) (correcto porque
+              todos los valores son \(\ge 0\)).</li>
+          <li><strong>Composición / push-down:</strong> aplicar la transform del padre
+              \((a,b)\) a un hijo es recortar <em>los dos extremos</em> del hijo con
+              \((a,b)\):
+              \[lo'=\operatorname{clamp}(lo,a,b),\qquad hi'=\operatorname{clamp}(hi,a,b).\]
+              Esto vale por la identidad
+              \(\operatorname{clamp}(\operatorname{clamp}(v,a_1,b_1),a_2,b_2)=
+                \operatorname{clamp}\big(v,\ \operatorname{clamp}(a_1,a_2,b_2),\
+                \operatorname{clamp}(b_1,a_2,b_2)\big)\).
+              La transform <em>más reciente</em> (la del padre) se aplica
+              <strong>después</strong> de la del hijo: invertirlo da resultados erróneos
+              en cascadas mixtas de \(\min/\max\).</li>
+        </ul>
+
+        <p><strong>Actualización por rango.</strong> Si el nodo está totalmente dentro
+           del rango de la fase, aplícale la operación y termina. Si no, haz push-down
+           (propaga su \([lo,hi]\) a los hijos y resetéalo a identidad) y recurre en los
+           hijos. No hay merge porque no hay consultas intermedias.</p>
+
+        <p><strong>Lectura final.</strong> Un DFS empuja el lazy hasta cada hoja; la
+           altura de la columna \(x\) es \(\operatorname{clamp}(0,lo_x,hi_x)\), que por
+           \(0\le lo_x\) es simplemente \(lo_x\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>clampv(v, a, b) = min(max(v, a), b)        // recorta v al intervalo [a,b]
+
+// Lazy de cada nodo: par (tlo, thi). Identidad = (0, BIG), BIG = 1e9.
+
+aplicar(nodo, a, b):                       // compone (a,b) ENCIMA del lazy del nodo
+    tlo[nodo] = clampv(tlo[nodo], a, b)
+    thi[nodo] = clampv(thi[nodo], a, b)
+
+empujar(nodo):                             // push-down a los dos hijos
+    aplicar(hijoIzq,  tlo[nodo], thi[nodo])
+    aplicar(hijoDer,  tlo[nodo], thi[nodo])
+    tlo[nodo] = 0;  thi[nodo] = BIG        // el padre vuelve a identidad
+
+update(nodo, nl, nr, ql, qr, a, b):
+    si [nl,nr] y [ql,qr] son disjuntos: regresa
+    si [ql,qr] contiene a [nl,nr]:
+        aplicar(nodo, a, b);  regresa
+    empujar(nodo)
+    mid = (nl + nr) / 2
+    update(hijoIzq, nl,    mid, ql, qr, a, b)
+    update(hijoDer, mid+1, nr,  ql, qr, a, b)
+
+buildWall(n, k, op, left, right, height, finalHeight):
+    inicializa tlo[*] = 0,  thi[*] = BIG          // todo en identidad
+    para i de 0 a k-1:
+        si op[i] == 1:                            // agregar = maximizar con h
+            update(raiz, 0, n-1, left[i], right[i], height[i], BIG)
+        si no:                                    // quitar = minimizar con h
+            update(raiz, 0, n-1, left[i], right[i], 0, height[i])
+
+    // empujar el lazy hasta cada hoja y leer el resultado
+    dfs(nodo, nl, nr):
+        si nl == nr:
+            finalHeight[nl] = clampv(0, tlo[nodo], thi[nodo])   // = tlo[nodo]
+            regresa
+        empujar(nodo)
+        mid = (nl + nr) / 2
+        dfs(hijoIzq, nl, mid);  dfs(hijoDer, mid+1, nr)
+    dfs(raiz, 0, n-1)</pre>
+        </div>
+
+        <p><strong>Por qué cubre todas las subtareas.</strong> Esta única solución
+           resuelve las cuatro: la subtarea 2 (agregar antes de quitar) es un caso
+           particular donde primero llegan todos los \((h,\text{BIG})\) y luego todos
+           los \((0,h)\) —exactamente el “máximo de rango y luego mínimo de rango” de la
+           Pista 3—, y la 3 y la 4 son el caso mezclado general. No se necesitan casos
+           especiales.</p>
+
+        <p><strong>Complejidad.</strong> Tiempo \(O((N+K)\log N)\): cada una de las
+           \(K\) actualizaciones cuesta \(O(\log N)\) y el barrido final que empuja el
+           lazy a las \(N\) hojas es \(O(N)\). Memoria \(O(N)\): dos arreglos
+           <code>tlo[]</code> y <code>thi[]</code> de \(4N\) enteros cada uno
+           (\(\sim 64\) MB en el peor caso \(N=2\cdot10^6\), dentro de los \(256\) MiB).
+           Medido: \(\sim 0.31\) s en el caso más grande.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Trampas / detalles de C++ (opcional)</span>
+<pre>1) ORDEN del push-down: la transform del padre se aplica DESPUES de la del hijo:
+   recorta los extremos del hijo con (padre.lo, padre.hi). Invertirlo rompe las
+   cascadas mixtas min/max.
+2) Lazy como UN par (lo,hi), no como dos lazies separados con orden ambiguo.
+3) Identidad [0, BIG], BIG = 1e9 > altura maxima (1e5); valor final = clampv(0,lo,hi)=lo.
+   Valido porque los valores arrancan en 0 y todas las alturas son >= 0.
+4) Reserva 4*N nodos (no 2*N) para el arbol recursivo; con N=2e6 la recursion
+   tiene profundidad ~21, segura.
+5) En C++ bajo "using namespace std", no nombres tu funcion 'clamp' (choca con
+   std::clamp); renombrala, p. ej. a clampv.
+6) Columnas 0-indexadas, rango del arbol [0, N-1], siempre left <= right.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
