@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2013 · Tarea 4 — Cave</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2013 · Día 2 · Brisbane, Australia</div>
+    <h1>Tarea <span class="num">4</span> — Cave (La cueva)</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Perdido en la larga caminata del campus al centro de la universidad,
+       tropezaste con la entrada de un sistema de cuevas secretas que corre muy
+       por debajo del campus. La entrada está bloqueada por un sistema de
+       seguridad formado por \(N\) <strong>puertas</strong> consecutivas, cada
+       puerta detrás de la anterior, y \(N\) <strong>interruptores</strong>, cada
+       interruptor conectado a una puerta distinta.</p>
+
+    <p>Las puertas están numeradas \(0, 1, \dots, N-1\) en orden, siendo la puerta
+       \(0\) la más cercana a ti. Los interruptores también están numerados
+       \(0, 1, \dots, N-1\), pero <strong>no sabes qué interruptor está conectado
+       a qué puerta</strong>.</p>
+
+    <p>Todos los interruptores están en la entrada de la cueva. Cada interruptor
+       puede estar en posición <em>arriba</em> (<code>0</code>) o <em>abajo</em>
+       (<code>1</code>). Solo una de esas posiciones es la <strong>correcta</strong>
+       para cada interruptor:</p>
+    <ul>
+      <li>Si un interruptor está en su posición correcta, la puerta a la que está
+          conectado queda <strong>abierta</strong>.</li>
+      <li>Si está en la posición incorrecta, esa puerta queda
+          <strong>cerrada</strong>.</li>
+    </ul>
+    <p>La posición correcta puede ser distinta para cada interruptor, y no sabes
+       cuáles son.</p>
+
+    <p>Quieres entender este sistema de seguridad. Para lograrlo, puedes poner los
+       interruptores en cualquier combinación y luego <strong>entrar a la cueva</strong>
+       para ver cuál es la <strong>primera puerta cerrada</strong>. Las puertas no
+       son transparentes: una vez que te topas con la primera puerta cerrada, no
+       puedes ver ninguna de las puertas que quedan detrás de ella.</p>
+
+    <p>Tienes tiempo para probar <strong>70 000 combinaciones</strong> de
+       interruptores, no más. Tu tarea es determinar la posición correcta de cada
+       interruptor y también a qué puerta está conectado cada interruptor.</p>
+
+    <!-- ===== TAREA INTERACTIVA (grader adaptativo) ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Debes enviar un archivo que implemente el procedimiento
+       <code>exploreCave()</code>. Este puede llamar a la función del evaluador
+       <code>tryCombination()</code> hasta <strong>70 000 veces</strong>, y debe
+       terminar llamando al procedimiento del evaluador <code>answer()</code>. En
+       C/C++ debes hacer <code>#include "cave.h"</code>.</p>
+
+    <h3>Función del evaluador: <code>tryCombination()</code></h3>
+    <div class="sig">
+      <span class="tag">La provee el evaluador — la llamas tú</span>
+<pre>int tryCombination(int S[]);</pre>
+    </div>
+    <p>Te permite probar una combinación de interruptores y entonces entrar a la
+       cueva para determinar la primera puerta cerrada. Si todas las puertas están
+       abiertas, regresa \(-1\). Esta función corre en tiempo \(O(N)\) (su tiempo
+       de ejecución es, a lo más, proporcional a \(N\)) y puede llamarse a lo más
+       \(70\,000\) veces.</p>
+    <ul>
+      <li><code>S</code>: arreglo de longitud \(N\) con la posición de cada
+          interruptor. <code>S[i]</code> corresponde al interruptor \(i\):
+          \(0\) significa <em>arriba</em> y \(1\) significa <em>abajo</em>.</li>
+      <li><strong>Regresa:</strong> el número de la primera puerta cerrada, o
+          \(-1\) si todas las puertas están abiertas.</li>
+    </ul>
+
+    <h3>Procedimiento del evaluador: <code>answer()</code></h3>
+    <div class="sig">
+      <span class="tag">Lo provee el evaluador — lo llamas tú al final</span>
+<pre>void answer(int S[], int D[]);</pre>
+    </div>
+    <p>Llama a este procedimiento cuando hayas identificado la combinación de
+       interruptores que abre todas las puertas y la puerta a la que se conecta
+       cada interruptor. No regresa: provoca que el programa termine.</p>
+    <ul>
+      <li><code>S</code>: arreglo de longitud \(N\) con la posición
+          <strong>correcta</strong> de cada interruptor (mismo formato que en
+          <code>tryCombination()</code>).</li>
+      <li><code>D</code>: arreglo de longitud \(N\) que indica la puerta a la que
+          se conecta cada interruptor. En concreto, <code>D[i]</code> es el número
+          de puerta a la que está conectado el interruptor \(i\).</li>
+    </ul>
+
+    <h3>Tu procedimiento: <code>exploreCave()</code></h3>
+    <div class="sig">
+      <span class="tag">Esto es lo que debes implementar</span>
+<pre>void exploreCave(int N);</pre>
+    </div>
+    <p>Tu envío debe implementar este procedimiento. Debe usar
+       <code>tryCombination()</code> para determinar la posición correcta de cada
+       interruptor y la puerta a la que se conecta cada interruptor, y debe llamar
+       a <code>answer()</code> una vez que tenga esa información.</p>
+    <ul>
+      <li><code>N</code>: el número de interruptores y puertas de la cueva.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de puertas / interruptores</td><td><span class="badge">\(1 \le N \le 5\,000\)</span></td></tr>
+        <tr><td>Llamadas a <code>tryCombination()</code></td><td><span class="badge">a lo más \(70\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">12</td><td>Para cada \(i\), el interruptor \(i\) está conectado a la puerta \(i\). Tu tarea es solo determinar la combinación correcta.</td></tr>
+          <tr><td>2</td><td class="pts">13</td><td>La combinación correcta siempre será \([0, 0, 0, \dots, 0]\). Tu tarea es solo determinar qué interruptor se conecta con qué puerta.</td></tr>
+          <tr><td>3</td><td class="pts">21</td><td>\(N \le 100\)</td></tr>
+          <tr><td>4</td><td class="pts">30</td><td>\(N \le 2\,000\)</td></tr>
+          <tr><td>5</td><td class="pts">24</td><td>(Ninguna)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo de sesión</h2>
+    <p>Supón \(N = 4\), donde la disposición real es: la posición correcta de los
+       interruptores es \(S = [1, 1, 1, 0]\) y el cableado es \(D = [3, 1, 0, 2]\)
+       (es decir, el interruptor \(0\) controla la puerta \(3\); el \(1\), la
+       puerta \(1\); el \(2\), la puerta \(0\); y el \(3\), la puerta \(2\)).</p>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>tryCombination([1, 0, 1, 1])
+
+tryCombination([0, 1, 1, 0])
+
+tryCombination([1, 1, 1, 0])
+
+answer([1, 1, 1, 0],
+       [3, 1, 0, 2])</pre></div>
+      <div class="io"><h4>Regresa</h4><pre>1
+
+
+3
+
+
+-1
+
+
+(el programa termina)</pre></div>
+    </div>
+    <p class="note">Explicación llamada por llamada:</p>
+    <ul>
+      <li><code>tryCombination([1,0,1,1])</code> ⇒ <code>1</code>: los
+          interruptores \(0, 2, 3\) están abajo y el \(1\) arriba. La función
+          regresa \(1\), indicando que la puerta \(1\) es la primera (desde la
+          izquierda) que está cerrada.</li>
+      <li><code>tryCombination([0,1,1,0])</code> ⇒ <code>3</code>: las puertas
+          \(0, 1, 2\) están abiertas y la puerta \(3\) está cerrada.</li>
+      <li><code>tryCombination([1,1,1,0])</code> ⇒ <code>-1</code>: al mover el
+          interruptor \(0\) hacia abajo se abren todas las puertas, lo que indica
+          el valor de retorno \(-1\).</li>
+      <li>Conjeturamos que la combinación correcta es \([1, 1, 1, 0]\) y que los
+          interruptores \(0, 1, 2, 3\) conectan respectivamente a las puertas
+          \(3, 1, 0, 2\), y llamamos a <code>answer()</code>.</li>
+    </ul>
+
+    <h2>Experimentación (evaluador local)</h2>
+    <p>El evaluador de muestra de tu máquina lee la entrada del archivo
+       <code>cave.in</code>, con el siguiente formato:</p>
+    <div class="io"><pre>línea 1: N
+línea 2: S[0] S[1] … S[N-1]
+línea 3: D[0] D[1] … D[N-1]</pre></div>
+    <p>donde \(N\) es el número de puertas e interruptores, <code>S[i]</code> es
+       la posición correcta del interruptor \(i\) y <code>D[i]</code> es la puerta
+       a la que se conecta el interruptor \(i\). Por ejemplo, el caso de arriba se
+       da así:</p>
+    <div class="io"><pre>4
+1 1 1 0
+3 1 0 2</pre></div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Greedy / incremental</span>
+      <span class="ptag">Invariante</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(N \le 5\,000\) interruptores y \(N\) puertas. Cada interruptor está
+       cableado a una puerta distinta (una <strong>permutación</strong> \(D\)
+       desconocida) y tiene una posición correcta \(S[i] \in \{0,1\}\) (también
+       desconocida). Una puerta está abierta sii el interruptor cableado a ella
+       está en su posición correcta. La única operación es
+       <code>tryCombination(S)</code>: fijas todos los interruptores y te dice la
+       <strong>primera puerta cerrada</strong> (la de menor índice) o \(-1\) si
+       todas están abiertas. Debes recuperar \(S\) y \(D\) con a lo más
+       \(70\,000\) llamadas y reportarlos con <code>answer(S, D)</code>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El presupuesto es \(\approx 70\,000\) llamadas para \(N = 5\,000\):
+                eso es \(\approx 14N\), justo del orden de \(N\log_2 N\) (con
+                \(\log_2 5000 \approx 12.3\)). El número grita
+                <strong>búsqueda binaria por puerta</strong>: \(N\) puertas, cada
+                una resuelta en \(\sim\log N\) llamadas. Una fuerza bruta de
+                \(2^N\) combinaciones o de probar \(N\) posiciones por puerta
+                (\(O(N^2)\) llamadas \(=2.5\times10^7\)) revienta el límite.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué te dice realmente <code>tryCombination</code>?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que el valor de retorno no es solo "abierta o
+           cerrada", sino la <em>primera</em> puerta cerrada en orden? ¿Qué pasa
+           si logras que las puertas \(0, 1, \dots, d-1\) estén abiertas y haces
+           una llamada?</p>
+        <p>Si garantizas que las puertas \(0..d-1\) están abiertas, entonces el
+           resultado de <code>tryCombination</code> es \(d\) <strong>exactamente
+           cuando la puerta \(d\) está cerrada</strong>, y es \(\ge d+1\) (o
+           \(-1\)) cuando la puerta \(d\) está abierta. O sea: con ese montaje,
+           <code>tryCombination</code> se vuelve una prueba binaria
+           "¿puerta \(d\) cerrada?" \(\iff\) "¿el resultado es igual a \(d\)?".
+           Esto sugiere resolver las puertas <strong>en orden</strong>
+           \(0, 1, \dots, N-1\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Las subtareas 1 y 2 te separan las dos incógnitas</summary>
+      <div class="body">
+        <p class="q">La subtarea 1 te regala el cableado (interruptor \(i\) ⇒
+           puerta \(i\)) y solo pide la combinación. La subtarea 2 te regala la
+           combinación (todo \([0,\dots,0]\)) y solo pide el cableado. ¿Puedes
+           resolver cada mitad por separado?</p>
+        <p><strong>Subtarea 1 (cableado conocido).</strong> Como \(D\) es la
+           identidad, las puertas son independientes: el interruptor \(i\)
+           controla la puerta \(i\). Empieza con todo en \(0\) y ve resolviendo
+           puerta por puerta. Para la puerta \(d\), con \(0..d-1\) ya en su
+           posición correcta, una sola llamada te dice si la puerta \(d\) está
+           cerrada con su interruptor en \(0\): si lo está, su posición correcta
+           es \(1\); si no, es \(0\). Fijas el interruptor \(d\) y avanzas.
+           \(N\) llamadas en total.</p>
+        <p><strong>Subtarea 2 (combinación conocida).</strong> La correcta es
+           todo \(0\), así que cualquier interruptor que muevas a \(1\) estará
+           <em>mal</em> y cerrará su puerta. Aquí solo necesitas descubrir, para
+           cada puerta \(d\), <em>cuál</em> interruptor la controla. ¿Y si pruebas
+           subconjuntos de interruptores y observas cuándo la puerta \(d\) cambia
+           de estado? Eso ya huele a búsqueda binaria sobre los interruptores.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación que vuelve independiente cada puerta</summary>
+      <div class="body">
+        <p class="q">Resuelve las puertas en orden. Supón que ya resolviste
+           \(0, 1, \dots, d-1\) y dejaste esos interruptores en su posición
+           correcta (esas puertas quedan abiertas). De los interruptores
+           <em>no resueltos</em>, ¿a qué puertas pueden estar cableados?</p>
+        <p>Los \(d\) interruptores ya resueltos están cableados exactamente a las
+           puertas \(0..d-1\) (porque \(D\) es una permutación y esas puertas ya
+           quedaron abiertas). Por lo tanto los interruptores
+           <strong>no resueltos están cableados exactamente a las puertas
+           \(\ge d\)</strong>. En particular, la puerta \(d\) depende
+           <strong>únicamente del único interruptor no resuelto cableado a
+           ella</strong>; los demás no resueltos solo afectan puertas \(>d\), que
+           no cambian el valor de retorno mientras este sea \(\le d\).</p>
+        <p>Mantén una combinación <code>cur</code> donde cada interruptor resuelto
+           está en su posición correcta y los no resueltos en \(0\). Como
+           \(0..d-1\) están abiertas, <strong>"puerta \(d\) cerrada"
+           \(\iff\) <code>tryCombination(cur) == d</code></strong>. Esa es la
+           prueba binaria limpia que necesitas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Encontrar el interruptor de la puerta \(d\) en \(\log\) llamadas</summary>
+      <div class="body">
+        <p class="q">Ya sabes que exactamente uno de los interruptores no
+           resueltos controla la puerta \(d\). Si tomas la <em>lista</em> de no
+           resueltos y volteas a \(1\) solo un prefijo de ella, ¿cómo se entera la
+           puerta \(d\)?</p>
+        <p>Primero una llamada <em>base</em> con todos los no resueltos en \(0\):
+           te dice si la puerta \(d\) está cerrada con su interruptor en \(0\)
+           (\(\Rightarrow\) su posición correcta es \(1\)) o abierta
+           (\(\Rightarrow\) correcta \(=0\)).</p>
+        <p>Luego, búsqueda binaria sobre la lista de no resueltos: pon a \(1\) el
+           prefijo \([lo..mid]\) (y el resto de no resueltos en \(0\)) y llama. El
+           estado abierto/cerrado de la puerta \(d\) se <strong>invierte</strong>
+           respecto a la base <em>sii</em> el interruptor que la controla cae
+           dentro de \([lo..mid]\) (los otros no resueltos no afectan a la puerta
+           \(d\)). Comparando "¿se invirtió?" decides en qué mitad seguir.
+           \(\lceil\log_2 m\rceil\) llamadas con \(m\) = número de no resueltos te
+           dejan un único candidato.</p>
+        <p class="note">Truco para no pasarte del presupuesto: busca binariamente
+           sobre la <strong>lista compacta de no resueltos</strong> (que encoge a
+           \(N-d\)), no sobre todo el rango \([0, N-1]\). Buscar siempre en
+           \([0,N-1]\) gasta \(13+1\) llamadas por puerta \(= 70\,000\) exactas
+           para \(N=5000\): justo en el límite y arriesgado. Compactando bajas a
+           \(\approx 61\,800\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>El <strong>mismo</strong> algoritmo \(O(N\log N)\) llamadas resuelve
+           las cinco subtareas; no hace falta código especializado. Resuelve las
+           puertas en orden \(0, 1, \dots, N-1\) manteniendo el invariante: en
+           <code>cur</code>, cada interruptor ya resuelto está en su posición
+           correcta (así las puertas \(0..d-1\) quedan abiertas) y los no
+           resueltos están en \(0\).</p>
+
+        <p><strong>Por qué es correcto.</strong> Tras resolver \(0..d-1\), esos
+           interruptores ocupan justo las puertas \(0..d-1\) (permutación), así
+           que los interruptores no resueltos controlan solo puertas \(\ge d\).
+           La puerta \(d\) depende entonces únicamente de su (único) interruptor
+           no resuelto. Como \(0..d-1\) están abiertas, comparar siempre contra
+           <code>r == d</code> aísla el estado de la puerta \(d\): si volteas
+           otros no resueltos podrías cerrar puertas \(>d\), pero el retorno
+           seguiría siendo \(d\) cuando (y solo cuando) la puerta \(d\) esté
+           cerrada. La búsqueda binaria localiza al interruptor porque su efecto
+           sobre la puerta \(d\) es <em>monótono</em> respecto a "está o no en el
+           prefijo encendido".</p>
+
+        <p>Para cada puerta \(d\):</p>
+        <ol>
+          <li><strong>Compacta</strong> la lista <code>un</code> de interruptores
+              no resueltos y ponlos todos en \(0\) dentro de <code>cur</code>.</li>
+          <li><strong>Base:</strong> <code>r = tryCombination(cur)</code>;
+              <code>baseClosed = (r == d)</code>. La posición correcta del
+              interruptor que controla la puerta \(d\) es \(1\) si
+              <code>baseClosed</code>, y \(0\) si no.</li>
+          <li><strong>Búsqueda binaria</strong> en <code>un</code>: pon a \(1\) el
+              prefijo \([lo..mid]\), llama, y si el estado de la puerta \(d\) se
+              invierte respecto a la base, el interruptor está en \([lo..mid]\)
+              (haz <code>hi = mid</code>); si no, en \([mid+1..hi]\)
+              (<code>lo = mid+1</code>). Termina con un único <code>ctrl</code>.</li>
+          <li><strong>Fija</strong> <code>cur[ctrl] = correct</code>, márcalo como
+              resuelto y guarda <code>S[ctrl] = correct</code>,
+              <code>D[ctrl] = d</code>.</li>
+        </ol>
+        <p>Al terminar las \(N\) puertas, llama a <code>answer(S, D)</code>.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>exploreCave(N):
+    cur[0..N-1] = 0
+    resuelto[0..N-1] = falso
+    S[0..N-1] = 0 ;  D[0..N-1] = 0
+
+    para d = 0 .. N-1:
+        un = lista de i con resuelto[i] == falso     // interruptores no resueltos
+        para cada i en un: cur[i] = 0                 // todos en 0
+
+        // base: ¿la puerta d está cerrada con su interruptor en 0?
+        r = tryCombination(cur)
+        baseClosed = (r == d)
+
+        // búsqueda binaria del interruptor que controla la puerta d
+        lo = 0 ;  hi = |un| - 1
+        mientras lo < hi:
+            mid = (lo + hi) / 2
+            para k = 0 .. |un|-1:
+                cur[un[k]] = (lo <= k <= mid) ? 1 : 0
+            rr = tryCombination(cur)
+            nowClosed = (rr == d)
+            si nowClosed != baseClosed:  hi = mid       // el switch está en [lo..mid]
+            si no:                       lo = mid + 1
+        ctrl = un[lo]
+
+        para cada i en un: cur[i] = 0                 // restaura no resueltos a 0
+        correct = baseClosed ? 1 : 0                  // 0 cierra la puerta => correcta es 1
+        cur[ctrl] = correct
+        resuelto[ctrl] = verdadero
+        S[ctrl] = correct
+        D[ctrl] = d
+
+    answer(S, D)</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Llamadas a <code>tryCombination</code>:
+           \(1\) (base) \(+\ \lceil\log_2 m\rceil\) por puerta, con \(m\) = no
+           resueltos \(= N-d\). Total
+           \(\;\approx N + \sum_{m=1}^{N}\lceil\log_2 m\rceil \approx 62\,000\)
+           para \(N=5\,000\), dentro de \(70\,000\) (una referencia usa
+           \(61\,809\) en el peor caso). Cada <code>tryCombination</code> cuesta
+           \(O(N)\), así que el tiempo total es \(O(N^2\log N)\) en el peor caso
+           (\(\sim 3\times10^8\) operaciones simples para \(N=5\,000\)) —
+           holgado en 2 s. Memoria \(O(N)\).</p>
+
+        <p class="note"><strong>Trampas.</strong> (1) Compara <em>siempre</em>
+           contra <code>r == d</code>, nunca contra un retorno genérico: voltear
+           no resueltos puede cerrar puertas \(>d\) y devolver esa otra puerta, lo
+           cual <em>no</em> significa "puerta \(d\) cerrada". (2) Mantén los
+           interruptores ya resueltos en su posición correcta durante toda la
+           búsqueda; si volteas uno resuelto se cerraría una puerta \(<d\) y el
+           retorno dejaría de reflejar la puerta \(d\). (3) Busca binariamente
+           sobre la lista compacta de no resueltos para no rozar el límite de
+           llamadas. (4) Las subtareas 1 y 2 son casos particulares: con cableado
+           identidad la búsqueda igual halla <code>ctrl = d</code>; con
+           combinación todo-\(0\), <code>baseClosed</code> siempre da
+           <code>correct = 0</code>.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

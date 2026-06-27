@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **67 / 142**
+Total de tareas: **142** · Completadas: **68 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -129,14 +129,14 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Last supper | `2012/05 Last supper/index.html` |
 | [x] | 6 | Jousting tournament | `2012/06 Jousting tournament/index.html` |
 
-## IOI 2013 — 3 / 6
+## IOI 2013 — 4 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Dreaming | `2013/01 Dreaming/index.html` |
 | [x] | 2 | Art Class | `2013/02 Art Class/index.html` |
 | [x] | 3 | Wombats | `2013/03 Wombats/index.html` |
-| [ ] | 4 | Cave | `2013/04 Cave/index.html` |
+| [x] | 4 | Cave | `2013/04 Cave/index.html` |
 | [ ] | 5 | Robots | `2013/05 Robots/index.html` |
 | [ ] | 6 | Game | `2013/06 Game/index.html` |
 
