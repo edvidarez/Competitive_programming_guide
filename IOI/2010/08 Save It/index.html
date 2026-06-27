@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2010 · Tarea 8 — Save It</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .dtable{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:auto}
+  .dtable table{border-collapse:collapse;font-size:15px;margin:0 auto;min-width:320px;width:100%}
+  .dtable th,.dtable td{padding:8px 12px;text-align:center;border:1px solid var(--border)}
+  .dtable th{background:var(--panel2);color:var(--muted)}
+  .dtable td.lbl{background:var(--panel2);color:var(--muted);font-weight:600}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\01F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\01F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2010 · Día 2 · Waterloo, Canadá</div>
+    <h1>Tarea <span class="num">8</span> — Save It</h1>
+    <p class="note">Guárdalo (codifica distancias a los hubs) · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La empresa de mensajería <strong>Xedef Courier Company</strong> ofrece
+       entrega aérea de paquetes entre varias ciudades. Algunas de esas ciudades
+       son <em>hubs</em> de Xedef, donde hay instalaciones especiales de
+       procesamiento. Cada avión de Xedef hace viajes de ida y vuelta entre
+       <strong>un par de ciudades</strong>, llevando paquetes en cualquiera de los
+       dos sentidos según se necesite.</p>
+
+    <p>Para enviarse de una ciudad a otra, un paquete debe transportarse mediante
+       una <strong>secuencia de saltos</strong> (<em>hops</em>), donde cada salto
+       lleva el paquete entre un par de ciudades servidas por uno de los aviones.
+       Además, la secuencia debe incluir <strong>al menos uno</strong> de los hubs
+       de Xedef.</p>
+
+    <p>Para facilitar el ruteo, Xedef quiere codificar, en la etiqueta de envío de
+       cada paquete, la <strong>longitud de la secuencia más corta de saltos desde
+       cada ciudad hasta cada hub</strong>. (La longitud de la secuencia más corta
+       que va de un hub a sí mismo es cero.) Como es de esperarse, hace falta una
+       representación <strong>compacta</strong> de esta información.</p>
+
+    <p>Debes implementar dos procedimientos, <code>encode(N,H,P,A,B)</code> y
+       <code>decode(N,H)</code>. \(N\) es el número de ciudades y \(H\) el número
+       de hubs. Supón que las ciudades están numeradas de \(0\) a \(N-1\), y que
+       los hubs son las ciudades con números entre \(0\) y \(H-1\). Supón además
+       que \(N \le 1000\) y \(H \le 36\). \(P\) es el número de pares de ciudades
+       conectados por avión. Todos los pares (no ordenados) de ciudades conectados
+       son distintos. \(A\) y \(B\) son arreglos de tamaño \(P\), tales que el
+       primer par de ciudades conectado es \((A[0],B[0])\), el segundo es
+       \((A[1],B[1])\), y así sucesivamente.</p>
+
+    <!-- FIGURA CLAVE: el grafo del ejemplo (recreado fielmente desde la tabla de distancias). -->
+    <figure>
+      <svg viewBox="0 0 500 340" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Grafo del ejemplo: 5 ciudades y 7 aviones. Las ciudades 0, 1 y 2 son hubs.">
+        <title>Grafo del ejemplo (N=5, P=7, H=3)</title>
+        <!-- aristas: 0-1, 0-2, 0-3, 0-4, 1-2, 1-3, 1-4 -->
+        <g stroke="#555" stroke-width="2">
+          <line x1="250" y1="50" x2="250" y2="290"/>
+          <line x1="250" y1="50" x2="95"  y2="170"/>
+          <line x1="250" y1="50" x2="250" y2="170"/>
+          <line x1="250" y1="50" x2="405" y2="170"/>
+          <line x1="250" y1="290" x2="95"  y2="170"/>
+          <line x1="250" y1="290" x2="250" y2="170"/>
+          <line x1="250" y1="290" x2="405" y2="170"/>
+        </g>
+        <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="18" font-weight="700"
+           text-anchor="middle" dominant-baseline="central">
+          <!-- hubs (amarillo): 0, 1, 2 -->
+          <circle cx="250" cy="50"  r="24" fill="#ffe34d" stroke="#9a8200" stroke-width="2"/>
+          <text x="250" y="50" fill="#1b1b1b">0</text>
+          <circle cx="250" cy="290" r="24" fill="#ffe34d" stroke="#9a8200" stroke-width="2"/>
+          <text x="250" y="290" fill="#1b1b1b">1</text>
+          <circle cx="95"  cy="170" r="24" fill="#ffe34d" stroke="#9a8200" stroke-width="2"/>
+          <text x="95" y="170" fill="#1b1b1b">2</text>
+          <!-- ciudades normales (blanco): 3, 4 -->
+          <circle cx="250" cy="170" r="24" fill="#ffffff" stroke="#555" stroke-width="2"/>
+          <text x="250" y="170" fill="#1b1b1b">3</text>
+          <circle cx="405" cy="170" r="24" fill="#ffffff" stroke="#555" stroke-width="2"/>
+          <text x="405" y="170" fill="#1b1b1b">4</text>
+        </g>
+      </svg>
+      <figcaption>Ejemplo: cinco ciudades (\(N=5\)) conectadas por siete aviones
+        (\(P=7\)). Las ciudades 0, 1 y 2 son hubs (\(H=3\), en amarillo). Se
+        necesita 1 salto para enviar un paquete entre el hub 0 y la ciudad 3,
+        mientras que hacen falta 2 saltos entre el hub 2 y la ciudad 3.</figcaption>
+    </figure>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea de <strong>comunicación / codificación</strong>: se
+       ejecutan <strong>dos corridas independientes</strong>. En la primera corre
+       <code>encode</code>, que ve el grafo y emite un flujo de bits; en la segunda
+       corre <code>decode</code>, que <em>no</em> ve el grafo y solo recibe ese
+       flujo de bits. La calificación mide <strong>cuántos bits</strong> emitió
+       <code>encode</code>.</p>
+
+    <div class="sig">
+      <span class="tag">Firmas a implementar por el concursante</span>
+<pre>void encode(int N, int H, int P, int *A, int *B);   // N ciudades, H hubs, P aristas (A[i],B[i])
+void decode(int N, int H);</pre>
+    </div>
+
+    <div class="sig">
+      <span class="tag">Funciones provistas por el evaluador (grader)</span>
+<pre>void encode_bit(int b);   // b en {0,1}; encode emite bits llamando a esto
+int  decode_bit(void);    // devuelve el i-esimo bit emitido por encode_bit
+void hops(int h, int c, int d);   // decode reporta: del hub h a la ciudad c hay d saltos</pre>
+    </div>
+
+    <p><strong>Qué debe hacer <code>encode</code>:</strong> calcular una secuencia
+       de bits a partir de la cual <code>decode</code> pueda determinar el número
+       de saltos desde cada ciudad hasta cada hub. <code>encode</code> transmite la
+       secuencia al servidor de calificación mediante una sucesión de llamadas a
+       <code>encode_bit(b)</code>, con \(b\) igual a \(0\) o \(1\).</p>
+
+    <p><strong>Qué debe hacer <code>decode</code>:</strong> recibe la secuencia de
+       bits del servidor llamando a <code>decode_bit</code>. La \(i\)-ésima llamada
+       a <code>decode_bit</code> devuelve el valor \(b\) de la \(i\)-ésima llamada
+       a <code>encode_bit(b)</code>. <strong>Importante:</strong> debes garantizar
+       que el número de veces que <code>decode</code> llama a <code>decode_bit</code>
+       <strong>nunca exceda</strong> el número de veces que <code>encode</code>
+       previamente llamó a <code>encode_bit</code>.</p>
+
+    <p>Después de decodificar los números de saltos, <code>decode</code> debe llamar
+       a <code>hops(h,c,d)</code> para <strong>todo</strong> hub \(h\) y
+       <strong>toda</strong> ciudad \(c\) (incluyendo todo hub, es decir, también
+       para \(c=h\)), entregando el número mínimo \(d\) de saltos necesarios para
+       enviar un paquete entre \(h\) y \(c\). Es decir, debe haber exactamente
+       \(N\cdot H\) llamadas a <code>hops(h,c,d)</code>. El orden no importa. Se
+       garantiza que siempre es posible enviar un paquete entre cada hub y cada
+       ciudad.</p>
+
+    <div class="note-box">
+      <strong>Nota:</strong> <code>encode</code> y <code>decode</code> deben
+      comunicarse <em>únicamente</em> a través de la interfaz especificada. Están
+      prohibidas las variables compartidas, el acceso a archivos y el acceso a red.
+      En C o C++ puedes declarar las variables persistentes como <code>static</code>
+      para que <code>encode</code> o <code>decode</code> conserven información sin
+      compartirla. En Pascal, puedes declararlas en la parte
+      <code>implementation</code> de tus archivos.
+    </div>
+
+    <h3>Detalles del paquete de la tarea (del PDF)</h3>
+    <ul>
+      <li>Carpeta de implementación: <code>/home/ioi2010-contestant/saveit/</code></li>
+      <li>A implementar por el concursante: <code>encoder.c</code> /
+          <code>encoder.cpp</code> / <code>encoder.pas</code> y
+          <code>decoder.c</code> / <code>decoder.cpp</code> / <code>decoder.pas</code>.</li>
+      <li>Interfaz del concursante: <code>encoder.h</code>/<code>encoder.pas</code>
+          y <code>decoder.h</code>/<code>decoder.pas</code>.</li>
+      <li>Interfaz del grader: <code>grader.h</code> / <code>graderlib.pas</code>.</li>
+      <li>Grader de ejemplo: <code>grader.c</code> / <code>grader.cpp</code> /
+          <code>grader.pas</code> y <code>graderlib.pas</code>.</li>
+      <li>Entrada de ejemplo: <code>grader.in.1</code>, <code>grader.in.2</code>, etc.
+          La primera línea de cada archivo contiene <code>N P H</code>. Las
+          siguientes \(P\) líneas contienen los pares de ciudades \(A[0]\,B[0]\),
+          \(A[1]\,B[1]\), etc. Las siguientes \(H\cdot N\) líneas contienen el
+          número de saltos de cada hub a cada ciudad (incluyéndose a sí mismo y a
+          todos los demás hubs); es decir, el número de saltos del hub \(i\) a la
+          ciudad \(j\) está en la línea número \(i\cdot N + j + 1\) de esas líneas.</li>
+      <li>Salida esperada para la entrada de ejemplo: si la implementación es
+          correcta para la subtarea \(k\), la salida contendrá <code>OK k</code>
+          (con \(k = 1,2,3,4\)).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Número de ciudades \(N\)</td><td><span class="badge">\(N \le 1000\)</span></td></tr>
+        <tr><td>Número de hubs \(H\)</td><td><span class="badge">\(H \le 36\)</span> (los hubs son las ciudades \(0 \dots H-1\))</td></tr>
+        <tr><td>Aristas \(P\)</td><td><span class="badge">pares no ordenados distintos</span> (hasta \(\sim N(N-1)/2\))</td></tr>
+        <tr><td>Conectividad</td><td>garantizado: siempre se puede enviar un paquete entre todo hub y toda ciudad</td></tr>
+        <tr><td>Restricción dura del protocolo</td><td>\(\#\,\)<code>decode_bit</code> \(\le\) \(\#\,\)<code>encode_bit</code> en todo momento</td></tr>
+        <tr><td>Llamadas a <code>hops</code></td><td>exactamente \(N\cdot H\) (todo par hub–ciudad, incluido \(c=h\) con \(d=0\))</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span> (4 subtareas de 25)</td></tr>
+      </table>
+    </div>
+    <p class="note">El enunciado no fija un límite de tiempo/memoria explícito como
+       restricción de calificación: lo que se mide y califica es el
+       <strong>número de llamadas a <code>encode_bit</code></strong> (cuántos bits
+       emite <code>encode</code>), según la tabla de subtareas.</p>
+
+    <h2>Subtareas</h2>
+    <p>Las 4 subtareas persiguen el <strong>mismo</strong> objetivo —que
+       <code>encode</code> no emita demasiados bits— pero con un límite cada vez
+       más estricto:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricción: número de llamadas a <code>encode_bit(b)</code></th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">25</td><td>a lo más \(16\,000\,000\)</td></tr>
+          <tr><td>2</td><td class="pts">25</td><td>a lo más \(360\,000\)</td></tr>
+          <tr><td>3</td><td class="pts">25</td><td>a lo más \(80\,000\)</td></tr>
+          <tr><td>4</td><td class="pts">25</td><td>a lo más \(70\,000\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera el grafo de la figura de arriba: cinco ciudades (\(N=5\))
+       conectadas por siete aviones (\(P=7\)). Las ciudades 0, 1 y 2 son hubs
+       (\(H=3\)). Los datos de este ejemplo están en <code>grader.in.1</code>.</p>
+    <p>Las entradas de la siguiente tabla son todos los valores \(d\) que
+       <code>decode</code> debe entregar llamando a <code>hops(h,c,d)</code>:</p>
+    <div class="dtable">
+      <table>
+        <thead>
+          <tr><th rowspan="2">\(d\)</th><th colspan="5">Ciudad \(c\)</th></tr>
+          <tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lbl">Hub 0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+          <tr><td class="lbl">Hub 1</td><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td></tr>
+          <tr><td class="lbl">Hub 2</td><td>1</td><td>1</td><td>0</td><td>2</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Por ejemplo, se necesita 1 salto entre el hub 0 y la ciudad 3
+       (entrada \(d=1\)), y 2 saltos entre el hub 2 y la ciudad 3 (entrada
+       \(d=2\)). La diagonal vale 0: la distancia de un hub a sí mismo es cero.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Comunicación</span>
+      <span class="ptag">Grafos / BFS</span>
+      <span class="ptag">Codificación y compresión</span>
+      <span class="ptag">Árbol generador</span>
+      <span class="ptag">Dígitos ternarios (trits)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Grafo no ponderado de \(N\le 1000\) ciudades; los hubs son los nodos
+       \(0\dots H-1\) con \(H\le 36\). <code>encode</code> ve el grafo y escribe un
+       flujo de bits; <code>decode</code> <strong>no</strong> ve el grafo y, leyendo
+       solo ese flujo, debe reportar con <code>hops(h,c,d)</code> la distancia (en
+       saltos) de cada hub \(h\) a cada ciudad \(c\). Hay que lograrlo con muy
+       pocos bits: \(\le 70\,000\) para los 100 puntos.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El grafo es <strong>no ponderado</strong> ⇒ "distancia" es
+                <strong>BFS</strong>. La tabla de respuestas tiene \(N\cdot H\)
+                números \(\le N-1\); guardarla cruda son \(\sim 360\,000\) bits
+                (subtarea 2). Bajar de ahí a \(70\,000\) exige
+                <strong>no</strong> mandar números absolutos, sino
+                <em>diferencias</em>, y empaquetarlas bien. Cada bloque de 25 puntos
+                esconde exactamente una de esas ideas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar la "distancia"?</summary>
+      <div class="body">
+        <p class="q">El enunciado dice "secuencia más corta de saltos". En un grafo
+           donde todas las aristas cuestan lo mismo, ¿qué algoritmo da esa
+           distancia? ¿Y cuántas distancias distintas tienes que entregar en total?</p>
+        <p>Como ningún avión "pesa" más que otro, la distancia de un hub a una
+           ciudad es simplemente el número de aristas del camino más corto: un
+           <strong>BFS</strong> desde el hub. Tienes \(H\) hubs, así que toda la
+           información es una tabla de \(H\times N\) distancias (cada una entre
+           \(0\) y \(N-1\)). El reto no es <em>calcularla</em> (eso es fácil para
+           <code>encode</code>), sino <strong>transmitirla con poquísimos bits</strong>
+           a un <code>decode</code> que no tiene el grafo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (≤ 16 000 000 bits): lo más burdo que sí cabe</summary>
+      <div class="body">
+        <p class="q">¿Cuál es la cosa más tonta que <code>decode</code> podría
+           reconstruir si le mandaras el grafo entero? ¿Cuántos bits cuesta describir
+           el grafo?</p>
+        <p>Con \(16\) millones de bits te alcanza para mandar el grafo <em>crudo</em>:
+           la matriz de adyacencia son \(N^2 \le 10^6\) bits (un bit por par de
+           ciudades). <code>decode</code> lee la matriz, reconstruye las listas de
+           adyacencia y corre \(H\) BFS por su cuenta para sacar todas las
+           distancias. Costoso en bits, pero correcto: 25 puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (≤ 360 000 bits): manda la respuesta, no el grafo</summary>
+      <div class="body">
+        <p class="q">Si <code>encode</code> ya conoce la tabla de distancias, ¿para
+           qué mandar el grafo? ¿Cuántos bits necesita cada número de la tabla?</p>
+        <p>Cada distancia está entre \(0\) y \(N-1 \le 999\), así que cabe en
+           \(\lceil\log_2 N\rceil = 10\) bits. Manda la tabla directa:
+           \(H\cdot N\cdot 10 = 36\cdot 1000\cdot 10 = 360\,000\) bits.
+           <code>decode</code> solo lee y reporta con <code>hops</code>; ni siquiera
+           necesita el grafo. Justo en el límite: 25 puntos más.</p>
+        <p class="note">A partir de aquí toca <em>comprimir</em>: \(10\) bits por
+           número es demasiado. ¿Y si los números vecinos casi no cambian?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3 (≤ 80 000 bits): la observación ternaria</summary>
+      <div class="body">
+        <p class="q">Fija un hub \(s\) y dos ciudades \(u,v\) unidas por una arista.
+           ¿Cuánto pueden diferir \(\operatorname{dist}_s(u)\) y
+           \(\operatorname{dist}_s(v)\)? Por la desigualdad del triángulo en un grafo
+           no ponderado…</p>
+        <p>A lo largo de <strong>cualquier</strong> arista \((u,v)\), para cualquier
+           fuente \(s\) se cumple \(|\operatorname{dist}_s(u)-\operatorname{dist}_s(v)|\le 1\).
+           Entonces, si fijas un <strong>árbol generador</strong> del grafo y
+           recorres sus aristas \((\text{padre}(v), v)\), la diferencia
+           \(\operatorname{dist}_s(v)-\operatorname{dist}_s(\text{padre}(v))\)
+           siempre vale \(-1\), \(0\) o \(+1\): un <strong>dígito ternario</strong>
+           (un "trit"), que codificamos como \(0,1,2\).</p>
+        <figure>
+          <svg viewBox="0 0 460 150" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-label="Una arista del arbol entre el padre y el nodo v; la distancia cambia en -1, 0 o +1.">
+            <title>Diferencia ternaria sobre una arista del árbol</title>
+            <line x1="150" y1="75" x2="310" y2="75" stroke="#555" stroke-width="2"/>
+            <circle cx="150" cy="75" r="30" fill="#cfe3ff" stroke="#3b5bdb" stroke-width="2"/>
+            <circle cx="310" cy="75" r="30" fill="#ffffff" stroke="#555" stroke-width="2"/>
+            <g font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle" dominant-baseline="central">
+              <text x="150" y="75" font-size="13" fill="#1b1b1b">padre</text>
+              <text x="310" y="75" font-size="18" font-weight="700" fill="#1b1b1b">v</text>
+              <text x="230" y="52" font-size="14" fill="#1b1b1b">d cambia en</text>
+              <text x="230" y="100" font-size="16" font-weight="700" fill="#9a3412">-1 / 0 / +1</text>
+            </g>
+          </svg>
+          <figcaption>Sobre una arista del árbol, la distancia a cualquier fuente
+            cambia en \(\{-1,0,+1\}\): basta un trit por arista y por hub.</figcaption>
+        </figure>
+        <p>Plan: <code>encode</code> hace BFS desde el nodo 0, fija ese árbol
+           generador y <strong>transmite el árbol</strong> (el padre de cada
+           \(v=1\dots N-1\), \(10\) bits c/u, porque <code>decode</code> no tiene el
+           grafo). Con el árbol, las distancias del <strong>hub 0 salen gratis</strong>:
+           son las profundidades. Para cada otro hub \(h=1\dots H-1\) manda un trit
+           por nodo no raíz (uno por arista del árbol, \(v=1\dots N-1\)). A \(2\) bits por trit:
+           \((N-1)\cdot 10 + (H-1)(N-1)\cdot 2 = 9990 + 69930 = 79920 \le 80\,000\).
+           25 puntos más, pero <em>raspando</em> el límite.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 4 (≤ 70 000 bits): empaqueta 3 trits en 5 bits</summary>
+      <div class="body">
+        <p class="q">Gastar \(2\) bits por trit desperdicia: \(2\) bits guardan
+           \(4\) valores y un trit solo tiene \(3\). ¿Cuántos trits caben en
+           \(5\) bits si los agrupas?</p>
+        <p>Tres trits tienen \(3^3 = 27\) combinaciones, y \(5\) bits dan
+           \(2^5 = 32 \ge 27\). Así que junta los trits de \(3\) en \(3\) y manda
+           \(5\) bits por grupo: pasas de \(2\) a \(5/3 \approx 1.667\) bits por
+           trit. Esa es exactamente la diferencia entre la subtarea 3 y la 4.</p>
+        <figure>
+          <svg viewBox="0 0 470 130" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-label="Tres trits (27 combinaciones) se empaquetan en 5 bits (32 valores).">
+            <title>Empaquetado 3 trits en 5 bits</title>
+            <g font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">
+              <rect x="20"  y="45" width="34" height="34" rx="6" fill="#ffe34d" stroke="#9a8200" stroke-width="2"/>
+              <rect x="58"  y="45" width="34" height="34" rx="6" fill="#ffe34d" stroke="#9a8200" stroke-width="2"/>
+              <rect x="96"  y="45" width="34" height="34" rx="6" fill="#ffe34d" stroke="#9a8200" stroke-width="2"/>
+              <text x="37"  y="62" font-size="16" font-weight="700" fill="#1b1b1b" dominant-baseline="central">t0</text>
+              <text x="75"  y="62" font-size="16" font-weight="700" fill="#1b1b1b" dominant-baseline="central">t1</text>
+              <text x="113" y="62" font-size="16" font-weight="700" fill="#1b1b1b" dominant-baseline="central">t2</text>
+              <text x="75"  y="28" font-size="12" fill="#1b1b1b">3 trits = 27</text>
+              <text x="225" y="62" font-size="22" fill="#1b1b1b" dominant-baseline="central">&#8594;</text>
+              <text x="225" y="92" font-size="12" fill="#1b1b1b" dominant-baseline="central">9·t0+3·t1+t2</text>
+              <g>
+                <rect x="300" y="45" width="26" height="34" rx="5" fill="#cfe3ff" stroke="#3b5bdb" stroke-width="2"/>
+                <rect x="328" y="45" width="26" height="34" rx="5" fill="#cfe3ff" stroke="#3b5bdb" stroke-width="2"/>
+                <rect x="356" y="45" width="26" height="34" rx="5" fill="#cfe3ff" stroke="#3b5bdb" stroke-width="2"/>
+                <rect x="384" y="45" width="26" height="34" rx="5" fill="#cfe3ff" stroke="#3b5bdb" stroke-width="2"/>
+                <rect x="412" y="45" width="26" height="34" rx="5" fill="#cfe3ff" stroke="#3b5bdb" stroke-width="2"/>
+              </g>
+              <text x="369" y="28" font-size="12" fill="#1b1b1b">5 bits = 32</text>
+            </g>
+          </svg>
+          <figcaption>\(3\) trits (27 combinaciones) caben en \(5\) bits
+            (32 valores): \(\text{val}=9t_0+3t_1+t_2\). Por eso bajamos de \(2\) a
+            \(\approx 1.667\) bits/trit.</figcaption>
+        </figure>
+        <p class="q">Cuidado con un detalle: ¿el relleno (padding) del último grupo
+           va por cada hub o una sola vez al final? Si rellenas por hub, los límites
+           de bloque se desalinean.</p>
+        <p>Concatena <em>todos</em> los trits (de todos los hubs) en un único flujo,
+           empaca ese flujo completo de 3 en 3 (rellenando solo al final), y del lado
+           de <code>decode</code> rebana en bloques de \(N-1\) trits por hub. La
+           solución completa está abajo.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Una sola solución cumple el límite más estricto (subtarea 4) y, por tanto,
+           las cuatro: \(68\,265\) bits en el peor caso \((N=1000,\ H=36)\), por
+           debajo de \(70\,000\).</p>
+
+        <h3>Idea</h3>
+        <ul>
+          <li>El grafo es no ponderado ⇒ distancias por BFS, y a lo largo de
+              cualquier arista las distancias a una misma fuente difieren en
+              \(\{-1,0,+1\}\).</li>
+          <li>Usa <strong>un</strong> árbol generador (BFS desde el nodo 0).
+              <code>decode</code> no tiene el grafo, así que hay que
+              <strong>transmitir el árbol</strong> (el padre de cada \(v\),
+              \(W=\lceil\log_2 N\rceil = 10\) bits c/u). A cambio, las distancias del
+              hub 0 salen gratis como profundidades del árbol.</li>
+          <li>Para cada hub \(h\ge 1\), manda un <strong>trit por nodo no raíz</strong>
+              (\(v=1\dots N-1\), uno por arista del árbol):
+              \(t_v=\operatorname{dist}_h(v)-\operatorname{dist}_h(\text{padre}(v))+1\).
+              Empaca los trits de 3 en 3 en 5 bits.</li>
+          <li>No mandes ninguna distancia base por hub: <strong>ancla</strong> con el
+              hecho conocido \(\operatorname{dist}_h(h)=0\) en el nodo hub.</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — encode(N, H, P, A, B)</span>
+<pre>construir listas de adyacencia desde (A, B)
+BFS(0) -> par[v] (padre en el arbol), prof[v] (= dist_0(v))   // arbol generador, raiz 0
+W = ceil(log2(N))                                             // 10 bits si N = 1000
+
+// 1) transmitir el arbol  (las distancias del hub 0 = prof[], gratis)
+para v = 1 .. N-1:
+    emitir par[v] en W bits      // W llamadas a encode_bit
+
+// 2) reunir un trit por nodo no raiz (v=1..N-1), hub por hub
+trits = []                       // orden: hub 1, hub 2, ...; dentro, v = 1 .. N-1
+para h = 1 .. H-1:
+    BFS(h) -> dist_h[]
+    para v = 1 .. N-1:
+        trits.append( dist_h[v] - dist_h[par[v]] + 1 )   // en {0,1,2}
+
+// 3) empaquetar TODO el flujo de 3 en 3 (rellenar con 0 solo al final)
+para cada grupo (t0, t1, t2) de trits:
+    val = 9*t0 + 3*t1 + t2       // 0 .. 26
+    emitir val en 5 bits</pre>
+        </div>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — decode(N, H)</span>
+<pre>W = ceil(log2(N))
+// 1) leer el arbol (mismo ancho de bits)
+para v = 1 .. N-1: par[v] = leer W bits        // par[0] = ninguno
+construir hijos[] y un orden BFS desde 0 (padre antes que hijo)
+prof[0] = 0;  para v en orden BFS (v != 0): prof[v] = prof[par[v]] + 1
+
+// 2) hub 0: distancias = profundidades
+para c = 0 .. N-1: hops(0, c, prof[c])
+
+// 3) leer los grupos de 5 bits y reconstruir TODOS los trits
+numTrits = (H-1) * (N-1)
+para cada grupo: val = leer 5 bits; (t0,t1,t2) = (val/9, (val/3)%3, val%3)
+trits[] = primeros numTrits trits reconstruidos
+
+// 4) por cada hub h >= 1, propagar en el arbol y anclar con dist_h(h)=0
+para h = 1 .. H-1:
+    bloque = trits[(h-1)*(N-1) .. h*(N-1)-1]    // longitud N-1; bloque[v-1] = trit del nodo v
+    rel[0] = 0
+    para v en orden BFS (v != 0):
+        rel[v] = rel[par[v]] + (bloque[v-1] - 1)  // rel[v] = dist_h(v) - dist_h(0)
+    off = -rel[h]                                 // porque dist_h(h) = 0
+    para c = 0 .. N-1: hops(h, c, rel[c] + off)   // dist_h(c) = rel[c] - rel[h]</pre>
+        </div>
+
+        <h3>Por qué es correcto</h3>
+        <p>Para un hub fijo \(h\), define \(\operatorname{rel}(v)=\operatorname{dist}_h(v)-\operatorname{dist}_h(0)\).
+           Sobre cada arista del árbol,
+           \(\operatorname{dist}_h(v)-\operatorname{dist}_h(\text{padre}(v)) = t_v-1 \in\{-1,0,+1\}\),
+           así que propagando desde la raíz obtenemos exactamente
+           \(\operatorname{rel}(v)\) para todo nodo. Como \(\operatorname{dist}_h(h)=0\),
+           el desfase real es \(\operatorname{off}=-\operatorname{rel}(h)=\operatorname{dist}_h(0)\),
+           y entonces \(\operatorname{dist}_h(c)=\operatorname{rel}(c)-\operatorname{rel}(h)\)
+           es la distancia verdadera. No hace falta mandar ninguna distancia base.</p>
+
+        <div class="note-box">
+          <strong>Trampas a evitar:</strong>
+          <ul>
+            <li>El hub 0 <em>no</em> lleva trits: sus distancias son las
+                profundidades del árbol. Si le mandas trits, gastas \(\sim 999\)
+                de más y te pasas de \(70\,000\).</li>
+            <li>El relleno del empaquetado va <strong>una sola vez al final</strong>
+                del flujo global; si rellenas por hub, los bloques de \(N-1\) se
+                desalinean al decodificar.</li>
+            <li>El índice del trit es por <strong>nodo</strong> \(v\) (encode los
+                escribe en orden \(v=1\dots N-1\)), pero la <strong>propagación</strong>
+                debe ir en orden BFS del árbol (padre antes que hijo), porque
+                \(\text{padre}(v)\) puede tener índice mayor que \(v\).</li>
+            <li><code>decode_bit</code> no debe leerse más veces de las que
+                <code>encode</code> emitió: lee exactamente el mismo número y orden
+                de bits. Usa un ancho fijo \(W=10\) consistente en ambos lados.</li>
+          </ul>
+        </div>
+
+        <h3>Conteo de bits (peor caso)</h3>
+        <p>\(N=1000,\ H=36\): árbol \((N-1)\cdot 10 = 9990\) bits; trits
+           \((H-1)(N-1)=34\,965\), empacados \(\lceil 34965/3\rceil\cdot 5 = 11\,655\cdot 5 = 58\,275\)
+           bits. Total \(= 9990 + 58\,275 = 68\,265 < 70\,000\). ✓</p>
+
+        <p><strong>Complejidad:</strong> <code>encode</code> hace \(H\) BFS,
+           \(O\big(H\,(N+P)\big)\) tiempo; <code>decode</code> es \(O(N\cdot H)\).
+           Memoria \(O(N+P)\). Corre en milisegundos aun con \(P\) cercano a su
+           máximo.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Detalle de C++ (opcional)</span>
+<pre>Lleva un "bit buffer" propio: en encode acumulas bits en un entero y llamas
+encode_bit por cada uno; en decode reconstruyes enteros leyendo W (o 5) bits con
+decode_bit. Declara el estado persistente como `static` dentro de cada archivo
+(encoder / decoder) para no compartir variables entre las dos corridas.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
