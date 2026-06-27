@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2010 · Tarea 6 — Traffic</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2010 · Día 2 · Tarea 2 del día · Waterloo, Canadá</div>
+    <h1>Tarea <span class="num">6</span> — Traffic</h1>
+    <p class="note">Congestión de tráfico · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Aunque Canadá es un país enorme, muchas zonas están deshabitadas y la mayor
+       parte de la población vive cerca de la frontera sur. La autopista
+       Transcanadiense, terminada en 1962, conecta a la gente de esa franja de
+       tierra, desde St. John's en el Este hasta Victoria en el Oeste, una
+       distancia de 7 821 km.</p>
+
+    <p>A los canadienses les gusta el hockey. Después de un partido, miles de
+       aficionados se suben a sus autos y manejan de regreso a casa, lo que
+       provoca una fuerte congestión en las carreteras. Un empresario adinerado
+       quiere comprar un equipo de hockey y construir un estadio nuevo. Tu tarea
+       es ayudarlo a elegir la ubicación del estadio de modo que se
+       <strong>minimice la congestión de tráfico</strong> después de un partido.</p>
+
+    <p>El país está organizado en ciudades conectadas por una red de carreteras.
+       Todas las carreteras son bidireccionales y existe <strong>exactamente una
+       ruta</strong> que conecta cualquier par de ciudades. Una ruta que conecta
+       las ciudades \(c_0\) y \(c_k\) es una sucesión de ciudades distintas
+       \(c_0, \dots, c_k\) tal que hay una carretera de \(c_{i-1}\) a \(c_i\) para
+       cada \(i\). El estadio nuevo debe construirse en una de las ciudades, a la
+       que llamaremos la <em>ciudad sede</em>.</p>
+
+    <p>Después de un partido, todos los aficionados viajan desde la ciudad sede
+       hasta su ciudad de origen, salvo los que ya viven en la ciudad sede. La
+       cantidad de congestión en cada carretera es proporcional al número de
+       aficionados que viajan por ella. Debes ubicar la ciudad sede de manera que
+       <strong>la congestión de la carretera más congestionada sea lo más pequeña
+       posible</strong>. Si hay varias ubicaciones igual de buenas, puedes elegir
+       cualquiera.</p>
+
+    <figure>
+      <svg viewBox="0 0 470 200" role="img" aria-label="Árbol base de cinco ciudades: la ciudad 0 con 10 aficionados cuelga de la ciudad 2; en línea horizontal están la ciudad 1 con 10, la ciudad 2 con 10, la ciudad 3 con 20 y la ciudad 4 con 20.">
+        <line x1="175" y1="68" x2="175" y2="127" stroke="#444" stroke-width="2"/>
+        <line x1="83" y1="150" x2="152" y2="150" stroke="#444" stroke-width="2"/>
+        <line x1="198" y1="150" x2="267" y2="150" stroke="#444" stroke-width="2"/>
+        <line x1="313" y1="150" x2="382" y2="150" stroke="#444" stroke-width="2"/>
+        <g font-family="system-ui,sans-serif">
+          <circle cx="175" cy="45" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="175" y="46" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="205" y="40" font-size="12" fill="#888">0</text>
+          <circle cx="60" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="60" y="151" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="60" y="114" text-anchor="middle" font-size="12" fill="#888">1</text>
+          <circle cx="175" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="175" y="151" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="175" y="114" text-anchor="middle" font-size="12" fill="#888">2</text>
+          <circle cx="290" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="290" y="151" text-anchor="middle" font-size="15" fill="#222">20</text>
+          <text x="290" y="114" text-anchor="middle" font-size="12" fill="#888">3</text>
+          <circle cx="405" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="405" y="151" text-anchor="middle" font-size="15" fill="#222">20</text>
+          <text x="405" y="114" text-anchor="middle" font-size="12" fill="#888">4</text>
+        </g>
+      </svg>
+      <figcaption>Diagrama base: \(5\) ciudades. El número dentro de cada círculo es
+         \(P[i]\) (aficionados); el número pequeño es el índice de la ciudad. Aristas:
+         \(0\!-\!2\), \(1\!-\!2\), \(2\!-\!3\), \(3\!-\!4\). Total \(=70\) aficionados.</figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 470 200" role="img" aria-label="Estadio en la ciudad 2: los aficionados salen de la ciudad 2; la carretera 2 a 3 lleva 40 aficionados (la más congestionada).">
+        <defs>
+          <marker id="ahB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3 L0,6 Z" fill="#444"/></marker>
+          <marker id="ahBr" markerWidth="11" markerHeight="11" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,3.5 L0,7 Z" fill="#c0392b"/></marker>
+        </defs>
+        <line x1="175" y1="127" x2="175" y2="70" stroke="#444" stroke-width="2" marker-end="url(#ahB)"/>
+        <line x1="152" y1="150" x2="88" y2="150" stroke="#444" stroke-width="2" marker-end="url(#ahB)"/>
+        <line x1="198" y1="150" x2="263" y2="150" stroke="#c0392b" stroke-width="4" marker-end="url(#ahBr)"/>
+        <line x1="313" y1="150" x2="379" y2="150" stroke="#444" stroke-width="2" marker-end="url(#ahB)"/>
+        <g font-family="system-ui,sans-serif" font-size="13">
+          <text x="160" y="103" text-anchor="end" fill="#444">10</text>
+          <text x="118" y="139" text-anchor="middle" fill="#444">10</text>
+          <text x="230" y="137" text-anchor="middle" fill="#c0392b" font-weight="700">40</text>
+          <text x="346" y="139" text-anchor="middle" fill="#444">20</text>
+        </g>
+        <g font-family="system-ui,sans-serif">
+          <circle cx="175" cy="45" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="175" y="46" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="205" y="40" font-size="12" fill="#888">0</text>
+          <circle cx="60" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="60" y="151" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="60" y="114" text-anchor="middle" font-size="12" fill="#888">1</text>
+          <circle cx="175" cy="150" r="23" fill="#fff" stroke="#c0392b" stroke-width="6"/>
+          <text x="175" y="114" text-anchor="middle" font-size="12" fill="#888">2</text>
+          <circle cx="290" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="290" y="151" text-anchor="middle" font-size="15" fill="#222">20</text>
+          <text x="290" y="114" text-anchor="middle" font-size="12" fill="#888">3</text>
+          <circle cx="405" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="405" y="151" text-anchor="middle" font-size="15" fill="#222">20</text>
+          <text x="405" y="114" text-anchor="middle" font-size="12" fill="#888">4</text>
+        </g>
+      </svg>
+      <figcaption>Estadio en la ciudad <strong>2</strong> (anillo rojo). Las flechas
+         son los aficionados que salen de la sede. La carretera \(2\!\to\!3\) carga
+         \(20+20=40\) (aficionados de \(3\) y \(4\)): es la más congestionada.
+         <strong>Peor congestión = 40.</strong></figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 470 200" role="img" aria-label="Estadio en la ciudad 3: la carretera 3 a 2 lleva 30 aficionados (la más congestionada).">
+        <defs>
+          <marker id="ahC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3 L0,6 Z" fill="#444"/></marker>
+          <marker id="ahCr" markerWidth="11" markerHeight="11" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,3.5 L0,7 Z" fill="#c0392b"/></marker>
+        </defs>
+        <line x1="267" y1="150" x2="201" y2="150" stroke="#c0392b" stroke-width="4" marker-end="url(#ahCr)"/>
+        <line x1="152" y1="150" x2="88" y2="150" stroke="#444" stroke-width="2" marker-end="url(#ahC)"/>
+        <line x1="175" y1="127" x2="175" y2="70" stroke="#444" stroke-width="2" marker-end="url(#ahC)"/>
+        <line x1="313" y1="150" x2="379" y2="150" stroke="#444" stroke-width="2" marker-end="url(#ahC)"/>
+        <g font-family="system-ui,sans-serif" font-size="13">
+          <text x="234" y="137" text-anchor="middle" fill="#c0392b" font-weight="700">30</text>
+          <text x="118" y="139" text-anchor="middle" fill="#444">10</text>
+          <text x="160" y="103" text-anchor="end" fill="#444">10</text>
+          <text x="346" y="139" text-anchor="middle" fill="#444">20</text>
+        </g>
+        <g font-family="system-ui,sans-serif">
+          <circle cx="175" cy="45" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="175" y="46" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="205" y="40" font-size="12" fill="#888">0</text>
+          <circle cx="60" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="60" y="151" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="60" y="114" text-anchor="middle" font-size="12" fill="#888">1</text>
+          <circle cx="175" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="175" y="151" text-anchor="middle" font-size="15" fill="#222">10</text>
+          <text x="175" y="114" text-anchor="middle" font-size="12" fill="#888">2</text>
+          <circle cx="290" cy="150" r="23" fill="#fff" stroke="#c0392b" stroke-width="6"/>
+          <text x="290" y="114" text-anchor="middle" font-size="12" fill="#888">3</text>
+          <circle cx="405" cy="150" r="23" fill="#fff" stroke="#333" stroke-width="2"/>
+          <text x="405" y="151" text-anchor="middle" font-size="15" fill="#222">20</text>
+          <text x="405" y="114" text-anchor="middle" font-size="12" fill="#888">4</text>
+        </g>
+      </svg>
+      <figcaption>Estadio en la ciudad <strong>3</strong>. La carretera \(3\!\to\!2\)
+         carga \(10+10+10=30\) (aficionados de \(0\), \(1\) y \(2\)).
+         <strong>Peor congestión = 30.</strong> Como \(30<40\), la ciudad \(3\) es
+         mejor sede que la ciudad \(2\).</figcaption>
+    </figure>
+
+    <!-- ===== TAREA FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el procedimiento <code>LocateCentre(N, P, S, D)</code>. El
+       evaluador lo llama <strong>una sola vez</strong> y tu función debe devolver
+       un entero: el <strong>número de la ciudad</strong> que debe ser la ciudad
+       sede. No se lee de la entrada estándar ni se escribe en la salida estándar;
+       el evaluador te entrega los datos como argumentos.</p>
+    <ul>
+      <li><code>N</code>: entero positivo, el número de ciudades. Las ciudades se
+          numeran de \(0\) a \(N-1\).</li>
+      <li><code>P</code>: arreglo de \(N\) enteros positivos; <code>P[i]</code> es
+          el número de aficionados que viven en la ciudad \(i\). El total de
+          aficionados en todas las ciudades es a lo más \(2\,000\,000\,000\).</li>
+      <li><code>S</code>, <code>D</code>: arreglos de \(N-1\) enteros cada uno, que
+          describen las carreteras. Para cada \(i\), hay una carretera que conecta
+          las ciudades <code>S[i]</code> y <code>D[i]</code>. Como hay exactamente
+          una ruta entre cualquier par de ciudades, la red es un <strong>árbol</strong>.</li>
+      <li><strong>Devuelve:</strong> el número de la ciudad sede (no el valor de la
+          congestión). Si hay varias óptimas, cualquiera es válida.</li>
+    </ul>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>// C / C++  (archivo traffic.c o traffic.cpp; interfaz: traffic.h)
+int LocateCentre(int N, int P[], int S[], int D[]);
+
+// Pascal (archivo traffic.pas)
+function LocateCentre(N : LongInt; P, S, D : array of LongInt) : LongInt;</pre>
+    </div>
+    <div class="note-box">
+      <strong>Evaluador de muestra (formato del archivo de entrada).</strong> El
+      evaluador de prueba (<code>grader.c</code> / <code>grader.cpp</code> /
+      <code>grader.pas</code>) lee un archivo así: la primera línea contiene
+      \(N\); las siguientes \(N\) líneas contienen <code>P[i]</code> para \(i\)
+      entre \(0\) y \(N-1\); las siguientes \(N-1\) líneas contienen los pares
+      <code>S[i] D[i]</code> para \(i\) entre \(0\) y \(N-2\). El evaluador arma
+      los arreglos, llama a <code>LocateCentre</code> y compara el entero
+      devuelto con <code>grader.expect</code>. La carpeta de implementación
+      oficial es <code>/home/ioi2010-contestant/traffic/</code>.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Número de ciudades \(N\)</td><td><span class="badge">\(1 \le N \le 1\,000\,000\)</span> (subtareas 2 y 4; en las subtareas 1 y 3, \(N \le 1000\))</td></tr>
+        <tr><td>Total de aficionados</td><td><span class="badge">\(\sum_i P[i] \le 2\,000\,000\,000\)</span></td></tr>
+        <tr><td>Aficionados por ciudad</td><td><span class="badge">\(P[i] \ge 1\) entero</span></td></tr>
+        <tr><td>Estructura de la red</td><td>Árbol: \(N-1\) carreteras, exactamente una ruta entre cualquier par de ciudades</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span> (4 subtareas de 25)</td></tr>
+      </table>
+    </div>
+    <p class="note">El texto del enunciado oficial no especifica límite de tiempo
+       ni de memoria explícitos; la dificultad real vive en las subtareas con
+       \(N\) hasta \(10^6\), que exigen una solución lineal \(O(N)\) en tiempo y
+       memoria.</p>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">25</td><td>Todas las ciudades están en línea recta de Este a Oeste, sin ramas: para todo \(i\) con \(0 \le i \le N-2\), \(S[i]=i\) y \(D[i]=i+1\). Hay a lo más \(1000\) ciudades.</td></tr>
+          <tr><td>2</td><td class="pts">25</td><td>Mismos supuestos que la Subtarea 1 (línea recta), pero hay a lo más \(1\,000\,000\) ciudades.</td></tr>
+          <tr><td>3</td><td class="pts">25</td><td>Los supuestos de la Subtarea 1 podrían no cumplirse (árbol general). Hay a lo más \(1000\) ciudades.</td></tr>
+          <tr><td>4</td><td class="pts">25</td><td>Los supuestos de la Subtarea 1 podrían no cumplirse (árbol general). Hay a lo más \(1\,000\,000\) ciudades.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      <strong>Nota del enunciado.</strong> Con estas restricciones es posible
+      enviar una solución que pase la Subtarea 3 y falle la Subtarea 2. Recuerda
+      que tu puntaje final de toda la tarea lo determina <em>una sola</em> de tus
+      entregas.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la red de cinco ciudades de los diagramas de arriba, donde las
+       ciudades \(0\), \(1\) y \(2\) tienen \(10\) aficionados cada una, y las
+       ciudades \(3\) y \(4\) tienen \(20\) cada una. El diagrama de en medio
+       muestra las congestiones cuando el estadio está en la ciudad \(2\): la peor
+       congestión es \(40\) (en la flecha más gruesa). El diagrama de abajo muestra
+       las congestiones cuando el estadio está en la ciudad \(3\): la peor
+       congestión es \(30\). Por lo tanto, la ciudad \(3\) sería mejor sede que la
+       ciudad \(2\). Los datos de este ejemplo están en <code>grader.in.3a</code>.</p>
+    <p class="note">Así se ve este ejemplo en el formato del evaluador de muestra:</p>
+    <div class="example">
+      <div class="io"><h4>Entrada del evaluador</h4><pre>5
+10
+10
+10
+20
+20
+0 2
+1 2
+2 3
+3 4</pre></div>
+      <div class="io"><h4>Retorno esperado</h4><pre>3</pre></div>
+    </div>
+    <p class="note">Lectura: \(N=5\); luego \(P=[10,10,10,20,20]\); luego las
+       carreteras \(0\!-\!2\), \(1\!-\!2\), \(2\!-\!3\), \(3\!-\!4\).
+       <code>LocateCentre</code> devuelve \(3\), cuya peor congestión es \(30\), el
+       mínimo posible. (El valor \(30\) es solo el porqué; lo que se devuelve es la
+       ciudad.)</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">Centroide ponderado</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">DFS/BFS iterativo</span>
+      <span class="ptag">Prefijos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un <strong>árbol</strong> de \(N\) ciudades con un peso \(P[i]\) en
+       cada nodo. Si pones la sede en \(r\), por cada arista circula la suma de
+       \(P\) de las ciudades que quedan del lado opuesto a \(r\). Implementa
+       <code>LocateCentre</code> para devolver la ciudad \(r\) que minimiza la
+       congestión de la <em>peor</em> arista. Es exactamente el
+       <strong>centroide ponderado</strong> del árbol.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Las subtareas suben en dos ejes: <em>forma</em> (línea recta → árbol)
+                y <em>tamaño</em> (\(N\le 1000\) → \(N\le 10^6\)). \(N\le 1000\)
+                admite \(O(N^2)\) (probar cada ciudad). \(N\le 10^6\) exige
+                \(O(N)\): un par de barridos lineales. Además \(N=10^6\) con DFS
+                <strong>recursivo</strong> desborda la pila → todo iterativo.
+                \(\sum P \le 2\cdot10^9\) está al borde de <code>int32</code>: usa
+                64 bits en las sumas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que la red (una ruta única entre cada par) es un
+           <strong>árbol</strong>? Y fijada la sede \(r\), ¿cuántos aficionados
+           cruzan una carretera concreta?</p>
+        <p>Quita una arista \((u,v)\) del árbol: se parte en dos componentes. Si
+           \(r\) está del lado de \(u\), todos los aficionados del lado de \(v\)
+           tienen que cruzar esa arista para llegar a casa. Entonces la congestión
+           de la arista \(=\) suma de \(P\) del componente que <em>no</em> contiene
+           a \(r\). Queremos elegir \(r\) que minimice el máximo de esas
+           congestiones sobre todas las aristas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1 y 3 (\(N\le1000\)): la fuerza bruta honesta</summary>
+      <div class="body">
+        <p class="q">Con \(N\le 1000\), ¿qué te impide <em>probar cada ciudad</em>
+           como sede y, para cada una, calcular su peor carretera directamente?</p>
+        <p>Para una sede fija \(r\): enraíza el árbol en \(r\) con un recorrido y
+           calcula, para cada vecino, el peso total del subárbol que cuelga de él;
+           la peor congestión de \(r\) es el máximo de esos pesos. Eso es \(O(N)\)
+           por candidato, \(O(N^2)\) en total: \(\le 10^6\) operaciones para
+           \(N=1000\). Cubre la <strong>Subtarea 3</strong> (árbol, \(N\le1000\)) y,
+           en particular, la <strong>Subtarea 1</strong> (línea, \(N\le1000\)).
+           Cuidado: esto NO escala a \(10^6\) (sería \(10^{12}\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (línea, \(N\le10^6\)): el caso fácil de visualizar</summary>
+      <div class="body">
+        <p class="q">En la línea \(0\!-\!1\!-\!\cdots\!-\!(N-1)\), si la sede es la
+           ciudad \(i\), ¿cuáles son sus únicas dos carreteras incidentes y cuánto
+           cargan?</p>
+        <p>La carretera hacia la izquierda lleva a <em>todos</em> los de \(0..i-1\)
+           \(=\) prefijo \(\;\mathrm{pre}(i-1)\); la de la derecha lleva a todos los
+           de \(i+1..N-1\) \(=\) \(W-\mathrm{pre}(i)\), donde \(W=\sum P\). Las
+           carreteras interiores cargan menos, así que la peor de \(i\) es
+           \(\max(\mathrm{pre}(i-1),\,W-\mathrm{pre}(i))\). Precalcula los prefijos
+           y barre \(i\): \(O(N)\). El mínimo se alcanza donde el prefijo cruza
+           \(W/2\) (una <strong>mediana ponderada</strong>). Esto da la Subtarea 2.</p>
+        <p class="note">Detalle clave que ya asoma aquí: la peor carretera de la
+           sede siempre es una de las que <em>tocan</em> la sede. Sostenlo para el
+           caso general.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación que destraba el árbol general</summary>
+      <div class="body">
+        <p class="q">Al alejarte de \(r\) por una rama, los subárboles se
+           <em>anidan</em> (cada uno contenido en el anterior). ¿Qué le pasa
+           entonces al peso del componente, y por tanto a la congestión, conforme te
+           alejas?</p>
+        <p>Solo puede <strong>decrecer</strong>: el componente del lado lejano se
+           hace más chico. Por eso la <strong>peor arista de \(r\) siempre incide en
+           \(r\)</strong>. Conclusión:
+           \[\operatorname{peor}(r)=\max_{w\ \text{vecino de}\ r}\big(\text{peso del componente del lado de } w\big).\]
+           Ya no hay que mirar todas las aristas: solo las ramas que salen de \(r\).
+           Falta calcular esas ramas para <em>todos</em> los \(r\) sin pagar
+           \(O(N)\) por cada uno.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Todas las ramas con un solo enraizado</summary>
+      <div class="body">
+        <p class="q">Enraíza el árbol en un nodo cualquiera (digamos el \(0\)) y
+           define \(\mathrm{sub}[v]\) = suma de \(P\) en el subárbol colgado de
+           \(v\). Para un nodo \(v\), ¿cómo se ven sus ramas en términos de
+           \(\mathrm{sub}\)?</p>
+        <figure>
+          <svg viewBox="0 0 420 180" role="img" aria-label="Esquema de las ramas alrededor del nodo r: la rama hacia la raíz vale W menos sub de r, y cada rama hijo vale sub del hijo.">
+            <defs>
+              <marker id="ahR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3 L0,6 Z" fill="#444"/></marker>
+            </defs>
+            <line x1="210" y1="64" x2="210" y2="36" stroke="#444" stroke-width="2" marker-end="url(#ahR)"/>
+            <line x1="190" y1="100" x2="120" y2="128" stroke="#444" stroke-width="2" marker-end="url(#ahR)"/>
+            <line x1="230" y1="100" x2="300" y2="128" stroke="#444" stroke-width="2" marker-end="url(#ahR)"/>
+            <g font-family="system-ui,sans-serif" font-size="12" fill="#444">
+              <text x="218" y="52">rama arriba = W − sub[r]</text>
+              <text x="95" y="124" text-anchor="end">sub[c₁]</text>
+              <text x="315" y="124">sub[c₂]</text>
+            </g>
+            <g font-family="system-ui,sans-serif">
+              <circle cx="210" cy="22" r="14" fill="#fff" stroke="#888" stroke-width="2"/>
+              <text x="210" y="26" text-anchor="middle" font-size="11" fill="#888">raíz</text>
+              <circle cx="210" cy="85" r="16" fill="#fff" stroke="#c0392b" stroke-width="3"/>
+              <text x="210" y="90" text-anchor="middle" font-size="13" fill="#222">r</text>
+              <circle cx="110" cy="140" r="14" fill="#fff" stroke="#333" stroke-width="2"/>
+              <text x="110" y="145" text-anchor="middle" font-size="12" fill="#222">c₁</text>
+              <circle cx="310" cy="140" r="14" fill="#fff" stroke="#333" stroke-width="2"/>
+              <text x="310" y="145" text-anchor="middle" font-size="12" fill="#222">c₂</text>
+            </g>
+          </svg>
+          <figcaption>Las ramas de \(r\): hacia abajo, cada hijo \(c\) aporta
+             \(\mathrm{sub}[c]\); hacia arriba (todo lo demás del árbol) aporta
+             \(W-\mathrm{sub}[r]\).</figcaption>
+        </figure>
+        <p>La rama <em>hacia arriba</em> (hacia la raíz) pesa \(W-\mathrm{sub}[v]\)
+           (vale \(0\) en la raíz). Cada rama <em>hacia abajo</em>, por el hijo
+           \(c\), pesa \(\mathrm{sub}[c]\). Entonces
+           \(\operatorname{peor}(v)=\max\!\big(W-\mathrm{sub}[v],\ \max_{c\ \text{hijo}}\mathrm{sub}[c]\big)\).
+           Todo sale de un recorrido para enraizar y otro para acumular
+           \(\mathrm{sub}\): \(O(N)\) total.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El árbol con pesos en los nodos; la congestión de
+           la sede \(r\) es el máximo peso de componente al quitar \(r\); minimizar
+           ese máximo es hallar el <strong>centroide ponderado</strong>. Por la
+           Pista 4, la peor arista de \(r\) siempre toca a \(r\), así que basta
+           comparar las ramas que salen de cada nodo. Por la Pista 5, todas las
+           ramas de todos los nodos se obtienen con un solo enraizado más sumas de
+           subárbol, en \(O(N)\).</p>
+
+        <p><strong>Por qué es correcto.</strong> Como los subárboles anidan al
+           alejarse de \(r\), el peso del componente decrece monótonamente; luego
+           \(\operatorname{peor}(r)=\max\) sobre los <em>vecinos</em> de \(r\). Con
+           la raíz fija, la rama hacia arriba de \(v\) es \(W-\mathrm{sub}[v]\) y
+           cada rama hijo es \(\mathrm{sub}[c]\); estos cubren <em>exactamente</em>
+           las ramas reales de \(v\) sin importar dónde pusimos la raíz. Devolver el
+           \(v\) con \(\operatorname{peor}(v)\) mínimo da el óptimo; los empates son
+           válidos (cualquier óptimo sirve).</p>
+
+        <p><strong>Cómo sube de subtarea en subtarea.</strong> La fórmula
+           \(\max(W-\mathrm{sub}[v],\max_c \mathrm{sub}[c])\) resuelve las cuatro: en
+           línea recta se reduce a \(\max(\text{prefijo},\,\text{sufijo})\)
+           (Subtareas 1–2); en árbol general es el barrido completo (Subtareas 3–4).
+           La versión iterativa la hace \(O(N)\), cubriendo también \(N=10^6\)
+           (Subtareas 2 y 4) sin desbordar la pila.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion LocateCentre(N, P, S, D):
+    si N == 1: regresa 0                      // sin aristas, congestión 0
+
+    W = suma de P[0..N-1]                      // usar 64 bits
+    construir adyacencia en CSR                // cada arista guardada 2 veces
+
+    // 1) Enraizar en 0 con BFS iterativo (sin recursión)
+    parent[0] = -1;  order = [0];  visto[0] = verdadero
+    cabeza = 0
+    mientras cabeza < tamaño(order):
+        v = order[cabeza]; cabeza += 1
+        para cada vecino u de v:
+            si no visto[u]:
+                visto[u] = verdadero; parent[u] = v
+                order.append(u)
+
+    // 2) Sumas de subárbol: hijos antes que padres -> recorrer order en REVERSA
+    para v en 0..N-1: sub[v] = P[v]
+    para v en order recorrido al revés (saltando la raíz):
+        sub[parent[v]] += sub[v]
+
+    // 3) Peor rama de cada nodo y mínimo global
+    mejorCiudad = 0;  mejorPeor = +infinito
+    para v en 0..N-1:
+        peor = (v == raíz) ? 0 : (W - sub[v])  // rama hacia arriba
+        para cada hijo c de v:                 // ramas hacia abajo
+            peor = max(peor, sub[c])
+        si peor < mejorPeor:
+            mejorPeor = peor;  mejorCiudad = v
+
+    regresa mejorCiudad</pre>
+        </div>
+        <p class="note">El paso 3 puede fundirse con el barrido de sumas: al hacer
+           \(\mathrm{sub}[parent[v]] \mathrel{+}= \mathrm{sub}[v]\) ya tienes
+           \(\mathrm{sub}[v]\) como candidato de la peor rama de \(parent[v]\); así
+           evitas reconstruir la lista de hijos. Sigue siendo \(O(N)\).</p>
+
+        <p><strong>Complejidad.</strong> Tiempo \(O(N)\) (CSR + BFS iterativo + dos
+           barridos lineales). Memoria \(O(N)\). Para \(N=10^6\) corre en
+           \(\sim 0.1\!-\!0.25\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// 1) sumas en 64 bits aunque P sea int: long long W, sub[N].
+//    sum P cabe en ~2.1e9, justo al borde de int32 -> evita overflow silencioso.
+// 2) Para N = 1e6, NADA de DFS recursivo (desborda la pila): BFS iterativo
+//    con order[] y procesar las sumas en orden inverso del BFS.
+// 3) Adyacencia en CSR (dos arreglos planos head[]/next[] o el patrón
+//    de conteo+desplazamiento) en vez de vector<vector<int>>: más rápido
+//    y menos memoria con 1e6 nodos.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
