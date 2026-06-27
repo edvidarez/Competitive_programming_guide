@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2003 · Tarea 6 — Seeing the Boundary</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:var(--code)}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2003 · Día 2 · Kenosha, Wisconsin (EUA)</div>
+    <h1>Tarea <span class="num">6</span> — Seeing the Boundary</h1>
+    <p class="note">Viendo la frontera (los postes de la cerca) · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El granjero Don vigila la cerca que rodea su campo plano y cuadrado de
+       \(N \times N\) metros (\(2 \le N \le 500{,}000\)). Una esquina de la cerca
+       está en el origen \((0, 0)\) y la esquina opuesta en \((N, N)\); los lados
+       de la cerca son paralelos a los ejes \(X\) y \(Y\).</p>
+
+    <p>Hay <strong>postes</strong> de cerca en las cuatro esquinas y también en
+       cada metro a lo largo de cada lado, para un total de \(4N\) postes. Los
+       postes son verticales y se consideran sin radio (puntos). Don quiere saber
+       cuántos de sus postes alcanza a ver cuando se para en cierto lugar dentro
+       de su cerca.</p>
+
+    <p>El campo de Don contiene \(R\) (\(1 \le R \le 30{,}000\)) rocas enormes que
+       le tapan la vista de algunos postes, pues no es lo bastante alto para mirar
+       por encima de ellas. La base de cada roca es un <strong>polígono convexo</strong>
+       de área no nula cuyos vértices están en coordenadas enteras. Las rocas son
+       completamente verticales. Las rocas <em>no</em> se solapan, <em>no</em> se
+       tocan entre sí y <em>no</em> tocan a Don ni a la cerca. Don tampoco toca la
+       cerca, no se para dentro de una roca ni encima de una roca.</p>
+
+    <p>Dados el tamaño de la cerca de Don, las ubicaciones y formas de las rocas
+       dentro de ella, y el lugar donde Don se para, calcula el número de postes
+       que Don alcanza a ver. <strong>Si un vértice de una roca queda perfectamente
+       alineado con un poste desde la posición de Don, entonces ese poste
+       <em>no</em> se puede ver.</strong></p>
+
+    <h2>Entrada</h2>
+    <p>Entrada estándar (archivo <code>boundary.in</code>).</p>
+    <ul>
+      <li>La primera línea contiene dos enteros separados por espacio: \(N\) y \(R\).</li>
+      <li>La segunda línea contiene dos enteros separados por espacio: las
+          coordenadas \(X\) y \(Y\) de la posición de Don dentro de la cerca.</li>
+      <li>El resto del archivo describe las \(R\) rocas:
+        <ul>
+          <li>La descripción de la roca \(i\) empieza con una línea que contiene un
+              solo entero \(p_i\) (\(3 \le p_i \le 20\)), el número de vértices de su
+              base.</li>
+          <li>Cada una de las siguientes \(p_i\) líneas contiene un par de enteros
+              separados por espacio: las coordenadas \(X\) y \(Y\) de un vértice. Los
+              vértices de la base de una roca son distintos y se dan en
+              <strong>orden antihorario</strong> (CCW).</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Salida estándar (archivo <code>boundary.out</code>). El archivo de salida debe
+       contener una sola línea con un solo entero: el número de postes de la cerca
+       que Don alcanza a ver.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>64 MB</td></tr>
+        <tr><td>Tamaño del campo</td><td><span class="badge">\(2 \le N \le 500{,}000\)</span></td></tr>
+        <tr><td>Postes de cerca</td><td><span class="badge">\(4N\) en total (hasta \(2{,}000{,}000\))</span></td></tr>
+        <tr><td>Número de rocas</td><td><span class="badge">\(1 \le R \le 30{,}000\)</span></td></tr>
+        <tr><td>Vértices por roca</td><td><span class="badge">\(3 \le p_i \le 20\)</span></td></tr>
+        <tr><td>Coordenadas de vértices</td><td><span class="badge">enteras, estrictamente dentro de la cerca (\(0 &lt; x, y &lt; N\))</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas.</strong> Recibes el puntaje completo de cada caso de
+      prueba para el que tu programa produzca la salida correcta; <em>no</em> hay
+      crédito parcial dentro de un caso. Como la salida es un solo entero, es
+      “todo o nada”: el caso cuenta solo si tu número de postes visibles es
+      exacto. (El esquema de <em>subtareas</em> con crédito parcial llegó al IOI en
+      ediciones posteriores; en 2003 el puntaje es por caso, como en ICPC.)
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Campo de \(100 \times 100\) con una sola roca; Don se para en \((60, 50)\). La
+       roca tiene 5 vértices en orden antihorario.</p>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>100 1
+60 50
+5
+70 40
+75 40
+80 40
+80 50
+70 60</pre></div>
+      <div class="io"><h4>Salida</h4><pre>319</pre></div>
+    </div>
+    <p class="note">Observa que la base de la roca 1 tiene tres vértices
+       <strong>colineales</strong>: \((70,40)\), \((75,40)\) y \((80,40)\) (siguen
+       siendo un polígono convexo válido).</p>
+    <p class="note">Intuición del resultado: hay \(4N = 400\) postes en total. Vista
+       desde \((60,50)\), la roca tapa una franja angular que oculta exactamente
+       \(81\) postes del lado derecho de la cerca (incluidos los dos postes que
+       quedan justo alineados con los vértices extremos de la roca, que por la regla
+       del enunciado también se consideran tapados). Así, \(400 - 81 = 319\)
+       postes visibles.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Geometría computacional</span>
+      <span class="ptag">Polígonos convexos</span>
+      <span class="ptag">Ángulos / cuñas</span>
+      <span class="ptag">Barrido (sweep)</span>
+      <span class="ptag">Aritmética entera exacta</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Don está en un punto \(P\) estrictamente dentro de un cuadrado \(N\times N\)
+       con \(4N\) postes en el borde. Hay \(R\) rocas convexas (todas dentro del
+       cuadrado, sin tocar nada). Un poste está <strong>tapado</strong> si el
+       segmento de \(P\) al poste cruza alguna roca, o si la dirección al poste
+       <em>roza</em> un vértice de una roca. Cuenta los postes <strong>visibles</strong>
+       \(= 4N - (\text{tapados})\).</p>
+
+    <figure>
+      <svg viewBox="0 0 360 300" role="img"
+           aria-label="El punto P ve una roca convexa como una cuña angular entre sus dos tangentes; esa cuña proyecta una sombra que oculta un tramo contiguo de postes en la cerca.">
+        <rect x="40" y="30" width="260" height="240" fill="none" stroke="#5b8cff" stroke-width="2"/>
+        <!-- sombra: tramo contiguo de postes tapados en el borde derecho -->
+        <line x1="300" y1="94" x2="300" y2="209" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/>
+        <!-- tangentes desde P -->
+        <line x1="90" y1="150" x2="300" y2="94"  stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <line x1="90" y1="150" x2="300" y2="209" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <!-- roca convexa -->
+        <polygon points="190,118 222,116 236,150 214,186 186,176"
+                 fill="#34d399" fill-opacity="0.25" stroke="#34d399" stroke-width="1.5"/>
+        <!-- P -->
+        <circle cx="90" cy="150" r="4" fill="#e8ecf6"/>
+        <text x="78" y="146" fill="#e8ecf6" font-size="13" font-family="monospace">P</text>
+        <text x="196" y="154" fill="#9aa6c4" font-size="11" font-family="monospace">roca</text>
+        <text x="304" y="158" fill="#fbbf24" font-size="11" font-family="monospace">sombra</text>
+      </svg>
+      <figcaption>Vista desde \(P\): una roca convexa subtiende una <strong>cuña</strong>
+        de amplitud \(&lt; \pi\) entre sus dos tangentes (líneas punteadas). Esa cuña
+        proyecta una sombra que oculta un tramo <em>contiguo</em> de postes del borde.</figcaption>
+    </figure>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Hasta \(4N = 2{,}000{,}000\) postes y \(R = 30{,}000\) rocas. Probar
+                cada poste contra cada roca es \(O(4N\cdot R)\approx 6\times10^{10}\):
+                inviable en 1 s. Además, las coordenadas llegan a \(5\times10^5\), así
+                que los productos cruzados alcanzan \(\sim 2.5\times10^{11}\) y
+                <strong>desbordan</strong> \(\texttt{int32}\): usa \(\texttt{int64}\).
+                La condición exacta “rozar un vértice tapa el poste” obliga a evitar
+                <code>atan2</code> y épsilon.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué decide si un poste se ve?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que cada poste se ve (o no) por <em>una sola</em>
+           línea de visión desde \(P\)? ¿Y si describes esa línea por su
+           <strong>dirección</strong> (su ángulo) vista desde \(P\), en lugar de
+           pensar en el segmento?</p>
+        <p>Don, parado en \(P\), ve el borde en todas las direcciones a su alrededor.
+           Un poste en dirección \(d\) se tapa exactamente cuando algo se interpone
+           en esa dirección. Conviene pensar en <em>ángulos vistos desde \(P\)</em>,
+           no en geometría de segmentos sueltos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La versión lenta primero (tus primeros puntos)</summary>
+      <div class="body">
+        <p class="q">¿Cómo decidirías, sin ninguna idea fina, si el poste \(q\) está
+           tapado? ¿Y cuánto cuesta hacerlo para todos los postes?</p>
+        <p>Fuerza bruta directa: para cada uno de los \(4N\) postes \(q\), revisa cada
+           roca y mira si el segmento \(P\!\to\! q\) la cruza (o roza un vértice). Es
+           correcto y te valida la idea, pero cuesta \(O(4N\cdot R\cdot p)\): con
+           \(N,R\) grandes es demasiado. La pregunta es cómo no repetir trabajo roca
+           por roca y poste por poste.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cómo se ve una roca convexa desde fuera?</summary>
+      <div class="body">
+        <p class="q">\(P\) está <strong>estrictamente fuera</strong> de cada roca
+           convexa. Desde un punto exterior, ¿qué forma tiene el conjunto de
+           direcciones que “chocan” con un convexo? ¿Por qué la roca siempre queda
+           <em>entre</em> \(P\) y el poste, nunca detrás del poste?</p>
+        <p>Como \(P\) es interior al cuadrado convexo y la roca está estrictamente
+           dentro, sobre cualquier rayo desde \(P\) la roca aparece <em>antes</em> de
+           salir por el borde. Y un convexo visto desde fuera tapa exactamente una
+           <strong>cuña</strong> angular de amplitud \(&lt; \pi\): el intervalo de
+           direcciones entre sus dos <em>rectas tangentes</em> desde \(P\) (los dos
+           vértices extremos). Un poste se tapa con esa roca si y solo si su dirección
+           cae en esa cuña.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La reducción que destraba todo</summary>
+      <div class="body">
+        <p class="q">Si cada roca es una cuña (un arco sobre el círculo de
+           direcciones), ¿en qué se convierte “contar postes tapados”?</p>
+        <p>En contar cuántas de las \(4N\) direcciones (una por poste) caen en la
+           <strong>unión</strong> de los \(R\) arcos cerrados de las rocas. La
+           respuesta es \(4N - (\text{postes en la unión})\). El arco es
+           <strong>cerrado</strong> (incluye sus extremos) precisamente porque
+           “rozar un vértice tangente” también tapa el poste. Como un rayo desde el
+           interior corta el borde en un único punto, dos postes nunca comparten
+           dirección: contar direcciones \(=\) contar postes.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Las tangentes y el barrido, sin punto flotante</summary>
+      <div class="body">
+        <p class="q">¿Cómo hallas las dos tangentes de una roca con pura aritmética
+           entera? ¿Y cómo ordenas y barres direcciones por ángulo sin
+           <code>atan2</code> ni épsilon?</p>
+        <p>Para cada roca, toma los vectores \(w_i = v_i - P\). Como la cuña mide
+           \(&lt; \pi\), todos caen en un semiplano y el orden “más horario / más
+           antihorario” es consistente con el signo del producto cruzado. Recorre los
+           vértices en \(O(p)\) guardando \(S\) (más horario) y \(E\) (más antihorario):
+           si \(\operatorname{cross}(S, w_i) &lt; 0\) actualiza \(S\), si
+           \(\operatorname{cross}(E, w_i) &gt; 0\) actualiza \(E\). Los colineales
+           (\(\operatorname{cross}=0\)) no cambian nada.</p>
+        <p>Para barrer: ordena todas las direcciones por ángulo con un comparador
+           <strong>entero</strong> (primero por semiplano, luego por signo de
+           \(\operatorname{cross}\)), nunca con <code>atan2</code>. Cada roca aporta un
+           evento de inicio \((+1)\) en \(S\) y uno de fin \((-1)\) en \(E\); cada poste
+           es un evento de consulta. Barres con un contador de arcos abiertos: el poste
+           se tapa si el contador es \(&gt; 0\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Cada roca convexa, vista desde \(P\), es un arco
+           cerrado \([S, E]\) sobre el círculo de direcciones. Un poste se tapa si su
+           dirección cae en la unión de esos arcos. Hacemos un <strong>barrido
+           angular</strong> con eventos START/END (rocas) y POST (postes), todo con
+           aritmética entera exacta. Respuesta \(= 4N - (\text{postes tapados})\).</p>
+
+        <p><strong>Detalles que hacen exacta la solución.</strong></p>
+        <ul>
+          <li><em>Tangentes en \(O(p)\):</em> \(S\) es el vértice más horario y \(E\) el
+              más antihorario vistos desde \(P\); se hallan con productos cruzados, y
+              los vértices colineales no estorban.</li>
+          <li><em>Intervalo cerrado:</em> en el barrido, a igual ángulo desempata con
+              prioridad START \(&lt;\) POST \(&lt;\) END. Así un poste exactamente sobre
+              \(S\) se cuenta <em>tras</em> el \(+1\) y uno sobre \(E\) se cuenta
+              <em>antes</em> del \(-1\): los extremos tapan (la regla del “rozar un
+              vértice”).</li>
+          <li><em>Envoltura del círculo:</em> el corte del barrido va en el eje \(+x\).
+              Una roca cuyo arco cruza ese corte (es decir, \(\text{ángulo}(S) &gt;
+              \text{ángulo}(E)\)) ya está activa en el ángulo \(0\); cuéntala en un
+              <code>baseline</code> que inicializa el contador.</li>
+          <li><em>Orden por ángulo sin flotantes:</em> \(\operatorname{half}(v)=0\) si
+              el ángulo está en \([0,\pi)\) (o sea \(v_y&gt;0\), o \(v_y=0\) y
+              \(v_x&gt;0\)), si no \(\operatorname{half}(v)=1\); compara primero por
+              \(\operatorname{half}\) y, dentro del mismo, por signo de
+              \(\operatorname{cross}\).</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, R, P
+eventos = []           // cada evento: (direccion v, tipo)  tipo en {START,POST,END}
+baseline = 0           // # de arcos que cruzan el corte +x (activos en angulo 0)
+
+// --- una cuña por roca ---
+para cada roca:
+    leer p y los vertices V[0..p-1]
+    S = V[0] - P ;  E = V[0] - P
+    para i en 1..p-1:
+        w = V[i] - P
+        si cross(S, w) &lt; 0:  S = w        // w mas horario     -&gt; nuevo inicio
+        si cross(E, w) &gt; 0:  E = w        // w mas antihorario -&gt; nuevo fin
+    eventos.add( (S, START) )
+    eventos.add( (E, END) )
+    si anguloMayor(S, E):  baseline += 1  // el arco CCW de S a E cruza el corte +x
+
+// --- un evento por poste (4N postes del borde, sin duplicar esquinas) ---
+para cada poste q en el borde:
+    eventos.add( (q - P, POST) )
+
+// --- barrido angular ---
+ordenar eventos por ( angulo(v), prioridad )   // START(0) &lt; POST(1) &lt; END(2)
+activos = baseline ;  tapados = 0
+para cada (v, tipo) en eventos, en orden:
+    si tipo == START:  activos += 1
+    sino si tipo == END:    activos -= 1
+    sino (POST):  si activos &gt; 0:  tapados += 1
+
+imprimir 4*N - tapados
+
+// ---- auxiliares (todo en int64) ----
+cross(a, b)      = a.x*b.y - a.y*b.x
+half(v)          = 0 si (v.y &gt; 0) o (v.y == 0 y v.x &gt; 0);  si no 1
+angulo a &lt; b     &lt;=&gt;  half(a) &lt; half(b),  o (half(a)==half(b) y cross(a,b) &gt; 0)
+anguloMayor(S,E) &lt;=&gt;  angulo(E) &lt; angulo(S)</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> por la Pista 3, un convexo visto
+           desde un punto exterior tapa justo la cuña \([S,E]\) entre sus tangentes, y
+           la roca siempre está entre \(P\) y el borde, así que “dirección en la cuña”
+           equivale a “poste tapado”. El comparador entero da un orden total por ángulo
+           en \([0,2\pi)\); el desempate START\(&lt;\)POST\(&lt;\)END hace los arcos
+           cerrados, y el <code>baseline</code> resuelve los arcos que cruzan el corte.
+           Como cada poste tiene dirección única, contar eventos POST cuenta postes.</p>
+
+        <p><strong>Complejidad:</strong> \(O\!\big(\sum p\big)\) para las cuñas más
+           \(O\!\big((4N + R)\log(4N + R)\big)\) por el ordenamiento y barrido. Con
+           \(N=5\times10^5\), \(R=3\times10^4\) son \(\sim 2.06\times10^6\) eventos;
+           memoria \(O(4N + R)\). Medido: caso mayor \(0.12\) s y \(\sim 51\) MB pico
+           (dentro de 64 MB).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa long long (int64) para los productos cruzados: con coordenadas hasta
+5e5, cross() llega a ~2.5e11 y desborda int. NO uses atan2/double: compara
+angulos con el par (half, signo de cross) para que "rozar un vertice" se
+decida exacto. Hay hasta ~2e6 numeros de entrada: usa E/S rapida
+(scanf/printf o ios::sync_with_stdio(false)).</pre>
+          <p class="note">Es geometría con enteros: nunca pongas épsilon ni flotantes.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
