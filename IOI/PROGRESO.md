@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **75 / 142**
+Total de tareas: **142** · Completadas: **76 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -140,7 +140,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Robots | `2013/05 Robots/index.html` |
 | [x] | 6 | Game | `2013/06 Game/index.html` |
 
-## IOI 2014 — 5 / 6
+## IOI 2014 — 6 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
@@ -149,7 +149,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 3 | Game | `2014/03 Game/index.html` |
 | [x] | 4 | Gondola | `2014/04 Gondola/index.html` |
 | [x] | 5 | Friend | `2014/05 Friend/index.html` |
-| [ ] | 6 | Holiday | `2014/06 Holiday/index.html` |
+| [x] | 6 | Holiday | `2014/06 Holiday/index.html` |
 
 ## IOI 2015 — 0 / 6
 
