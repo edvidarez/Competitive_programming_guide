@@ -46,6 +46,11 @@ IOI/
 
 ## 🤖 Traducción y upsolving (workflow)
 
+> 📋 **¿Continúas el trabajo sin contexto previo?** Lee primero
+> [`HANDOFF.md`](HANDOFF.md): estado actual, procedimiento paso a paso, gotchas
+> y reglas. Los índices (`PROGRESO.md`, `index.html`) se regeneran con
+> `python3 IOI/build_index.py`.
+
 Igual que en [`../ICPC-World-Finals/`](../ICPC-World-Finals/), cada tarea puede
 tener una página HTML autoexplicativa con **dos vistas**: el enunciado traducido
 al español mexicano y una guía socrática de pistas que lleva al upsolving sin

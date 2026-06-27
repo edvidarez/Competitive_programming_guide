@@ -7,8 +7,8 @@ Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
 `statement.pdf`. Copia `TEMPLATE.html` ahí como `index.html` y rellena las dos
 vistas (enunciado traducido + upsolving socrático).
 
-> El agente debe actualizar este archivo (la cuenta del encabezado de cada año
-> y el total de arriba) en cada commit.
+> Este archivo se regenera con `python3 IOI/build_index.py` (el estado
+> hecho/pendiente se infiere de si existe el `index.html` de cada tarea).
 
 > Recordatorio IOI: el puntaje es por **subtareas** con crédito parcial, y
 > muchas tareas son **interactivas/funcionales** (implementas funciones, no
