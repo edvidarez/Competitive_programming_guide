@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2009 · Tarea 1 — Archery</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2009 · Día 1 · Plovdiv, Bulgaria</div>
+    <h1>Tarea <span class="num">1</span> — Archery</h1>
+    <p class="note">Tiro con arco · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Se celebra un torneo de tiro con arco con las siguientes reglas. Hay \(N\)
+       <strong>blancos</strong> (dianas) colocados en una fila y numerados de \(1\)
+       a \(N\) según su lugar en la fila (el blanco más a la izquierda es el blanco
+       \(1\); el más a la derecha, el blanco \(N\)). Hay también \(2N\)
+       <strong>arqueros</strong>. En todo momento del torneo hay exactamente dos
+       arqueros en cada blanco. Cada <strong>ronda</strong> del torneo procede así:</p>
+
+    <ul>
+      <li>Los dos arqueros de cada blanco compiten entre sí y se determina un
+          ganador y un perdedor. Después, todos los arqueros se reacomodan de la
+          siguiente manera:</li>
+    </ul>
+    <ul>
+      <li>Los <strong>ganadores</strong> de los blancos \(2\) a \(N\) (inclusive)
+          se mueven al blanco que tienen a su izquierda (es decir, a los blancos
+          \(1\) a \(N-1\) respectivamente).</li>
+      <li>Los <strong>perdedores</strong> de los blancos \(2\) a \(N\) (inclusive),
+          así como el <strong>ganador del blanco \(1\)</strong>, se quedan en el
+          mismo blanco.</li>
+      <li>El <strong>perdedor del blanco \(1\)</strong> se mueve al blanco \(N\).</li>
+    </ul>
+
+    <figure>
+      <svg viewBox="0 0 800 290" style="width:100%;height:auto;max-width:740px;background:#0b0e18;border:1px solid #2a3252;border-radius:10px;padding:10px" role="img" aria-label="Diagrama del reacomodo de una ronda para N blancos: los ganadores de los blancos 2 a N avanzan un blanco a la izquierda; los perdedores de los blancos 2 a N y el ganador del blanco 1 se quedan; el perdedor del blanco 1 pasa al blanco N. Una elipsis indica los blancos intermedios.">
+        <defs>
+          <marker id="ah" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto">
+            <path d="M0,0 L8,3.2 L0,6.4 Z" fill="#5b8cff"></path>
+          </marker>
+          <marker id="ah2" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto">
+            <path d="M0,0 L8,3.2 L0,6.4 Z" fill="#fbbf24"></path>
+          </marker>
+        </defs>
+        <text x="390" y="30" text-anchor="middle" fill="#5b8cff" font-size="15" font-family="system-ui,sans-serif">El ganador (blancos 2..N) avanza un blanco a la izquierda</text>
+        <!-- arcos de ganadores que avanzan a la izquierda -->
+        <path d="M275,112 Q190,54 105,112" fill="none" stroke="#5b8cff" stroke-width="2.5" marker-end="url(#ah)"></path>
+        <path d="M505,112 Q447,54 390,112" fill="none" stroke="#5b8cff" stroke-width="2.5" marker-end="url(#ah)"></path>
+        <path d="M675,112 Q590,54 505,112" fill="none" stroke="#5b8cff" stroke-width="2.5" marker-end="url(#ah)"></path>
+        <!-- blancos -->
+        <rect x="40"  y="112" width="130" height="60" rx="10" fill="#1f2540" stroke="#2a3252"></rect>
+        <rect x="210" y="112" width="130" height="60" rx="10" fill="#1f2540" stroke="#2a3252"></rect>
+        <rect x="440" y="112" width="130" height="60" rx="10" fill="#1f2540" stroke="#2a3252"></rect>
+        <rect x="610" y="112" width="130" height="60" rx="10" fill="#1f2540" stroke="#2a3252"></rect>
+        <text x="105" y="148" text-anchor="middle" fill="#e8ecf6" font-size="16" font-weight="600" font-family="system-ui,sans-serif">Blanco 1</text>
+        <text x="275" y="148" text-anchor="middle" fill="#e8ecf6" font-size="16" font-weight="600" font-family="system-ui,sans-serif">Blanco 2</text>
+        <text x="390" y="150" text-anchor="middle" fill="#9aa6c4" font-size="22" font-weight="700" font-family="system-ui,sans-serif">⋯</text>
+        <text x="505" y="148" text-anchor="middle" fill="#e8ecf6" font-size="15" font-weight="600" font-family="system-ui,sans-serif">Blanco N−1</text>
+        <text x="675" y="148" text-anchor="middle" fill="#e8ecf6" font-size="16" font-weight="600" font-family="system-ui,sans-serif">Blanco N</text>
+        <!-- etiquetas "se queda" -->
+        <text x="105" y="190" text-anchor="middle" fill="#9aa6c4" font-size="11.5" font-family="system-ui,sans-serif">ganador se queda</text>
+        <text x="275" y="190" text-anchor="middle" fill="#9aa6c4" font-size="11.5" font-family="system-ui,sans-serif">perdedor se queda</text>
+        <text x="505" y="190" text-anchor="middle" fill="#9aa6c4" font-size="11.5" font-family="system-ui,sans-serif">perdedor se queda</text>
+        <text x="675" y="190" text-anchor="middle" fill="#9aa6c4" font-size="11.5" font-family="system-ui,sans-serif">perdedor se queda</text>
+        <!-- arco de envoltura: perdedor del blanco 1 -> blanco N -->
+        <path d="M105,172 Q390,272 675,172" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#ah2)"></path>
+        <text x="390" y="252" text-anchor="middle" fill="#fbbf24" font-size="14" font-family="system-ui,sans-serif">El perdedor del blanco 1 pasa al blanco N</text>
+      </svg>
+      <figcaption>Figura 1: cómo se reacomodan los arqueros tras una ronda. La regla
+        es <em>asimétrica</em>: en los blancos \(2\dots N\) el ganador avanza a la
+        izquierda y el perdedor se queda; en el blanco \(1\) el ganador se queda y el
+        perdedor da la vuelta hasta el blanco \(N\).</figcaption>
+    </figure>
+
+    <p>El torneo continúa durante \(R\) rondas, y el número de rondas es al menos
+       igual al número de arqueros (es decir, \(R \ge 2N\)).</p>
+
+    <p>Tú eres el único arquero que llega al torneo <strong>justo a tiempo</strong>.
+       Todos los otros \(2N-1\) arqueros llegaron temprano y ya están formados en una
+       fila. Lo que debes hacer ahora es <strong>insertarte en algún lugar</strong> de
+       la fila, entre ellos. Sabes que, después de tomar tu posición, los dos arqueros
+       de más a la izquierda empezarán el torneo en el blanco \(1\), los dos
+       siguientes en el blanco \(2\), y así sucesivamente, con los dos arqueros de más
+       a la derecha empezando en el blanco \(N\).</p>
+
+    <p>Los \(2N\) arqueros del torneo (incluyéndote) están <strong>ordenados por
+       habilidad</strong> mediante un <em>rango</em>, donde un rango menor corresponde
+       a mejor habilidad. No hay dos arqueros con el mismo rango. Además, cuando dos
+       arqueros compiten, <strong>siempre gana el de menor rango</strong>.</p>
+
+    <p>Sabiendo qué tan hábil es cada uno de tus competidores, quieres insertarte de
+       tal manera que te asegures de <strong>terminar el torneo en un blanco con el
+       número más pequeño posible</strong>. Si hay varias formas de lograrlo,
+       prefieres aquella que <strong>empiece en un blanco con el número más grande
+       posible</strong>.</p>
+
+    <h3>Tarea</h3>
+    <p>Escribe un programa que, dados los rangos de todos los arqueros (incluido el
+       tuyo) y el acomodo de tus competidores en la fila, determine en qué blanco
+       debes empezar el torneo para alcanzar tus objetivos según lo definido arriba.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>La primera línea contiene los enteros \(N\) y \(R\), separados por un
+          espacio.</li>
+      <li>Las siguientes \(2N\) líneas listan los rangos de los arqueros. La primera
+          de estas líneas contiene <strong>tu rango</strong>. El resto contiene los
+          rangos de los demás arqueros, un arquero por línea, <strong>en el orden en
+          que se formaron</strong> (de izquierda a derecha). Cada una de estas \(2N\)
+          líneas contiene un solo entero entre \(1\) y \(2N\) inclusive. Un rango de
+          \(1\) es el mejor y un rango de \(2N\) es el peor. No hay dos arqueros con
+          el mismo rango.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir en la salida estándar una sola línea que contenga un
+       solo entero entre \(1\) y \(N\) inclusive: el número del blanco en el que
+       empezarás el torneo.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>64 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de blancos</td><td><span class="badge">\(1 \le N \le 200{,}000\)</span> (también la mitad del número de arqueros)</td></tr>
+        <tr><td>Número de rondas</td><td><span class="badge">\(2N \le R \le 1{,}000{,}000{,}000\)</span></td></tr>
+        <tr><td>Rango del arquero \(k\)</td><td><span class="badge">\(1 \le S_k \le 2N\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      Tarea de tipo <strong>batch</strong> (E/S por <code>stdin</code>/<code>stdout</code>),
+      con <em>retroalimentación parcial</em> y <strong>100 puntos</strong> en total,
+      calificada por caso de prueba (acumulativa). En lugar de subtareas formales
+      (mínimo por grupo), el conjunto de pruebas está <strong>agrupado por el tamaño
+      de \(N\)</strong>:
+      <ul>
+        <li>Un subconjunto de pruebas que vale en total <strong>60 puntos</strong>
+            cumple \(N \le 5{,}000\).</li>
+        <li>Dentro de esas, un subconjunto que vale en total <strong>20 puntos</strong>
+            cumple \(N \le 200\).</li>
+        <li>Las pruebas restantes (los otros <strong>40 puntos</strong>) llegan hasta
+            \(N = 200{,}000\).</li>
+      </ul>
+      La respuesta está unívocamente determinada, así que <em>no</em> hay juez
+      especial: la salida debe coincidir exactamente con el único entero correcto.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 8
+7
+4
+2
+6
+5
+8
+1
+3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>3</pre></div>
+    </div>
+    <p class="note">Eres el <strong>segundo peor</strong> arquero (rango \(7\) de
+       \(2N=8\)). Si empiezas en el blanco \(1\), después irás al blanco \(4\) y te
+       quedarás ahí hasta el final. Si empiezas en el blanco \(2\) o el \(4\), te
+       quedarás ahí durante todo el torneo. Si empiezas en el blanco \(3\), le ganarás
+       al peor arquero y luego te moverás al blanco \(2\) y te quedarás ahí. El mejor
+       final es el blanco \(2\), que se logra <strong>tanto empezando en el blanco
+       \(2\) como en el \(3\)</strong>; como hay empate, el desempate (preferir el
+       inicio con número mayor) da la respuesta \(3\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 9
+2
+1
+5
+8
+3
+4
+7
+6</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2</pre></div>
+    </div>
+    <p class="note">Eres el <strong>segundo mejor</strong> arquero (rango \(2\)). El
+       mejor (rango \(1\)) ya está en el blanco \(1\) y se quedará ahí durante todo el
+       torneo. Por lo tanto, no importa dónde empieces, siempre te moverás de tu
+       blanco, recorriendo todos los blancos del \(4\) al \(1\) una y otra vez. Para
+       terminar en el blanco \(1\) después de \(9\) transiciones, debes empezar en el
+       blanco \(2\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Periodicidad / ciclos</span>
+      <span class="ptag">Análisis por casos</span>
+      <span class="ptag">Búsqueda binaria</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(2N\) arqueros (rangos = permutación de \(1\dots 2N\), menor rango siempre
+       gana) repartidos en \(N\) blancos, \(2\) por blanco. Cada ronda: en cada blanco
+       compiten los dos; el ganador de un blanco \(k\ge 2\) avanza al blanco \(k-1\) y
+       el perdedor se queda; en el blanco \(1\) el ganador se queda y el perdedor da la
+       vuelta al blanco \(N\). Tú (rango \(S_0\)) te insertas en la fila —eso fija todo
+       el emparejamiento— y tras \(R\) rondas quieres <strong>minimizar tu blanco
+       final</strong>; desempate: <strong>maximizar tu blanco inicial</strong>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(R\) llega a \(10^9\) ⇒ <strong>jamás</strong> simules \(R\) rondas:
+                hay periodicidad, así que basta \(M = 2N + (R \bmod N)\). \(N\) llega a
+                \(2\times10^5\) ⇒ un barrido \(O(N^2)\) sobre los inicios (\(4\times10^{10}\))
+                no entra; necesitas \(O(N)\) por simulación y \(O(\log N)\) para
+                elegir el mejor inicio. Pistas de los grupos: \(N\le 200\) (20 pts)
+                admite fuerza bruta; \(N\le 5000\) (60 pts) admite \(O(N^2)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuántas opciones reales tienes?</summary>
+      <div class="body">
+        <p class="q">Parece que puedes insertarte en \(2N\) huecos distintos de la
+           fila. Pero ¿de verdad todos producen torneos diferentes? ¿Importa quedar a
+           la <em>izquierda</em> o a la <em>derecha</em> dentro de un mismo blanco?</p>
+        <p>Una vez que te insertas, el emparejamiento queda fijo y el torneo es
+           totalmente <strong>determinista</strong>. La clave: insertarte en la ranura
+           izquierda o derecha de <em>un mismo blanco</em> genera el <strong>mismo
+           torneo</strong> (los dos que comparten ese blanco son la misma pareja, y
+           dentro de un blanco da igual quién está a qué lado). Por lo tanto solo hay
+           <strong>\(N\) configuraciones distintas</strong>, una por blanco inicial
+           \(T = 1\dots N\), cada una con un blanco final determinado. La respuesta es
+           única: el \(T\) con blanco final mínimo y, en empate, el \(T\) mayor.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — \(R\) es gigante: ¿cómo lo domas? (grupo \(N\le 200\), 20 pts)</summary>
+      <div class="body">
+        <p class="q">\(R\) puede valer \(10^9\). ¿De verdad necesitas simular tantas
+           rondas? ¿El sistema se "estabiliza" en algún momento?</p>
+        <p>Sí: después de a lo más \(2N\) rondas el torneo entra en un <strong>ciclo de
+           periodo \(N\)</strong> (el arquero \(1\), que gana siempre, se queda para
+           siempre en el blanco \(1\); los \(N-1\) arqueros más débiles se reparten uno
+           por blanco en los blancos \(2\dots N\); y el resto rota). Así que puedes
+           <strong>reemplazar \(R\) por
+           \(M = 2N + (R \bmod N)\)</strong> (con \(M \in [2N,\,3N-1]\)) sin cambiar la
+           respuesta.</p>
+        <p>Con eso, para \(N \le 200\), simula <em>cada uno</em> de los \(N\) inicios
+           durante \(M\) rondas (cada ronda es \(O(N)\)). Cuesta \(\sim O(N^3)\),
+           holgado para esos primeros 20 puntos. Toma el inicio con blanco final mínimo
+           (desempate: inicio mayor).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Solo importan los colores (rumbo a los 60 pts)</summary>
+      <div class="body">
+        <p class="q">Para decidir <em>tu</em> destino, ¿de verdad importan los rangos
+           exactos de los demás, o solo si cada uno es mejor o peor que tú?</p>
+        <p>Pinta a cada arquero respecto a ti: <strong>NEGRO</strong> si es mejor
+           (rango \(&lt; S_0\), te gana), <strong>BLANCO</strong> si es peor
+           (rango \(&gt; S_0\), le ganas) y <strong>GRIS</strong> = tú. Solo importan
+           los colores, así que cualquier conjunto de arqueros se resume con
+           \((\#\text{negros}, \#\text{blancos})\). Esto parte el problema en
+           <strong>tres regímenes</strong> según tu rango \(S_0\):</p>
+        <ul>
+          <li>\(S_0 = 1\) (ningún negro): ganas todo y te sientas en el blanco \(1\)
+              para siempre ⇒ final \(=1\) para cualquier inicio ⇒ respuesta \(=N\)
+              (todos empatan en final \(1\), así que el desempate da el inicio mayor).</li>
+          <li>\(2 \le S_0 \le N+1\) (entre \(1\) y \(N\) negros): <strong>circulas</strong>
+              por los blancos; basta simular lo que pasa en el <strong>blanco \(1\)</strong>.</li>
+          <li>\(S_0 &gt; N+1\) (más de \(N\) negros): te quedas <strong>atorado</strong>
+              en un blanco fijo; solo se pueden "empujar" grises y blancos por el círculo.</li>
+        </ul>
+        <p>Cada régimen permite simular un inicio en \(O(N)\). Para \(N \le 5000\),
+           prueba los \(N\) inicios ⇒ \(O(N^2)\approx 2.5\times10^7\) ⇒ 60 puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La simulación \(O(N)\) de un inicio</summary>
+      <div class="body">
+        <p class="q">En el régimen "circulas", tú pasas por muchos blancos, pero lo
+           único que decide tu trayectoria es <em>cuándo</em> apareces en el blanco
+           \(1\). ¿Puedes seguir <strong>solo el blanco \(1\)</strong> sin simular el
+           tablero completo?</p>
+        <p><strong>Régimen "circulas" (\(2 \le S_0 \le N+1\)):</strong> a cada arquero
+           le das un valor \(P\) = la ronda más temprana en que podría <em>regresar</em>
+           al blanco \(1\) (inicialmente \(P\) = el índice de su blanco de salida; un
+           perdedor que deja el blanco \(1\) en la ronda \(r\) recibe \(P = r+N\)). En
+           cada ronda, los dos del blanco \(1\) son el ganador anterior más el de
+           <em>mejor color</em> entre los que tienen \(P \le\) ronda actual; al perdedor
+           se le reasigna \(P = r+N\). La primera ronda \(r \ge 2N\) en la que el GRIS
+           aparece en el blanco \(1\) (llámala <code>seen</code>) fija tu trayectoria:
+           tu blanco final es
+           \[ X = N - \big((M - \texttt{seen} + N - 1)\bmod N\big). \]
+           De paso cuentas <code>bumps</code> = cuántas veces el gris fue empujado del
+           blanco \(1\) al blanco \(N\). Todo con los tres contadores de color y cubetas
+           indexadas por ronda ⇒ \(O(N)\).</p>
+        <p><strong>Régimen "atorado" (\(S_0 &gt; N+1\)):</strong> con tantos negros, tú
+           y los demás débiles no pueden subir; solo grises y blancos se mueven. Los
+           "empujas" por el círculo empezando en el blanco \(1\) (donde ningún
+           gris/blanco puede quedarse): en el blanco \(1\) conservas al gris si está,
+           si no empujas a todos; en los demás blancos conservas uno (prefiere dejar un
+           blanco y hacer avanzar al gris) y empujas el resto. Tres vueltas al círculo
+           acomodan a todos; el blanco donde cae el gris es tu blanco final ⇒ \(O(N)\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Falta pasar de \(O(N^2)\) (probar los \(N\) inicios) a \(O(N\log N)\). La
+           idea es que el resultado, visto como función del inicio \(T\), es
+           <strong>monótono por tramos</strong>, así que no hace falta probar todos los
+           inicios: se localizan los pocos tramos con búsqueda binaria.</p>
+
+        <h3>La estructura monótona</h3>
+        <p>Sea \(X(T)\) tu blanco final y \(\texttt{bumps}(T)\) las veces que tu gris
+           da la vuelta \(1\to N\) saliendo del inicio \(T\). Definimos
+           \[ L(T) = X(T) - N\cdot \texttt{bumps}(T). \]
+           Resulta que \(L(T)\) es <strong>no decreciente</strong> en \(T\), y
+           \(\texttt{bumps}(T)\) es <strong>no creciente</strong> (cada valor de
+           <code>bumps</code> ocupa un rango contiguo de \(T\), un "segmento de vuelta").
+           Dentro de un segmento <code>bumps</code> es constante, así que ahí
+           \(X = L + N\cdot\texttt{bumps}\) es no decreciente y se queda en \([1,N]\):
+           el \(X\) mínimo del segmento está en su extremo izquierdo (quizá repetido en
+           un prefijo plano).</p>
+
+        <h3>El recorrido por segmentos</h3>
+        <p>Camina los segmentos de izquierda a derecha. Para cada segmento
+           \([\textit{lo}, \textit{hi}]\) (su <code>hi</code> se halla con binaria: el
+           último \(T\) con el mismo valor de <code>bumps</code>), el mejor final del
+           segmento es \(x_{lo}=X(\textit{lo})\), y con otra binaria buscas el \(T\) más
+           grande en \([\textit{lo},\textit{hi}]\) con \(X(T)=x_{lo}\). Te quedas con el
+           mínimo \(x_{lo}\) global y, en empate, el \(T\) mayor. Como \(M \le 3N\),
+           <code>bumps</code> solo toma \(O(1)\) valores distintos ⇒ hay \(O(1)\)
+           segmentos, cada uno con \(O(\log N)\) llamadas a la simulación
+           (memoizadas por inicio).</p>
+
+        <div class="note-box">
+          <strong>Trampa fina (¡y famosa!):</strong> la solución de autor publicada
+          resuelve <em>una sola</em> frontera de vuelta (parte el rango en un único
+          pivote y hace dos búsquedas binarias). Eso es <strong>incorrecto</strong>
+          cuando <code>bumps</code> toma \(\ge 3\) valores distintos a lo largo de \(T\)
+          (por ejemplo \(N=12,\ R=50\) con tu rango \(=12\): el código de autor imprime
+          \(4\), pero la respuesta correcta —verificada por fuerza bruta y por un
+          simulador independiente— es \(3\)). Los datos oficiales no exponen el bug, así
+          que aun así sacaba 100. La solución correcta <strong>itera todos los
+          segmentos</strong>.
+        </div>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, R, y los 2N rangos;  S0 = tu rango
+M = 2*N + (R mod N)                 // rondas efectivas, M en [2N, 3N-1]
+
+si S0 == 1:                         // nadie es mejor que tú
+    imprimir N ; terminar           // siempre acabas en el blanco 1; desempate: inicio máximo
+
+// simula(T) -> (finalX, bumps) para el inicio T, en O(N).  Memoizar por T.
+funcion simula(T):
+    formar la fila con tu inserción en el blanco T
+    colorear:  NEGRO si rango &lt; S0,  BLANCO si rango &gt; S0,  GRIS = tú
+    si 2 &lt;= S0 &lt;= N+1:                       // régimen "circulas"
+        simular SOLO el blanco 1 en las rondas 0..M con valores P
+            (P inicial = blanco de salida; al perdedor del blanco 1 en r: P = r+N;
+             en cada ronda compiten el ganador previo y el de mejor color con P &lt;= r)
+        seen  = primera ronda r &gt;= 2N con GRIS en el blanco 1
+        bumps = # de veces que el gris fue empujado 1 -> N
+        finalX = N - ((M - seen + N - 1) mod N)
+    si no:                                    // S0 &gt; N+1, régimen "atorado"
+        empujar grises/blancos por el círculo (3 vueltas desde el blanco 1)
+        finalX = blanco donde cae el gris;   bumps según las vueltas dadas
+    regresar (finalX, bumps)
+
+// selección O(log N): L(T)=finalX - N*bumps es no decreciente; bumps no creciente
+mejorX = +infinito ;  mejorT = 0
+lo = 1
+mientras lo &lt;= N:
+    b  = simula(lo).bumps
+    hi = mayor T con simula(T).bumps == b          // binaria sobre [lo..N]
+    xlo = simula(lo).finalX                        // mínimo del segmento (extremo izq.)
+    rt  = mayor T en [lo..hi] con simula(T).finalX == xlo   // binaria
+    si xlo &lt; mejorX  o  (xlo == mejorX y rt &gt; mejorT):
+        mejorX = xlo ;  mejorT = rt
+    lo = hi + 1
+imprimir mejorT</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> (1) izquierda/derecha en un blanco da
+           el mismo torneo ⇒ exactamente \(N\) inicios candidatos con final único;
+           (2) la periodicidad de periodo \(N\) tras \(\le 2N\) rondas justifica
+           \(M = 2N + (R \bmod N)\); (3) como solo importan los colores, los tres
+           regímenes cubren todos los casos y cada uno calcula el final en \(O(N)\);
+           (4) la monotonía de \(L\) y de <code>bumps</code> garantiza que el mínimo de
+           cada segmento está en su extremo izquierdo, así que iterar los \(O(1)\)
+           segmentos con binaria encuentra el mínimo global con el inicio máximo.</p>
+
+        <p><strong>Complejidad:</strong> cada <code>simula</code> es \(O(N)\) y se llama
+           \(O(\log N)\) veces (memoizada por inicio) ⇒ \(O(N\log N)\) en tiempo y
+           \(O(N)\) en memoria. En la práctica, \(\sim 0.10\) s con \(N = 200{,}000\)
+           (límite 2 s).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa lectura rápida (scanf o ios::sync_with_stdio(false)) para los 2N+1 enteros.
+Cuida el módulo: (M - seen + N - 1) mod N debe quedar NO negativo (suma N si hace
+falta). Memoiza simula() por blanco inicial para no repetir las pocas llamadas de
+las búsquedas binarias. Nada más exótico hace falta.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
