@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2011 · Tarea 3 — Rice Hub</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2011 · Día 1 · Pattaya City, Tailandia</div>
+    <h1>Tarea <span class="num">3</span> — Rice Hub</h1>
+    <p class="note">Coloca el centro de acopio para juntar el máximo de arroz con un presupuesto limitado ·
+       PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>En el campo hay un camino recto y largo conocido como la <em>Vía del Arroz</em>
+       (<em>Rice Way</em>). A lo largo de este camino hay \(R\) campos de arroz. Cada
+       campo está en una coordenada <strong>entera</strong> entre \(1\) y \(L\),
+       inclusive. Los campos se presentan en orden <strong>no decreciente</strong> de
+       sus coordenadas. Formalmente, para \(0 \le i < R\), el campo \(i\) está en la
+       coordenada \(X[i]\), y puedes asumir que
+       \(1 \le X[0] \le X[1] \le \dots \le X[R-1] \le L\). Ten en cuenta que
+       <strong>varios campos pueden compartir la misma coordenada</strong>.</p>
+
+    <p>Planeamos construir un único <em>centro de acopio</em> (<em>rice hub</em>) como
+       lugar común para almacenar la mayor parte posible de la cosecha. Igual que los
+       campos, el hub debe estar en una coordenada entera entre \(1\) y \(L\),
+       inclusive. El hub puede colocarse en cualquier ubicación, incluso en una que ya
+       contenga uno o más campos de arroz.</p>
+
+    <p>Cada campo de arroz produce exactamente <strong>1 camión</strong> de arroz por
+       temporada de cosecha. Para transportar el arroz hasta el hub, la ciudad debe
+       contratar a un camionero. El camionero cobra <strong>1 Baht</strong> por
+       transportar un camión de arroz por cada unidad de distancia hacia el hub. Dicho
+       de otro modo, el costo de transportar el arroz de un campo dado al hub es
+       numéricamente igual a la <strong>diferencia entre sus coordenadas</strong>.</p>
+
+    <p>Por desgracia, nuestro presupuesto de esta temporada es ajustado: solo podemos
+       gastar a lo más \(B\) Baht en transporte. Tu tarea es ayudarnos a colocar el hub
+       de forma estratégica para juntar tanto arroz como sea posible.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Escribe un procedimiento <code>besthub(R, L, X, B)</code> que recibe los
+       siguientes parámetros:</p>
+    <ul>
+      <li><code>R</code> — el número de campos de arroz. Los campos se numeran de \(0\)
+          a \(R-1\).</li>
+      <li><code>L</code> — la coordenada máxima.</li>
+      <li><code>X</code> — un arreglo unidimensional de enteros ordenados de menor a
+          mayor. Para cada \(0 \le i < R\), el campo \(i\) está en \(X[i]\).</li>
+      <li><code>B</code> — el presupuesto.</li>
+    </ul>
+    <p>Tu procedimiento debe encontrar una ubicación óptima del hub y
+       <strong>devolver el máximo número de camiones de arroz</strong> que se pueden
+       transportar al hub sin pasarse del presupuesto.</p>
+
+    <div class="sig">
+      <span class="tag">Firma a implementar (ricehub.c / ricehub.cpp / ricehub.pas)</span>
+<pre>int  besthub(int R, int L, int X[], long long B);            // C / C++
+function besthub(R, L : LongInt; var X : array of LongInt;
+                 B : Int64) : LongInt;                       // Pascal</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Cuidado con el tamaño de los números.</strong> El costo total de
+      transportar el arroz puede ser muy grande. El presupuesto \(B\) se entrega como
+      entero de <strong>64 bits</strong>, y se recomienda usar enteros de 64 bits en
+      todo el cálculo: en C/C++ usa <code>long long</code>; en Pascal usa
+      <code>Int64</code>.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera el caso \(R = 5\), \(L = 20\), \(B = 6\) y
+       \(X = [\,1,\ 2,\ 10,\ 12,\ 14\,]\).</p>
+
+    <figure>
+      <img alt="Recta numérica con campos de arroz en 1, 2, 10, 12 y 14; el centro de
+                acopio (una estrella) se coloca entre 10 y 12, y flechas muestran el
+                transporte del arroz desde 10, 12 y 14 hacia el hub."
+           src="data:image/png;base64,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">
+      <figcaption>Una de las ubicaciones óptimas del hub: la estrella (el
+        <em>rice hub</em>) recoge el arroz de los campos en 10, 12 y 14 con un costo
+        total de a lo más 6 Baht.</figcaption>
+    </figure>
+
+    <p>En este caso hay <strong>varias</strong> ubicaciones óptimas para el hub: puedes
+       colocarlo en cualquier punto entre las posiciones \(10\) y \(14\), inclusive. La
+       figura de arriba muestra una de ellas. Entonces podrás transportar arroz de los
+       campos en las coordenadas \(10\), \(12\) y \(14\). Para cualquier ubicación
+       óptima, el costo total de ese transporte será de a lo más \(6\) Baht. Es claro
+       que ninguna ubicación del hub permite juntar arroz de más de tres campos, así que
+       esta solución es óptima y <code>besthub</code> debe devolver \(3\).</p>
+
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>besthub(5, 20, [1, 2, 10, 12, 14], 6)</pre></div>
+      <div class="io"><h4>Valor de retorno</h4><pre>3</pre></div>
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB (la memoria de pila cuenta para el total; no hay límite explícito de pila)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de campos \(R\)</td><td><span class="badge">\(1 \le R \le 100\,000\)</span></td></tr>
+        <tr><td>Coordenada máxima \(L\)</td><td><span class="badge">\(1 \le L \le 10^9\)</span></td></tr>
+        <tr><td>Coordenadas \(X[i]\)</td><td><span class="badge">\(1 \le X[0] \le \dots \le X[R-1] \le L\)</span> (pueden repetirse)</td></tr>
+        <tr><td>Presupuesto \(B\)</td><td><span class="badge">\(0 \le B \le 2 \times 10^{15}\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td><td class="pts">17</td>
+            <td>\(1 \le R \le 100\); \(1 \le L \le 100\); \(0 \le B \le 10\,000\);
+                además <strong>ningún par de campos comparte coordenada</strong>
+                (solo en esta subtarea).</td>
+          </tr>
+          <tr>
+            <td>2</td><td class="pts">25</td>
+            <td>\(1 \le R \le 500\); \(1 \le L \le 10\,000\); \(0 \le B \le 10^6\).</td>
+          </tr>
+          <tr>
+            <td>3</td><td class="pts">26</td>
+            <td>\(1 \le R \le 5\,000\); \(1 \le L \le 10^6\); \(0 \le B \le 2 \times 10^9\).</td>
+          </tr>
+          <tr>
+            <td>4</td><td class="pts">32</td>
+            <td>\(1 \le R \le 100\,000\); \(1 \le L \le 10^9\); \(0 \le B \le 2 \times 10^{15}\).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Interfaz (API) y evaluador de muestra</h3>
+    <ul>
+      <li>Carpeta de implementación: <code>ricehub/</code>.</li>
+      <li>A implementar por el concursante: <code>ricehub.c</code>,
+          <code>ricehub.cpp</code> o <code>ricehub.pas</code>.</li>
+      <li>Interfaz del concursante: <code>ricehub.h</code> o <code>ricehub.pas</code>.</li>
+      <li>Evaluador de muestra: <code>grader.c</code> / <code>grader.cpp</code> /
+          <code>grader.pas</code>.</li>
+      <li>Entrada del evaluador de muestra: <code>grader.in.1</code>,
+          <code>grader.in.2</code>, …</li>
+    </ul>
+    <div class="note-box">
+      <strong>Formato que lee el evaluador de muestra:</strong>
+      <ul>
+        <li>Línea 1: \(R\), \(L\) y \(B\).</li>
+        <li>Líneas 2 a \(R+1\): las ubicaciones de los campos; es decir, la línea
+            \(i+2\) contiene \(X[i]\), para \(0 \le i < R\).</li>
+        <li>Línea \(R+2\): la solución esperada.</li>
+      </ul>
+      La salida esperada está en <code>grader.expect.1</code>,
+      <code>grader.expect.2</code>, … y cada uno de esos archivos debe contener
+      exactamente el texto <code>Correct.</code>
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Ventana deslizante</span>
+      <span class="ptag">Mediana / Sumas de prefijo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(R\) campos en coordenadas ordenadas \(X[0] \le \dots \le X[R-1]\) sobre
+       una recta y un presupuesto \(B\). Eliges un punto entero (el <em>hub</em>); el
+       costo de “cubrir” el campo \(i\) es \(|X[i] - \text{hub}|\). Implementa
+       <code>besthub</code>, que devuelve el <strong>máximo número de campos</strong>
+       que puedes cubrir con costo total \(\le B\). Es una tarea
+       <strong>funcional</strong>: el evaluador llama a tu función y compara el entero
+       que devuelves contra la respuesta esperada (es exacta, no hay juez especial).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(R \le 10^5\) en la última subtarea sugiere algo cercano a
+                \(O(R\log R)\). El presupuesto llega a \(B \le 2\times10^{15}\) y los
+                costos a \(\sim 10^{14}\): <strong>64 bits obligatorios</strong>. Las
+                subtareas suben en escalera: \(R\le100/500\) admite fuerza bruta
+                \(O(R^3)\); \(R\le5000\) pide \(O(R^2)\); \(R\le10^5\) pide
+                \(O(R\log R)\). Una misma idea (campos contiguos + mediana) sirve para
+                todas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">Si <em>ya</em> decidieras qué conjunto de campos quieres cubrir,
+           ¿dónde te conviene poner el hub para que el costo total sea mínimo? Y a la
+           inversa: si fijas un presupuesto, ¿qué campos te conviene elegir?</p>
+        <p>Reformula: el costo de cubrir un conjunto \(S\) de campos colocando el hub en
+           el punto \(h\) es \(\sum_{i\in S} |X[i] - h|\). Quieres elegir \(S\) lo más
+           grande posible y un \(h\) tal que esa suma sea \(\le B\). Hay dos decisiones
+           acopladas: <em>cuáles</em> campos y <em>dónde</em> el hub. La clave es
+           entender la forma de la solución óptima antes de programar nada.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1 y 2 (42 pts): fuerza bruta sobre bloques</summary>
+      <div class="body">
+        <p class="q">Con \(R \le 100\) (y luego \(R \le 500\)), ¿puedes simplemente
+           probar todas las posibilidades? Si vas a cubrir exactamente \(K\) campos,
+           ¿cuáles convienen: campos dispersos o campos <em>juntos</em>?</p>
+        <p>Convienen los más juntos, y resulta que en el arreglo ordenado eso significa
+           tomar \(K\) campos <strong>consecutivos</strong> (un subarreglo
+           \([s,\,s\!+\!K\!-\!1]\)). Entonces prueba cada longitud \(K\) y cada inicio
+           \(s\): coloca el hub en la mediana de ese bloque, calcula su costo en
+           \(O(K)\) y quédate con el mayor \(K\) que tenga alguna ventana con costo
+           \(\le B\). Eso es \(O(R^3)\) y ya pasa las subtareas 1 y 2
+           (\(R^3 \approx 1.25\times10^8\) para \(R=500\)).</p>
+        <p class="note">Aún no demostramos por qué “consecutivos” y “mediana” son
+           óptimos: eso es la siguiente pista.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: contiguos + mediana</summary>
+      <div class="body">
+        <p class="q">¿Por qué los campos de una solución óptima son contiguos en \(X\)
+           ordenado? ¿Y por qué el hub óptimo de un bloque cae justo en su mediana?</p>
+        <ul>
+          <li><strong>Contigüidad:</strong> para una cantidad fija \(K\), el costo solo
+              depende de qué tan “apretado” esté el grupo. Si tu grupo óptimo tuviera un
+              hueco (un campo de en medio sin elegir), intercambiar un campo de un
+              extremo por ese campo interno nunca aumenta el costo. Así que siempre
+              existe un óptimo formado por \(K\) campos <strong>consecutivos</strong> en
+              el arreglo ordenado.</li>
+          <li><strong>Mediana:</strong> minimizar \(\sum |X[i] - h|\) sobre \(h\) es el
+              clásico problema de la mediana: el óptimo se alcanza colocando \(h\) en la
+              <strong>mediana</strong> de los \(X[i]\). Para un bloque \([s,t]\), basta
+              tomar el campo de índice \(p = \big\lfloor (s+t)/2 \big\rfloor\) (un
+              campo-mediana siempre sirve; no hace falta probar todas las coordenadas
+              \(1..L\)).</li>
+        </ul>
+        <p>Con esto, el problema se reduce a: <em>de entre todas las ventanas
+           contiguas, encuentra la ventana más larga cuyo costo-de-mediana no pase de
+           \(B\)</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3 (26 pts): costo de un bloque en \(O(1)\)</summary>
+      <div class="body">
+        <p class="q">Con \(R \le 5000\), \(O(R^3)\) ya no alcanza. ¿Puedes evaluar el
+           costo de un bloque \([s,t]\) en \(O(1)\) en vez de \(O(K)\)?</p>
+        <p>Sí, con <strong>sumas de prefijo</strong>. Define \(P[0]=0\) y
+           \(P[i] = X[0] + \dots + X[i-1]\). Para un bloque \([s,t]\) con mediana
+           \(p = \big\lfloor (s+t)/2 \big\rfloor\), el costo se parte en los campos a la
+           izquierda de \(p\) y los de la derecha:</p>
+        \[ \text{costo}(s,t) \;=\;
+           \underbrace{X[p]\,(p-s+1) - \big(P[p+1]-P[s]\big)}_{\text{lado izquierdo}}
+           \;+\;
+           \underbrace{\big(P[t+1]-P[p]\big) - X[p]\,(t-p+1)}_{\text{lado derecho}} . \]
+        <p>Ahora, para cada \(K\) desliza todas las ventanas en \(O(R)\) y revisa si
+           alguna cuesta \(\le B\); probar todos los \(K\) da \(O(R^2)\), suficiente
+           para \(R \le 5000\). Aquí \(B\) ya excede 32 bits con holgura: usa
+           <strong>64 bits</strong> en \(P[\,]\) y en el costo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 4 (32 pts): monotonía + búsqueda binaria sobre \(K\)</summary>
+      <div class="body">
+        <p class="q">Con \(R \le 10^5\), ni \(O(R^2)\) sirve. ¿Notaste algo monótono?
+           Si <em>existe</em> una ventana de \(K\) campos que cuesta \(\le B\), ¿qué
+           puedes afirmar sobre cubrir \(K-1\) campos?</p>
+        <p>La factibilidad de “cubrir \(K\) campos con presupuesto \(B\)” es
+           <strong>monótona en \(K\)</strong>: si una ventana de tamaño \(K\) cuesta
+           \(\le B\), cualquier subventana de tamaño \(K-1\) dentro de ella cuesta aún
+           menos, así que también es factible. Entonces el conjunto de \(K\) factibles
+           es \(\{1,\dots,K_{\max}\}\), y puedes hacer <strong>búsqueda binaria</strong>
+           sobre \(K\) en \([1,R]\). Para cada \(K\) candidato, deslizas todas las
+           ventanas de longitud \(K\) en \(O(R)\) usando el costo-de-mediana \(O(1)\) de
+           la Pista 4. Total: \(O(R \log R)\).</p>
+        <p class="note">\(K=1\) siempre es factible (costo \(0\), y \(B \ge 0\)), así que
+           la respuesta nunca es \(0\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Por la Pista 3, una solución óptima toma \(K\) campos
+           <strong>contiguos</strong> en \(X\) ordenado y pone el hub en su
+           <strong>mediana</strong>. Por la Pista 4, el costo de cualquier bloque se
+           evalúa en \(O(1)\) con sumas de prefijo. Por la Pista 5, la factibilidad es
+           monótona en \(K\), así que el mayor \(K\) factible se halla con búsqueda
+           binaria. Un único algoritmo \(O(R\log R)\) cubre las cuatro subtareas
+           (\(R \le 10^5\) corre en milisegundos).</p>
+
+        <p><strong>Por qué es correcto.</strong></p>
+        <ul>
+          <li><em>Contigüidad y mediana</em> nos dan que basta examinar ventanas
+              contiguas con el hub en la mediana: ninguna otra configuración mejora el
+              costo para la misma cantidad de campos.</li>
+          <li>El <em>costo de mediana</em> partido en lado izquierdo + lado derecho es
+              exacto: con \(p=\lfloor(s+t)/2\rfloor\), los campos \(s..p\) están a la
+              izquierda (aportan \(X[p]\!\cdot\!(p\!-\!s\!+\!1) - \sum_{j=s}^{p}X[j]\)) y
+              los campos \(p..t\) a la derecha (aportan
+              \(\sum_{j=p}^{t}X[j] - X[p]\!\cdot\!(t\!-\!p\!+\!1)\)); cada suma sale de
+              \(P[\,]\) en \(O(1)\). Las coordenadas <em>repetidas</em> no necesitan caso
+              especial: las fórmulas las manejan solas.</li>
+          <li>La <em>monotonía</em> garantiza que la búsqueda binaria devuelve el mayor
+              \(K\) factible: si \(K\) es factible también lo es \(K-1\), porque una
+              subventana de una ventana barata es aún más barata.</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion besthub(R, L, X, B):           // X ordenado; B, P[] y costos en 64 bits
+    P[0] = 0
+    para i = 0 .. R-1:
+        P[i+1] = P[i] + X[i]           // sumas de prefijo
+
+    funcion factible(K):               // ¿hay una ventana de K campos con costo <= B?
+        para s = 0 .. R-K:
+            t = s + K - 1
+            p = (s + t) / 2            // división entera: índice de la mediana
+            izq = X[p]*(p - s + 1) - (P[p+1] - P[s])
+            der = (P[t+1] - P[p]) - X[p]*(t - p + 1)
+            si izq + der <= B:
+                regresa verdadero
+        regresa falso
+
+    // busqueda binaria sobre el numero de campos K (factibilidad monotona)
+    lo = 1;  hi = R;  mejor = 1
+    mientras lo <= hi:
+        K = (lo + hi) / 2
+        si factible(K):
+            mejor = K;  lo = K + 1     // intenta cubrir mas campos
+        si no:
+            hi = K - 1                 // K no cabe en el presupuesto
+    regresa mejor
+</pre>
+        </div>
+
+        <p><strong>Cómo se sube de subtarea en subtarea.</strong></p>
+        <ul>
+          <li><strong>Subtareas 1–2 (42 pts):</strong> la misma idea pero
+              <em>guess-and-verify</em>: prueba cada \(K\) y cada inicio \(s\), costo en
+              \(O(K)\) ⇒ \(O(R^3)\).</li>
+          <li><strong>Subtarea 3 (26 pts):</strong> acelera el costo a \(O(1)\) con
+              \(P[\,]\) ⇒ \(O(R^2)\).</li>
+          <li><strong>Subtarea 4 (32 pts):</strong> reemplaza el barrido de todos los
+              \(K\) por búsqueda binaria ⇒ \(O(R \log R)\). (La editorial también
+              describe una variante \(O(R)\) con dos punteros incrementales \(s,t\); el
+              \(O(R\log R)\) ya basta para los 100 puntos.)</li>
+        </ul>
+
+        <p><strong>Complejidad:</strong> \(O(R \log R)\) en tiempo y \(O(R)\) en
+           memoria (el arreglo \(P[\,]\)). Para \(R = 10^5\) corre muy por debajo del
+           límite de 1 s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco / trampa de C++ (no es opcional aquí)</span>
+<pre>// 64 bits OBLIGATORIO en la subtarea 4: B <= 2e15 y costos ~1e14.
+// Con int hay overflow SILENCIOSO. La firma ya trae B como long long;
+// asegurate de que P[] y el computo del costo tambien sean long long.
+long long P[100001];   // sumas de prefijo
+long long izq = (long long)X[p]*(p - s + 1) - (P[p+1] - P[s]);
+// El parametro L NO se usa en el algoritmo (solo esta por la firma).</pre>
+          <p class="note">No muestres aquí la solución completa: lo único “de C++” que
+             importa es el tipo de 64 bits para no desbordar.</p>
+        </div>
+
+        <div class="note-box">
+          <strong>Trampas clásicas.</strong>
+          <ol>
+            <li><strong>Overflow:</strong> usar <code>int</code> en \(B\), en \(P[\,]\)
+                o en el costo desborda en la subtarea 4. Todo en 64 bits.</li>
+            <li><strong>Mediana, no centro geométrico:</strong> el hub óptimo de un
+                bloque es el campo-mediana de índice \(\lfloor(s+t)/2\rfloor\); no hace
+                falta probar coordenadas enteras \(1..L\).</li>
+            <li><strong>Coordenadas repetidas:</strong> existen (salvo en la subtarea 1);
+                las fórmulas de prefijo las manejan sin tratamiento especial.</li>
+            <li><strong>Olvidar la contigüidad:</strong> la ventana deslizante solo es
+                válida porque los campos óptimos son consecutivos en \(X\) ordenado.</li>
+            <li><strong>\(L\) no se usa:</strong> es un parámetro de la firma, pero el
+                algoritmo no lo necesita.</li>
+          </ol>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
