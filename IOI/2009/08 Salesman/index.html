@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2009 · Tarea 8 — Salesman</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .diagram{width:100%;height:auto;background:var(--code);border:1px solid var(--border);
+    border-radius:10px;padding:10px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas / grupos de puntos (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2009 · Día 2 · Plovdiv, Bulgaria</div>
+    <h1>Tarea <span class="num">8</span> — Salesman</h1>
+    <p class="note">El vendedor viajante · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El vendedor viajante decidió que programar de forma óptima sus viajes por
+       tierra es un problema computacional intratable, así que está mudando su
+       negocio al mundo <em>lineal</em> del río Danubio. Tiene una lancha muy veloz que lo
+       lleva de cualquier punto a cualquier otro del río en un instante, pero por
+       desgracia consume muchísimo combustible. Le cuesta \(U\) dólares por cada
+       metro que viaja <strong>río arriba</strong> (hacia la fuente del río) y
+       \(D\) dólares por cada metro que viaja <strong>río abajo</strong>
+       (alejándose de la fuente).</p>
+
+    <figure>
+      <svg class="diagram" viewBox="0 0 720 230" role="img"
+           aria-label="El río como una recta: la fuente a la izquierda y la desembocadura a la derecha. La casa S está en medio; hay ferias a su izquierda (río arriba) y a su derecha (río abajo). Moverse río arriba cuesta U por metro y río abajo cuesta D por metro.">
+        <defs>
+          <marker id="arL" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M7,0 L0,3 L7,6 Z" fill="#fbbf24"/>
+          </marker>
+          <marker id="arR" markerWidth="9" markerHeight="9" refX="2" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#34d399"/>
+          </marker>
+        </defs>
+        <!-- río -->
+        <line x1="30" y1="150" x2="690" y2="150" stroke="#5b8cff" stroke-width="3"/>
+        <text x="30"  y="186" fill="#9aa6c4" font-size="13">fuente (0)</text>
+        <text x="690" y="186" fill="#9aa6c4" font-size="13" text-anchor="end">desembocadura</text>
+        <!-- ferias río arriba (izquierda de S) -->
+        <circle cx="150" cy="150" r="6" fill="#34d399"/>
+        <text x="150" y="138" fill="#e8ecf6" font-size="13" text-anchor="middle">feria</text>
+        <circle cx="250" cy="150" r="6" fill="#34d399"/>
+        <text x="250" y="138" fill="#e8ecf6" font-size="13" text-anchor="middle">feria</text>
+        <!-- casa S -->
+        <rect x="392" y="135" width="26" height="20" fill="#fbbf24"/>
+        <path d="M388,135 L405,118 L422,135 Z" fill="#fbbf24"/>
+        <text x="405" y="186" fill="#fbbf24" font-size="13" text-anchor="middle">casa S</text>
+        <!-- ferias río abajo (derecha de S) -->
+        <circle cx="540" cy="150" r="6" fill="#34d399"/>
+        <text x="540" y="138" fill="#e8ecf6" font-size="13" text-anchor="middle">feria</text>
+        <circle cx="630" cy="150" r="6" fill="#34d399"/>
+        <text x="630" y="138" fill="#e8ecf6" font-size="13" text-anchor="middle">feria</text>
+        <!-- flecha río arriba (hacia la izquierda) -->
+        <line x1="340" y1="48" x2="120" y2="48" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arL)"/>
+        <text x="340" y="38" fill="#fbbf24" font-size="13" text-anchor="end">río arriba: U $ por metro</text>
+        <!-- flecha río abajo (hacia la derecha) -->
+        <line x1="470" y1="80" x2="690" y2="80" stroke="#34d399" stroke-width="2.5" marker-end="url(#arR)"/>
+        <text x="470" y="70" fill="#34d399" font-size="13">río abajo: D $ por metro</text>
+      </svg>
+      <figcaption>El río es una recta. La ubicación se mide en metros desde la
+        fuente. Avanzar hacia la fuente (izquierda) cuesta \(U\) por metro; alejarse
+        de ella (derecha) cuesta \(D\) por metro, con \(D \le U\). (Diagrama
+        ilustrativo; el PDF no trae figura.)</figcaption>
+    </figure>
+
+    <p>Hay \(N\) ferias comerciales que el vendedor quisiera visitar a lo largo del
+       río. Cada feria se realiza <strong>un solo día</strong>. De cada feria \(X\)
+       el vendedor conoce su fecha \(T_X\) (medida en número de días desde que
+       compró su lancha), su ubicación \(L_X\) (la distancia en metros desde la
+       fuente del río, río abajo, hasta la feria) y la cantidad de dólares \(M_X\)
+       que ganará si asiste a esa feria. Debe <strong>empezar y terminar</strong>
+       su recorrido en su casa a la orilla del río, ubicada en la posición \(S\)
+       (también medida en metros río abajo desde la fuente).</p>
+
+    <p>Ayúdalo a elegir a qué ferias asistir (si a alguna) y en qué orden, de modo
+       que <strong>maximice su ganancia</strong> al final del viaje. La ganancia
+       total se define como la suma de los dólares ganados en las ferias a las que
+       asistió, menos la suma total de dólares que gastó viajando río arriba y río
+       abajo.</p>
+
+    <p>Ten en cuenta que si la feria \(A\) se realiza <strong>antes</strong> que la
+       feria \(B\), el vendedor solo puede visitarlas en ese orden (no puede visitar
+       \(B\) y luego \(A\)). Sin embargo, si dos ferias caen el <strong>mismo
+       día</strong>, puede visitarlas en cualquier orden. No hay límite de cuántas
+       ferias puede visitar en un día, pero por supuesto no puede visitar dos veces
+       la misma feria y cobrar dos veces. Puede pasar por ferias que ya visitó
+       sin ganar nada.</p>
+
+    <h3>Tarea</h3>
+    <p>Escribe un programa que, dados la fecha, la ubicación y la rentabilidad de
+       todas las ferias, así como la ubicación de la casa del vendedor y sus costos
+       de viaje, determine la <strong>máxima ganancia posible</strong> al final de
+       su recorrido.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar:</p>
+    <ul>
+      <li>La primera línea contiene los enteros \(N\), \(U\), \(D\) y \(S\),
+          <strong>en ese orden</strong>, separados por espacios simples.</li>
+      <li>Las siguientes \(N\) líneas describen las \(N\) ferias, en ningún orden
+          particular. La \(k\)-ésima de estas líneas describe la \(k\)-ésima feria y
+          contiene tres enteros separados por espacios: el día de la feria \(T_k\),
+          su ubicación \(L_k\) y su rentabilidad para el vendedor \(M_k\).</li>
+    </ul>
+    <div class="note-box">
+      <strong>NOTA:</strong> Todas las ubicaciones dadas en la entrada son
+      distintas. Es decir, no hay dos ferias en la misma ubicación y ninguna feria
+      ocurre en la casa del vendedor.
+    </div>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir en la salida estándar una sola línea con un único
+       entero: la máxima ganancia que el vendedor puede obtener al final de su
+       recorrido.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3 segundos (por caso)</td></tr>
+        <tr><td>Límite de memoria</td><td>128 MB</td></tr>
+        <tr><td>Retroalimentación</td><td>Parcial (durante el concurso)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de ferias \(N\)</td><td><span class="badge">\(1 \le N \le 500\,000\)</span></td></tr>
+        <tr><td>Costos por metro \(U\) (arriba), \(D\) (abajo)</td><td><span class="badge">\(1 \le D \le U \le 10\)</span></td></tr>
+        <tr><td>Casa del vendedor \(S\)</td><td><span class="badge">\(1 \le S \le 500\,001\)</span></td></tr>
+        <tr><td>Día de la feria \(T_k\)</td><td><span class="badge">\(1 \le T_k \le 500\,000\)</span></td></tr>
+        <tr><td>Ubicación de la feria \(L_k\)</td><td><span class="badge">\(1 \le L_k \le 500\,001\)</span></td></tr>
+        <tr><td>Ganancia de la feria \(M_k\)</td><td><span class="badge">\(1 \le M_k \le 4\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p>El IOI 2009 reparte estos 100 puntos por <strong>grupos de casos</strong>
+       definidos por dos condiciones que se <em>traslapan</em> (no están anidadas):</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Grupo</th><th>Puntos</th><th>Condición sobre los casos</th></tr></thead>
+        <tbody>
+          <tr><td>A</td><td class="pts">60</td><td>No hay dos ferias en el mismo día.</td></tr>
+          <tr><td>B</td><td class="pts">40</td><td>Ningún número de la entrada excede \(5\,000\).</td></tr>
+          <tr><td>A \(\cap\) B</td><td class="pts">15</td><td>Se cumplen <strong>ambas</strong> condiciones a la vez.</td></tr>
+          <tr><td>A \(\cup\) B</td><td class="pts">85</td><td>Se cumple <strong>al menos una</strong> de las dos condiciones.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      Como los grupos se traslapan, conviene leerlos así: los casos donde se
+      cumple <em>al menos una</em> condición valen 85; por lo tanto, los casos
+      <strong>generales</strong> (ferias en el mismo día <em>y</em> con números
+      grandes) valen los \(100-85=15\) puntos restantes. Para el 100 completo hace
+      falta el algoritmo general, que además resuelve los grupos de ferias del
+      mismo día con las restricciones grandes.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 5 3 100
+2 80 100
+20 125 130
+10 75 150
+5 120 110</pre></div>
+      <div class="io"><h4>Salida</h4><pre>50</pre></div>
+    </div>
+    <p class="note">Aquí \(N=4\), \(U=5\), \(D=3\), \(S=100\). Las cuatro líneas
+       siguientes son \((T_k, L_k, M_k)\). Un itinerario óptimo visita las ferias 1
+       y 3 (las de ubicaciones 80 y 75). La secuencia de eventos y sus costos y
+       ganancias sería:</p>
+    <ul>
+      <li>El vendedor viaja 20 metros río arriba a un costo de 100 dólares.
+          Ganancia hasta ahora: \(-100\).</li>
+      <li>Asiste a la feria número 1 y gana 100. Ganancia hasta ahora: \(0\).</li>
+      <li>Viaja 5 metros río arriba a un costo de 25. Ganancia hasta ahora: \(-25\).</li>
+      <li>Asiste a la feria número 3, donde gana 150. Ganancia hasta ahora: \(125\).</li>
+      <li>Viaja 25 metros río abajo para regresar a casa a un costo de 75.
+          Ganancia al final: \(50\).</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Árbol de Fenwick (max-BIT)</span>
+      <span class="ptag">Ordenamiento</span>
+      <span class="ptag">Greedy / monotonía</span>
+      <span class="ptag">Compresión de coordenadas</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>El río es una recta. Empiezas en casa \(S\) y debes terminar en \(S\). Hay
+       \(N\) ferias \((T,L,M)\); puedes visitar un subconjunto, pero respetando el
+       orden de los días (\(T\) no decreciente; las del mismo día, en cualquier
+       orden). Moverte de \(x\) a \(y\) cuesta \(D\,(y-x)\) si vas río abajo
+       (\(y>x\)) y \(U\,(x-y)\) si vas río arriba (\(y<x\)), con \(D\le U\).
+       Maximiza \(\big(\sum M \text{ ganados}\big) - \big(\text{costo de viaje}\big)\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\le 5\times10^5\) pide algo cercano a \(O(N\log N)\). El grupo B
+                (\(\text{números}\le 5\,000\)) abre la puerta a una DP \(O(N^2)\) o
+                \(O(N\cdot C)\). El grupo A (sin empates de día) elimina la parte
+                más espinosa: el orden libre dentro de un mismo día. La suma de
+                \(M\) llega a \(5\times10^5\times 4\,000 = 2\times10^9\): <strong>usa
+                enteros de 64 bits</strong>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar la decisión?</summary>
+      <div class="body">
+        <p class="q">¿Y si fijas un estado del tipo «la mejor ganancia de un
+           recorrido que respeta los días y termina parado en la feria \(i\),
+           justo después de cobrar \(M_i\)»? ¿Qué necesitas saber del pasado para
+           extenderlo?</p>
+        <p>Como el orden lo impone el día, conviene <strong>procesar las ferias por
+           día creciente</strong>. Si llamas \(dp[i]\) a esa mejor ganancia que
+           termina en \(i\), entonces para llegar a \(i\) vienes de alguna feria
+           anterior \(j\) (un día previo) o directamente de casa. Agrega una
+           «feria 0» virtual = la casa en \(S\) con \(dp=0\).</p>
+        <p>¿Cómo se ve la transición? Pagas el viaje de \(L_j\) a \(L_i\) y cobras
+           \(M_i\):
+           \[ dp[i] \;=\; M_i \;+\; \max_{j \text{ anterior}}\big(dp[j]-\mathrm{cost}(L_j,L_i)\big). \]
+           La respuesta final es el mejor \(dp[i]\) menos el costo de volver a casa
+           (y nunca peor que \(0\), porque quedarse en casa da ganancia \(0\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Primeros puntos: el grupo B (números ≤ 5 000)</summary>
+      <div class="body">
+        <p class="q">Si todo cabe en \(5\,000\) (pocas ferias, ubicaciones chicas),
+           ¿qué tan caro puede ser evaluar el \(\max_j\) de la Pista 1 de forma
+           directa?</p>
+        <p>Con \(N\) chico puedes ordenar por día y, para cada \(i\), recorrer
+           todas las \(j\) anteriores calculando \(dp[j]-\mathrm{cost}(L_j,L_i)\):
+           es una DP \(O(N^2)\) (o \(O(N\cdot C)\) si iteras sobre ubicaciones).
+           Eso ya te da el grupo de los 40 puntos. El reto es que esto no escala a
+           \(N=5\times10^5\): necesitas responder ese \(\max\) en
+           \(O(\log)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: separa el costo por dirección</summary>
+      <div class="body">
+        <p class="q">El estorbo es que \(\mathrm{cost}(L_j,L_i)\) mezcla \(L_j\) y
+           \(L_i\). ¿Qué pasa si <em>partes en dos casos</em> según \(j\) esté río
+           arriba o río abajo de \(i\), para que \(L_i\) se factorice afuera del
+           \(\max\)?</p>
+        <p>Como \(\mathrm{cost}\) es lineal a trozos:</p>
+        <ul>
+          <li>Si \(L_j \le L_i\) (vienes de río arriba, viajas río abajo):
+              \(dp[j]-\mathrm{cost} = (dp[j]+D\,L_j) - D\,L_i\).</li>
+          <li>Si \(L_j \ge L_i\) (vienes de río abajo, viajas río arriba):
+              \(dp[j]-\mathrm{cost} = (dp[j]-U\,L_j) + U\,L_i\).</li>
+        </ul>
+        <p>En cada caso, el término que depende de \(j\) ya no toca a \(i\). Entonces
+           el \(\max\) se vuelve una consulta de <strong>máximo en un prefijo / en
+           un sufijo</strong> de ubicaciones. ¿Qué estructura responde «máximo en un
+           prefijo» con inserciones, en \(O(\log)\)?</p>
+        <p>Un <strong>árbol de Fenwick de máximos</strong> (BIT), indexado por la
+           ubicación (comprime coordenadas a \(\le N+1\) valores). Lleva dos:</p>
+        <ul>
+          <li><strong>Árbol izquierdo</strong>: guarda \(dp[j]+D\,L_j\); consultas
+              el prefijo \([1..L_i]\) y le restas \(D\,L_i\).</li>
+          <li><strong>Árbol derecho</strong>: guarda \(dp[j]-U\,L_j\); consultas el
+              sufijo \([L_i..C]\) (truco: máximo en prefijo sobre el índice
+              invertido) y le sumas \(U\,L_i\).</li>
+        </ul>
+        <p>Define \(\mathrm{mejorDesde}(L)=\max\big(\text{izq}(L)-D\,L,\;
+           \text{der}(L)+U\,L\big)\). Así \(dp[i]=\mathrm{mejorDesde}(L_i)+M_i\), y
+           tras calcularlo insertas \(i\) en ambos árboles. Inicializa con la casa
+           (\(dp=0\) en \(S\)). <strong>Esto ya resuelve el grupo A (60 puntos):
+           sin empates de día, basta este DP con BITs.</strong></p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La parte difícil: ferias del mismo día (hacia el 100)</summary>
+      <div class="body">
+        <p class="q">Si varias ferias caen el mismo día puedes visitarlas en
+           cualquier orden. ¿Por qué sería un error insertarlas en los BITs una por
+           una conforme las procesas?</p>
+        <p>Porque entonces una feria del mismo día podría servir de
+           «predecesora» de otra del mismo día <em>en ambos sentidos</em>: el orden
+           se rompe y puedes contar ganancias dos veces. Las ferias de un mismo día
+           deben ser <strong>invisibles entre sí</strong> dentro de los BITs.</p>
+        <p class="q">¿Y cómo es el recorrido óptimo <em>dentro</em> de un día? Si
+           entras al grupo por una feria, ¿te conviene zigzaguear?</p>
+        <p>No: el recorrido óptimo de un mismo día es <strong>monótono</strong>
+           (entras una vez y luego viajas solo en un sentido, recogiendo las que
+           pasas). Así que un grupo del mismo día (ordenado por ubicación) se
+           resuelve en 3 fases:</p>
+        <ol>
+          <li><strong>Base</strong>: \(base[k]=\mathrm{mejorDesde}(L_k)+M_k\) usando
+              los BITs que solo contienen días <em>estrictamente</em> anteriores
+              (más la casa).</li>
+          <li><strong>Dos barridos monótonos</strong> que encadenan vecinos:
+              uno río abajo (izquierda→derecha) y otro río arriba
+              (derecha→izquierda).</li>
+          <li><strong>Cierre</strong>: \(dp[k]=\max(\text{abajo}[k],\text{arriba}[k])\);
+              y solo <em>después</em> de terminar todo el grupo insertas sus ferias
+              en los BITs.</li>
+        </ol>
+        <p>Olvidar uno de los dos barridos pierde casos. Esto cierra el último
+           bloque y llega al 100.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Procesa las ferias por día creciente. Mantén la
+           DP «mejor ganancia de un recorrido que termina parado en una feria,
+           recién cobrada». Como el costo de viaje es lineal a trozos en la
+           ubicación, separas la transición en dos direcciones y cada una se vuelve
+           un máximo sobre un prefijo/sufijo de ubicaciones, que respondes con dos
+           <strong>árboles de Fenwick de máximos</strong>. Las ferias del mismo día
+           se procesan en bloque (base + dos barridos monótonos + inserción
+           diferida) para que no se usen entre sí como predecesoras.</p>
+
+        <p><strong>Definiciones.</strong> Costo \(\mathrm{cost}(x,y)=D(y-x)\) si
+           \(y>x\), y \(U(x-y)\) si \(y<x\). La casa es una «feria 0» en \(S\) con
+           \(dp=0\). Para una feria \(i\):
+           \(dp[i]=M_i+\max_{j\ \text{anterior}}\!\big(dp[j]-\mathrm{cost}(L_j,L_i)\big)\),
+           con la separación de la Pista 3.</p>
+
+        <p><strong>Respuesta final.</strong> \(\text{ans}=\max\big(0,\
+           \mathrm{mejorDesde}(S)\big)\): consultar los BITs en la ubicación \(S\)
+           da, para cada feria insertada \(j\), \(dp[j]-\mathrm{cost}(L_j,S)\), es
+           decir el regreso a casa. Como la casa (\(dp=0\)) ya está en los árboles,
+           «quedarse en casa» con ganancia \(0\) queda incluido.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, U, D, S
+ferias = lista de (T, L, M)
+comprimir las coordenadas L (y S) a indices 1..C
+
+ARBOL_IZQ = FenwickMax(C)   # guarda dp + D*L ; consulta PREFIJO [1..p]
+ARBOL_DER = FenwickMax(C)   # guarda dp - U*L ; consulta SUFIJO [p..C]  (prefijo en indice invertido)
+
+funcion mejorDesde(L):
+    a = ARBOL_IZQ.maxPrefijo(L) - D*L      # predecesores rio arriba (L_j <= L)
+    b = ARBOL_DER.maxSufijo(L)  + U*L      # predecesores rio abajo  (L_j >= L)
+    regresa max(a, b)
+
+funcion insertar(L, valorDp):
+    ARBOL_IZQ.actualizar(L, valorDp + D*L)
+    ARBOL_DER.actualizar(L, valorDp - U*L)
+
+insertar(S, 0)                              # la casa
+ordenar ferias por dia T creciente
+
+para cada grupo de ferias con el MISMO dia T:
+    ordenar el grupo por ubicacion L creciente
+    # FASE 1: base usando solo dias estrictamente anteriores + casa
+    para cada feria k del grupo:
+        base[k] = mejorDesde(L_k) + M_k
+    # FASE 2: dos barridos monotonos dentro del dia
+    abajo[0] = base[0]
+    para k = 1 .. ultimo:                   # izquierda -> derecha (viajar rio abajo)
+        abajo[k] = max(base[k], abajo[k-1] - D*(L_k - L_{k-1}) + M_k)
+    arriba[ultimo] = base[ultimo]
+    para k = ultimo-1 .. 0:                  # derecha -> izquierda (viajar rio arriba)
+        arriba[k] = max(base[k], arriba[k+1] - U*(L_{k+1} - L_k) + M_k)
+    # FASE 3: fijar dp e insertar TODO el grupo despues
+    para cada feria k del grupo:
+        dp[k] = max(abajo[k], arriba[k])
+    para cada feria k del grupo:
+        insertar(L_k, dp[k])
+
+respuesta = max(0, mejorDesde(S))
+imprimir respuesta</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> La separación por dirección es una
+           igualdad exacta del costo, así que cada BIT entrega justo
+           \(\max_j(dp[j]-\mathrm{cost})\) sobre los \(j\) ya insertados. Procesar
+           por día creciente garantiza el orden temporal. Para un mismo día: la
+           Fase 1 toma valores solo de días <em>anteriores</em> (ninguna feria del
+           grupo se ve a sí misma), y los dos barridos capturan exactamente el
+           recorrido monótono óptimo dentro del día (entrar una vez y avanzar todo
+           río abajo <em>o</em> todo río arriba). Insertar el grupo hasta el final
+           evita que se usen entre sí como predecesoras y el doble conteo. El
+           \(\max(0,\cdot)\) y la casa con \(dp=0\) cubren «no salir de casa».</p>
+
+        <p><strong>Complejidad.</strong> Un ordenamiento \(O(N\log N)\); cada feria
+           hace \(O(\log C)\) en consultas/actualizaciones de los BITs, y los
+           barridos del mismo día son lineales en total. Con compresión de
+           coordenadas: \(O(N\log N)\) tiempo y \(O(N)\) memoria. (Sin comprimir,
+           usar BITs de tamaño \(\sim 5\times10^5\) también cabe: \(O(C)\) memoria,
+           unos pocos MB, muy por debajo de los 128 MB. El caso oficial más grande
+           corre en \(\sim 0.17\) s contra el límite de 3 s.)</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Trucos de C++ (solo C++)</span>
+<pre>// 1) ENTEROS DE 64 BITS: la suma de M llega a 2e9 (> 2^31). Usa long long
+//    en dp, en los valores de los BITs y en la respuesta. Inicializa los
+//    BITs con un "menos infinito" tipo LLONG_MIN/4 para que las posiciones
+//    vacias nunca ganen un max.
+// 2) E/S RAPIDA: hay hasta 5e5 lineas. Usa scanf/printf, o
+//    ios::sync_with_stdio(false); cin.tie(nullptr);  (y nunca endl).</pre>
+          <p class="note">El BIT debe ser de <em>máximo</em> (no de suma); el
+             «máximo en sufijo» se obtiene aplicando el BIT de prefijo sobre el
+             índice invertido \(C-L+1\). No copies código de la solución de autor:
+             implementa tu propio Fenwick de máximos.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
