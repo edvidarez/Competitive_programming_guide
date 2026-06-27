@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2007 · Tarea 4 — Miners</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .trace{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0}
+  .trace th,.trace td{padding:7px 9px;border-bottom:1px solid var(--border);text-align:center}
+  .trace th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  .trace td:first-child{color:var(--muted)}
+  .trace tr:last-child td{border-bottom:none;font-weight:700;color:var(--accent2)}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2007 · Día 2 · Zagreb, Croacia</div>
+    <h1>Tarea <span class="num">4</span> — Miners</h1>
+    <p class="note">Mineros · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Hay <strong>dos</strong> minas de carbón, cada una con su grupo de mineros.
+       Extraer carbón es trabajo pesado, así que los mineros necesitan comida para
+       seguir produciendo. Cada vez que llega un envío de comida a su mina, los
+       mineros producen cierta cantidad de carbón. Hay <strong>tres tipos</strong>
+       de envío de comida: carne (envíos <code>M</code>, de <em>meat</em>), pescado
+       (envíos <code>F</code>, de <em>fish</em>) y pan (envíos <code>B</code>, de
+       <em>bread</em>).</p>
+
+    <p>A los mineros les gusta la variedad en su dieta y son más productivos si su
+       comida se mantiene variada. Más precisamente, cada vez que llega un envío
+       nuevo a su mina, consideran <strong>el envío nuevo y los dos envíos
+       anteriores</strong> (o menos, si todavía no han llegado tantos a esa mina) y
+       entonces:</p>
+    <ul>
+      <li>Si todos los envíos eran del mismo tipo, producen <strong>una</strong>
+          unidad de carbón.</li>
+      <li>Si había <strong>dos</strong> tipos distintos de comida entre esos
+          envíos, producen <strong>dos</strong> unidades de carbón.</li>
+      <li>Si había <strong>tres</strong> tipos distintos de comida, producen
+          <strong>tres</strong> unidades de carbón.</li>
+    </ul>
+
+    <p>Conocemos de antemano los tipos de envío y el orden en que serán mandados.
+       Es posible influir en cuánto carbón se produce decidiendo a qué mina va cada
+       envío. Los envíos <strong>no se pueden dividir</strong>: cada envío debe
+       mandarse por completo a una mina o a la otra.</p>
+
+    <p>Las dos minas no tienen que recibir necesariamente la misma cantidad de
+       envíos (de hecho, está permitido mandar <em>todos</em> los envíos a una sola
+       mina).</p>
+
+    <div class="note-box">
+      <strong>Ojo con la “ventana” de cada mina:</strong> la cuenta de tipos
+      distintos se hace por separado en cada mina, mirando solo los envíos que
+      <em>esa</em> mina ha recibido. El envío recién mandado se compara contra los
+      dos últimos que llegaron a <em>esa misma</em> mina (no contra los de la otra,
+      ni contra el orden global).
+    </div>
+
+    <h2>La tarea</h2>
+    <p>Tu programa recibe los tipos de los envíos de comida, en el orden en que
+       serán mandados. Escribe un programa que encuentre la
+       <strong>mayor cantidad total de carbón</strong> que se puede producir (entre
+       las dos minas) decidiendo qué envíos van a la mina 1 y cuáles a la mina 2.</p>
+
+    <h2>Entrada</h2>
+    <p>Entrada estándar.</p>
+    <ul>
+      <li>La primera línea contiene un entero \(N\) (\(1 \le N \le 100\,000\)), el
+          número de envíos de comida.</li>
+      <li>La segunda línea contiene una cadena de \(N\) caracteres: los tipos de
+          los envíos en el orden en que se repartirán. Cada caracter es una de las
+          letras mayúsculas <code>M</code> (carne), <code>F</code> (pescado) o
+          <code>B</code> (pan).</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Salida estándar. Imprime un solo entero: la mayor cantidad total de carbón
+       que se puede producir.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No indicado en este enunciado (PDF oficial)</td></tr>
+        <tr><td>Límite de memoria</td><td>No indicado en este enunciado (PDF oficial)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de envíos</td><td><span class="badge">\(1 \le N \le 100\,000\)</span></td></tr>
+        <tr><td>Alfabeto de la cadena</td><td><span class="badge">\(\{\,\text{M},\ \text{F},\ \text{B}\,\}\)</span></td></tr>
+        <tr><td>Cota de la respuesta</td><td><span class="badge">\(\le 3N\)</span> unidades de carbón</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p>El enunciado describe el crédito parcial con una sola restricción sobre
+       \(N\):</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Grupo</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>Crédito parcial</td><td class="pts">45</td><td>El número de envíos cumple \(N \le 20\).</td></tr>
+          <tr><td>Caso completo</td><td class="pts">55*</td><td>Sin restricción extra: \(N\) puede llegar a \(100\,000\). <span class="note">(*inferido: el resto, \(100-45\); el PDF solo fija explícitamente el umbral de 45 pts para \(N\le 20\)).</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      <strong>Texto literal del enunciado (sección <em>Grading</em>):</strong> «En
+      los casos de prueba que valen <em>en total</em> 45 puntos, el número de
+      envíos \(N\) será a lo más 20.» El IOI 2007 calificaba
+      <strong>por caso de prueba individual</strong> (no por subtareas agrupadas al
+      estilo moderno), así que la tabla de arriba resume el único umbral de crédito
+      parcial que el problema garantiza: 45 puntos alcanzables con un \(N\) chico, y
+      los 55 restantes exigen resolver el caso grande.
+      <br><br>
+      <strong>Retroalimentación al enviar:</strong> durante el concurso podías
+      seleccionar hasta <strong>10 entregas</strong> (<em>submissions</em> de tu
+      solución —no confundir con los envíos de comida del problema—) de esta tarea
+      para evaluarlas (lo antes posible) contra parte de los datos de prueba
+      oficiales; al terminar la evaluación, el sistema te mostraba un resumen de
+      resultados.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6
+MBMFFB</pre></div>
+      <div class="io"><h4>Salida</h4><pre>12</pre></div>
+    </div>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>16
+MMBMBBBBMMMMMBMB</pre></div>
+      <div class="io"><h4>Salida</h4><pre>29</pre></div>
+    </div>
+    <p class="note">En el ejemplo de la izquierda, repartiendo los envíos en este
+       orden: <strong>mina 1, mina 1, mina 2, mina 2, mina 1, mina 2</strong>, los
+       envíos producen 1, 2, 1, 2, 3 y 3 unidades de carbón en ese orden, para un
+       total de 12 unidades. Hay otras formas de lograr esa misma cantidad
+       máxima.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Autómata de estados</span>
+      <span class="ptag">Optimización</span>
+      <span class="ptag">DP de dos capas (memoria O(1))</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes una secuencia de \(N \le 100\,000\) envíos, cada uno de tipo
+       <code>M</code>, <code>F</code> o <code>B</code>. Repartes cada envío a la
+       mina 1 o a la mina 2. Cuando un envío llega a una mina, esa mina produce
+       tantas unidades de carbón como <strong>tipos distintos</strong> haya entre
+       ese envío y los dos anteriores que recibió <em>esa</em> mina (1, 2 o 3).
+       Maximiza el carbón total.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 20\) en el grupo de 45 puntos ⇒ ahí cabe una fuerza bruta
+                \(O(2^N)\) que prueba todas las reparticiones. Para los 100 puntos
+                con \(N \le 10^5\) necesitas algo \(O(N)\): el reto no es la idea de
+                DP, sino que el <strong>estado</strong> sea diminuto y que la
+                <strong>memoria</strong> no crezca con \(N\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué necesitas recordar de cada mina?</summary>
+      <div class="body">
+        <p class="q">Cuando le mandas un envío a una mina, su producción depende de
+           «el nuevo más los dos anteriores». De todo el historial de esa mina,
+           ¿cuánto de verdad influye en el <em>próximo</em> envío que reciba?</p>
+        <p>Solo importan sus <strong>dos últimos envíos</strong>. Cualquier cosa más
+           vieja que esos dos ya nunca volverá a entrar en una ventana. Así que el
+           «estado» de una mina se resume con el par
+           \((a,b) = (\text{penúltimo},\ \text{último})\) envío que recibió, donde
+           cada componente es <em>ninguno</em>, <code>M</code>, <code>F</code> o
+           <code>B</code>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por la subtarea chica (45 pts)</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 20\), ¿cuántas formas hay de repartir los envíos
+           entre dos minas? ¿Puedes simplemente probarlas todas?</p>
+        <p>Cada envío va a la mina 1 o a la 2: son \(2^N\) reparticiones. Con
+           \(N \le 20\) eso es a lo más \(\approx 10^6\); por cada repartición
+           simulas las dos minas en \(O(N)\) y te quedas con el máximo. Es
+           \(O(N\cdot 2^N)\), suficiente para los 45 puntos. Pero explota mucho
+           antes de \(N = 10^5\): hay que pensar en DP.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Una sola fórmula para la ganancia</summary>
+      <div class="body">
+        <p class="q">¿Tienes que tratar por separado los casos «mina vacía», «mina
+           con un solo envío» y «mina con dos o más»? ¿O hay una manera de que una
+           sola cuenta los cubra todos?</p>
+        <p>Usa un símbolo centinela \(\varnothing = \text{“ninguno”}\) para las
+           posiciones que aún no existen. Define la ganancia al meter un envío de
+           tipo \(c\) a una mina cuyo estado es \((a,b)\) como:</p>
+        <p>\[ \text{ganancia}(a,b,c) = \#\{\text{valores distintos no nulos en } \{a,b,c\}\}. \]</p>
+        <p>Como \(c\) siempre es real, esto da exactamente 1 cuando la mina estaba
+           vacía, y 1, 2 o 3 según los tipos distintos en los demás casos —sin
+           ramas especiales—. Y el nuevo estado de la mina pasa a ser \((b,c)\): se
+           «olvida» el penúltimo y se conserva el último más el nuevo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La DP sobre el par de minas</summary>
+      <div class="body">
+        <p class="q">Si el estado de cada mina cabe en un par chiquito, ¿cuál es el
+           estado de <em>todo el sistema</em> mientras procesas los envíos en
+           orden?</p>
+        <p>El par \((s_1, s_2)\): el estado de la mina 1 y el de la mina 2. Procesas
+           los envíos de izquierda a derecha y mantienes
+           \(dp[s_1][s_2] = \) máximo carbón acumulado tras repartir el prefijo,
+           terminando con esos estados. Para el siguiente envío \(c\) tomas
+           <strong>dos</strong> decisiones desde cada \((s_1,s_2)\): mandarlo a la
+           mina 1 (suma \(\text{ganancia}(s_1,c)\), la mina 1 pasa a su nuevo
+           estado) o a la mina 2 (análogo). ¿Cuántos estados distintos hay? Una
+           mina vacía, 3 con un solo envío, \(3\times 3=9\) con dos o más:
+           \(13\) por mina, \(\le 169\) pares. Eso es <strong>constante</strong>,
+           no depende de \(N\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Codifica cada tipo como
+           \(\varnothing=0,\ \text{M}=1,\ \text{F}=2,\ \text{B}=3\), y el estado de
+           una mina como el número \(a\cdot 4 + b\) (penúltimo \(a\), último \(b\)).
+           El estado del sistema es el par \((s_1,s_2)\). Mantén una tabla
+           \(dp\) indexada por ese par.</p>
+        <ul>
+          <li><strong>Inicio:</strong> \(dp[\varnothing][\varnothing]=0\) (ambas
+              minas vacías) y todo lo demás \(=-\infty\), para no contar
+              transiciones desde estados inalcanzables.</li>
+          <li><strong>Transición</strong> para cada envío \(c\): construye una tabla
+              nueva \(nd\) inicializada en \(-\infty\). Para cada \((s_1,s_2)\) con
+              \(dp[s_1][s_2] > -\infty\):
+              <ul>
+                <li>mandar a mina 1 ⇒ nuevo estado de la mina 1 es
+                    \(s_1' = (\,\text{último de } s_1,\ c\,)\), y
+                    \(nd[s_1'][s_2] \leftarrow \max\big(\cdot,\ dp[s_1][s_2] + \text{ganancia}(s_1,c)\big)\);</li>
+                <li>mandar a mina 2 ⇒ análogo, actualizando \(nd[s_1][s_2']\).</li>
+              </ul>
+              Al terminar el envío, \(dp \leftarrow nd\).</li>
+          <li><strong>Respuesta:</strong> el máximo de \(dp[s_1][s_2]\) sobre todos
+              los pares al final.</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> Por la Pista 1, los dos últimos
+           envíos de una mina son <em>todo</em> lo que necesitas para puntuar su
+           próximo envío; el resto del historial es irrelevante. Por la Pista 3, la
+           fórmula de #tipos distintos con centinela puntúa cualquier ventana
+           (vacía, de uno o de dos) sin casos especiales, y el truco
+           \(s' = (\text{último},c)\) actualiza el estado correctamente conservando
+           el <em>último</em> (no el penúltimo). La DP recorre <em>todas</em> las
+           reparticiones implícitamente: en cada envío bifurca a las dos minas y se
+           queda con el mejor acumulado por cada par de estados, así que el máximo
+           final es el óptimo global.</p>
+
+        <p><strong>Lo que da los 100 puntos: memoria \(O(1)\).</strong> Una recursión
+           ingenua \(2^N\) solo alcanza los 45 puntos. Tabular las \(N\) capas de la
+           DP (un \(dp\) por prefijo) usa \(\Theta(N)\) memoria y se topa en
+           70–85 puntos por el límite de memoria. Pero \(dp\) del paso \(n\) solo
+           depende del paso \(n+1\): basta mantener <strong>dos capas</strong>
+           (\(dp\) y \(nd\)), reusándolas envío tras envío. Memoria constante,
+           independiente de \(N\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, S          // S es la cadena de N caracteres
+codigo(x): M->1, F->2, B->3      // y "ninguno" -> 0
+
+// estado de una mina = a*4 + b, con a=penúltimo, b=último (cada uno en 0..3)
+ganancia(estado, c):
+    a = estado / 4 ;  b = estado mod 4
+    distintos = conjunto de { a, b, c } sin el 0
+    regresa  |distintos|         // siempre 1, 2 o 3 (c != 0)
+
+dp = matriz [0..15][0..15] inicializada en -INF
+dp[0][0] = 0                      // ambas minas vacías (estado 0 = (ninguno,ninguno))
+
+para cada caracter ch en S:
+    c = codigo(ch)
+    nd = matriz [0..15][0..15] inicializada en -INF
+    para s1 en 0..15:
+        para s2 en 0..15:
+            si dp[s1][s2] == -INF: continuar
+            base = dp[s1][s2]
+            // opción A: el envío va a la mina 1
+            ns1 = (s1 mod 4) * 4 + c            // (último de s1, c)
+            nd[ns1][s2] = max(nd[ns1][s2], base + ganancia(s1, c))
+            // opción B: el envío va a la mina 2
+            ns2 = (s2 mod 4) * 4 + c
+            nd[s1][ns2] = max(nd[s1][ns2], base + ganancia(s2, c))
+    dp = nd
+
+respuesta = máximo de dp[s1][s2] sobre todo s1, s2
+imprimir respuesta</pre>
+        </div>
+
+        <p class="note">Nota: con la codificación \(a\cdot4+b\) solo se alcanzan
+           estados con \(b=0 \Rightarrow a=0\) (mina vacía / con un envío); los
+           códigos «imposibles» (\(a\neq0,\ b=0\)) nunca se visitan, así que la
+           matriz \(16\times16\) sobra y nunca da resultados espurios. También
+           funciona comprimir a las 13 (o las 10 de la solución oficial)
+           combinaciones reales, pero \(16\times16\) es más directo.</p>
+
+        <h3>Traza del ejemplo <code>MBMFFB</code> → 12</h3>
+        <p>Una repartición óptima es mina 1, mina 1, mina 2, mina 2, mina 1, mina 2.
+           La ganancia de cada envío es #tipos distintos en su ventana de esa
+           mina:</p>
+        <table class="trace">
+          <thead><tr><th>Paso</th><th>Envío</th><th>Mina</th><th>Ventana de esa mina</th><th>Tipos</th><th>Carbón</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>M</td><td>1</td><td>{M}</td><td>1</td><td>1</td></tr>
+            <tr><td>2</td><td>B</td><td>1</td><td>{M, B}</td><td>2</td><td>2</td></tr>
+            <tr><td>3</td><td>M</td><td>2</td><td>{M}</td><td>1</td><td>1</td></tr>
+            <tr><td>4</td><td>F</td><td>2</td><td>{M, F}</td><td>2</td><td>2</td></tr>
+            <tr><td>5</td><td>F</td><td>1</td><td>{M, B, F}</td><td>3</td><td>3</td></tr>
+            <tr><td>6</td><td>B</td><td>2</td><td>{M, F, B}</td><td>3</td><td>3</td></tr>
+            <tr><td colspan="5">Total</td><td>12</td></tr>
+          </tbody>
+        </table>
+
+        <p><strong>Complejidad.</strong> Tiempo \(O(N\cdot E)\) con \(E \le 169\)
+           pares de estados, es decir \(O(N)\) en la práctica (\(\sim 25.6\)M
+           operaciones para \(N=10^5\), corre en centésimas de segundo). Memoria
+           \(O(1)\): dos matrices de estados, independiente de \(N\). Sin recursión
+           y sin tabla de tamaño \(N\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// La respuesta cabe en 32 bits (<= 3N = 300000), pero usar long long
+// para dp evita cualquier susto al sumar; el costo es nulo.
+// Para -INF usa un valor "muy negativo" que no se desborde al sumar
+// la ganancia (a lo más 3), p. ej. -1e9, no LLONG_MIN.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
