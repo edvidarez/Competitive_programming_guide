@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **0 / 142**
+Total de tareas: **142** · Completadas: **1 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -15,11 +15,11 @@ vistas (enunciado traducido + upsolving socrático).
 > lees stdin). La plantilla ya trae secciones para ambas cosas.
 
 
-## IOI 2003 — 0 / 6
+## IOI 2003 — 1 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
-| [ ] | 1 | Trail Maintenance | `2003/01 Trail Maintenance/index.html` |
+| [x] | 1 | Trail Maintenance | `2003/01 Trail Maintenance/index.html` |
 | [ ] | 2 | Comparing Code | `2003/02 Comparing Code/index.html` |
 | [ ] | 3 | Reverse | `2003/03 Reverse/index.html` |
 | [ ] | 4 | Guess Which Cow | `2003/04 Guess Which Cow/index.html` |

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2003 · Tarea 1 — Trail Maintenance</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2003 · Día 1 · Kenosha, Wisconsin (EUA)</div>
+    <h1>Tarea <span class="num">1</span> — Trail Maintenance</h1>
+    <p class="note">Mantenimiento de senderos · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Las vacas de Farmer John quieren moverse libremente entre los
+       \(N\) (\(1 \le N \le 200\)) campos (numerados \(1 \dots N\)) de la granja,
+       aunque los campos están separados por bosque. Para lograrlo, mantienen
+       <em>senderos</em> entre pares de campos, de modo que se pueda ir de
+       cualquier campo a cualquier otro usando solo los senderos mantenidos. Un
+       sendero mantenido se recorre en ambos sentidos.</p>
+
+    <p>Las vacas no construyen senderos: solo mantienen senderos de animales
+       salvajes que ya descubrieron. Cada semana pueden elegir mantener
+       <strong>cualquier subconjunto</strong> de los senderos que conocen, sin
+       importar cuáles mantuvieron la semana anterior.</p>
+
+    <p>Siempre curiosas, las vacas <strong>descubren un sendero nuevo al inicio
+       de cada semana</strong>. Tras descubrirlo deben decidir qué senderos
+       mantener esa semana para poder viajar entre cualesquiera dos campos,
+       <strong>minimizando la longitud total</strong> de sendero mantenido.</p>
+
+    <p>Los senderos nunca son rectos: dos senderos que conectan el mismo par de
+       campos pueden tener longitudes distintas (puede haber aristas múltiples).
+       Aunque dos senderos se crucen, las vacas solo cambian de sendero estando
+       en un campo (los cruces a media ruta no sirven).</p>
+
+    <div class="note-box">
+      <strong>Es una tarea “online” (reactiva):</strong> debes imprimir la
+       respuesta de cada semana <em>inmediatamente</em>, antes de leer el sendero
+       de la semana siguiente. El PDF la marca como <em>interactive task</em>,
+       pero la interacción es simplemente leer de entrada estándar y escribir a
+       salida estándar, una respuesta por semana.
+    </div>
+
+    <h2>Entrada</h2>
+    <p>Entrada estándar.</p>
+    <ul>
+      <li>La primera línea contiene dos enteros separados por espacio: \(N\) y
+          \(W\), donde \(W\) es el número de semanas (\(1 \le W \le 6000\)).</li>
+      <li>Para cada semana, una línea con el sendero descubierto: tres enteros
+          separados por espacio — los dos extremos (números de campo) y la
+          longitud entera del sendero (\(1 \dots 10000\)). Ningún sendero tiene
+          el mismo campo como sus dos extremos.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Salida estándar. Justo después de aprender el sendero recién descubierto,
+       imprime una línea con la <strong>longitud total mínima</strong> de sendero
+       que las vacas deben mantener para conectar todos los campos. Si
+       <strong>ningún</strong> conjunto de senderos conecta todos los campos,
+       imprime <code>-1</code>. El programa debe terminar tras imprimir la
+       respuesta de la última semana.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>64 MB</td></tr>
+        <tr><td>Número de campos</td><td><span class="badge">\(1 \le N \le 200\)</span></td></tr>
+        <tr><td>Número de semanas</td><td><span class="badge">\(1 \le W \le 6000\)</span></td></tr>
+        <tr><td>Longitud de un sendero</td><td><span class="badge">\(1 \dots 10000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas.</strong> Recibes el puntaje completo de cada caso de
+      prueba para el que tu programa produzca la salida correcta; <em>no</em> hay
+      crédito parcial dentro de un caso. (El esquema de <em>subtareas</em> con
+      crédito parcial llegó al IOI en ediciones posteriores; en 2003 el puntaje
+      es por caso, “todo o nada”, como en ICPC.)
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Con \(N = 4\) campos y \(W = 6\) semanas, leyendo un sendero por semana e
+       imprimiendo la respuesta antes de leer el siguiente:</p>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 6
+1 2 10
+1 3 8
+3 2 3
+1 4 3
+1 3 6
+2 1 2</pre></div>
+      <div class="io"><h4>Salida</h4><pre>-1
+-1
+-1
+14
+12
+8</pre></div>
+    </div>
+    <p class="note">Explicación semana a semana:</p>
+    <ul>
+      <li>Semanas 1–3: el campo 4 aún no se conecta con el resto ⇒ <code>-1</code>.</li>
+      <li>Semana 4: ya se puede conectar todo manteniendo <code>1 4 3</code>,
+          <code>1 3 8</code> y <code>3 2 3</code> ⇒ \(3+8+3 = 14\).</li>
+      <li>Semana 5: con el nuevo sendero <code>1 3 6</code> conviene mantener
+          <code>1 4 3</code>, <code>1 3 6</code> y <code>3 2 3</code> ⇒ \(3+6+3 = 12\).</li>
+      <li>Semana 6: con <code>2 1 2</code> lo mejor es <code>1 4 3</code>,
+          <code>2 1 2</code> y <code>3 2 3</code> ⇒ \(3+2+3 = 8\).</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Árbol de expansión mínima (MST)</span>
+      <span class="ptag">Union-Find (DSU)</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Incremental / online</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N \le 200\) nodos. Llegan \(W \le 6000\) aristas con peso, una por
+       una, \((u, v, w)\). <strong>Después de cada arista</strong>, reporta el peso
+       del árbol de expansión mínima sobre todas las aristas vistas hasta ahora si
+       el grafo ya conecta los \(N\) nodos; si no, imprime \(-1\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 200\) ⇒ cualquier MST tiene a lo más \(N-1 = 199\)
+                aristas. Recomputar desde cero cada semana (ordenar hasta
+                \(W=6000\) aristas, \(W\) veces) cuesta \(\sim O(W^2 \log W)\approx
+                5\times10^8\): arriesgado en 1 s. La clave es volverlo
+                <strong>incremental</strong>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que “campos” son nodos y “senderos” son aristas con
+           peso? ¿Y que “conectar todos los campos con longitud total mínima” es
+           exactamente una estructura clásica?</p>
+        <p>Es un <strong>árbol de expansión mínima (MST)</strong>: el subconjunto
+           de aristas de menor peso total que conecta todos los nodos. Cada semana
+           agregas una arista al grafo y te vuelven a preguntar el MST (o \(-1\)
+           si todavía no es conexo).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La versión lenta primero (tus primeros puntos)</summary>
+      <div class="body">
+        <p class="q">Si guardas TODAS las aristas vistas, ¿cómo obtienes el MST de
+           un jalón cada semana?</p>
+        <p>Kruskal: ordena todas las aristas por peso y recórrelas con
+           <strong>union-find</strong>, tomando una arista solo si une dos
+           componentes distintas. Si al final tomaste \(N-1\) aristas, el grafo es
+           conexo e imprimes el peso acumulado; si tomaste menos, imprimes
+           \(-1\).</p>
+        <p>Funciona y es correcto. El problema es repetirlo \(W\) veces desde
+           cero: ¿de verdad necesitas reordenar las hasta 6000 aristas cada
+           semana?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave (incremental)</summary>
+      <div class="body">
+        <p class="q">El MST tiene a lo más \(N-1\) aristas. Cuando agregas <em>una
+           sola</em> arista \(e\) al grafo \(G\), ¿de dónde pueden salir las
+           aristas del nuevo MST?</p>
+        <p>Afirmación: \(\mathrm{MST}(G+e) \subseteq \mathrm{MST}(G) \cup \{e\}\).
+           Es decir, basta con <strong>guardar las \(\le N-1\) aristas del MST
+           actual</strong> y, al llegar \(e\), recomputar el MST sobre ese conjunto
+           chiquito de a lo más \(N\) aristas.</p>
+        <p>¿Por qué? Por la <em>propiedad del ciclo</em>: una arista \(f\) que
+           <em>no</em> está en \(\mathrm{MST}(G)\) es la más pesada de algún ciclo
+           (dentro de \(\mathrm{MST}(G)\cup\{f\}\)). Ese ciclo sigue existiendo al
+           agregar \(e\), así que \(f\) sigue siendo descartable. Por lo tanto el
+           nuevo MST nunca va a necesitar una arista vieja que ya habías
+           descartado: solo las del MST anterior, más quizá \(e\).</p>
+        <p class="note">(Lo mismo vale cuando el grafo aún no es conexo: guardas el
+           <em>bosque</em> de expansión mínima, también de \(\le N-1\) aristas.)</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+        <p>Mantén una lista <code>mst</code> con las aristas del bosque de
+           expansión mínima actual (a lo más \(N-1\)), ordenada por peso. Cada
+           semana:</p>
+        <ol>
+          <li>Lee la arista nueva \(e=(u,v,w)\) e insértala en su lugar por peso
+              dentro de <code>mst</code> (ahora la lista tiene \(\le N\) aristas).</li>
+          <li>Corre Kruskal sobre esas \(\le N\) aristas: reinicia un union-find de
+              \(N\) nodos, recorre en orden de peso y toma cada arista que una dos
+              componentes distintas; acumula el peso, cuenta las aristas tomadas y
+              guárdalas como el <code>mst</code> nuevo.</li>
+          <li>Si tomaste \(N-1\) aristas ⇒ es conexo ⇒ imprime el peso acumulado.
+              Si tomaste menos ⇒ imprime \(-1\). El <code>mst</code> nuevo
+              reemplaza al anterior para la siguiente semana.</li>
+        </ol>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, W
+mst = []                       // aristas del bosque mínimo actual, ordenadas por peso (|mst| <= N-1)
+
+repetir W veces:
+    leer (u, v, w)
+    insertar (w, u, v) en mst conservando el orden por peso   // ahora |mst| <= N
+
+    dsu.init(N)
+    total = 0;  tomadas = 0;  nuevo = []
+    para cada (w, a, b) en mst, en orden de peso:
+        si dsu.find(a) != dsu.find(b):
+            dsu.union(a, b)
+            total += w;  tomadas += 1
+            nuevo.append((w, a, b))
+            si tomadas == N-1: terminar el ciclo
+    mst = nuevo                 // conserva solo las aristas del bosque mínimo
+
+    si tomadas == N-1: imprimir total
+    si no:             imprimir -1</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> por la Pista 3, el MST tras
+           agregar \(e\) solo usa aristas del MST anterior o \(e\); como
+           <code>mst</code> guarda justo esas, Kruskal sobre <code>mst ∪ {e}</code>
+           da el MST exacto. Conservar únicamente las aristas tomadas mantiene el
+           invariante (\(\le N-1\) aristas) para la siguiente semana.</p>
+
+        <p><strong>Complejidad:</strong> cada semana hace una inserción \(O(N)\) y
+           un Kruskal sobre \(\le N\) aristas \(O(N\,\alpha(N))\). En total
+           \(O(W \cdot N\,\alpha(N)) \approx 6000 \times 200 \approx 1.2\times10^6\)
+           operaciones — holgado en 1 s y 64 MB.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa scanf/printf (o ios::sync_with_stdio(false)) para la E/S: son hasta
+~6000 líneas y conviene que la lectura/escritura no sea el cuello de botella.
+No hace falta nada más exótico.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
