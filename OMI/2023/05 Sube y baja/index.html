@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2023 · Problema 05 — Sube y baja</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">28ª OMI · 2023 · Día 2</div>
+    <h1>Problema <span class="num">05</span> — Sube y baja</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2023-sube-y-baja">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>A Karel le pidieron resolver un problema, pero estaba muy cansado y te pidió
+       que lo resolvieras usando C++.</p>
+
+    <p>Karel tiene el arreglo \(A\) con \(N\) números; el \(i\)-ésimo de esos
+       números tiene el valor \(a_i\). Se dice que los valores del arreglo van
+       <em>subiendo</em> si al recorrerlos de izquierda a derecha cada nuevo valor
+       va siendo mayor o igual que el anterior. De forma similar, se dice que los
+       valores del arreglo van <em>bajando</em> si al recorrerlos de izquierda a
+       derecha cada nuevo valor va siendo menor o igual que el anterior.</p>
+
+    <p>A Karel le van a hacer \(Q\) preguntas; en cada pregunta le darán dos
+       posiciones \(L\) y \(R\) con \(1 \le L &lt; R \le N\). Karel debe contar la
+       cantidad de <em>cambios</em> en el segmento que va desde \(L\) hasta \(R\)
+       del arreglo. Un <em>cambio</em> es cuando el arreglo cambia de ir
+       <em>subiendo</em> a ir <em>bajando</em> o viceversa, de ir <em>bajando</em>
+       a ir <em>subiendo</em>.</p>
+
+    <p>Un segmento es <em>bueno</em> si tiene <strong>a lo más</strong> un
+       <em>cambio</em>. Para cada pregunta, Karel deberá contestar con un \(1\) si
+       el segmento es <strong>bueno</strong>, es decir, tiene <strong>a lo
+       más</strong> un cambio, o con un \(0\) en caso de que tenga más de un
+       <em>cambio</em>.</p>
+
+    <p>Escribe un programa que, dado el arreglo \(A\), sea capaz de contestar las
+       \(Q\) preguntas determinando si el segmento es <em>bueno</em> o no.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, los números \(N\) y \(Q\): la cantidad de valores en
+          el arreglo \(A\) y la cantidad de preguntas que debe contestar Karel.</li>
+      <li>En la siguiente línea habrá \(N\) valores separados por espacio; el
+          \(i\)-ésimo de ellos representa el valor \(a_i\).</li>
+      <li>En las últimas \(Q\) líneas habrá dos números \(L_j\) y \(R_j\) que
+          representan el rango de la \(j\)-ésima pregunta.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Por cada pregunta, tu programa deberá escribir a la salida estándar un número:</p>
+    <ul>
+      <li>Un valor \(1\) representa que en el rango de la pregunta existe
+          <strong>a lo más</strong> un <em>cambio</em>.</li>
+      <li>Un valor \(0\) representa que en el rango de la pregunta hay más de un
+          <em>cambio</em>.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño y preguntas</td><td><span class="badge">\(1 \le N, Q \le 10^5\)</span></td></tr>
+        <tr><td>Valores del arreglo</td><td><span class="badge">\(0 \le a_i \le 10^6\)</span></td></tr>
+        <tr><td>Cada pregunta</td><td><span class="badge">\(1 \le L_j &lt; R_j \le N\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">12</td><td>\(L_j + 2 = R_j\). Los rangos de las preguntas siempre son de largo 3.</td></tr>
+          <tr><td>2</td><td class="pts">18</td><td>\(1 \le N, Q \le 1000\).</td></tr>
+          <tr><td>3</td><td class="pts">30</td><td>Todos los valores \(a_i\) del arreglo son distintos.</td></tr>
+          <tr><td>4</td><td class="pts">40</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10 4
+5 6 7 7 4 2 1 1 3 5
+1 10
+1 4
+1 5
+5 10</pre></div>
+      <div class="io"><h4>Salida</h4><pre>0
+1
+1
+1</pre></div>
+    </div>
+    <p class="note">En el segmento que comprende las posiciones de la \(1\) a la
+       \(10\) existen dos cambios: primero el arreglo va <em>subiendo</em>, en la
+       posición \(5\) cambia a ir <em>bajando</em> y posteriormente, en la posición
+       \(9\), cambia de nuevo a ir <em>subiendo</em>. Por lo tanto, el rango
+       <strong>no</strong> es <em>bueno</em>. En los otros tres segmentos el número
+       de <em>cambios</em> es de \(1\) o \(0\); por lo tanto, son <em>buenos</em>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Prefijos</span>
+      <span class="ptag">Estructuras de datos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes un arreglo \(A\) de \(N\) números. Mira las aristas entre vecinos:
+       cada par consecutivo <em>sube</em> (\(a_i &lt; a_{i+1}\)), <em>baja</em>
+       (\(a_i &gt; a_{i+1}\)) o es <em>plano</em> (\(a_i = a_{i+1}\)). Un
+       <em>cambio</em> ocurre cuando, ignorando los planos, la dirección estricta
+       se invierte. Por cada una de las \(Q\) consultas \((L,R)\) responde \(1\) si
+       el subarreglo \(A[L..R]\) tiene a lo más un cambio, y \(0\) si tiene dos o
+       más.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, Q \le 10^5\): responder cada consulta recorriendo el rango es
+                \(O(NQ) \approx 10^{10}\), demasiado. Necesitas preprocesar una vez
+                y contestar cada consulta en \(O(1)\) u \(O(\log N)\). La subtarea
+                con \(N,Q \le 1000\) sí tolera fuerza bruta; la de rangos de
+                largo \(3\) se contesta mirando solo \(2\) aristas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste el arreglo como una secuencia de <em>aristas</em>
+           entre posiciones vecinas, en vez de como valores sueltos?</p>
+        <p>Cada par \((a_i, a_{i+1})\) define una arista que <em>sube</em>, que
+           <em>baja</em> o que es <em>plana</em> (iguales). ¿Importa el valor exacto
+           para decidir un cambio, o solo la dirección? ¿Qué crees que pasa con las
+           aristas planas: rompen un cambio, lo crean, o simplemente no cuentan?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (rangos de largo 3, 12 pts)</summary>
+      <div class="body">
+        <p class="q">Si \(R = L+2\), el segmento tiene \(3\) posiciones y solo
+           \(2\) aristas. ¿Cuántos cambios puede haber entre dos aristas, como
+           máximo?</p>
+        <p>Con dos aristas, a lo más hay un cambio (de la primera a la segunda), así
+           que… ¿en qué casos la respuesta sería \(0\)? ¿Puedes decidirlo en
+           \(O(1)\) mirando solo \(a_L, a_{L+1}, a_{L+2}\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (N, Q ≤ 1000, 18 pts)</summary>
+      <div class="body">
+        <p class="q">Aquí \(O(NQ)\) sí cabe en tiempo. ¿Puedes, por cada consulta,
+           recorrer el rango llevando la dirección estricta anterior y contar cuántas
+           veces se invierte?</p>
+        <p>Recuerda saltarte las aristas planas. Y en cuanto el contador de cambios
+           llegue a \(2\), ya sabes que la respuesta es \(0\): no necesitas seguir.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3 (todos distintos, 30 pts)</summary>
+      <div class="body">
+        <p class="q">Sin valores repetidos no hay aristas planas: cada arista es
+           estrictamente <em>sube</em> o <em>baja</em>. ¿Qué forma tiene un segmento
+           con a lo más un cambio?</p>
+        <p>Tener a lo más un cambio significa que la secuencia de direcciones es un
+           bloque de un tipo seguido de un bloque del otro: <em>sube…sube baja…baja</em>
+           o <em>baja…baja sube…sube</em> (o todo igual). Dicho de otro modo:
+           <strong>todas</strong> las aristas que <em>suben</em> quedan de un lado y
+           <strong>todas</strong> las que <em>bajan</em> del otro. ¿Cómo verificarías
+           eso sin recorrer todo el rango?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave (caso general)</summary>
+      <div class="body">
+        <p class="q">¿Y si guardas por separado las posiciones de las aristas que
+           <em>suben</em> y de las que <em>bajan</em>? Los planos simplemente no
+           entran en ninguna lista.</p>
+        <p>Para una consulta, mira el rango de aristas correspondiente. Si en ese
+           rango falta una de las dos direcciones, hay cero cambios → es
+           <em>bueno</em>. Si están las dos, el segmento es <em>bueno</em> solo
+           cuando un bloque precede por completo al otro: ¿qué condición sobre la
+           <em>primera</em> y la <em>última</em> arista de cada tipo captura
+           exactamente eso?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Numera las aristas: la arista \(i\) está entre las
+           posiciones \(i\) e \(i+1\). Clasifícala según \(a_i\) vs. \(a_{i+1}\):
+           <em>sube</em>, <em>baja</em> o <em>plana</em>. Un <em>cambio</em> en un
+           segmento solo aparece entre dos aristas estrictas consecutivas (ignorando
+           planos) cuyas direcciones difieren. Por lo tanto, un segmento tiene a lo
+           más un cambio <strong>si y solo si</strong> su secuencia de direcciones
+           estrictas es de la forma \(X^{a}Y^{b}\): un bloque de un tipo seguido (a
+           lo más) de un bloque del otro. Equivalente: o falta una de las dos
+           direcciones (cero cambios), o todas las aristas de un tipo están antes que
+           todas las del otro (un cambio).</p>
+
+        <p><strong>Preprocesamiento.</strong> Construye dos listas con los índices de
+           arista: <code>sube</code> y <code>baja</code>. Como las recorres de
+           izquierda a derecha, ambas quedan ordenadas.</p>
+
+        <p><strong>Consulta \((L,R)\).</strong> Las aristas internas del segmento son
+           las de índice \(L\) a \(R-1\) (numerando la arista \(i\) entre las
+           posiciones \(i\) e \(i+1\), con posiciones \(1\)-indexadas). Con búsqueda
+           binaria sobre cada lista cuenta cuántas aristas <code>sube</code> y
+           cuántas <code>baja</code> caen en ese rango:</p>
+        <ul>
+          <li>Si alguna de las dos cuentas es \(0\): hay cero cambios → responde \(1\).</li>
+          <li>Si ambas son positivas: sea <code>maxBaja</code> el índice de la última
+              arista que baja y <code>minSube</code> el de la primera que sube dentro
+              del rango (y análogamente <code>maxSube</code>, <code>minBaja</code>).
+              Responde \(1\) si <code>maxBaja &lt; minSube</code> (todas las bajadas
+              antes que las subidas) o <code>maxSube &lt; minBaja</code> (todas las
+              subidas antes que las bajadas); en otro caso responde \(0\).</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> Si solo hay una dirección estricta
+           (o ninguna) en el rango, el arreglo es monótono no-decreciente o
+           no-creciente: cero cambios. Si hay ambas, "un bloque antes del otro" es
+           exactamente un cambio; cualquier otra disposición (las subidas y bajadas
+           se entremezclan) obliga a al menos dos cambios. La condición con las
+           aristas extremas detecta justo ese entrelazado.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, Q
+leer a[1..N]
+
+sube  = lista vacia      # indices de arista donde a[i] &lt; a[i+1]
+baja  = lista vacia      # indices de arista donde a[i] &gt; a[i+1]
+para i = 1 .. N-1:
+    si a[i] &lt; a[i+1]:  agregar i a sube
+    si a[i] &gt; a[i+1]:  agregar i a baja
+# ambas listas quedan ordenadas crecientemente
+
+funcion contar(lista, lo, hi):   # cuantos elementos en [lo, hi]
+    regresa (cota_superior(lista, hi) - cota_inferior(lista, lo))
+
+repetir Q veces:
+    leer L, R
+    lo = L          # primera arista del segmento
+    hi = R - 1      # ultima arista del segmento
+    cS = contar(sube, lo, hi)
+    cB = contar(baja, lo, hi)
+    si cS == 0 o cB == 0:
+        imprimir 1                       # cero cambios -> bueno
+    si no:
+        minSube = primer elemento de sube en [lo, hi]
+        maxSube = ultimo elemento de sube en [lo, hi]
+        minBaja = primer elemento de baja en [lo, hi]
+        maxBaja = ultimo elemento de baja en [lo, hi]
+        si maxBaja &lt; minSube o maxSube &lt; minBaja:
+            imprimir 1                   # un solo cambio -> bueno
+        si no:
+            imprimir 0                   # dos o mas cambios</pre>
+        </div>
+
+        <p class="note">Nota de índices: la arista \(i\) está entre las posiciones
+           \(i\) e \(i+1\), así que el rango de aristas del segmento \([L,R]\) es
+           \([L, R-1]\). Mantén un solo criterio (\(0\)- o \(1\)-indexado) de forma
+           consistente al construir las listas y al consultar.</p>
+
+        <p><strong>Complejidad:</strong> \(O(N)\) para construir las listas y
+           \(O(\log N)\) por consulta con búsqueda binaria, es decir
+           \(O\big((N+Q)\log N\big)\) en tiempo y \(O(N)\) en memoria. Suficiente
+           para \(N, Q \le 10^5\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// Entrada/salida grande: desactiva la sincronizacion y
+// acumula la respuesta en un buffer antes de imprimir.
+ios::sync_with_stdio(false); cin.tie(nullptr);
+// lower_bound / upper_bound sobre los vectores ya ordenados
+// dan las cuentas y los extremos en O(log N).</pre>
+          <p class="note">Solo es para acelerar la E/S; el algoritmo no lo necesita
+             para ser correcto.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

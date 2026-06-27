@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2023 · Problema 01 — Aficionados</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">28ª OMI · 2023 · Día 1</div>
+    <h1>Problema <span class="num">01</span> — Aficionados</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2023-aficionados">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Mañana inicia la convención de aficionados al deporte que has estado
+       organizando. Aficionados de todo el país acudirán a tu evento, por lo que
+       debes asegurarte que no sucedan contratiempos.</p>
+    <p>Para ingresar a la convención, los aficionados deben formarse en una fila.
+       Sabes que si varios aficionados del mismo equipo están cerca, pueden generar
+       desorden. En específico, si en cualquier segmento contiguo de la fila, de al
+       menos dos personas, la cantidad de aficionados de un equipo es mayor que el
+       resto de aficionados en ese segmento, la fila se considera
+       <em>inestable</em>.</p>
+    <p>Para evitar los conflictos, decidiste escribir un programa que dada la fila
+       determine si es o no <em>inestable</em> para que puedas corregirlo a tiempo.</p>
+
+    <p>Escribe un programa que dada la fila de aficionados y el equipo favorito de
+       cada uno determine si existe algún segmento de la fila que sea
+       <em>inestable</em>. En caso de que la fila sea <em>inestable</em> tu programa
+       deberá escribir algún segmento de la misma donde exista inestabilidad. En
+       caso contrario deberá escribir un \(-1\) para indicar que la fila es
+       estable.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea el número \(N\), la cantidad de aficionados en la fila.</li>
+      <li>En la segunda línea \(N\) números enteros separados por espacio; el
+          \(i\)-ésimo de estos números representa el equipo favorito del aficionado
+          en la posición \(i\) de la fila.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la salida estándar los siguientes datos:</p>
+    <ul>
+      <li>Si la fila <strong>NO es <em>inestable</em></strong>, tu programa deberá
+          escribir únicamente un \(-1\).</li>
+      <li>Si la fila es <em>inestable</em>, tu programa deberá escribir dos números
+          \(L\) y \(R\) separados por un espacio que indican que el segmento que
+          inicia en la posición \(L\) y termina en la posición \(R\) de la fila, es
+          inestable.</li>
+    </ul>
+    <p>En caso de que existan varios segmentos que son inestables, cualquiera de
+       ellos que escribas se considera correcto.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s</td></tr>
+        <tr><td>Límite de memoria</td><td>\(\approx\) 95 MiB (99,999,744 bytes)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Aficionados en la fila</td><td><span class="badge">\(2 \le N \le 2 \cdot 10^5\)</span></td></tr>
+        <tr><td>Equipo del \(i\)-ésimo aficionado</td><td><span class="badge">\(1 \le a_i \le 1000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">15</td><td>\(N \le 30\)</td></tr>
+          <tr><td>2</td><td class="pts">20</td><td>\(N \le 500\)</td></tr>
+          <tr><td>3</td><td class="pts">25</td><td>\(N \le 5000\), \(a_i \le 10\). Sólo hay 10 equipos distintos a los que apoyan los aficionados.</td></tr>
+          <tr><td>4</td><td class="pts">40</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>8
+5 2 3 5 3 2 3 5</pre></div>
+      <div class="io"><h4>Salida</h4><pre>3 7</pre></div>
+    </div>
+    <p class="note">El segmento de la fila que inicia en la posición \(3\) y termina
+       en la posición \(7\) es de aficionados que apoyan a los equipos
+       \([3, 5, 3, 2, 3]\). En este segmento hay tres aficionados del equipo \(3\) y
+       sólo dos aficionados de otros equipos. Por lo tanto, ese segmento hace que la
+       fila sea <em>inestable</em>. (Como cualquier segmento inestable es válido,
+       una salida como <code>3 5</code> también sería aceptada.)</p>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5
+1 2 3 4 5</pre></div>
+      <div class="io"><h4>Salida</h4><pre>-1</pre></div>
+    </div>
+    <p class="note">Todos los aficionados de la fila apoyan a distintos equipos, por
+       lo tanto la fila es estable.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Conteo de frecuencias</span>
+      <span class="ptag">Fuerza bruta</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una fila de \(N\) aficionados, cada uno con el número de su equipo
+       \(a_i\). Un segmento contiguo (de longitud \(\ge 2\)) es <em>inestable</em> si
+       algún equipo aparece más veces que <em>todos los demás juntos</em>; es decir,
+       si tiene una <strong>mayoría estricta</strong>. Debes decidir si existe algún
+       segmento inestable: si sí, imprime cualquier \(L\ R\); si no, imprime \(-1\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\) llega a \(2\cdot 10^5\): la subtarea final pide algo
+                \(O(N)\) o \(O(N\log N)\). Las subtareas chicas
+                (\(N\le 30,\ 500,\ 5000\)) admiten fuerza bruta \(O(N^2)\) o
+                \(O(N^3)\). El valor \(a_i\le 1000\) (o \(\le 10\) en la sub 3) cabe
+                cómodo en un arreglo de frecuencias.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué significa "inestable", en números?</summary>
+      <div class="body">
+        <p class="q">En un segmento de longitud \(m\), ¿cuántas veces tiene que
+           aparecer un equipo para que supere a "todos los demás juntos"?</p>
+        <p>Si un equipo aparece \(c\) veces en un segmento de longitud \(m\), el
+           resto suma \(m-c\). La condición "\(c\) es mayor que el resto" es
+           \(c > m-c\), o sea \(2c > m\): es exactamente una
+           <strong>mayoría estricta</strong> (más de la mitad del segmento). ¿Te
+           recuerda a algún concepto conocido?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtareas 1, 2 y 3)</summary>
+      <div class="body">
+        <p class="q">¿Cuántos segmentos contiguos hay? Y al fijar el inicio \(L\) y
+           mover el final \(R\) uno a uno, ¿puedes mantener las frecuencias y el
+           máximo sin recontar todo de cero?</p>
+        <p>Hay \(O(N^2)\) segmentos. Fija \(L\); avanza \(R\) desde \(L\); lleva un
+           arreglo <code>frec[equipo]</code> y el máximo actual <code>mx</code>. En
+           cada paso revisas si \(2\cdot mx > (R-L+1)\). Eso resuelve la sub 1
+           (\(N\le 30\), 15 pts) y la sub 2 (\(N\le 500\), 20 pts) en \(O(N^2)\). En
+           la sub 3 (\(N\le 5000\), \(a_i\le 10\)) el mismo \(O(N^2)\) basta y de
+           sobra (25 pts más). ¿Pero alcanza para \(N=2\cdot 10^5\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave (subtarea 4)</summary>
+      <div class="body">
+        <p class="q">¿Cuál es el segmento inestable <em>más corto</em> que puede
+           existir? Si dos vecinos son del mismo equipo (\(a_i=a_{i+1}\)), ¿el
+           segmento \([i,i+1]\) ya es inestable? ¿Y si \(a_i=a_{i+2}\)?</p>
+        <p>\([i,i+1]\) con \(a_i=a_{i+1}\): el equipo aparece \(2\) veces, el resto
+           \(0\) → inestable. \([i,i+2]\) con \(a_i=a_{i+2}\): el equipo aparece
+           \(2\), el resto \(1\) (longitud \(3\)) → inestable.</p>
+        <p class="q">Ahora la pregunta fuerte: ¿es posible que la fila sea inestable
+           pero <strong>no</strong> exista ningún par de iguales a distancia \(1\) ni
+           a distancia \(2\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Por qué basta mirar distancias 1 y 2</summary>
+      <div class="body">
+        <p>Supón que <strong>no</strong> hay dos iguales a distancia \(\le 2\).
+           Entonces, para cualquier equipo, dos apariciones consecutivas suyas están
+           separadas por al menos \(3\) posiciones.</p>
+        <p class="q">En una ventana de longitud \(m\), ¿cuántas apariciones de un
+           mismo equipo caben si van separadas por \(\ge 3\)?</p>
+        <p>A lo más \(\big\lceil m/3 \big\rceil\). Y se cumple
+           \(\big\lceil m/3 \big\rceil \le \big\lfloor m/2 \big\rfloor\) para todo
+           \(m\ge 2\), así que \(2\cdot(\text{apariciones}) \le m\): nunca hay
+           mayoría estricta. Conclusión (principio de las casillas):</p>
+        <p style="text-align:center">la fila es inestable \(\iff\) existe \(i\) con
+           \(a_i=a_{i+1}\) o \(a_i=a_{i+2}\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Por la Pista 4, sólo necesitas buscar un par de aficionados del mismo
+           equipo que estén a distancia \(1\) o \(2\). Recorre la fila una sola vez:</p>
+        <ul>
+          <li>Si encuentras \(a_i=a_{i+1}\), el segmento \([i,\,i+1]\) es inestable:
+              imprime \(i\ \ i{+}1\) y termina.</li>
+          <li>Si encuentras \(a_i=a_{i+2}\), el segmento \([i,\,i+2]\) es inestable:
+              imprime \(i\ \ i{+}2\) y termina.</li>
+          <li>Si nunca pasa, la fila es estable: imprime \(-1\).</li>
+        </ul>
+        <p><strong>Por qué es correcto.</strong> Hacia un lado: los segmentos
+           \([i,i+1]\) y \([i,i+2]\) descritos arriba tienen mayoría estricta, así
+           que si el programa imprime uno, de verdad es inestable. Hacia el otro:
+           si no hay ningún par igual a distancia \(\le 2\), todas las apariciones de
+           cada equipo van con huecos \(\ge 3\); en cualquier ventana de longitud
+           \(m\) caben a lo más \(\lceil m/3\rceil \le \lfloor m/2\rfloor\)
+           (para \(m\ge 2\)), de modo que ningún equipo alcanza mayoría estricta y
+           el \(-1\) es correcto.</p>
+
+        <p class="note">Las subtareas chicas se cubren igual con la misma idea, pero
+           también con la fuerza bruta \(O(N^2)\) de la Pista 2 si no se ve la
+           observación: 15 + 20 + 25 puntos. La observación de distancia \(\le 2\) es
+           lo que destraba los 40 puntos restantes.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N
+leer a[1..N]
+
+para i de 1 hasta N-1:
+    si a[i] == a[i+1]:
+        imprimir i, i+1
+        terminar
+
+para i de 1 hasta N-2:
+    si a[i] == a[i+2]:
+        imprimir i, i+2
+        terminar
+
+imprimir -1</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N)\) tiempo y \(O(N)\) memoria (un
+           recorrido lineal; ni siquiera hace falta el arreglo de frecuencias).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

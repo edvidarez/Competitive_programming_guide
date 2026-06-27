@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2023 · Problema 03 — El jardín Zen</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">28ª OMI · 2023 · Día 1</div>
+    <h1>Problema <span class="num">03</span> — El jardín Zen</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2023-jardin-zen">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El COMI, Comité de Objetos Mal Implementados, construyó un jardín zen de
+       \(N\) filas por \(M\) columnas formado por arena y piedras. Los miembros del
+       COMI esperaban descansar allí, pero se dieron cuenta de que lo habían
+       construido terriblemente.</p>
+    <p>Para que el jardín zen sea cómodo, cualquier área <em>conectada</em> de arena
+       debe ser un rectángulo sin piedras en medio. Dos casillas de arena se
+       consideran <em>conectadas</em> si comparten un lado.</p>
+    <p>Ahora te han solicitado, como experto constructor, que elimines la menor
+       cantidad de piedras posible para lograr un jardín zen cómodo.</p>
+
+    <p class="note">El enunciado oficial incluye una animación
+       (<code>ejemplo_simulacion.gif</code>) que ilustra el proceso: las casillas
+       amarillas son la arena y las grises son las piedras. El ejemplo trabajado
+       más abajo corresponde a esa animación.</p>
+
+    <h3>Problema</h3>
+    <p>Dada una matriz de \(N \times M\), quita la menor cantidad de piedras para
+       que el jardín zen sea cómodo e imprime cómo quedaría.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, los enteros \(N\) y \(M\): la cantidad de filas y la
+          cantidad de columnas del jardín zen, respectivamente.</li>
+      <li>En las siguientes \(N\) líneas habrá una cadena con \(M\) caracteres: un
+          <code>.</code> si la casilla es arena y un <code>#</code> si en la casilla
+          hay una piedra.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la salida estándar una matriz de \(N \times M\):
+       cómo quedaría el jardín zen tras haber quitado la menor cantidad de piedras.</p>
+    <p><strong>Tu solución recibirá WA si hay una piedra donde antes no la había o si
+       el jardín zen no es cómodo.</strong></p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s</td></tr>
+        <tr><td>Límite de memoria</td><td>100 MiB (104,857,600 bytes)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del jardín</td><td><span class="badge">\(1 \le N, M \le 1000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">13</td><td>\(M = 2\)</td></tr>
+          <tr><td>2</td><td class="pts">26</td><td>La cantidad de áreas conectadas de arena será la misma en la entrada que en la solución.</td></tr>
+          <tr><td>3</td><td class="pts">29</td><td>\(1 \le N, M \le 100\)</td></tr>
+          <tr><td>4</td><td class="pts">32</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6 6
+###...
+#.#...
+..#...
+..#.##
+..##.#
+###..#</pre></div>
+      <div class="io"><h4>Salida</h4><pre>###...
+..#...
+..#...
+..#...
+..#...
+###...</pre></div>
+    </div>
+    <p class="note">Es el caso de la descripción.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">BFS/DFS</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una rejilla de \(N \times M\) con arena (<code>.</code>) y piedras
+       (<code>#</code>). Solo puedes convertir piedras en arena (quitarlas); nunca
+       puedes agregar piedras. Quita el <strong>mínimo</strong> de piedras para que
+       cada componente conexa de arena (por lados) sea un <strong>rectángulo
+       sólido</strong>, e imprime la rejilla resultante.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, M \le 1000\) son hasta \(10^6\) celdas: necesitas algo
+                lineal o casi lineal, \(O(N\cdot M)\). La subtarea con \(M=2\) y la
+                de \(N,M \le 100\) permiten ideas más lentas o por fuerza bruta para
+                ir sumando puntos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué puedes hacer y qué buscas?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que la única operación permitida (quitar una piedra)
+           equivale a <em>añadir</em> arena, y que nunca puedes quitar arena?</p>
+        <p>Entonces el jardín final es siempre un <strong>superconjunto</strong> de la
+           arena inicial: cada <code>.</code> sigue siendo <code>.</code>, y algunas
+           <code>#</code> se vuelven <code>.</code>. La meta es que cada componente
+           conexa de arena sea un rectángulo lleno (sin piedras adentro). ¿Cómo se ve
+           un jardín cómodo? Como un conjunto de rectángulos de arena sólidos,
+           separados por piedras.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea \(M=2\) (13 puntos)</summary>
+      <div class="body">
+        <p class="q">Con solo dos columnas, ¿cuántos patrones puede tener cada fila y
+           qué obliga a qué?</p>
+        <p>Aquí cabe pensar caso por caso / por fuerza bruta sobre las dos columnas:
+           ¿qué configuraciones de arena, ya forzadas a ser rectángulos, son válidas y
+           cuáles obligan a quitar una piedra? Es un buen calentamiento para descubrir
+           la regla local que se generaliza en las siguientes pistas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea: mismo número de áreas (26 puntos)</summary>
+      <div class="body">
+        <p class="q">Si te <em>prometen</em> que la cantidad de áreas conectadas no
+           cambia, ¿qué le falta a cada área para volverse un rectángulo?</p>
+        <p>Si una componente nunca se va a fusionar con otra, basta con que cada área
+           crezca hasta llenar su propia <strong>caja envolvente</strong> (el rectángulo
+           mínimo que la contiene). Calcula, para cada componente de arena, sus filas y
+           columnas mínima y máxima, y convierte en arena todo lo que esté dentro de esa
+           caja. En esta subtarea una sola pasada basta porque no hay fusiones.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación local clave (el cuadro 2×2)</summary>
+      <div class="body">
+        <p class="q">Mira cualquier ventana de \(2\times 2\). Si tiene exactamente
+           <strong>tres</strong> arenas y una piedra, ¿puede ese jardín ser cómodo?</p>
+        <p>En un rectángulo sólido, cualquier ventana \(2\times 2\) tiene 0, 1, 2 o 4
+           celdas de arena, <em>nunca exactamente 3</em>. Una ventana con 3 arenas es
+           una "esquina cóncava": dos de esas arenas son adyacentes y pertenecerían a la
+           misma componente, que entonces tendría una escotadura y no sería rectángulo.</p>
+        <p>De hecho la condición es equivalente: <strong>un jardín es cómodo si y solo
+           si ningún cuadro \(2\times 2\) tiene exactamente 3 arenas.</strong> Esa es la
+           caracterización local que resuelve el caso general.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — ¿Qué movimiento es forzado?</summary>
+      <div class="body">
+        <p class="q">Si encuentras un cuadro \(2\times 2\) con 3 arenas y 1 piedra, y no
+           puedes quitar arena, ¿qué te queda por hacer?</p>
+        <p>La única salida es quitar esa piedra (rellenar la 4ª celda con arena): es un
+           movimiento <strong>obligatorio</strong>. Pero al rellenarla puedes crear
+           nuevas ventanas \(2\times 2\) malas a su alrededor, así que hay que propagar.
+           Como cada quitado es forzado, el resultado es <strong>único</strong> y, por
+           tanto, mínimo.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Caracterización: un jardín es cómodo \(\iff\) ninguna ventana \(2\times 2\)
+           tiene exactamente 3 casillas de arena. Como solo puedes <em>añadir</em> arena,
+           cada vez que aparece una ventana con 3 arenas la única reparación posible es
+           rellenar la piedra que falta. Por eso el conjunto de piedras a quitar está
+           <strong>forzado</strong>: es el menor superconjunto de la arena inicial cerrado
+           bajo esa regla (el menor punto fijo). Ese punto fijo es único, así que la
+           cantidad de piedras quitadas es la mínima.</p>
+
+        <p>Cómo subir de subtarea en subtarea:</p>
+        <ul>
+          <li><strong>\(M=2\) (13):</strong> razona por pares de columnas / fuerza bruta.</li>
+          <li><strong>Mismo número de áreas (26):</strong> expande cada componente a su
+              caja envolvente en una pasada (no hay fusiones).</li>
+          <li><strong>\(N,M \le 100\) (29):</strong> con la rejilla chica puedes repetir
+              "rellena cada caja envolvente" hasta que ya no cambie nada
+              (\(O((N\cdot M)^2)\) en el peor caso) — o ya usar la propagación de abajo.</li>
+          <li><strong>Sin restricciones (32):</strong> propagación tipo BFS de las
+              esquinas forzadas, en \(O(N\cdot M)\).</li>
+        </ul>
+
+        <p>Para el 100, busca todas las piedras que son la "esquina faltante" de algún
+           cuadro \(2\times 2\) con las otras 3 celdas de arena, mételas en una cola,
+           y al quitar cada una revisa sus 8 vecinas por si ahora completan un cuadro
+           con 3 arenas. Cada celda entra a la cola a lo más una vez.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion EsEsquina(r, c):           # ¿piedra que completa un 2x2 con 3 arenas?
+    si rejilla[r][c] != PIEDRA: regresa falso
+    para cada (dr, dc) en {(-1,-1), (-1,1), (1,-1), (1,1)}:
+        (r2, c2) = (r + dr, c + dc)
+        si (r2, c2) esta dentro de la rejilla y
+           rejilla[r2][c2] == ARENA y
+           rejilla[r ][c2] == ARENA y
+           rejilla[r2][c ] == ARENA:
+            regresa verdadero        # las otras 3 esquinas son arena
+    regresa falso
+
+funcion Resolver(rejilla, N, M):
+    cola = vacia
+    para cada celda (r, c):
+        si EsEsquina(r, c):
+            marca[r][c] = verdadero
+            encola (r, c)
+
+    mientras la cola no este vacia:
+        (r, c) = saca de la cola
+        rejilla[r][c] = ARENA              # quitar la piedra (forzado)
+        para cada vecino (nr, nc) de los 8 alrededor de (r, c):
+            si (nr, nc) dentro de la rejilla y
+               no marca[nr][nc] y EsEsquina(nr, nc):
+                marca[nr][nc] = verdadero
+                encola (nr, nc)
+
+    imprime la rejilla</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> cada quitado es obligatorio (no hay otra
+           forma de reparar una ventana con 3 arenas sin agregar piedras), así que la
+           salida es el único jardín cómodo que contiene a la arena original y, por
+           construcción, el que quita el mínimo de piedras. La salida cumple además las
+           dos condiciones de aceptación: nunca aparece una piedra nueva (solo quitamos)
+           y el jardín final es cómodo (no queda ninguna ventana con 3 arenas).</p>
+
+        <p><strong>Complejidad:</strong> \(O(N\cdot M)\) en tiempo y \(O(N\cdot M)\) en
+           memoria (la rejilla y la marca de visitados).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

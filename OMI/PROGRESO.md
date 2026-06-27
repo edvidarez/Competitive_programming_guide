@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **15 / 190**
+Total de problemas: **190** · Completados: **22 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -318,17 +318,17 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Día 2 | Bruxismo | `2022/07 Bruxismo/index.html` |
 | [ ] | 8 | Día 2 | Serpientes y escaleras | `2022/08 Serpientes y escaleras/index.html` |
 
-## 28ª OMI · 2023 — 0 / 7
+## 28ª OMI · 2023 — 7 / 7
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Aficionados | `2023/01 Aficionados/index.html` |
-| [ ] | 2 | Día 1 | Martín el bartender | `2023/02 Martín el bartender/index.html` |
-| [ ] | 3 | Día 1 | El jardín Zen | `2023/03 El jardín Zen/index.html` |
-| [ ] | 4 | Día 2 | Encuentra X | `2023/04 Encuentra X/index.html` |
-| [ ] | 5 | Día 2 | Sube y baja | `2023/05 Sube y baja/index.html` |
-| [ ] | 6 | Día 2 | Franquicias | `2023/06 Franquicias/index.html` |
-| [ ] | 7 | Día 2 | La clase de historia de Juan | `2023/07 La clase de historia de Juan/index.html` |
+| [x] | 1 | Día 1 | Aficionados | `2023/01 Aficionados/index.html` |
+| [x] | 2 | Día 1 | Martín el bartender | `2023/02 Martín el bartender/index.html` |
+| [x] | 3 | Día 1 | El jardín Zen | `2023/03 El jardín Zen/index.html` |
+| [x] | 4 | Día 2 | Encuentra X | `2023/04 Encuentra X/index.html` |
+| [x] | 5 | Día 2 | Sube y baja | `2023/05 Sube y baja/index.html` |
+| [x] | 6 | Día 2 | Franquicias | `2023/06 Franquicias/index.html` |
+| [x] | 7 | Día 2 | La clase de historia de Juan | `2023/07 La clase de historia de Juan/index.html` |
 
 ## 29ª OMI · 2024 — 7 / 7
 

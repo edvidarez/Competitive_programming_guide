@@ -57,6 +57,48 @@ def fetch_json(url, **kw):
     return json.loads(fetch(url, **kw).decode("utf-8", "replace"))
 
 
+# --- GitHub OMI-Archive (ediciones 2017–2023): casos/soluciones viven en
+#     carpetas del repo, enlazadas como github.com/.../tree/<branch>/<path>. ---
+
+def is_github_tree(url):
+    return bool(url) and "github.com" in url and "/tree/" in url
+
+
+def github_tree_files(url):
+    """Lista (name, download_url) de los archivos de una carpeta del repo
+    (un nivel; las carpetas cases/ y solutions/ del archivo son planas)."""
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/tree/([^/]+)/(.+)", url)
+    if not m:
+        return []
+    owner, repo, branch, path = m.groups()
+    api = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref={branch}"
+    try:
+        items = fetch_json(api)
+    except Exception:                                 # noqa: BLE001
+        return []
+    if not isinstance(items, list):
+        return []
+    return [(it["name"], it.get("download_url")) for it in items
+            if it.get("type") == "file" and it.get("download_url")]
+
+
+def download_github_dir(url, dstdir, force, limit=None):
+    files = github_tree_files(url)
+    if not files:
+        return 0
+    os.makedirs(dstdir, exist_ok=True)
+    n = 0
+    for name, durl in (files[:limit] if limit else files):
+        dst = os.path.join(dstdir, name)
+        if os.path.exists(dst) and not force:
+            continue
+        try:
+            save(dst, fetch(durl, timeout=90)); n += 1
+        except Exception:                             # noqa: BLE001
+            pass
+    return n
+
+
 def slug_year(rec):
     return str(rec["year"])
 
@@ -146,17 +188,28 @@ def get_dmoj(rec, pdir, force):
 # ----------------------------------------------------------------------------- heavy (gitignored)
 
 def get_cases(rec, pdir, force):
-    if not rec.get("casos"):
+    url = rec.get("casos")
+    if not url:
         return None
+    casesdir = os.path.join(pdir, "_local", "cases")
+    # Ediciones del archivo (2017–2023): los casos son una carpeta de GitHub.
+    if is_github_tree(url):
+        if os.path.isdir(casesdir) and os.listdir(casesdir) and not force:
+            return "skip"
+        n = download_github_dir(url, casesdir, force)
+        return f"ok github cases ({n} archivos)" if n else "ERR github cases vacío"
+    # Resto (sitio oficial): un .zip directo.
     dst = os.path.join(pdir, "_local", "cases.zip")
     if os.path.exists(dst) and not force:
         return "skip"
     try:
-        b = fetch(rec["casos"], timeout=120)
+        b = fetch(url, timeout=120)
     except Exception as e:                            # noqa: BLE001
         return f"ERR cases: {str(e)[:50]}"
+    if b[:2] != b"PK":                                # no es un zip (HTML de error/redirección)
+        return f"ERR cases: respuesta no-zip ({len(b)} bytes)"
     save(dst, b)
-    return f"ok cases ({len(b)//1024} KB)"
+    return f"ok cases.zip ({len(b)//1024} KB)"
 
 
 def get_refs(rec, pdir, force):
@@ -165,6 +218,19 @@ def get_refs(rec, pdir, force):
         url = rec.get(key)
         if not url:
             continue
+        # Carpeta de GitHub (archivo 2017–2023): baja todos los archivos.
+        if is_github_tree(url):
+            d = os.path.join(pdir, "_local", f"{name}s")
+            n = download_github_dir(url, d, force)
+            # copia la primera solución .cpp/.c como _local/solution.cpp (lo que busca el solver)
+            if name == "solution" and n:
+                for fn in sorted(os.listdir(d)):
+                    if fn.endswith((".cpp", ".cc", ".c", ".py", ".java")):
+                        import shutil
+                        shutil.copyfile(os.path.join(d, fn), os.path.join(pdir, "_local", "solution" + os.path.splitext(fn)[1]))
+                        break
+            msgs.append(f"{name}:{'ok('+str(n)+')' if n else 'ERR'}")
+            continue
         ext = os.path.splitext(url.split("?")[0])[1] or ".bin"
         dst = os.path.join(pdir, "_local", f"{name}{ext}")
         if os.path.exists(dst) and not force:
@@ -172,7 +238,7 @@ def get_refs(rec, pdir, force):
         try:
             save(dst, fetch(url, timeout=60))
             msgs.append(f"{name}:ok")
-        except Exception as e:                        # noqa: BLE001
+        except Exception:                             # noqa: BLE001
             msgs.append(f"{name}:ERR")
     return ", ".join(msgs) if msgs else None
 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2023 · Problema 02 — Martín el bartender</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">28ª OMI · 2023 · Día 1</div>
+    <h1>Problema <span class="num">02</span> — Martín el bartender</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2023-martin-bartender">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Luego de su competencia, Martín el robot decidió quedarse a trabajar como
+       bartender en Alemania. El concepto futurista de un robot sirviéndote
+       bebidas ha tenido tanto éxito que Martín está sobrepasado por su clientela
+       y necesita tu ayuda para saber la mejor forma de atender a sus clientes.</p>
+
+    <p>En una noche cualquiera Martín tiene \(N\) clientes que se colocan a lo
+       largo de la barra en las posiciones \(1, 2, 3, \ldots, N\). Cada cliente
+       ordena su bebida preferida. En específico, el cliente en la posición \(i\)
+       ordena una bebida que le cuesta a Martín \(a_i\) energía preparar.</p>
+
+    <p>Martín es ordenado y tiene <strong>todo</strong> su material de trabajo en
+       <strong>una única</strong> posición de la barra. Llamemos a esta posición
+       la posición \(j\). Cuando Martín atiende al cliente \(i\) gasta energía en
+       preparar la bebida y en transportarse desde la posición \(j\) hasta la
+       posición \(i\). En específico, el costo total de energía de atender al
+       cliente \(i\) se calcula de la siguiente forma:</p>
+
+    <p style="text-align:center">\(\operatorname{costo}(i) = a_i + |j - i|\)</p>
+
+    <p>Los \(N\) clientes de hoy ya llegaron y cada uno ha ordenado su bebida. El
+       día de hoy Martín va a atender únicamente a \(K\) clientes (Martín se da a
+       desear). Por supuesto, quiere gastar la menor energía posible. Martín te ha
+       pedido ayuda para que le digas cuánto gastará de energía en atender a \(K\)
+       clientes si pone su material de trabajo en cada una de las \(N\) posiciones
+       de la barra.</p>
+
+    <p><strong>Observa que los \(K\) clientes que atienda pueden ser cualesquiera
+       \(K\). Es posible que los clientes que le convenga atender si su material
+       está en cierta posición sean distintos de los que le conviene atender si su
+       material está en una posición distinta.</strong></p>
+
+    <p>Deberás escribir un programa que, dado el número de clientes en el bar y el
+       costo de preparación de la bebida que cada uno ordena, le diga a Martín
+       cuál es la mínima energía que necesitará para atender a \(K\) clientes
+       teniendo su material de trabajo en cada una de las \(N\) posiciones de la
+       barra.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea los números \(N\) y \(K\): la cantidad de clientes
+          en el bar y el número de clientes que Martín va a atender.</li>
+      <li>En la segunda línea habrá \(N\) números; el \(i\)-ésimo de estos números
+          representa el costo de preparar la bebida del \(i\)-ésimo cliente.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en la salida estándar \(N\) líneas, cada una con
+       un número. El número de la \(i\)-ésima línea indica el costo mínimo de
+       energía que Martín debe gastar para atender a \(K\) clientes si tiene su
+       material en la posición \(i\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Clientes en el bar</td><td><span class="badge">\(1 \le N \le 10^5\)</span></td></tr>
+        <tr><td>Clientes a atender</td><td><span class="badge">\(1 \le K \le N\)</span></td></tr>
+        <tr><td>Costo de cada bebida</td><td><span class="badge">\(1 \le a_i \le 10^5\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">16</td><td>\(a_i = a_j\); es decir, todos los clientes piden la misma bebida.</td></tr>
+          <tr><td>2</td><td class="pts">14</td><td>\(K = N\).</td></tr>
+          <tr><td>3</td><td class="pts">10</td><td>\(1 \le N \le 1000\).</td></tr>
+          <tr><td>4</td><td class="pts">21</td><td>\(K = 1\).</td></tr>
+          <tr><td>5</td><td class="pts">39</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>7 3
+3 2 4 1 4 5 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>10
+9
+9
+9
+9
+10
+11</pre></div>
+    </div>
+    <p class="note">La salida tiene una línea por posición \(j = 1, 2, \ldots, N\)
+       (arriba aparece en líneas separadas; en el enunciado original se muestra
+       como <code>10 9 9 9 9 10 11</code>).</p>
+    <p>Si Martín tiene su material en la posición \(1\) le conviene atender a los
+       clientes en las posiciones \(1\), \(2\) y \(4\). Los costos de atenderlos
+       son:</p>
+    <ul>
+      <li>Cliente en posición \(1\): \(\operatorname{costo} = a_1 + |1 - 1| = 3 + 0 = 3\).</li>
+      <li>Cliente en posición \(2\): \(\operatorname{costo} = a_2 + |1 - 2| = 2 + 1 = 3\).</li>
+      <li>Cliente en posición \(4\): \(\operatorname{costo} = a_4 + |1 - 4| = 1 + 3 = 4\).</li>
+      <li>El costo total de atender a \(K = 3\) clientes es \(3 + 3 + 4 = 10\).</li>
+    </ul>
+    <p>Si Martín tiene su material en la posición \(5\) le conviene atender a los
+       clientes en las posiciones \(4\), \(5\) y \(7\), con costos respectivos:</p>
+    <ul>
+      <li>Cliente en posición \(4\): \(\operatorname{costo} = a_4 + |5 - 4| = 1 + 1 = 2\).</li>
+      <li>Cliente en posición \(5\): \(\operatorname{costo} = a_5 + |5 - 5| = 4 + 0 = 4\).</li>
+      <li>Cliente en posición \(7\): \(\operatorname{costo} = a_7 + |5 - 7| = 1 + 2 = 3\).</li>
+      <li>El costo total de atender a \(K = 3\) clientes es \(2 + 4 + 3 = 9\).</li>
+    </ul>
+    <p>Se puede realizar un ejercicio similar para todas las posiciones.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Sumas de prefijos</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Order statistics</span>
+      <span class="ptag">Barrido (sweep)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N\) valores \(a_1, \ldots, a_N\). Para <em>cada</em> posición
+       \(j \in \{1, \ldots, N\}\) define el costo del cliente \(i\) como
+       \(a_i + |i - j|\). Reporta, para cada \(j\), la suma de los \(K\) costos
+       más pequeños (puedes escoger cualesquiera \(K\) clientes). La respuesta son
+       \(N\) números.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 10^5\) y hay que responder para las \(N\) posiciones, así
+                que el algoritmo final debe ser \(O(N \log N)\) o \(O(N \log^2 N)\).
+                La subtarea de \(N \le 1000\) permite \(O(N^2)\) o \(O(N^2 \log N)\)
+                de fuerza bruta. Los casos \(K = N\), \(K = 1\) y "todas las
+                bebidas iguales" cada uno esconde una idea más sencilla.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué pide cada posición, en realidad?</summary>
+      <div class="body">
+        <p class="q">Olvida la historia: para un \(j\) fijo, ¿hay alguna
+           restricción que ligue a los \(K\) clientes que escoges entre sí?</p>
+        <p>No la hay: cada cliente aporta su propio costo \(a_i + |i - j|\) de
+           forma independiente. Entonces, para esa \(j\), la mejor jugada es
+           tomar simplemente los \(K\) costos más pequeños. El problema se reduce
+           a: <em>"para cada \(j\), suma de los \(K\) menores valores de
+           \(a_i + |i - j|\)"</em>. ¿Cómo calcular eso rápido para las \(N\)
+           posiciones a la vez?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea "todas las bebidas iguales" (16 pts)</summary>
+      <div class="body">
+        <p class="q">Si todas las \(a_i\) valen lo mismo, \(a_i = c\), entonces el
+           costo es \(c + |i - j|\). ¿Qué clientes te conviene elegir?</p>
+        <p>Como la parte \(c\) es igual para todos, escoger los \(K\) costos más
+           chicos equivale a escoger las \(K\) <em>posiciones más cercanas</em> a
+           \(j\). Esas \(K\) posiciones son una ventana contigua alrededor de
+           \(j\). La respuesta es \(K\cdot c\) más la suma de las \(K\) distancias
+           más pequeñas a \(j\), que sale con una fórmula o con sumas de prefijos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea \(K = N\) (14 pts)</summary>
+      <div class="body">
+        <p class="q">Si atiendes a <em>todos</em>, ya no eliges nada. ¿Cuánto vale
+           la respuesta en función de \(j\)?</p>
+        <p>Con \(K = N\) la respuesta es
+           \(\sum_i a_i + \sum_i |i - j|\). El primer término es una constante; el
+           segundo, "suma de distancias de todos los puntos a \(j\)", se calcula en
+           \(O(1)\) por \(j\) con sumas de prefijos (separa \(i \le j\) de
+           \(i > j\)). Resultado: \(O(N)\) en total.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea \(N \le 1000\) (10 pts)</summary>
+      <div class="body">
+        <p class="q">Con \(N\) chiquito, ¿qué tan caro es resolver cada \(j\) "a lo
+           bruto"?</p>
+        <p>Para cada una de las \(N\) posiciones, calcula los \(N\) costos, ordénalos
+           o usa selección parcial y suma los \(K\) menores. Eso es
+           \(O(N^2 \log N)\) (o \(O(N^2)\) con <em>nth element</em>), suficiente
+           para \(N \le 1000\). Te da puntos y te sirve para verificar la solución
+           buena.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea \(K = 1\) y la descomposición clave (21 pts)</summary>
+      <div class="body">
+        <p class="q">Con \(K = 1\) solo necesitas el costo mínimo. El valor
+           absoluto \(|i - j|\) estorba, ¿cómo lo partes en dos casos lineales?</p>
+        <p>Separa según el lado del cliente respecto a \(j\):</p>
+        <ul>
+          <li>Si \(i \le j\): \(\;a_i + |i - j| = (a_i - i) + j\). Define
+              \(L_i = a_i - i\).</li>
+          <li>Si \(i > j\): \(\;a_i + |i - j| = (a_i + i) - j\). Define
+              \(R_i = a_i + i\).</li>
+        </ul>
+        <p>Para \(K = 1\), el mínimo por la izquierda es \(\big(\min_{i\le j} L_i\big)+j\)
+           y por la derecha \(\big(\min_{i>j} R_i\big)-j\). Ambos prefijos/sufijos
+           de mínimos se precomputan en \(O(N)\). Esta misma descomposición en
+           \(L_i\) y \(R_i\) es la que abre el caso general.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Reusamos la descomposición de la Pista 5. Recorremos las posiciones
+           \(j = 1, 2, \ldots, N\) de izquierda a derecha y mantenemos dos
+           multiconjuntos:</p>
+        <ul>
+          <li><strong>Izquierda</strong> (\(i \le j\)): guardamos la clave
+              \(L_i = a_i - i\); el costo real de ese cliente es \(L_i + j\).</li>
+          <li><strong>Derecha</strong> (\(i > j\)): guardamos la clave
+              \(R_i = a_i + i\); el costo real es \(R_i - j\).</li>
+        </ul>
+        <p>Al avanzar de \(j-1\) a \(j\), el cliente \(j\) deja la derecha y entra a
+           la izquierda (una baja y un alta). La clave es que dentro de cada grupo
+           todos los costos comparten el mismo desplazamiento (\(+j\) a la izquierda,
+           \(-j\) a la derecha), así que el orden interno no depende de \(j\): basta
+           indexar por \(L_i\) y por \(R_i\).</p>
+        <p>Para hallar la suma de los \(K\) menores costos en la \(j\) actual,
+           fijamos un umbral \(T\) y contamos cuántos costos son \(\le T\):</p>
+        <ul>
+          <li>De la izquierda: los que cumplen \(L_i + j \le T\), o sea \(L_i \le T-j\).</li>
+          <li>De la derecha: los que cumplen \(R_i - j \le T\), o sea \(R_i \le T+j\).</li>
+        </ul>
+        <p>Con dos <em>Fenwick (BIT)</em> por grupo —uno de <em>conteos</em> y uno
+           de <em>suma de claves</em>— esas dos preguntas (cuántos y qué suma)
+           salen en \(O(\log)\). Como "cuántos costos \(\le T\)" crece con \(T\),
+           hacemos <strong>búsqueda binaria</strong> de la menor \(T\) con conteo
+           \(\ge K\): esa \(T\) es el \(K\)-ésimo costo más pequeño. Luego sumamos
+           todos los costos \(\le T\) y restamos el exceso \((\text{conteo} - K)\cdot T\)
+           (los repetidos del propio valor \(T\) que sobran).</p>
+        <p>Para convertir "suma de claves" en "suma de costos reales" añade el
+           desplazamiento: la suma real de la izquierda es
+           \(\big(\sum L_i\big) + j\cdot(\text{conteo izq.})\) y la de la derecha
+           \(\big(\sum R_i\big) - j\cdot(\text{conteo der.})\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, K, a[1..N]
+
+# Fenwick: conteo y suma, indexados por clave (L con offset por ser negativa)
+para i en 1..N:           # al inicio, todos a la derecha
+    insertar en DER:  clave R = a[i] + i   (conteo +1, suma +R)
+
+para j en 1..N:
+    # mover cliente j de la derecha a la izquierda
+    quitar de DER:    clave a[j] + j
+    insertar en IZQ:  clave a[j] - j
+
+    # contar costos <= V para esta j
+    funcion conteo(V):
+        regresa  IZQ.conteo_clave_<=(V - j) + DER.conteo_clave_<=(V + j)
+
+    # binaria: menor T con conteo(T) >= K
+    lo = 0;  hi = COSTO_MAX
+    mientras lo < hi:
+        mid = (lo + hi) / 2
+        si conteo(mid) >= K:  hi = mid   si no:  lo = mid + 1
+    T = lo
+
+    cIZQ = IZQ.conteo_clave_<=(T - j);  sIZQ = IZQ.suma_clave_<=(T - j)
+    cDER = DER.conteo_clave_<=(T + j);  sDER = DER.suma_clave_<=(T + j)
+    totalConteo = cIZQ + cDER
+    totalSuma   = (sIZQ + j*cIZQ) + (sDER - j*cDER)
+
+    respuesta[j] = totalSuma - (totalConteo - K) * T
+
+imprimir respuesta[1..N], una por linea</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> para cada \(j\), \(T\) es exactamente
+           el \(K\)-ésimo costo más chico; sumamos todos los costos hasta \(T\) y
+           descontamos las copias sobrantes de valor \(T\), quedándonos con los
+           \(K\) menores. La suma de claves más el desplazamiento del grupo
+           reconstruye los costos reales sin recorrer elementos uno por uno.</p>
+
+        <p><strong>Complejidad:</strong> cada \(j\) hace una binaria con consultas
+           \(O(\log)\) a los Fenwick, dando \(O(\log^2)\) por posición:
+           \(O(N \log^2 N)\) en tiempo y \(O(\text{rango de valores})\) en memoria
+           (\(\approx 2\cdot 10^5\) por arreglo). Holgado para \(N \le 10^5\) en 1 s.</p>
+
+        <p class="note">Variante con la misma complejidad amortizada: en lugar de la
+           binaria, mantén explícitamente el conjunto de los \(K\) elegidos y, al
+           avanzar \(j\), intercambia mientras un cliente fuera del conjunto sea más
+           barato que el más caro dentro (greedy incremental con colas de prioridad).
+           La de Fenwick + binaria es más directa de razonar.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
