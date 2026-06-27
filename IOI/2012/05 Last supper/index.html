@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2012 · Tarea 5 — Last Supper</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  table.trace{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px}
+  table.trace th,table.trace td{padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
+  table.trace th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  table.trace tr:last-child td{border-bottom:none}
+  table.trace code{background:transparent;padding:0}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .note{color:var(--muted);font-size:14px}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2012 · Día 2 · Sirmione – Montichiari, Italia</div>
+    <h1>Tarea <span class="num">5</span> — Last Supper</h1>
+    <p class="note">La última cena · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Leonardo trabajaba sin descanso en <em>La última cena</em>, su mural más
+       famoso. Una de sus primeras tareas del día era decidir qué colores de
+       témpera usaría durante el resto de la jornada. Necesitaba muchos colores,
+       pero solo podía tener una cantidad limitada de ellos sobre su andamio. Su
+       ayudante se encargaba, entre otras cosas, de subir al andamio a entregarle
+       los colores y luego bajar para devolverlos al estante adecuado del piso.</p>
+
+    <p>En esta tarea tendrás que escribir <strong>dos programas separados</strong>
+       para ayudar al ayudante. El primer programa recibe las instrucciones de
+       Leonardo (la secuencia de colores que necesitará a lo largo del día) y
+       produce una cadena corta de bits, llamada <em>consejo</em> (advice).
+       Mientras atiende las peticiones de Leonardo durante el día, el ayudante
+       <strong>no tendrá acceso a las peticiones futuras</strong>, solo al consejo
+       producido por tu primer programa. El segundo programa recibe ese consejo y
+       luego atiende las peticiones <strong>en línea</strong> (online), es decir,
+       una a la vez. Este programa debe entender qué significa el consejo y usarlo
+       para tomar decisiones óptimas.</p>
+
+    <h3>Mover colores entre el estante y el andamio</h3>
+    <p>Consideramos un escenario simplificado. Supón que hay \(N\) colores
+       numerados de \(0\) a \(N-1\), y que cada día Leonardo le pide al ayudante un
+       color exactamente \(N\) veces. Sea \(C\) la secuencia de las \(N\) peticiones
+       de color que hace Leonardo. Así, podemos pensar en \(C\) como una secuencia
+       de \(N\) números, cada uno entre \(0\) y \(N-1\) inclusive. Nota que algunos
+       colores podrían no aparecer en \(C\) en absoluto, y otros aparecer varias
+       veces.</p>
+
+    <p>El andamio está siempre lleno y contiene \(K\) de los \(N\) colores, con
+       \(K < N\). Al inicio, el andamio contiene los colores de \(0\) a \(K-1\)
+       inclusive.</p>
+
+    <p>El ayudante procesa las peticiones una a la vez. Si el color pedido ya está
+       en el andamio, el ayudante puede <strong>descansar</strong>. En caso
+       contrario, tiene que tomar el color pedido del estante y subirlo al andamio.
+       Como el andamio no tiene lugar para el nuevo color, el ayudante debe entonces
+       elegir uno de los colores que están en el andamio y devolverlo al estante.</p>
+
+    <h3>La estrategia óptima de Leonardo</h3>
+    <p>El ayudante quiere descansar tantas veces como sea posible. La cantidad de
+       peticiones en las que logra descansar depende de sus elecciones durante el
+       proceso: cada vez que tiene que quitar un color del andamio, elecciones
+       distintas pueden llevar a resultados distintos en el futuro. Leonardo le
+       explica cómo lograr su objetivo conociendo \(C\). La mejor elección del color
+       a retirar del andamio se obtiene examinando los colores que están en el
+       andamio y las peticiones restantes de \(C\). El color a retirar se elige
+       según estas reglas:</p>
+    <ul>
+      <li>Si hay un color en el andamio que <strong>nunca volverá a necesitarse</strong>
+          en el futuro, el ayudante debe retirar ese color.</li>
+      <li>En caso contrario, el color a retirar es aquel cuya
+          <strong>próxima necesidad esté más lejana en el futuro</strong>. (Es decir,
+          para cada color del andamio buscamos su primera aparición futura; el color
+          que se devuelve al estante es el que se necesitará al final.)</li>
+    </ul>
+    <p>Se puede demostrar que, usando la estrategia de Leonardo, el ayudante
+       descansa tantas veces como es posible.</p>
+
+    <h3>Ejemplo 1</h3>
+    <p>Sea \(N = 4\), así que tenemos \(4\) colores (numerados de \(0\) a \(3\)) y
+       \(4\) peticiones. Sea la secuencia de peticiones \(C = (2, 0, 3, 0)\). Además,
+       supón que \(K = 2\); es decir, el andamio puede sostener \(2\) colores a la
+       vez. Como ya se dijo, el andamio contiene al inicio los colores \(0\) y \(1\).
+       Escribiremos el contenido del andamio así: \([0, 1]\). Una posible forma en
+       que el ayudante podría atender las peticiones es la siguiente.</p>
+    <ul>
+      <li>El primer color pedido (el número \(2\)) no está en el andamio. El ayudante
+          lo coloca y decide quitar el color \(1\). El andamio queda \([0, 2]\).</li>
+      <li>El siguiente color pedido (el \(0\)) ya está en el andamio, así que el
+          ayudante descansa.</li>
+      <li>Para la tercera petición (el \(3\)), el ayudante quita el color \(0\) y el
+          andamio cambia a \([3, 2]\).</li>
+      <li>Por último, el último color pedido (el \(0\)) tiene que subirse del estante
+          al andamio. El ayudante decide quitar el color \(2\), y el andamio queda
+          \([3, 0]\).</li>
+    </ul>
+    <p>Nota que en el ejemplo anterior el ayudante <strong>no</strong> siguió la
+       estrategia óptima de Leonardo. La estrategia óptima habría quitado el color
+       \(2\) en el tercer paso, de modo que el ayudante hubiera podido descansar de
+       nuevo en el paso final.</p>
+
+    <h3>La estrategia del ayudante con memoria limitada</h3>
+    <p>En la mañana, el ayudante le pide a Leonardo que escriba \(C\) en un papel,
+       para poder encontrar y seguir la estrategia óptima. Sin embargo, Leonardo
+       está obsesionado con mantener en secreto sus técnicas de trabajo, así que se
+       niega a dejarle el papel. Solo le permitió leer \(C\) e intentar memorizarla.</p>
+    <p>Por desgracia, la memoria del ayudante es muy mala. Solo es capaz de recordar
+       hasta \(M\) bits. En general, esto podría impedirle reconstruir la secuencia
+       completa \(C\). Por eso, el ayudante tiene que idear una forma inteligente de
+       calcular la secuencia de bits que recordará. Llamaremos a esta secuencia el
+       <em>consejo</em> y la denotaremos \(A\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <p>En la mañana, el ayudante puede tomar el papel de Leonardo con la secuencia
+       \(C\), leerla y tomar todas las decisiones necesarias. Una cosa que podría
+       elegir hacer sería examinar el estado del andamio después de cada petición.
+       Por ejemplo, usando la estrategia (subóptima) del Ejemplo 1, la secuencia de
+       estados del andamio sería \([0, 2], [0, 2], [3, 2], [3, 0]\). (Recuerda que él
+       sabe que el estado inicial del andamio es \([0, 1]\).)</p>
+    <p>Ahora supón que tenemos \(M = 16\), así que el ayudante puede recordar hasta
+       \(16\) bits de información. Como \(N = 4\), podemos almacenar cada color con
+       \(2\) bits. Por lo tanto, \(16\) bits bastan para guardar la secuencia de
+       estados del andamio de arriba. El ayudante calcula entonces el consejo
+       \(A = (0, 0, 1, 0,\ 0, 0, 1, 0,\ 1, 1, 1, 0,\ 1, 1, 0, 0)\).</p>
+    <p>Más tarde, durante el día, el ayudante puede decodificar este consejo y usarlo
+       para tomar sus decisiones. (Por supuesto, con \(M = 16\) el ayudante también
+       podría recordar la secuencia \(C\) entera usando solo \(8\) de los \(16\) bits
+       disponibles. En este ejemplo solo queríamos ilustrar que tiene otras opciones,
+       sin revelar ninguna buena solución.)</p>
+
+    <h2>Lo que debes hacer</h2>
+    <p>Tienes que escribir <strong>dos programas separados</strong> en el mismo
+       lenguaje de programación. Estos programas se ejecutan secuencialmente, sin
+       poder comunicarse entre sí durante la ejecución.</p>
+    <p>El primer programa es el que usa el ayudante en la mañana. Recibe la secuencia
+       \(C\) y debe calcular un consejo \(A\).</p>
+    <p>El segundo programa es el que usa el ayudante durante el día. Recibe el consejo
+       \(A\) y luego procesa la secuencia \(C\) de peticiones de Leonardo. La
+       secuencia \(C\) solo se le revela a este programa <strong>una petición a la
+       vez</strong>, y cada petición debe procesarse antes de recibir la siguiente.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea de <strong>comunicación por consejo</strong>: entregas dos
+       archivos fuente en el mismo lenguaje. El evaluador ejecuta primero tu rutina
+       <code>ComputeAdvice</code> (el «consejero»), que ve toda la secuencia \(C\) y
+       emite los bits del consejo. Después ejecuta tu rutina <code>Assist</code> (el
+       «asistente»), que recibe solo esos bits y atiende las peticiones online.</p>
+
+    <p>En el primer programa implementas una única rutina
+       <code>ComputeAdvice(C, N, K, M)</code> que recibe el arreglo \(C\) de \(N\)
+       enteros (cada uno en \(0,\dots,N-1\)), el número \(K\) de colores en el andamio
+       y el número \(M\) de bits disponibles para el consejo. Debe calcular un consejo
+       \(A\) de a lo más \(M\) bits y comunicarlo al sistema llamando, para cada bit de
+       \(A\) en orden, a la rutina:</p>
+    <ul>
+      <li><code>WriteAdvice(B)</code> — agrega el bit \(B\) al consejo \(A\). (Puedes
+          llamar a esta rutina a lo más \(M\) veces.)</li>
+    </ul>
+
+    <p>En el segundo programa implementas una única rutina
+       <code>Assist(A, N, K, R)</code>. La entrada es el consejo \(A\), los enteros
+       \(N\) y \(K\), y la longitud real \(R\) del consejo en bits (\(R \le M\)). Esta
+       rutina ejecuta tu estrategia para el ayudante, usando las rutinas que se te
+       proveen:</p>
+    <ul>
+      <li><code>GetRequest()</code> — devuelve el siguiente color pedido por Leonardo.
+          (No revela información sobre las peticiones futuras.)</li>
+      <li><code>PutBack(T)</code> — devuelve el color \(T\) del andamio al estante.
+          Solo puedes llamarla con \(T\) siendo uno de los colores que están
+          actualmente en el andamio.</li>
+    </ul>
+
+    <p>Al ejecutarse, tu rutina <code>Assist</code> debe llamar a
+       <code>GetRequest</code> <strong>exactamente \(N\) veces</strong>, recibiendo
+       cada vez una de las peticiones de Leonardo en orden. Después de cada llamada a
+       <code>GetRequest</code>, si el color devuelto <strong>no</strong> está en el
+       andamio, debes también llamar a <code>PutBack(T)</code> con tu elección de
+       \(T\). En caso contrario, <strong>no</strong> debes llamar a
+       <code>PutBack</code>. No respetar esto se considera un error y termina tu
+       programa. Recuerda que al inicio el andamio contiene los colores de \(0\) a
+       \(K-1\) inclusive.</p>
+
+    <p>Un caso de prueba se considera resuelto si tus dos rutinas respetan todas las
+       restricciones impuestas y el número total de llamadas a <code>PutBack</code> es
+       <strong>exactamente igual</strong> al de la estrategia óptima de Leonardo. Si
+       hay varias estrategias que logran el mismo número de llamadas a
+       <code>PutBack</code>, tu programa puede ejecutar cualquiera de ellas (no está
+       obligado a seguir la estrategia de Leonardo si hay otra igual de buena).</p>
+
+    <div class="sig">
+      <span class="tag">Firmas a implementar — C/C++</span>
+<pre>// Programa 1 (advisor): implementa ComputeAdvice, puede llamar a WriteAdvice
+void ComputeAdvice(int *C, int N, int K, int M);
+void WriteAdvice(unsigned char a);
+
+// Programa 2 (assistant): implementa Assist, puede llamar a PutBack y GetRequest
+void Assist(unsigned char *A, int N, int K, int R);
+void PutBack(int T);
+int  GetRequest();</pre>
+    </div>
+    <p class="note">El advisor incluye <code>advisor.h</code> y el assistant incluye
+       <code>assistant.h</code>. Las rutinas internas en C/C++ deben declararse
+       <code>static</code> (o tener nombres distintos entre ambos archivos) porque el
+       evaluador los enlaza juntos. Tus envíos no deben interactuar con la entrada o
+       salida estándar ni con ningún otro archivo. En Pascal se usan las unidades
+       <code>advisorlib</code> y <code>assistantlib</code>.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Colores y peticiones</td><td><span class="badge">\(0 \le C[i] \le N-1\)</span></td></tr>
+        <tr><td>Tamaño del andamio</td><td><span class="badge">\(K < N\)</span></td></tr>
+        <tr><td>Andamio inicial</td><td>colores \(0,1,\dots,K-1\)</td></tr>
+        <tr><td>Llamadas a <code>GetRequest</code></td><td>exactamente \(N\)</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">8</td><td>\(N \le 5\,000\); a lo más \(M = 65\,000\) bits.</td></tr>
+          <tr><td>2</td><td class="pts">9</td><td>\(N \le 100\,000\); a lo más \(M = 2\,000\,000\) bits.</td></tr>
+          <tr><td>3</td><td class="pts">9</td><td>\(N \le 100\,000\), \(K \le 25\,000\); a lo más \(M = 1\,500\,000\) bits.</td></tr>
+          <tr><td>4</td><td class="pts">35</td><td>\(N \le 5\,000\); a lo más \(M = 10\,000\) bits (presupuesto ajustado).</td></tr>
+          <tr><td>5</td><td class="pts">hasta 39</td><td>\(N \le 100\,000\), \(K \le 25\,000\); a lo más \(M = 1\,800\,000\) bits. El puntaje depende de \(R_{\max}\) (ver abajo).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>En la subtarea 5 el puntaje depende de la longitud \(R\) del consejo que tu
+       programa comunica. Si \(R_{\max}\) es el máximo (sobre todos los casos) de la
+       longitud del consejo producido por <code>ComputeAdvice</code>, tu puntaje es:</p>
+    <ul>
+      <li>\(39\) puntos si \(R_{\max} \le 200\,000\);</li>
+      <li>\(\dfrac{39\,(1\,800\,000 - R_{\max})}{1\,600\,000}\) puntos si \(200\,000 < R_{\max} < 1\,800\,000\);</li>
+      <li>\(0\) puntos si \(R_{\max} \ge 1\,800\,000\).</li>
+    </ul>
+
+    <h2>Ejemplo (Ejemplos 2 y 3 del PDF)</h2>
+    <p>Continuando con \(N = 4\), \(K = 2\) y \(C = (2, 0, 3, 0)\), supón que en
+       <code>ComputeAdvice</code> calculaste el consejo (de estados del andamio)
+       \(A = (0, 0, 1, 0,\ 0, 0, 1, 0,\ 1, 1, 1, 0,\ 1, 1, 0, 0)\). Lo comunicarías
+       con \(16\) llamadas <code>WriteAdvice(0)</code>, <code>WriteAdvice(0)</code>,
+       <code>WriteAdvice(1)</code>, … en ese orden.</p>
+    <p>Luego se ejecuta <code>Assist</code> recibiendo ese \(A\) y los valores
+       \(N = 4\), \(K = 2\), \(R = 16\). Debe hacer exactamente \(N = 4\) llamadas a
+       <code>GetRequest</code> y, después de algunas, llamar a <code>PutBack(T)</code>.
+       La tabla muestra una secuencia de llamadas que corresponde a las decisiones
+       (subóptimas) del Ejemplo 1; el guion indica que no hubo llamada a
+       <code>PutBack</code>:</p>
+    <table class="trace">
+      <thead><tr><th><code>GetRequest()</code></th><th>Acción</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td><code>PutBack(1)</code></td></tr>
+        <tr><td>0</td><td>—</td></tr>
+        <tr><td>3</td><td><code>PutBack(0)</code></td></tr>
+        <tr><td>0</td><td><code>PutBack(2)</code></td></tr>
+      </tbody>
+    </table>
+    <p class="note">Este ejemplo es solo ilustrativo (estrategia subóptima, 3
+       <code>PutBack</code>). El óptimo de Belady para este caso usa solo
+       <strong>2</strong> <code>PutBack</code>; en la Vista 2 se muestra la traza
+       óptima y un consejo mucho más corto.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Comunicación</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Caché offline (Belady)</span>
+      <span class="ptag">Codificación de bits</span>
+      <span class="ptag">Borrado perezoso</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Es un problema de <strong>caché</strong>: un andamio de tamaño \(K\) y una
+       secuencia de \(N\) peticiones de color. El consejero ve toda la secuencia y
+       escribe \(\le M\) bits; el asistente atiende online y, en cada fallo (color
+       pedido fuera del andamio), debe desalojar a alguien. El objetivo es igualar el
+       número mínimo de desalojos (= llamadas a <code>PutBack</code>) usando el
+       <strong>menor consejo posible</strong>. El óptimo offline es Belady (desalojar
+       el de próximo uso más lejano). El reto está en la subtarea 4: comprimir el
+       consejo a \(\sim N + K\) bits.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El consejo trivial «cuál de los \(K\) desalojo» cuesta
+                \(N\lceil\log_2 K\rceil\) bits: pasa las subtareas 1–3 (presupuesto
+                holgado) pero <strong>no cabe</strong> en la subtarea 4
+                (\(M = 10\,000\), \(N \le 5\,000\)) ni da \(R_{\max}\) chico en la 5.
+                La meta real es \(R = N + K \le 200\,000\) en todos los casos, lo que
+                da los \(39\) puntos plenos de la subtarea 5.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuál es el óptimo offline?</summary>
+      <div class="body">
+        <p class="q">¿Ya identificaste qué estrategia minimiza los desalojos cuando
+           SÍ conoces todo el futuro? El enunciado te la regala.</p>
+        <p>Es el algoritmo clásico de <strong>Belady</strong> (cache replacement
+           óptimo): en cada fallo desaloja el color cuyo próximo uso esté
+           <em>más lejano</em>, o uno que ya no vuelva a usarse. Para implementarlo
+           offline: precomputa <code>nextUse[i]</code> (próxima posición del mismo
+           color, o \(N\) si no hay) con un barrido hacia atrás, y simula el andamio
+           con un montículo (max-heap por <code>nextUse</code>). Eso te da el número
+           mínimo de <code>PutBack</code> en \(O(N\log N)\). ¿Pero cómo se lo
+           transmites al asistente que no ve el futuro?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1–3: el consejo trivial</summary>
+      <div class="body">
+        <p class="q">Si en cada fallo le dices al asistente «desaloja al \(j\)-ésimo
+           de los \(K\) del andamio», ¿cuántos bits gastas? ¿Te alcanza el
+           presupuesto de las primeras subtareas?</p>
+        <p>Con \(\lceil\log_2 K\rceil\) bits por petición y \(N\) peticiones, el
+           consejo mide \(N\lceil\log_2 K\rceil\) bits. En la subtarea 1
+           (\(N \le 5\,000\), \(M = 65\,000\)) y en las subtareas 2–3 (presupuestos de
+           millones de bits) eso cabe holgado, así que cualquier esquema correcto que
+           reproduzca Belady te da \(8 + 9 + 9 = 26\) puntos. El asistente solo
+           necesita, en cada fallo, leer esos \(\log K\) bits y desalojar al color
+           indicado. ¿Pero qué pasa en la subtarea 4 con \(M = 10\,000\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 4: ¿de verdad importa A QUIÉN desalojas?</summary>
+      <div class="body">
+        <p class="q">El presupuesto es \(M = 10\,000\) con \(N \le 5\,000\): apenas
+           \(\sim 2\) bits por petición. \(N\log K\) ya no cabe. ¿Necesitas decirle al
+           asistente <em>exactamente</em> a quién desalojar, o basta con menos?</p>
+        <p>Observación central: el evaluador solo cuenta el <strong>número</strong> de
+           <code>PutBack</code>, no exige reproducir el andamio de Belady. Y resulta
+           que en un fallo puedes desalojar a <em>cualquier</em> color que Belady
+           desalojaría «pronto» (antes de que vuelva a pedirse) y obtienes una
+           solución con el <strong>mismo número de desalojos</strong>. Llamemos a esos
+           colores <strong>pasivos</strong>. ¿Y si el asistente solo necesita saber,
+           en cada instante, <em>qué colores son pasivos</em> (candidatos a desalojo)
+           en vez de cuál exacto elegir?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La clasificación activo / pasivo</summary>
+      <div class="body">
+        <p class="q">Para cada color que está en el andamio en un momento dado:
+           ¿volverá a pedirse ANTES de que Belady lo desaloje, o no? ¿Cuántos bits
+           necesitas para responder esa pregunta una vez por petición?</p>
+        <p>Define, para cada color en el andamio:</p>
+        <ul>
+          <li><strong>ACTIVO</strong>: tras ser pedido, se volverá a pedir
+              <em>antes</em> de que Belady lo desaloje. Hay que conservarlo.</li>
+          <li><strong>PASIVO</strong>: Belady lo desalojará antes de que se vuelva a
+              pedir. Es candidato a desalojo.</li>
+        </ul>
+        <p>El consejero clasifica cada «llegada» de un color al andamio con
+           <strong>un solo bit</strong>: \(K\) bits para los colores iniciales más
+           \(N\) bits (uno por petición). Total \(N + K\) bits. El asistente mantiene
+           un conjunto («pool») de colores pasivos; en cada fallo saca a cualquiera de
+           ese pool. Como el pool nunca está vacío en un fallo, siempre puede
+           desalojar a un pasivo y empata a Belady. ¿Cómo computa exactamente esos
+           bits el consejero, y cómo los decodifica el asistente?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El óptimo offline es Belady. En lugar de codificar
+           «a quién desalojar» (\(N\log K\) bits), codificamos para cada color que
+           entra/está en el andamio si es <strong>activo</strong> (se vuelve a pedir
+           antes de su desalojo de Belady) o <strong>pasivo</strong> (será desalojado
+           antes de volver a pedirse). Eso son exactamente \(K + N\) bits. El asistente
+           mantiene un conjunto de pasivos y en cada fallo desaloja a cualquiera de
+           ellos: el número de desalojos coincide con Belady aunque el andamio concreto
+           pueda diferir.</p>
+
+        <p><strong>Por qué es correcto.</strong> En todo fallo, Belady desaloja a un
+           color cuyo próximo uso es el más lejano; ese color es, por definición,
+           pasivo en ese instante (no se pide antes de salir). Por tanto el conjunto de
+           pasivos nunca está vacío en un fallo, y el asistente siempre tiene a alguien
+           que desalojar. Desalojar a un pasivo cualquiera (no necesariamente el de
+           Belady) preserva el invariante: «todo color activo sigue presente cuando se
+           le vuelve a pedir», así que cada acierto de Belady también es acierto aquí.
+           Resultado: el mismo conteo de <code>PutBack</code>.</p>
+
+        <p><strong>Codificación (consejero), \(K + N\) bits en este orden exacto:</strong></p>
+        <ol>
+          <li><strong>\(K\) bits iniciales</strong>: para cada color \(0,\dots,K-1\),
+              bit \(=1\) si es activo (se pide antes de ser desalojado), \(0\) si pasivo.</li>
+          <li><strong>\(N\) bits</strong>, uno por petición \(i\) en orden: bit \(=1\)
+              si el color \(C[i]\), tras esta petición, es activo (se volverá a pedir
+              antes de su desalojo), \(0\) si pasivo.</li>
+        </ol>
+        <p>Cómo se fijan: precomputa <code>nextUse[i]</code> y simula Belady con un
+           max-heap. Usa un puntero <code>src[color]</code> que recuerda la «fuente» del
+           bit de ese color (\(-2\) = ranura inicial, \(\ge 0\) = índice de petición que
+           lo escribió). Cuando una petición del color \(c\) es <strong>acierto</strong>,
+           significa que sobrevivió desde su última escritura: marca activa esa fuente
+           (pon a \(1\) el bit inicial o el bit de <code>src[c]</code>). Si es
+           <strong>fallo</strong>, no marcas nada (la fuente previa queda pasiva \(=0\)
+           por defecto, pues fue desalojada). Luego actualiza <code>src[c] = i</code>.
+           Las últimas ocurrencias y los colores nunca pedidos quedan pasivos por defecto.</p>
+
+        <p><strong>Decodificación (asistente), \(O(N + K)\):</strong></p>
+        <ul>
+          <li>Lee los \(K\) bits iniciales; los colores con bit \(0\) entran al
+              <em>pool</em> de pasivos (<code>passive[c] = true</code>).</li>
+          <li>Para cada petición: \(c = \) <code>GetRequest()</code>, bit \(= A[K+i]\).
+              <ul>
+                <li>Si \(c\) está en el andamio (acierto): no llames a
+                    <code>PutBack</code>; si estaba marcado pasivo, sobrevivió, así que
+                    <em>quítalo</em> del pool.</li>
+                <li>Si no (fallo): saca cualquier color pasivo del pool, llama
+                    <code>PutBack(víctima)</code> y mete \(c\) al andamio.</li>
+              </ul>
+          </li>
+          <li>Después, según el bit: si \(0\), marca \(c\) pasivo y agrégalo al pool;
+              si \(1\), \(c\) queda activo (fuera del pool).</li>
+        </ul>
+        <p>El pool usa <strong>borrado perezoso</strong>: una pila/vector de candidatos
+           más un arreglo <code>passive[]</code>. Al sacar, descarta entradas cuyo
+           <code>passive[]</code> ya sea falso. Invariante de seguridad:
+           <code>passive[c] == true</code> implica que \(c\) está en el andamio (al
+           desalojar pones <code>passive[c] = false</code>), de modo que una entrada
+           obsoleta nunca elige un color fuera del andamio.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — Consejero (ComputeAdvice)</span>
+<pre>ComputeAdvice(C, N, K, M):
+    # próximo uso de cada posición
+    para i de N-1 a 0:
+        nextUse[i] = posSiguiente[C[i]]   # N si no hay
+        posSiguiente[C[i]] = i
+
+    initBit[0..K-1] = 0;  reqBit[0..N-1] = 0
+    para c en 0..K-1:  enAndamio[c]=true;  src[c] = -2   # fuente inicial
+    heap = max-heap por clave (próximo uso del color)    # contiene los K iniciales
+
+    para i en 0..N-1:
+        c = C[i]
+        si enAndamio[c]:                 # ACIERTO -> la fuente previa fue activa
+            si src[c] == -2: initBit[c] = 1
+            si no:           reqBit[src[c]] = 1
+        si no:                           # FALLO -> Belady desaloja al más lejano
+            v = heap.extraerMax()        # (con borrado perezoso por enAndamio/clave)
+            enAndamio[v] = false
+            enAndamio[c] = true
+        src[c] = i
+        heap.insertar(c con clave nextUse[i])
+
+    # emitir K+N bits, en orden
+    para c en 0..K-1:  WriteAdvice(initBit[c])
+    para i en 0..N-1:  WriteAdvice(reqBit[i])</pre>
+        </div>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — Asistente (Assist)</span>
+<pre>Assist(A, N, K, R):
+    para c en 0..K-1:  enAndamio[c]=true;  passive[c]=false
+    pool = pila vacía
+    para c en 0..K-1:
+        si A[c] == 0:                    # pasivo inicial
+            passive[c] = true;  pool.push(c)
+
+    para i en 0..N-1:
+        c = GetRequest()
+        si enAndamio[c]:                 # ACIERTO
+            si passive[c]: passive[c] = false   # sobrevivió: sácalo del pool
+        si no:                           # FALLO
+            repetir v = pool.pop() mientras passive[v] == false   # borrado perezoso
+            passive[v] = false;  enAndamio[v] = false
+            PutBack(v)
+            enAndamio[c] = true
+        bit = A[K + i]
+        si bit == 0:  passive[c] = true;  pool.push(c)
+        si no:        passive[c] = false           # activo</pre>
+        </div>
+
+        <p><strong>Camino incremental de puntos.</strong> (1) Resolver Belady offline y
+           emitir \(N\lceil\log_2 K\rceil\) bits «cuál desalojar» → pasa subtareas 1, 2 y
+           3 (presupuestos holgados), pero NO la 4 (no cabe en \(10\,000\)) ni da
+           \(R_{\max}\) pequeño en la 5. (2) Reducir a \(1\) bit por petición más \(K\)
+           iniciales con la clasificación activo/pasivo → \(R = K + N\), que pasa la
+           subtarea 4 (\(K+N \le 8\,821 < 10\,000\) en los tests) y logra
+           \(R_{\max} \le 200\,000\) en la 5 ⇒ \(39\) plenos. Total
+           \(8 + 9 + 9 + 35 + 39 = 100\).</p>
+
+        <p><strong>Complejidad.</strong> Consejero: \(O(N\log N)\) tiempo (Belady con
+           montículo + borrado perezoso), \(O(N)\) memoria. Asistente: \(O(N + K)\)
+           amortizado (pool con borrado perezoso), \(O(N)\) memoria. Longitud del
+           consejo: exactamente \(K + N\) bits, \(\le 200\,000\) en todos los tests ⇒
+           puntaje pleno.</p>
+
+        <h3>Ejemplo trabajado con el esquema \(K+N\)</h3>
+        <p>Con \(N = 4\), \(K = 2\), \(C = (2, 0, 3, 0)\), andamio inicial \(\{0, 1\}\),
+           el consejo es \(A = (\underbrace{1, 0}_{\text{iniciales}},\ \underbrace{0, 1, 0, 0}_{\text{por petición}})\),
+           es decir \(R = 6\) bits:</p>
+        <ul>
+          <li>Bit inicial color \(0 = 1\) (activo: se pide en la posición \(1\) antes de
+              salir); color \(1 = 0\) (pasivo: nunca se pide).</li>
+          <li>Petición \(0\) (col \(2\)) \(= 0\) pasivo; petición \(1\) (col \(0\)) \(= 1\)
+              activo (vuelve en la posición \(3\)); petición \(2\) (col \(3\)) \(= 0\)
+              pasivo; petición \(3\) (col \(0\)) \(= 0\) pasivo.</li>
+        </ul>
+        <p>La traza del asistente (\(2\) <code>PutBack</code>, óptimo de Belady):</p>
+        <table class="trace">
+          <thead><tr><th>Petición</th><th>Acción</th><th>Andamio / pool</th></tr></thead>
+          <tbody>
+            <tr><td>2 (fallo)</td><td><code>PutBack(1)</code></td><td>pool=\{1\} → andamio \{0,2\}; col 2 pasivo</td></tr>
+            <tr><td>0 (acierto)</td><td>—</td><td>0 estaba activo</td></tr>
+            <tr><td>3 (fallo)</td><td><code>PutBack(2)</code></td><td>pool=\{2\} → andamio \{0,3\}; col 3 pasivo</td></tr>
+            <tr><td>0 (acierto)</td><td>—</td><td>descansa de nuevo</td></tr>
+          </tbody>
+        </table>
+        <p class="note">Total \(2\) <code>PutBack</code> = óptimo. Esto reproduce la
+           estrategia óptima descrita en el enunciado (desalojar el \(2\) en el tercer
+           paso para poder descansar al final), no la subóptima del Ejemplo 1.</p>
+
+        <h3>Trampas frecuentes</h3>
+        <ul>
+          <li><strong>Orden de los bits.</strong> El consejero debe escribir primero los
+              \(K\) bits iniciales (colores \(0\dots K-1\)) y luego los \(N\) bits por
+              petición en orden; el asistente lee \(A[0\dots K-1]\) como iniciales y
+              \(A[K+i]\) para la petición \(i\). El evaluador guarda los bits en el orden
+              en que se escriben.</li>
+          <li><strong>Acierto sobre un pasivo.</strong> Como puedes conservar un pasivo
+              más tiempo que Belady, podría llegar un acierto sobre un color marcado
+              pasivo: hay que quitarlo del pool en ese acierto (de ahí el flag
+              <code>passive[]</code> con borrado perezoso).</li>
+          <li><strong>Reglas del evaluador.</strong> NO llamar <code>PutBack</code> en un
+              acierto y SÍ llamarlo en un fallo; <code>GetRequest</code> exactamente
+              \(N\) veces.</li>
+          <li><strong>Presupuesto.</strong> <code>WriteAdvice</code> admite a lo más
+              \(M\) llamadas (\(R \le M\)); pasarse de \(M\) bits es error. Con
+              \(K + N < M\) en todos los tests no hay problema.</li>
+          <li><strong>Entorno (no del algoritmo).</strong> En clang moderno, evita el
+              global <code>next</code> (choca con <code>std::next</code> bajo
+              <code>using namespace std</code>); renómbralo. En el juez Linux de 2012
+              compila tal cual.</li>
+        </ul>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
