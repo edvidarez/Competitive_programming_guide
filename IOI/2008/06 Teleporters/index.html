@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2008 · Tarea 6 — Teleporters</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2008 · Día 2 · El Cairo, Egipto</div>
+    <h1>Tarea <span class="num">6</span> — Teleporters</h1>
+    <p class="note">Teletransportadores · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Participas en una competencia que consiste en cruzar Egipto de <strong>oeste a
+       este</strong> a lo largo de un segmento de recta. Al inicio estás en el punto más
+       al oeste del segmento. Es regla de la competencia que <strong>siempre debes
+       moverte a lo largo del segmento y siempre hacia el este</strong>.</p>
+
+    <p>Hay \(N\) <em>teleportadores</em> sobre el segmento. Un teleportador tiene dos
+       extremos. Cada vez que llegas a uno de los extremos, el teleportador te
+       teletransporta de inmediato al <strong>otro extremo</strong>. (Nota que, según a
+       cuál extremo llegues, el teletransporte puede llevarte al este o al oeste de tu
+       posición actual.) Después de ser teletransportado debes seguir moviéndote hacia el
+       este; <strong>nunca puedes evitar un extremo de teleportador que esté en tu
+       camino</strong>. Nunca habrá dos extremos de teleportador en la misma posición.
+       Los extremos están estrictamente entre el inicio y el final del segmento.</p>
+
+    <p>Cada vez que te teletransportan <strong>ganas 1 punto</strong>. El objetivo es ganar
+       tantos puntos como sea posible. Para maximizar los puntos, se te permite
+       <strong>agregar hasta \(M\) teleportadores nuevos</strong> al segmento antes de
+       iniciar tu viaje. También ganas puntos por usar los teleportadores nuevos.</p>
+
+    <p>Puedes colocar los extremos de los teleportadores nuevos donde quieras
+       (<strong>incluso en coordenadas no enteras</strong>) siempre que no ocupen una
+       posición ya ocupada por otro extremo. Es decir, las posiciones de los extremos de
+       todos los teleportadores deben ser únicas. Además, los extremos de los
+       teleportadores nuevos deben quedar estrictamente entre el inicio y el final del
+       segmento.</p>
+
+    <p>Nota que se garantiza que, <strong>sin importar cómo agregues los teleportadores,
+       siempre puedes llegar al final del segmento</strong>.</p>
+
+    <figure>
+      <svg viewBox="0 0 760 210" role="img" aria-label="Segmento con los tres teleportadores originales dibujados como arcos sobre una recta; abajo una flecha que apunta hacia el este.">
+        <rect x="0" y="0" width="760" height="210" fill="#ffffff"/>
+        <!-- recta -->
+        <line x1="40" y1="135" x2="720" y2="135" stroke="#374151" stroke-width="2"/>
+        <!-- extremos del segmento -->
+        <text x="40" y="160" font-size="12" fill="#6b7280" text-anchor="middle">0 (inicio)</text>
+        <text x="720" y="160" font-size="12" fill="#6b7280" text-anchor="middle">2 000 001 (fin)</text>
+        <!-- arcos de los teleportadores -->
+        <path d="M130,135 Q190,38 250,135" fill="none" stroke="#2563eb" stroke-width="2"/>
+        <path d="M170,135 Q190,86 210,135" fill="none" stroke="#2563eb" stroke-width="2"/>
+        <path d="M560,135 Q580,90 600,135" fill="none" stroke="#2563eb" stroke-width="2"/>
+        <!-- puntos de extremos -->
+        <g fill="#1f2937">
+          <circle cx="130" cy="135" r="3.5"/><circle cx="170" cy="135" r="3.5"/>
+          <circle cx="210" cy="135" r="3.5"/><circle cx="250" cy="135" r="3.5"/>
+          <circle cx="560" cy="135" r="3.5"/><circle cx="600" cy="135" r="3.5"/>
+        </g>
+        <g font-size="12" fill="#1f2937" text-anchor="middle">
+          <text x="130" y="124">1</text><text x="170" y="124">2</text>
+          <text x="210" y="124">3</text><text x="250" y="124">4</text>
+          <text x="560" y="124">10</text><text x="600" y="124">11</text>
+        </g>
+        <!-- flecha hacia el este -->
+        <defs>
+          <marker id="east" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+          </marker>
+        </defs>
+        <line x1="120" y1="188" x2="320" y2="188" stroke="#374151" stroke-width="2" marker-end="url(#east)"/>
+        <text x="335" y="192" font-size="12" fill="#6b7280">avanzas hacia el este</text>
+      </svg>
+      <figcaption>Los tres teleportadores originales del Ejemplo 1, dibujados como arcos que
+        unen sus dos extremos: \((1,4)\), \((2,3)\) y \((10,11)\). El esquema no está a
+        escala.</figcaption>
+    </figure>
+
+    <h2>Tarea</h2>
+    <p>Escribe un programa que, dadas las posiciones de los extremos de los \(N\)
+       teleportadores y el número \(M\) de teleportadores nuevos que puedes agregar,
+       calcule el <strong>máximo número de puntos</strong> que puedes ganar.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar:</p>
+    <ul>
+      <li>La línea 1 contiene el entero \(N\), el número de teleportadores que ya están
+          sobre el segmento.</li>
+      <li>La línea 2 contiene el entero \(M\), el máximo de teleportadores nuevos que
+          puedes agregar.</li>
+      <li>Cada una de las siguientes \(N\) líneas describe un teleportador. La \(i\)-ésima
+          de estas líneas describe al \(i\)-ésimo teleportador y consta de 2 enteros
+          \(W_i\) y \(E_i\) separados por un espacio, que representan respectivamente las
+          distancias desde el inicio del segmento hasta los extremos <strong>oeste</strong>
+          y <strong>este</strong> del teleportador.</li>
+    </ul>
+    <p>No hay dos extremos de los teleportadores dados que compartan la misma posición. El
+       segmento por el que vas a viajar empieza en la posición \(0\) y termina en la
+       posición \(2\,000\,001\).</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir en la salida estándar una sola línea con un entero: el
+       máximo número de puntos que puedes ganar.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>~1 segundo de CPU (típico IOI 2008)</td></tr>
+        <tr><td>Límite de memoria</td><td>~256 MB (típico IOI 2008)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Teleportadores iniciales</td><td><span class="badge">\(1 \le N \le 1\,000\,000\)</span></td></tr>
+        <tr><td>Teleportadores nuevos</td><td><span class="badge">\(1 \le M \le 1\,000\,000\)</span></td></tr>
+        <tr><td>Posición de los extremos</td><td><span class="badge">\(1 \le W_X < E_X \le 2\,000\,000\)</span></td></tr>
+        <tr><td>Posiciones distintas</td><td>Los \(2N\) extremos están en posiciones distintas, estrictamente entre \(0\) y \(2\,000\,001\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <p>El PDF (sección <em>Grading</em>) <strong>no define subtareas formales</strong>: solo
+       documenta un único corte de puntaje parcial.</p>
+    <div class="note-box">
+      «En los datos de prueba que valen <strong>30 puntos</strong>, \(N \le 500\) y
+      \(M \le 500\)». No es el sistema formal de subtareas anidadas de ediciones posteriores:
+      IOI 2008 califica <strong>por caso de prueba</strong> sumando hasta 100, con esa banda de
+      30 puntos como datos fáciles (los \(70\) restantes usan los límites completos
+      \(N, M \le 1\,000\,000\)). Una solución \(O(N\log N)\) (o \(O(N)\) con counting sort)
+      obtiene los 100 puntos.
+    </div>
+
+    <h2>Ejemplo</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+1
+10 11
+1 4
+2 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>6</pre></div>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 760 210" role="img" aria-label="El mismo segmento del Ejemplo 1 después de agregar un teleportador nuevo con extremos en 0.5 y 1.5.">
+        <rect x="0" y="0" width="760" height="210" fill="#ffffff"/>
+        <line x1="40" y1="135" x2="720" y2="135" stroke="#374151" stroke-width="2"/>
+        <text x="40" y="160" font-size="12" fill="#6b7280" text-anchor="middle">0 (inicio)</text>
+        <text x="720" y="160" font-size="12" fill="#6b7280" text-anchor="middle">2 000 001 (fin)</text>
+        <!-- teleportador nuevo (0.5, 1.5) en rojo -->
+        <path d="M110,135 Q140,58 150,135" fill="none" stroke="#dc2626" stroke-width="2.2"/>
+        <!-- arcos originales -->
+        <path d="M130,135 Q190,38 250,135" fill="none" stroke="#2563eb" stroke-width="2"/>
+        <path d="M170,135 Q190,86 210,135" fill="none" stroke="#2563eb" stroke-width="2"/>
+        <path d="M560,135 Q580,90 600,135" fill="none" stroke="#2563eb" stroke-width="2"/>
+        <g fill="#1f2937">
+          <circle cx="130" cy="135" r="3.5"/><circle cx="170" cy="135" r="3.5"/>
+          <circle cx="210" cy="135" r="3.5"/><circle cx="250" cy="135" r="3.5"/>
+          <circle cx="560" cy="135" r="3.5"/><circle cx="600" cy="135" r="3.5"/>
+        </g>
+        <g fill="#dc2626"><circle cx="110" cy="135" r="3.5"/><circle cx="150" cy="135" r="3.5"/></g>
+        <g font-size="12" fill="#1f2937" text-anchor="middle">
+          <text x="130" y="124">1</text><text x="170" y="124">2</text>
+          <text x="210" y="124">3</text><text x="250" y="124">4</text>
+          <text x="560" y="124">10</text><text x="600" y="124">11</text>
+        </g>
+        <g font-size="11" fill="#dc2626" text-anchor="middle">
+          <text x="104" y="178">0.5</text><text x="156" y="178">1.5</text>
+        </g>
+      </svg>
+      <figcaption>El mismo segmento tras agregar un teleportador nuevo (en rojo) con
+        extremos en \(0.5\) y \(1.5\).</figcaption>
+    </figure>
+
+    <p>Tras agregar el teleportador nuevo como en la figura, tu recorrido sería:</p>
+    <ul>
+      <li>Empiezas en la posición \(0\), moviéndote hacia el este.</li>
+      <li>Llegas al extremo en la posición \(0.5\) y te teletransportan a la posición
+          \(1.5\) (ganas 1 punto).</li>
+      <li>Sigues hacia el este y llegas al extremo en la posición \(2\); te teletransportan
+          a la \(3\) (tienes 2 puntos).</li>
+      <li>Llegas al extremo en la posición \(4\) y te teletransportan a \(1\) (tienes 3
+          puntos).</li>
+      <li>Llegas al extremo en \(1.5\) y te teletransportan a \(0.5\) (tienes 4 puntos).</li>
+      <li>Llegas al extremo en \(1\) y te teletransportan a \(4\) (tienes 5 puntos).</li>
+      <li>Llegas al extremo en \(10\) y te teletransportan a \(11\) (tienes 6 puntos).</li>
+      <li>Continúas hasta llegar al final del segmento, terminando con un total de
+          <strong>6 puntos</strong>.</li>
+    </ul>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+3
+5 7
+6 10
+1999999 2000000</pre></div>
+      <div class="io"><h4>Salida</h4><pre>12</pre></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Grafo funcional</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Ordenamiento (counting sort)</span>
+      <span class="ptag">Análisis de casos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Una recta con \(N\) teleportadores (cada uno une dos posiciones; al pisar un extremo
+       saltas al otro y sigues hacia el este). Empiezas en el oeste y cuentas 1 punto por
+       cada salto. Antes de partir puedes <strong>añadir hasta \(M\) teleportadores</strong>
+       donde quieras (incluso en coordenadas no enteras). Calcula el máximo de puntos. Con
+       \(N, M \le 10^6\), hace falta \(O(N\log N)\) o \(O(N)\) con I/O rápida.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, M \le 10^6\) y archivos de hasta \(\sim 15\) MB ⇒ necesitas
+                <strong>I/O rápida</strong> y recorridos <strong>iterativos</strong> (nada
+                de recursión, evitas desbordar la pila). El ordenamiento de los \(2N\)
+                extremos domina: \(O(N\log N)\), o \(O(N)\) con counting sort porque las
+                posiciones son \(\le 2\cdot10^6\). La banda de 30 puntos (\(N,M\le 500\))
+                perdona el constante: ahí basta el mismo modelo con <code>sort</code> y
+                E/S normal.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es lo que de verdad cuenta?</summary>
+      <div class="body">
+        <p class="q">Caminar entre dos extremos no da puntos ni cambia nada. ¿Y si lo único
+           que importa son los <em>saltos</em>? ¿Qué pasaría si colapsas todo el "caminar"?</p>
+        <p>Los \(2N\) extremos (todos distintos) parten la recta en \(2N+1\)
+           <strong>intervalos</strong>. Avanzar dentro de un intervalo es instantáneo: lo
+           único relevante es a qué intervalo llegas después de cada teletransporte. Piensa
+           en términos de intervalos, no de posiciones exactas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por la banda de 30 puntos</summary>
+      <div class="body">
+        <p class="q">Con \(N, M \le 500\), ¿qué te exige menos? ¿Realmente cambia el
+           algoritmo, o solo te perdona el constante?</p>
+        <p>La banda chica <strong>no pide una idea distinta</strong>: pide el mismo modelo,
+           pero te deja usar <code>sort</code> normal y <code>cin/cout</code> sin afinar.
+           Úsala para <strong>validar tu modelo a mano</strong> sobre los dos ejemplos
+           antes de pelear con la I/O de \(10^6\). Si entiendes bien por qué el Ejemplo 1
+           da 6 y el 2 da 12, ya casi tienes los 100.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — De intervalos a un grafo funcional</summary>
+      <div class="body">
+        <p class="q">Ordena los \(2N\) extremos por posición y dales un rango \(0,1,\dots,2N-1\).
+           Si estás en el intervalo \(i\), su frontera derecha es el extremo de rango \(i\):
+           lo pisas, saltas a su pareja y, como sigues al este, ¿en qué intervalo caes?</p>
+        <p>Caes en el intervalo <strong>inmediatamente al este de la pareja</strong>. Si la
+           pareja del extremo \(i\) tiene rango \(\textit{partner}[i]\), entonces
+           \(\textit{next}[i] = \textit{partner}[i] + 1\). El intervalo \(2N\) (el último) es
+           <strong>terminal</strong> (sin salida). Cada intervalo intermedio tiene grado de
+           entrada 1 y de salida 1.</p>
+        <p class="q">Un grafo donde cada nodo tiene exactamente una flecha de salida (salvo el
+           terminal) y una de entrada (salvo el primero)... ¿en qué se descompone?</p>
+        <p>En <strong>exactamente un camino</strong> del primer intervalo (\(0\)) al terminal
+           (\(2N\)), más un conjunto de <strong>ciclos disjuntos</strong>.</p>
+      </div>
+    </details>
+
+    <figure>
+      <svg viewBox="0 0 760 300" role="img" aria-label="Grafo funcional del Ejemplo 1: el camino I0 a I4 a I6, más los ciclos I1-I3 (longitud 2), I2 (longitud 1) e I5 (longitud 1).">
+        <rect x="0" y="0" width="760" height="300" fill="#ffffff"/>
+        <defs>
+          <marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+          </marker>
+          <marker id="ac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#d97706"/>
+          </marker>
+        </defs>
+
+        <text x="30" y="40" font-size="13" fill="#1f2937" font-weight="700">Camino (vale P = 2 puntos)</text>
+        <!-- camino I0 -> I4 -> I6 -->
+        <line x1="146" y1="80" x2="294" y2="80" stroke="#2563eb" stroke-width="2.2" marker-end="url(#ap)"/>
+        <line x1="346" y1="80" x2="494" y2="80" stroke="#2563eb" stroke-width="2.2" marker-end="url(#ap)"/>
+        <g>
+          <circle cx="120" cy="80" r="26" fill="#eef2ff" stroke="#5b8cff" stroke-width="2"/>
+          <circle cx="320" cy="80" r="26" fill="#eef2ff" stroke="#5b8cff" stroke-width="2"/>
+          <circle cx="520" cy="80" r="26" fill="#dcfce7" stroke="#34a853" stroke-width="2"/>
+        </g>
+        <g font-size="15" fill="#1f2937" text-anchor="middle" font-weight="700">
+          <text x="120" y="85">I0</text><text x="320" y="85">I4</text><text x="520" y="85">I6</text>
+        </g>
+        <text x="120" y="130" font-size="11" fill="#6b7280" text-anchor="middle">inicio</text>
+        <text x="520" y="130" font-size="11" fill="#6b7280" text-anchor="middle">terminal (fin)</text>
+
+        <text x="30" y="190" font-size="13" fill="#1f2937" font-weight="700">Ciclos disjuntos</text>
+        <!-- ciclo I1 <-> I3 (longitud 2) -->
+        <path d="M141,212 Q180,178 219,212" fill="none" stroke="#d97706" stroke-width="2.2" marker-end="url(#ac)"/>
+        <path d="M219,238 Q180,272 141,238" fill="none" stroke="#d97706" stroke-width="2.2" marker-end="url(#ac)"/>
+        <g>
+          <circle cx="120" cy="225" r="26" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+          <circle cx="240" cy="225" r="26" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        </g>
+        <g font-size="15" fill="#1f2937" text-anchor="middle" font-weight="700">
+          <text x="120" y="230">I1</text><text x="240" y="230">I3</text>
+        </g>
+        <text x="180" y="290" font-size="11" fill="#6b7280" text-anchor="middle">longitud 2</text>
+
+        <!-- ciclo I2 (auto-lazo, longitud 1) -->
+        <path d="M430,205 C400,170 480,170 450,205" fill="none" stroke="#d97706" stroke-width="2.2" marker-end="url(#ac)"/>
+        <circle cx="440" cy="225" r="26" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="440" y="230" font-size="15" fill="#1f2937" text-anchor="middle" font-weight="700">I2</text>
+        <text x="440" y="290" font-size="11" fill="#6b7280" text-anchor="middle">longitud 1</text>
+
+        <!-- ciclo I5 (auto-lazo, longitud 1) -->
+        <path d="M590,205 C560,170 640,170 610,205" fill="none" stroke="#d97706" stroke-width="2.2" marker-end="url(#ac)"/>
+        <circle cx="600" cy="225" r="26" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="600" y="230" font-size="15" fill="#1f2937" text-anchor="middle" font-weight="700">I5</text>
+        <text x="600" y="290" font-size="11" fill="#6b7280" text-anchor="middle">longitud 1</text>
+      </svg>
+      <figcaption>Ejemplo 1 como grafo funcional sobre los \(7\) intervalos. El <strong>camino</strong>
+        \(I_0 \to I_4 \to I_6\) ya vale \(P = 2\) puntos. Aparte quedan tres ciclos disjuntos:
+        \(\{I_1, I_3\}\) de longitud 2 y los auto-lazos \(\{I_2\}\), \(\{I_5\}\) de longitud 1.</figcaption>
+    </figure>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿Cuánto vale "enganchar" un ciclo al camino?</summary>
+      <div class="body">
+        <p>Sin agregar nada, los puntos son la <strong>longitud del camino</strong> \(P\)
+           (número de flechas desde \(I_0\) hasta el terminal \(I_{2N}\)). Un ciclo, por sí
+           solo, nunca lo visitas: jamás cae en tu recorrido.</p>
+        <p class="q">Al colocar un teleportador nuevo eliges <strong>dónde</strong> caen sus dos
+           extremos. ¿Qué pasa si pones uno en un intervalo del camino y el otro en un
+           intervalo de un ciclo?</p>
+        <p>Fusionas ambas componentes: el recorrido ahora <strong>entra al ciclo, lo da entero
+           y vuelve</strong>. Las flechas totales recorridas aumentan en \(L + 2\): las \(L\)
+           del ciclo más \(2\) por el par de saltos del teleportador nuevo. Es decir,
+           enganchar un ciclo de longitud \(L\) con <strong>un</strong> teleportador suma
+           \(L+2\) puntos.</p>
+        <p>Otros casos del análisis oficial: poner ambos extremos en intervalos de la
+           <em>misma</em> componente <strong>reduce</strong> saltos (nunca conviene); poner
+           ambos extremos <em>dentro del mismo intervalo</em> crea un ciclo nuevo de longitud
+           \(1\) y suma \(+1\).</p>
+        <p class="q">Si cada teleportador engancha un ciclo y eso da \(L+2\), ¿qué ciclo
+           tomas primero?</p>
+        <p>El <strong>más grande disponible</strong> (greedy): max-heap u ordenar de mayor a
+           menor.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — ¿Y si te sobran teleportadores?</summary>
+      <div class="body">
+        <p class="q">Tienes \(M\) teleportadores y solo \(k\) ciclos. Si \(M > k\), ya
+           enganchaste todos los ciclos. ¿Qué haces con los \(r = M - k\) sobrantes?</p>
+        <p>Con un sobrante, pones sus dos extremos <strong>dentro de un intervalo del
+           camino</strong>: creas un ciclo de longitud \(1\) (\(+1\), caso 3). Con el
+           siguiente sobrante <strong>enganchas</strong> ese ciclo recién creado
+           (\(+1+2 = +3\), caso 1). Y así alternas \(+1, +3, +1, +3, \dots\)</p>
+        <p>La suma de esos \(r\) sobrantes es entonces
+           \(\text{leftover}(r) = 2r\) si \(r\) es par, y \(2r-1\) si \(r\) es impar
+           (la serie empieza y —cuando \(r\) es impar— termina en \(+1\)).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Los \(2N\) extremos parten la recta en \(2N+1\) intervalos.
+           Modela los intervalos como nodos de un <strong>grafo funcional</strong>: al pisar
+           el extremo de rango \(i\) saltas a su pareja y caes en el intervalo al este de
+           ella, así \(\textit{next}[i] = \textit{partner}[i] + 1\); el intervalo \(2N\) es
+           terminal. El grafo se descompone en <strong>un camino</strong> \(I_0 \to \dots \to
+           I_{2N}\) (de longitud \(P\)) más <strong>ciclos disjuntos</strong>. Sin agregar
+           nada ganas \(P\) puntos.</p>
+        <p><strong>Greedy.</strong> Cada teleportador nuevo engancha al camino el ciclo más
+           grande disponible, sumando \(L+2\). Toma siempre el mayor primero. Si se agotan los
+           ciclos y sobran \(r\) teleportadores, suman \(\text{leftover}(r)\) alternando
+           \(+1/+3\).</p>
+        <p><strong>Respuesta:</strong>
+           \[ P \;+\!\! \sum_{\text{ciclos usados}}\!\!(L+2) \;+\; \text{leftover}\big(\max(0,\,M-k)\big), \]
+           donde \(k\) es el número de ciclos y \(\text{leftover}(r) = 2r\) si \(r\) es par,
+           \(2r-1\) si es impar.</p>
+        <p><strong>Por qué es óptimo.</strong> Enganchar cualquier ciclo (longitud \(\ge 1\))
+           rinde \(\ge 3\) por teleportador, así que conviene gastar primero los teleportadores
+           en los ciclos más grandes (intercambio: cambiar un ciclo grande por uno chico nunca
+           mejora). Cuando ya no hay ciclos, el mejor patrón forzado es \(+1,+3,+1,\dots\):
+           crear un ciclo de \(1\) y engancharlo. Los casos 2 (misma componente) restan, así
+           que jamás se usan.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, M
+leer los N teleportadores (W_i, E_i)
+
+// 1) ordenar los 2N extremos por posicion -> rango 0..2N-1
+//    (counting sort: posiciones <= 2_000_000  => O(N))
+extremos = todos los W_i y E_i, recordando a que teleportador pertenecen
+ordenar extremos por posicion ascendente
+rank[extremo] = su indice en el orden
+
+// 2) partner[r] = rango de la pareja del extremo de rango r
+para cada teleportador con extremos en rangos a, b:
+    partner[a] = b ;  partner[b] = a
+
+// 3) grafo funcional:  next[i] = partner[i] + 1   (i = 0..2N-1)
+//    el vertice 2N es terminal (sin salida)
+para i en 0..2N-1:
+    next[i] = partner[i] + 1
+
+// 4) recorrer el camino I0 -> ... -> terminal (ITERATIVO)
+visitado[0..2N] = falso
+P = 0 ;  v = 0
+mientras v != 2N:
+    visitado[v] = verdadero
+    v = next[v] ;  P = P + 1
+
+// 5) longitudes de los ciclos (nodos 0..2N-1 no visitados)
+ciclos = []
+para s en 0..2N-1:
+    si no visitado[s]:
+        L = 0 ;  v = s
+        mientras no visitado[v]:
+            visitado[v] = verdadero
+            v = next[v] ;  L = L + 1
+        ciclos.append(L)
+
+// 6) greedy: engancha primero los ciclos mas grandes
+ordenar ciclos de mayor a menor
+ans = P ;  usados = 0
+para cada L en ciclos:
+    si usados == M: terminar
+    ans = ans + (L + 2) ;  usados = usados + 1
+
+// 7) teleportadores sobrantes: patron +1/+3
+r = M - usados
+si r es par: ans = ans + 2*r
+si no:       ans = ans + 2*r - 1
+
+imprimir ans</pre>
+        </div>
+
+        <p><strong>Verifícalo con el Ejemplo 1.</strong> Extremos ordenados con sus parejas:
+           \(1\!\leftrightarrow\!4\), \(2\!\leftrightarrow\!3\), \(10\!\leftrightarrow\!11\).
+           Flechas: \(I_0\to I_4\), \(I_1\to I_3\), \(I_2\to I_2\), \(I_3\to I_1\),
+           \(I_4\to I_6\), \(I_5\to I_5\). Camino \(I_0\to I_4\to I_6\) ⇒ \(P=2\); ciclos
+           \([2,1,1]\). Con \(M=1\) enganchas el mayor (\(L=2\)): \(2+(2+2)=6\). ✔</p>
+        <p class="note">Ejemplo 2: camino \(I_0\to I_3\to I_2\to I_1\to I_4\to I_6\) ⇒ \(P=5\);
+           un solo ciclo \(\{I_5\}\) de longitud 1. Con \(M=3\): enganchas el ciclo (\(+3\)) y
+           sobran \(r=2\) ⇒ \(\text{leftover}(2)=4\) ⇒ \(5+3+4=12\). ✔</p>
+
+        <p><strong>Complejidad:</strong> \(O(N\log N)\) por el ordenamiento (o \(O(N)\) con
+           counting sort, porque las posiciones son \(\le 2\cdot10^6\)); construir el grafo y
+           recorrer camino + ciclos es \(O(N)\). Memoria \(O(N)\). La respuesta es a lo más
+           \(\sim 4\cdot10^6\): cabe en 32 bits, pero usa 64 bits por margen.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (solo si hace falta)</span>
+<pre>// Archivos de hasta ~15 MB: usa un lector con buffer propio
+// (o al menos scanf / ios::sync_with_stdio(false)).
+// Recorre camino y ciclos con BUCLES, nunca con recursion:
+// con N = 1e6 la recursion desborda la pila.
+// Counting sort sobre las posiciones (<= 2e6) evita el log N.</pre>
+          <p class="note">Nada más exótico: el corazón es el modelo de intervalos + el greedy.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
