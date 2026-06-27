@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **55 / 142**
+Total de tareas: **142** · Completadas: **56 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -107,14 +107,14 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 7 | Maze | `2010/07 Maze/index.html` |
 | [x] | 8 | Save It | `2010/08 Save It/index.html` |
 
-## IOI 2011 — 3 / 6
+## IOI 2011 — 4 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Tropical Garden | `2011/01 Tropical Garden/index.html` |
 | [x] | 2 | Race | `2011/02 Race/index.html` |
 | [x] | 3 | Ricehub | `2011/03 Ricehub/index.html` |
-| [ ] | 4 | Crocodile | `2011/04 Crocodile/index.html` |
+| [x] | 4 | Crocodile | `2011/04 Crocodile/index.html` |
 | [ ] | 5 | Elephants | `2011/05 Elephants/index.html` |
 | [ ] | 6 | Parrots | `2011/06 Parrots/index.html` |
 

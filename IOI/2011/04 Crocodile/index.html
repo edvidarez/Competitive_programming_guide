@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2011 · Tarea 4 — Crocodile</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2011 · Día 2 · Pattaya City, Tailandia</div>
+    <h1>Tarea <span class="num">4</span> — Crocodile</h1>
+    <p class="note">La ciudad subterránea del cocodrilo · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La arqueóloga Benjamas corre por su vida tras investigar la misteriosa
+       <em>Ciudad Subterránea del Cocodrilo</em>. La ciudad tiene \(N\)
+       <strong>cámaras</strong>. Hay \(M\) <strong>corredores bidireccionales</strong>;
+       cada uno conecta un par <em>distinto</em> de cámaras distintas. Recorrer cada
+       corredor puede tomar un tiempo diferente. Solo \(K\) de las \(N\) cámaras son
+       <strong>cámaras de salida</strong> que le permiten escapar. Benjamas arranca en
+       la cámara \(0\) y quiere llegar a una salida lo más rápido posible.</p>
+
+    <p>El <strong>cocodrilo guardián</strong> quiere impedir que Benjamas escape. Desde
+       su guarida controla puertas secretas que pueden <strong>bloquear un único
+       corredor</strong> a la vez. Es decir, cuando bloquea un corredor nuevo, el que
+       estaba bloqueado antes se vuelve a abrir.</p>
+
+    <p>La situación de Benjamas se describe así: <strong>cada vez que intenta salir de
+       una cámara</strong>, el cocodrilo guardián puede elegir bloquear <em>uno</em> de
+       los corredores adyacentes a esa cámara. Benjamas entonces elige y sigue uno de
+       los corredores <em>no</em> bloqueados hacia la siguiente cámara. Una vez que
+       Benjamas entra a un corredor, el guardián no puede bloquearlo hasta que ella
+       llega al otro extremo. Al entrar a la siguiente cámara, el guardián puede de
+       nuevo elegir bloquear uno de los corredores salientes (posiblemente el mismo
+       corredor que Benjamas acaba de recorrer), y así sucesivamente.</p>
+
+    <p>A Benjamas le gustaría tener un <strong>plan de escape</strong> simple de
+       antemano: un conjunto de instrucciones que le digan qué hacer al llegar a cada
+       cámara. Sea \(A\) una cámara cualquiera. Si es una salida, no se necesita
+       instrucción (obviamente, ya puede escapar). En otro caso, la instrucción para la
+       cámara \(A\) debe tener una de estas dos formas:</p>
+    <ul>
+      <li>«Si alguna vez llegas a la cámara \(A\), toma el corredor que lleva a la
+          cámara \(B\). Pero si ese corredor está bloqueado, entonces toma el corredor
+          que lleva a la cámara \(C\).»</li>
+      <li>«No te preocupes por la cámara \(A\): según este plan de escape, es imposible
+          que llegues a ella.»</li>
+    </ul>
+
+    <p>Nota que en algunos casos (por ejemplo, si tu plan manda a Benjamas a correr en
+       círculo) el guardián podría lograr impedirle llegar a una salida. Un plan de
+       escape es <strong>bueno</strong> si Benjamas tiene <em>garantizado</em> llegar a
+       una salida en tiempo finito, sin importar lo que haga el guardián. Para un plan
+       de escape bueno, sea \(T\) el menor tiempo tal que, después del tiempo \(T\),
+       Benjamas tiene garantizado haber llegado a una salida. En ese caso, decimos que
+       el plan de escape bueno <strong>toma tiempo \(T\)</strong>.</p>
+
+    <h2>Tu tarea</h2>
+    <p>Escribe un procedimiento <code>travel_plan(N, M, R, L, K, P)</code> que recibe
+       los siguientes parámetros:</p>
+    <ul>
+      <li><code>N</code> — el número de cámaras. Las cámaras están numeradas de \(0\) a
+          \(N-1\).</li>
+      <li><code>M</code> — el número de corredores. Los corredores están numerados de
+          \(0\) a \(M-1\).</li>
+      <li><code>R</code> — un arreglo bidimensional de enteros que representa los
+          corredores. Para \(0 \le i &lt; M\), el corredor \(i\) conecta dos cámaras
+          distintas <code>R[i][0]</code> y <code>R[i][1]</code>. No hay dos corredores
+          que unan el mismo par de cámaras.</li>
+      <li><code>L</code> — un arreglo unidimensional de enteros con los tiempos
+          necesarios para cruzar los corredores. Para \(0 \le i &lt; M\), el valor
+          \(1 \le L[i] \le 1\,000\,000\,000\) es el tiempo que Benjamas tarda en correr
+          por el corredor \(i\).</li>
+      <li><code>K</code> — el número de cámaras de salida. Puedes suponer que
+          \(1 \le K &lt; N\).</li>
+      <li><code>P</code> — un arreglo unidimensional de enteros con \(K\) entradas
+          distintas que describen las cámaras de salida. Para \(0 \le i &lt; K\), el
+          valor <code>P[i]</code> es el número de la \(i\)-ésima cámara de salida. La
+          cámara \(0\) nunca será una cámara de salida.</li>
+    </ul>
+    <p>Tu procedimiento debe <strong>regresar</strong> el menor tiempo \(T\) para el
+       que existe un plan de escape bueno que toma tiempo \(T\).</p>
+
+    <p>Puedes suponer que <strong>cada cámara que no es salida tiene al menos dos
+       corredores que salen de ella</strong>. También puedes suponer que en cada caso
+       de prueba existe un plan de escape bueno con \(T \le 1\,000\,000\,000\).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar ni
+       escribes a la salida estándar. Implementas el procedimiento <code>travel_plan</code>
+       y el evaluador (grader) lo llama con los parámetros descritos arriba. Debes
+       devolver un <code>int</code>: el evaluador lo compara <em>exactamente</em> con la
+       solución esperada.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar (crocodile.c / crocodile.cpp / crocodile.pas)</span>
+<pre>int travel_plan(int N, int M, int R[][2], int L[], int K, int P[]);
+  // N  = número de cámaras (0 .. N-1); Benjamas arranca en la cámara 0
+  // M  = número de corredores (0 .. M-1)
+  // R[i][0], R[i][1] = extremos del corredor i (cámaras distintas)
+  // L[i] = tiempo para cruzar el corredor i  (1 .. 1e9)
+  // K  = número de salidas  (1 <= K < N)
+  // P[0..K-1] = cámaras de salida (distintas; la cámara 0 nunca es salida)
+  // REGRESA: el menor tiempo T garantizado para escapar bajo el peor bloqueo.</pre>
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo (CPU)</td><td>2 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB (la pila cuenta al total; sin límite explícito de pila)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tiempo de un corredor</td><td><span class="badge">\(1 \le L[i] \le 10^9\)</span></td></tr>
+        <tr><td>Número de salidas</td><td><span class="badge">\(1 \le K &lt; N\)</span></td></tr>
+        <tr><td>Garantía</td><td><span class="badge">existe un plan bueno con \(T \le 10^9\)</span></td></tr>
+        <tr><td>Grados</td><td><span class="badge">cada cámara que no es salida tiene grado \(\ge 2\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td class="pts">46</td>
+            <td>\(3 \le N \le 1\,000\). La ciudad es un <strong>árbol</strong>: \(M = N-1\)
+                y todo par de cámaras está conectado por una secuencia de corredores.
+                Cada cámara de salida está conectada a <strong>exactamente otra</strong>
+                cámara (las salidas son hojas). Cualquier otra cámara está conectada
+                directamente a <strong>tres o más</strong> cámaras.</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="pts">43</td>
+            <td>\(3 \le N \le 1\,000\). \(2 \le M \le 100\,000\). Grafo general (puede
+                tener ciclos).</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td class="pts">11</td>
+            <td>\(3 \le N \le 100\,000\). \(2 \le M \le 1\,000\,000\). Grafo general.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <p>Considera el caso de la Figura 1, donde \(N = 5\), \(M = 4\), \(K = 3\), y</p>
+    <div class="example">
+      <div class="io"><h4>Parámetros</h4><pre>corredores (R) y tiempos (L):
+  0 — 1   L = 2
+  0 — 2   L = 3
+  3 — 2   L = 1
+  2 — 4   L = 4
+salidas P = [1, 3, 4]</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>travel_plan(...) = 7</pre></div>
+    </div>
+    <figure>
+      <img alt="Figura 1: árbol con 5 cámaras. La cámara 0 (con triángulo, inicio) se une a la salida 1 con peso 2 y a la cámara 2 con peso 3. La cámara 2 se une a la salida 3 con peso 1 y a la salida 4 con peso 4. Las salidas 1, 3 y 4 tienen borde grueso."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 1. Las cámaras son círculos y los corredores son líneas. Las
+        salidas (1, 3, 4) tienen borde grueso. Benjamas arranca en la cámara 0
+        (marcada con un triángulo).</figcaption>
+    </figure>
+    <p>Un plan de escape óptimo es el siguiente:</p>
+    <ul>
+      <li>Si alguna vez llegas a la cámara \(0\), toma el corredor que lleva a la
+          cámara \(1\). Pero si ese corredor está bloqueado, toma el corredor que lleva
+          a la cámara \(2\).</li>
+      <li>Si alguna vez llegas a la cámara \(2\), toma el corredor que lleva a la cámara
+          \(3\). Pero si ese corredor está bloqueado, toma el corredor que lleva a la
+          cámara \(4\).</li>
+    </ul>
+    <p class="note">En el peor caso, Benjamas llega a una salida en \(7\) unidades de
+       tiempo. Por lo tanto <code>travel_plan</code> debe regresar \(7\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <p>Considera el caso de la Figura 2, donde \(N = 5\), \(M = 7\), \(K = 2\), y</p>
+    <div class="example">
+      <div class="io"><h4>Parámetros</h4><pre>corredores (R) y tiempos (L):
+  0 — 2   L = 4
+  0 — 3   L = 3
+  3 — 2   L = 2
+  2 — 1   L = 10
+  0 — 1   L = 100
+  0 — 4   L = 7
+  3 — 4   L = 9
+salidas P = [1, 3]</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>travel_plan(...) = 14</pre></div>
+    </div>
+    <figure>
+      <img alt="Figura 2: grafo general con 5 cámaras y 7 corredores. La cámara 0 (con triángulo) se une a: 1 con peso 100, 2 con peso 4, 3 con peso 3, 4 con peso 7. Además 2-1 con peso 10, 3-2 con peso 2, 3-4 con peso 9. Las salidas 1 y 3 tienen borde grueso."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 2. El mismo formato: salidas (1, 3) con borde grueso, inicio en
+        la cámara 0 (triángulo). Hay ciclos.</figcaption>
+    </figure>
+    <p>Un plan de escape óptimo es:</p>
+    <ul>
+      <li>Si alguna vez llegas a la cámara \(0\), toma el corredor que lleva a la cámara
+          \(3\). Pero si ese corredor está bloqueado, toma el corredor que lleva a la
+          cámara \(2\).</li>
+      <li>Si alguna vez llegas a la cámara \(2\), toma el corredor que lleva a la cámara
+          \(3\). Pero si ese corredor está bloqueado, toma el corredor que lleva a la
+          cámara \(1\).</li>
+      <li>No te preocupes por la cámara \(4\): según este plan, es imposible que llegues
+          a ella.</li>
+    </ul>
+    <p class="note">Benjamas llega a una de las salidas a más tardar en \(14\) unidades
+       de tiempo. Por lo tanto <code>travel_plan</code> debe regresar \(14\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Dijkstra modificado</span>
+      <span class="ptag">Juego adversarial</span>
+      <span class="ptag">DP en árbol</span>
+      <span class="ptag">Funcional</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Grafo no dirigido de \(N\) cámaras y \(M\) corredores con pesos \(L \ge 1\).
+       Benjamas arranca en la cámara \(0\); \(K\) cámaras son salidas. Cada vez que
+       <em>sale</em> de una cámara, el cocodrilo bloquea <strong>uno</strong> de los
+       corredores adyacentes y ella debe tomar otro. Devuelve el menor tiempo \(T\)
+       garantizado para llegar a una salida bajo el <strong>peor bloqueo posible</strong>
+       (el plan de escape óptimo). La respuesta es un <code>int</code> que el evaluador
+       compara de forma <strong>exacta</strong>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>La Subtarea 1 (\(N \le 1000\), <strong>árbol</strong>, salidas en las
+                hojas) es el caso instructivo: un DP en el árbol. Las Subtareas 2 y 3
+                rompen el árbol (hay ciclos) pero el mismo principio se vuelve un
+                <strong>Dijkstra modificado</strong>. Con \(N \le 10^5\) y \(M \le 10^6\),
+                la Subtarea 3 exige la versión con heap binario, \(O((N+M)\log N)\), y
+                lectura/memoria cuidadas (los <code>.in</code> llegan a ~17 MB).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar el juego?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que esto es un grafo con pesos y que «el tiempo
+           garantizado para escapar» es una cantidad que puedes asociar a <em>cada</em>
+           cámara, no solo a la cámara 0?</p>
+        <p>Define \(T[u]\) = tiempo garantizado para escapar <em>empezando desde</em> la
+           cámara \(u\), suponiendo el mejor plan de Benjamas contra el peor cocodrilo.
+           Para una salida, \(T = 0\). La respuesta del problema es \(T[0]\).</p>
+        <p class="q">Cuando Benjamas está en \(u\) y mira a sus vecinos \(v\), el costo
+           de «usar el corredor hacia \(v\) y luego escapar desde \(v\)» es
+           \(T[v] + L(u,v)\). Si el cocodrilo pudiera bloquear <em>cualquier</em>
+           corredor adyacente a \(u\), ¿cuál bloquearía? ¿Y con cuál se queda entonces
+           Benjamas?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La observación clave: «segundo mejor»</summary>
+      <div class="body">
+        <p>Ordena las ofertas de los vecinos de \(u\): los valores \(T[v] + L(u,v)\).
+           Benjamas querría tomar el <strong>más chico</strong>, pero el cocodrilo, que
+           juega justo antes que ella, bloquea precisamente ese corredor (el de menor
+           valor). Así que Benjamas queda obligada a tomar, en el peor caso, el
+           <strong>segundo valor más pequeño</strong>.</p>
+        <p>Por lo tanto, para toda cámara \(u\) que no es salida:</p>
+        <p>\[ T[u] = \text{2.º menor de } \{\, T[v] + L(u,v) \;:\; v \text{ vecino de } u \,\}. \]</p>
+        <p class="q">El enunciado garantiza que cada cámara que no es salida tiene grado
+           \(\ge 2\). ¿Por qué esa condición es exactamente lo que necesitas para que
+           «el segundo menor» <em>siempre exista</em>?</p>
+        <p class="note">Cuidado con la trampa más común: NO es la distancia mínima
+           (Dijkstra normal). El cocodrilo te quita siempre la mejor arista, así que la
+           cantidad relevante es la <strong>segunda mejor</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 1 (46 pts): el árbol</summary>
+      <div class="body">
+        <p class="q">En un árbol enraizado en la cámara \(0\), las salidas son las
+           hojas y cada cámara interna tiene grado \(\ge 3\) (o sea \(\ge 2\) hijos).
+           ¿Notaste que un plan óptimo nunca manda a Benjamas <em>hacia</em> la raíz,
+           sino siempre <em>alejándose</em> de ella, hacia las hojas-salida?</p>
+        <p>Entonces \(T\) se calcula con un <strong>DP en postorden</strong>: para una
+           hoja-salida \(T = 0\); para una cámara interna \(u\),
+           \(T[u] = \) segundo menor de \(\{\,T[\text{hijo}] + L\,\}\) sobre sus hijos.
+           Como cada interna tiene \(\ge 2\) hijos, el segundo menor existe. La
+           respuesta es \(T[0]\). Esto es \(O(N)\).</p>
+        <p class="q">El árbol te da la intuición limpia. Pero en cuanto haya un ciclo,
+           ¿sigue teniendo sentido «hijo» y «alejarse de la raíz»? ¿Cómo calculas el
+           «segundo menor» cuando las dependencias entre cámaras pueden ir en cualquier
+           dirección?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 2 y 3: Dijkstra… pero al revés</summary>
+      <div class="body">
+        <p class="q">En el árbol calculabas \(T[u]\) en cuanto conocías a sus hijos. En
+           un grafo general no hay «hijos», pero observa que \(T[u]\) depende de los
+           vecinos con <em>menor</em> \(T\). ¿Eso no se parece a Dijkstra, donde fijas
+           los nodos en orden creciente de distancia?</p>
+        <p>Sí: corre un <strong>Dijkstra multi-fuente que arranca desde las salidas</strong>
+           (no desde la cámara 0). Las salidas se fijan con \(T = 0\) e inician la
+           propagación. La diferencia con Dijkstra normal es <em>cuándo</em> fijas un
+           nodo: en vez de fijarlo con su distancia <strong>mínima</strong>, lo fijas
+           con su <strong>segunda mejor</strong> oferta.</p>
+        <p class="q">Para eso, ¿qué necesitas guardar por cada nodo? Si llevas las
+           <em>dos</em> mejores ofertas que ha recibido de vecinos ya finalizados,
+           ¿cuándo es seguro declarar definitivo a un nodo?</p>
+        <p>Pista dentro de la pista: guarda \(d_1[u]\) (menor oferta) y \(d_2[u]\)
+           (segunda menor). Un nodo se finaliza con \(T[u] = d_2[u]\); ahí, y solo ahí,
+           propaga \(T[u] + L\) a sus vecinos. Como las aristas son positivas, una vez
+           que un nodo entra a la frontera su costo no decrece: procesar en orden
+           creciente de \(d_2\) es correcto, igual que en Dijkstra.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea unificada.</strong> Define \(T[u]\) = tiempo garantizado para
+           escapar desde \(u\). Las salidas tienen \(T = 0\). Para toda otra cámara,
+           \(T[u]\) es el <em>segundo</em> valor más pequeño de \(\{T[v] + L(u,v)\}\)
+           sobre sus vecinos (el cocodrilo bloquea siempre la mejor arista, Benjamas
+           toma la segunda mejor). La respuesta es \(T[0]\).</p>
+
+        <p>En un árbol esto es un DP en postorden enraizando en 0 (\(O(N)\)). En el caso
+           general es un <strong>Dijkstra modificado multi-fuente desde las salidas</strong>
+           que fija cada nodo con su <strong>segunda mejor distancia</strong>. Una sola
+           implementación (la de abajo) cubre las tres subtareas.</p>
+
+        <p><strong>Por qué es correcto.</strong> Cada arista tiene peso \(\ge 1\)
+           (positivo). Igual que en Dijkstra, cuando sacamos del montículo el nodo con
+           el menor \(d_2\) pendiente, ese \(d_2\) ya no puede mejorar: cualquier oferta
+           futura pasa por un vecino aún no finalizado con \(d_2\) mayor o igual, más una
+           arista positiva. Por eso podemos <strong>congelar</strong> \(T[u] = d_2[u]\)
+           y propagarlo. Como cada no-salida tiene grado \(\ge 2\), su segunda oferta
+           \(d_2\) siempre llega a ser finita.</p>
+
+        <p><strong>El patrón «dos mejores» por nodo.</strong> Cuando un vecino finalizado
+           ofrece \(nd = T[u] + L(u,v)\) al nodo \(v\):</p>
+        <ul>
+          <li>si \(nd &lt; d_1[v]\): la nueva oferta es la mejor; empuja la vieja \(d_1\)
+              a \(d_2\) y pon \(d_1[v] = nd\);</li>
+          <li>si no, pero \(nd &lt; d_2[v]\): solo actualiza \(d_2[v] = nd\);</li>
+          <li>en ambos casos, <strong>reinsértalo en el montículo solo si \(d_2[v]\)
+              mejoró a un valor finito</strong> (no empujes \(\infty\)).</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion travel_plan(N, M, R, L, K, P):
+    construir lista de adyacencia ady[u] = [(v, w), ...]   // no dirigida
+    d1[0..N-1] = +INF;  d2[0..N-1] = +INF;  done[0..N-1] = falso
+
+    minHeap H ordenado por la clave (segunda mejor distancia)
+    para cada salida p en P:
+        d1[p] = 0;  d2[p] = 0
+        H.push( (clave=0, nodo=p) )
+
+    mientras H no esté vacío:
+        (d, u) = H.pop()                  // d = clave con que se insertó
+        si done[u] o d != d2[u]:          // entrada obsoleta -> descártala
+            continuar
+        done[u] = verdadero
+        T_u = d2[u]                        // se FIJA con la 2.ª mejor
+        para cada (v, w) en ady[u] con done[v] == falso:
+            nd = T_u + w                   // usar enteros de 64 bits
+            si nd < d1[v]:
+                d2[v] = d1[v];  d1[v] = nd
+            sino si nd < d2[v]:
+                d2[v] = nd
+            si d2[v] mejoró a un valor finito:
+                H.push( (clave=d2[v], nodo=v) )
+
+    regresar (int) d2[0]                    // la 2.ª mejor distancia del inicio</pre>
+        </div>
+
+        <p><strong>Traza del Ejemplo 1</strong> (\(N=5\); aristas
+           \(0\!-\!1{:}2,\ 0\!-\!2{:}3,\ 3\!-\!2{:}1,\ 2\!-\!4{:}4\); salidas
+           \(\{1,3,4\}\)). Las salidas arrancan con \(d_1=d_2=0\).</p>
+        <ul>
+          <li>Sale \((0,1)\): ofrece a \(0\) un \(nd=2\Rightarrow d_1[0]=2\) (sin push).</li>
+          <li>Sale \((0,3)\): ofrece a \(2\) un \(nd=1\Rightarrow d_1[2]=1\) (sin push).</li>
+          <li>Sale \((0,4)\): ofrece a \(2\) un \(nd=4\Rightarrow d_2[2]=4\), push\((4,2)\).</li>
+          <li>Sale \((4,2)\): se fija \(T[2]=4\) y ofrece a \(0\) un \(nd=4+3=7\Rightarrow d_2[0]=7\), push\((7,0)\); las ofertas a 3 (=5) y a 4 (=8) se descartan por estar ya finalizadas.</li>
+          <li>Sale \((7,0)\): se fija \(T[0]=7\).</li>
+        </ul>
+        <p>Devuelve \(d_2[0]=7\). ✓ &nbsp;&nbsp; (En el Ejemplo 2 el mismo proceso fija
+           \(T[2]=10\) —vía la salida 1 con peso 10, ya que la opción de 2 vía la salida
+           3 es la mejor y el cocodrilo la bloquea— y luego ofrece a \(0\) un
+           \(10+4=14\), que resulta su segunda mejor oferta. Devuelve \(14\). ✓)</p>
+
+        <p><strong>Complejidad.</strong> \(O((N+M)\log N)\) en tiempo (cada arista
+           provoca a lo sumo un par de inserciones en el montículo) y \(O(N+M)\) en
+           memoria. Para la Subtarea 1 (árbol) equivale a \(O(N)\). Medido: ~0.22 s en
+           el caso de \(10^6\) aristas, bien por debajo del límite de 2 s.</p>
+
+        <div class="note-box">
+          <strong>Trampas clásicas.</strong>
+          <ol>
+            <li><strong>Devolver la distancia mínima</strong> (Dijkstra normal) en vez de
+                la segunda mejor: ese es el error de un sólo carácter que tira los 100
+                puntos. La respuesta es \(d_2[0]\), no \(d_1[0]\).</li>
+            <li><strong>Arrancar desde la cámara 0:</strong> el Dijkstra es
+                <em>multi-fuente desde las salidas</em>. La cámara 0 es el
+                <em>destino</em> del proceso (su \(d_2\) es la respuesta).</li>
+            <li><strong>Desbordamiento:</strong> usa enteros de 64 bits en las sumas
+                internas. Con \(L\) hasta \(10^9\) y caminos largos, las ofertas
+                intermedias pasan de \(\texttt{int}\) (hasta ~\(10^{14}\)), aunque la
+                respuesta final cabe en \(\texttt{int}\) (\(T \le 10^9\)). Castea a
+                <code>int</code> solo al devolver \(d_2[0]\).</li>
+            <li><strong>Entradas obsoletas en el heap:</strong> usa <code>done[]</code> y
+                descarta toda entrada con clave \(\ne d_2[u]\) o ya finalizada, para no
+                reprocesar.</li>
+            <li><strong>Memoria/lectura en la Subtarea 3:</strong> limita tu solución a
+                \(O(N+M)\) (lista de adyacencia + arreglos \(d_1/d_2/\text{done}\)); con
+                \(10^6\) aristas, una E/S y una adyacencia cuidadas son la diferencia.</li>
+          </ol>
+        </div>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa long long para nd, d1[], d2[] (las ofertas intermedias rebasan int).
+priority_queue&lt;pair&lt;long long,int&gt;, vector&lt;...&gt;, greater&lt;...&gt;&gt; como min-heap.
+Adyacencia plana (CSR) o vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt; reservado: con M hasta
+1e6, evita reallocaciones. Retorna (int) d2[0].</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
