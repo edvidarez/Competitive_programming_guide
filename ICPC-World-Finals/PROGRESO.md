@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **188 / 200**
+Total de problemas: **200** · Completados: **189 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -275,11 +275,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Bridging the Gap | `2023/J/J.html` |
 | [x] | K | Alea Iacta Est | `2023/K/K.html` |
 
-## 2024 ICPC World Finals — 0 / 12
+## 2024 ICPC World Finals — 1 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Billboards | `2024/A/A.html` |
+| [x] | A | Billboards | `2024/A/A.html` |
 | [ ] | B | Bingo for the Win! | `2024/B/B.html` |
 | [ ] | C | Citizenship | `2024/C/C.html` |
 | [ ] | D | Doubles Horseback Wrestling | `2024/D/D.html` |
