@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2003 · Tarea 4 — Guess Which Cow</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2003 · Día 2 · Kenosha, Wisconsin (EUA)</div>
+    <h1>Tarea <span class="num">4</span> — Guess Which Cow</h1>
+    <p class="note">Adivina cuál vaca · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Las \(N\) (\(1 \le N \le 50\)) vacas del rebaño de Farmer John se parecen
+       muchísimo entre sí y están numeradas \(1\dots N\). Cuando Farmer John lleva a
+       una vaca a dormir a su establo, necesita saber <strong>cuál</strong> vaca es
+       para meterla en el establo correcto.</p>
+
+    <p>Las vacas se distinguen por \(P\) (\(1 \le P \le 8\)) propiedades, numeradas
+       \(1\dots P\), cada una con tres valores posibles. Por ejemplo, el color del
+       arete de una vaca podría ser amarillo, verde o rojo. Para simplificar, los
+       valores de cada propiedad se representan con las letras <code>X</code>,
+       <code>Y</code> y <code>Z</code>. Cualquier par de vacas de Farmer John difiere
+       en <strong>al menos una</strong> propiedad.</p>
+
+    <p>Escribe un programa que, dadas las propiedades de las vacas del rebaño, ayude a
+       Farmer John a determinar qué vaca está llevando a dormir. Tu programa puede
+       hacerle a Farmer John <strong>a lo más 100 preguntas</strong> de la forma:
+       <em>¿el valor de la vaca en cierta propiedad \(T\) está dentro de cierto
+       conjunto \(S\)?</em> Trata de hacer <strong>las menos preguntas posibles</strong>
+       para determinar la vaca.</p>
+
+    <h2>Entrada: <code>guess.in</code></h2>
+    <ul>
+      <li>La primera línea del archivo contiene dos enteros separados por espacio,
+          \(N\) y \(P\).</li>
+      <li>Cada una de las siguientes \(N\) líneas describe las propiedades de una vaca
+          con \(P\) letras separadas por espacio. La primera letra de cada línea es el
+          valor de la propiedad 1, y así sucesivamente. La segunda línea del archivo
+          describe a la vaca 1, la tercera línea describe a la vaca 2, etc.</li>
+    </ul>
+
+    <div class="example" style="grid-template-columns:1fr">
+      <div class="io"><h4>Ejemplo de entrada (guess.in)</h4><pre>4 2
+X Z
+X Y
+Y X
+Y Y</pre></div>
+    </div>
+
+    <h2>Detalles de implementación</h2>
+    <p>La fase de preguntas y respuestas ocurre por <strong>entrada y salida
+       estándar</strong>.</p>
+    <ul>
+      <li><strong>Preguntar:</strong> tu programa hace una pregunta sobre la vaca que
+          se está llevando a dormir escribiendo a salida estándar una línea con una
+          <code>Q</code>, seguida de un espacio, el número de propiedad, un espacio y
+          un conjunto de <strong>uno o más</strong> valores separados por espacios. Por
+          ejemplo, <code>Q 1 Z Y</code> significa <em>«¿la propiedad 1 vale
+          <code>Z</code> o <code>Y</code> para la vaca que se está llevando a
+          dormir?»</em>. La propiedad debe ser un entero en el rango \(1\dots P\). Todos
+          los valores deben ser <code>X</code>, <code>Y</code> o <code>Z</code>, y
+          ningún valor puede repetirse en una misma pregunta.</li>
+      <li><strong>Leer la respuesta:</strong> después de cada pregunta, lee una línea
+          con un solo entero. El <code>1</code> significa que el valor de la propiedad
+          indicada para la vaca <em>sí</em> está en el conjunto de valores dado; el
+          <code>0</code> significa que <em>no</em>.</li>
+      <li><strong>Responder:</strong> la última línea de salida de tu programa debe ser
+          una <code>C</code> seguida de un espacio y un solo entero que indica la vaca
+          que tu programa determinó que Farmer John está llevando a dormir.</li>
+    </ul>
+
+    <div class="note-box">
+      <strong>Dos canales distintos.</strong> La tabla de vacas se lee del
+      <em>archivo</em> <code>guess.in</code>, no de entrada estándar; la entrada
+      estándar es solo el canal de respuestas (los <code>0</code>/<code>1</code>). En
+      una tarea interactiva conviene <strong>vaciar el búfer</strong> (hacer
+      <code>flush</code>) después de cada pregunta <code>Q</code>, o la tubería se
+      bloquea esperándose mutuamente.
+    </div>
+
+    <h3>Ejemplo de intercambio (para la entrada de arriba)</h3>
+    <div class="example" style="grid-template-columns:1fr">
+      <div class="io"><h4>Diálogo programa ↔ juez</h4><pre>tu programa →  Q 1 X Z
+juez        →  0            (podría ser la vaca 3 o la 4)
+tu programa →  Q 2 Y
+juez        →  1            (¡tiene que ser la vaca 4!)
+tu programa →  C 4
+               (el programa termina)</pre></div>
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>64 MB</td></tr>
+        <tr><td>Número de vacas</td><td><span class="badge">\(1 \le N \le 50\)</span></td></tr>
+        <tr><td>Número de propiedades</td><td><span class="badge">\(1 \le P \le 8\)</span></td></tr>
+        <tr><td>Valores por propiedad</td><td><span class="badge">3 (X, Y, Z)</span></td></tr>
+        <tr><td>Vacas distintas</td><td>cualquier par difiere en \(\ge 1\) propiedad</td></tr>
+        <tr><td>Máximo de preguntas</td><td><span class="badge">100</span> (excederlo \(\Rightarrow\) 0 puntos en ese caso)</td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas.</strong> El puntaje de cada caso se reparte en dos partes:
+      <ul>
+        <li><strong>Correctez — 30%.</strong> Recibes el puntaje completo de correctez
+            <em>solo</em> si la vaca que nombras con <code>C</code> es la
+            <strong>única</strong> consistente con todas las respuestas dadas. Un
+            programa que haga <strong>más de 100 preguntas</strong> en un caso recibe
+            <strong>0 puntos</strong> en ese caso.</li>
+        <li><strong>Número de preguntas — 70%.</strong> El resto se determina por la
+            cantidad de preguntas que necesitaste para identificar la vaca. Los casos
+            están diseñados para premiar <strong>minimizar el peor caso</strong> de
+            preguntas; hay <strong>crédito parcial</strong> para conteos casi óptimos.</li>
+      </ul>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Con la entrada de ejemplo de arriba, las cuatro vacas son: vaca 1 = (X, Z),
+       vaca 2 = (X, Y), vaca 3 = (Y, X) y vaca 4 = (Y, Y). El intercambio del PDF
+       termina en exactamente 2 preguntas:</p>
+    <ul>
+      <li><code>Q 1 X Z</code> pregunta si la propiedad 1 vale <code>X</code> o
+          <code>Z</code>. Las vacas 1 y 2 tienen propiedad 1 = <code>X</code>; las vacas
+          3 y 4 tienen <code>Y</code>. La respuesta <code>0</code> (no) deja como
+          candidatas a las vacas 3 y 4.</li>
+      <li><code>Q 2 Y</code> pregunta si la propiedad 2 vale <code>Y</code>. La vaca 3
+          tiene propiedad 2 = <code>X</code> (no) y la vaca 4 tiene <code>Y</code> (sí).
+          La respuesta <code>1</code> aísla a la vaca 4.</li>
+      <li>El programa imprime <code>C 4</code> y termina. Dos preguntas es lo óptimo
+          para 4 vacas distintas, pues \(\lceil \log_2 4\rceil = 2\).</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Minimax (teoría de juegos)</span>
+      <span class="ptag">Bitmask</span>
+      <span class="ptag">DP con memoización</span>
+      <span class="ptag">Árbol de decisión</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N \le 50\) vacas, cada una descrita por \(P \le 8\) propiedades con
+       valores en \(\{X,Y,Z\}\), y todas distintas. Hay una vaca secreta. Puedes
+       preguntar <em>«¿la propiedad \(T\) está en el conjunto \(S\)?»</em> y recibes
+       <code>0</code>/<code>1</code>; al final imprimes <code>C k</code>, donde \(k\)
+       debe ser la <strong>única</strong> vaca consistente con todas las respuestas.
+       Minimiza el <strong>peor caso</strong> de preguntas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 50\) cabe en una <strong>máscara de 64 bits</strong>, así que el
+                conjunto de candidatos es un entero. Cada pregunta es un corte binario
+                y, por propiedad, solo hay <strong>3 cortes distintos</strong> ⇒ a lo
+                más \(3P \le 24\) preguntas útiles por estado. Y, ojo: el juez es
+                <strong>adversarial</strong> (responde para maximizar tus preguntas
+                restantes), así que debes optimizar el peor caso (minimax), no una vaca
+                fija.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué hace cada pregunta?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que una pregunta no «escoge» una vaca, sino que
+           <em>parte en dos</em> el conjunto de vacas que todavía son posibles?</p>
+        <p>Mantén el conjunto <code>poss</code> de vacas aún posibles. Una pregunta
+           «¿propiedad \(p\) en \(S\)?» lo divide en el lado <em>sí</em> (las vacas cuyo
+           valor de \(p\) cae en \(S\)) y el lado <em>no</em> (el resto). Según la
+           respuesta te quedas con un lado. El juego es un <strong>árbol de
+           decisión</strong>: cada hoja debe quedar con una sola vaca.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cuántas preguntas distintas hay de verdad?</summary>
+      <div class="body">
+        <p class="q">Por propiedad parece que hay muchos conjuntos \(S\) posibles… pero
+           ¿\(S\) y su complemento dan particiones diferentes?</p>
+        <p>No: preguntar por \(S\) o por su complemento produce <strong>el mismo
+           corte</strong> (solo se intercambian los lados sí/no). Para tres valores,
+           solo quedan <strong>3 cortes distintos</strong> por propiedad:
+           \(\{X\}\,|\,\{Y,Z\}\), \(\{Y\}\,|\,\{X,Z\}\), \(\{Z\}\,|\,\{X,Y\}\). En total,
+           a lo más \(3P \le 24\) preguntas candidatas en cualquier estado. Además,
+           descarta cualquier pregunta que deje un lado vacío: no da información.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Puntaje parcial vs. puntaje completo (y el juez adversarial)</summary>
+      <div class="body">
+        <p class="q">¿Para qué sirve cada parte del puntaje? ¿Basta con «ir partiendo
+           hasta que quede una»?</p>
+        <p>Para el <strong>30% de correctez</strong> sí basta una estrategia tonta:
+           cualquier secuencia de preguntas que dejen un solo candidato funciona, porque
+           solo imprimes <code>C</code> cuando queda exactamente una vaca, y como cada
+           corte útil reduce <code>poss</code>, terminas en muy pocas preguntas (mucho
+           menos de 100). Eso ya te da puntos de correctez.</p>
+        <p>El <strong>70% restante</strong> pide minimizar el <em>peor caso</em> de
+           preguntas. Y aquí está el detalle clave: el juez <strong>no fija</strong> una
+           vaca secreta; responde de forma <strong>adversarial</strong>, eligiendo el
+           <code>0</code>/<code>1</code> que te obligue a hacer <em>más</em> preguntas.
+           Por eso no puedes apostar a «adivinar bien»: tienes que jugar el óptimo
+           contra el peor escenario.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La recurrencia minimax (y cómo no recalcular)</summary>
+      <div class="body">
+        <p class="q">Si defines \(\mathrm{costo}(\text{poss})\) = preguntas en el
+           peor caso para reducir el conjunto de candidatos a una sola vaca, ¿cómo se
+           escribe en función de los dos lados de cada corte?</p>
+        <p>\[\mathrm{costo}(\text{poss})=\min_{(p,S)}\Big(1+\max\big(\mathrm{costo}(\text{sí}),\;
+           \mathrm{costo}(\text{no})\big)\Big)\]</p>
+        <p>El <code>min</code> es tu elección de pregunta; el <code>max</code> es el juez
+           adversarial quedándose con el lado peor. <strong>Caso base:</strong> 1 vaca
+           \(\to 0\) preguntas (ya la identificaste). Con 2 vacas el costo sale \(1\) y
+           con 3 vacas sale \(2\) de forma automática: como todas las vacas son distintas,
+           siempre existe un corte que las separa, así que <em>no</em> hace falta
+           codificar esos valores como atajos. Como el estado es la máscara de
+           candidatos, <strong>memoiza</strong> \(\mathrm{costo}\) por esa máscara de 64
+           bits: cada subconjunto se resuelve una vez y se reutiliza.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Modela el conjunto de candidatos como una máscara de
+           64 bits (cabe porque \(N\le 50\)). Para cada propiedad \(p\) y cada
+           conjunto de valores \(S\), precomputa la máscara de vacas cuyo valor de \(p\)
+           cae en \(S\); así cada corte es un par de operaciones AND. Resuelve el
+           árbol de decisión con la recurrencia minimax de la Pista 4, memoizada por la
+           máscara. En tiempo de ejecución, en cada paso eliges la pregunta que alcanza
+           ese mínimo, la imprimes, lees el <code>0</code>/<code>1</code> y te quedas con
+           el lado correspondiente; cuando queda una sola vaca, imprimes <code>C</code>.</p>
+
+        <p>Esa misma estrategia es la que usa el juez para puntuar el caso, así que
+           contra su adversario empatas siempre el óptimo: número de preguntas igual al
+           óptimo del peor caso ⇒ puntaje completo (en la práctica, profundidad
+           observada \(\le 10\), muy por debajo del tope de 100).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, P y la tabla de vacas desde el archivo "guess.in"
+
+// precomputar máscaras: bit i de masc[p][S] = 1 si el valor de la
+// propiedad p de la vaca i está en S.  (X=bit0, Y=bit1, Z=bit2)
+para cada propiedad p en 1..P:
+    para cada S en 1..7:
+        masc[p][S] = OR de (1 << i) sobre las vacas i con valor_p(i) en S
+
+memo = mapa vacío                 // máscara de candidatos -> (costo, mejor pregunta)
+
+funcion costo(poss):              // peor caso de preguntas para reducir poss a 1
+    c = popcount(poss)
+    si c == 1: regresa 0          // único caso base (hoja: vaca ya identificada)
+    si poss en memo: regresa memo[poss].costo
+    // con 2 o 3 vacas la enumeración general ya da 1 y 2, y de paso
+    // guarda mejorPregunta en memo (no se usan atajos que lo dejarían vacío)
+
+    mejor = +infinito;  mejorPregunta = ninguna
+    para cada propiedad p en 1..P:
+        para cada uno de los 3 cortes distintos S de {X,Y,Z}:
+            lado_si = poss AND masc[p][S]
+            lado_no = poss AND (NOT masc[p][S])
+            si lado_si == 0 o lado_no == 0: continuar   // sin información
+            v = 1 + max(costo(lado_si), costo(lado_no))
+            si v &lt; mejor:
+                mejor = v;  mejorPregunta = (p, S)
+    memo[poss] = (mejor, mejorPregunta)
+    regresa mejor
+
+poss = máscara con los N bits bajos en 1     // todas las vacas
+mientras popcount(poss) > 1:
+    costo(poss)                              // llena memo[poss].mejorPregunta
+    (p, S) = memo[poss].mejorPregunta
+    imprimir "Q " + p + " " + letras(S);  flush
+    leer r                                   // 0 o 1
+    si r == 1: poss = poss AND masc[p][S]
+    si no:     poss = poss AND (NOT masc[p][S])
+
+k = índice de la única vaca encendida en poss
+imprimir "C " + k</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> solo imprimes <code>C</code> cuando
+           queda exactamente una vaca, así que esa es la única consistente con todas las
+           respuestas (correctez asegurada). Toda pregunta con información elimina al
+           lado rechazado, y nunca haces una pregunta con un lado vacío, así que
+           <code>poss</code> decrece estrictamente hasta llegar a 1; jamás te acercas al
+           tope de 100. Y como tu elección por paso es el mismo minimax con el que el
+           juez puntúa, contra su respuesta adversarial gastas exactamente el óptimo del
+           peor caso ⇒ el 70% completo.</p>
+
+        <p><strong>Complejidad:</strong> cada nodo evalúa \(3P\) cortes con operaciones
+           de máscara/popcount en \(O(1)\); la búsqueda está memoizada por la máscara de
+           candidatos, así que el cálculo pesado del conjunto completo ocurre una vez y
+           los subconjuntos posteriores son aciertos de caché. Tiempo prácticamente
+           instantáneo (\(&lt;1\) s) y memoria muy por debajo de 64 MB.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa unsigned long long para la máscara y __builtin_popcountll para contar.
+Memoiza con std::unordered_map&lt;uint64_t, ...&gt; (o std::map) sobre la máscara.
+IMPORTANTE: fflush(stdout) (o std::cout &lt;&lt; std::flush) tras cada "Q", o la
+tubería interactiva se bloquea. Recuerda leer la tabla de vacas del ARCHIVO
+"guess.in" con ifstream, no de stdin (stdin es el canal de respuestas).</pre>
+          <p class="note">Son detalles de implementación en C++; nunca pongas aquí la
+             solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
