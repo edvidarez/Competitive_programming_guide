@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **185 / 200**
+Total de problemas: **200** · Completados: **186 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -259,7 +259,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | Y | Compression | `2022/Y/Y.html` |
 | [x] | Z | Archaeological Recovery | `2022/Z/Z.html` |
 
-## 2023 ICPC World Finals — 8 / 11
+## 2023 ICPC World Finals — 9 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -271,7 +271,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | F | Tilting Tiles | `2023/F/F.html` |
 | [x] | G | Turning Red | `2023/G/G.html` |
 | [x] | H | Jet Lag | `2023/H/H.html` |
-| [ ] | I | Waterworld | `2023/I/I.html` |
+| [x] | I | Waterworld | `2023/I/I.html` |
 | [ ] | J | Bridging the Gap | `2023/J/J.html` |
 | [ ] | K | Alea Iacta Est | `2023/K/K.html` |
 
