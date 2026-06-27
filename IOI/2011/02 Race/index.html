@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2011 · Tarea 2 — Race</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2011 · Día 1 · Pattaya City, Tailandia</div>
+    <h1>Tarea <span class="num">2</span> — Race</h1>
+    <p class="note">La carrera · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Junto con la IOI, la ciudad de Pattaya será sede de una carrera: la
+       <em>International Olympiad in Racing</em> (IOR) 2011. Como anfitriones,
+       tenemos que encontrar el mejor recorrido posible para la carrera.</p>
+
+    <p>En el área metropolitana de Pattaya-Chonburi hay \(N\) ciudades conectadas
+       por una red de \(N-1\) carreteras. Cada carretera es bidireccional, conecta
+       dos ciudades distintas y tiene una longitud entera en kilómetros. Además,
+       existe <strong>exactamente un</strong> camino que conecta cualquier par de
+       ciudades. Es decir, hay exactamente una forma de viajar de una ciudad a
+       otra mediante una sucesión de carreteras sin pasar dos veces por la misma
+       ciudad. (En otras palabras, la red es un <strong>árbol</strong>.)</p>
+
+    <p>El reglamento de la IOR exige que el recorrido sea un camino cuya longitud
+       total sea <strong>exactamente \(K\) kilómetros</strong>, que empiece y
+       termine en ciudades distintas. Por seguridad, ninguna carretera (y por lo
+       tanto ninguna ciudad) puede usarse dos veces en el recorrido, para evitar
+       choques. Para minimizar la interrupción del tráfico, el recorrido debe
+       contener <strong>la menor cantidad posible de carreteras</strong>.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar
+       ni escribes a la salida estándar. Debes implementar el procedimiento
+       <code>best_path(N, K, H, L)</code>, que el evaluador (grader) llama con los
+       siguientes parámetros:</p>
+    <ul>
+      <li><code>N</code> — el número de ciudades. Las ciudades se numeran de
+          \(0\) a \(N-1\).</li>
+      <li><code>K</code> — la distancia requerida para el recorrido de la carrera.</li>
+      <li><code>H</code> — un arreglo bidimensional que representa las carreteras.
+          Para \(0 \le i < N-1\), la carretera \(i\) conecta las ciudades
+          <code>H[i][0]</code> y <code>H[i][1]</code>.</li>
+      <li><code>L</code> — un arreglo unidimensional con las longitudes de las
+          carreteras. Para \(0 \le i < N-1\), la longitud de la carretera \(i\) es
+          <code>L[i]</code>.</li>
+    </ul>
+    <p>Puedes asumir que todos los valores del arreglo <code>H</code> están entre
+       \(0\) y \(N-1\) inclusive, y que las carreteras descritas conectan a todas
+       las ciudades como se describió arriba. También puedes asumir que todos los
+       valores de <code>L</code> son enteros entre \(0\) y \(1\,000\,000\)
+       inclusive (¡ojo: pueden ser \(0\)!).</p>
+    <p>Tu procedimiento debe <strong>regresar el número mínimo de carreteras</strong>
+       de un recorrido válido de longitud exactamente \(K\). Si no existe tal
+       recorrido, debe regresar <strong>\(-1\)</strong>.</p>
+
+    <div class="sig">
+      <span class="tag">Firma a implementar (race.c / race.cpp / race.pas)</span>
+<pre>int best_path(int N, int K, int H[][2], int L[]);
+  // N: número de ciudades (0 .. N-1)
+  // K: longitud objetivo exacta del recorrido
+  // H[i][0], H[i][1]: extremos de la carretera i  (0 <= i < N-1)
+  // L[i]: longitud entera de la carretera i  (0 <= L[i] <= 1 000 000)
+  // regresa: mínimo número de carreteras en un camino de longitud == K,
+  //          o -1 si ningún camino tiene longitud exactamente K.</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Cómo se califica.</strong> El evaluador de muestra lee la entrada en
+      este formato: la línea 1 trae <code>N</code> y <code>K</code>; las líneas 2 a
+      \(N\) traen <code>H[i][0]</code>, <code>H[i][1]</code> y <code>L[i]</code>
+      (la carretera \(i\)); y la línea \(N+1\) trae la solución esperada. El grader
+      <em>no</em> es un juez especial: compara el entero que regresa tu
+      <code>best_path</code> contra el esperado e imprime <code>Correct.</code> si
+      coinciden, o <code>Incorrect. Returned X, Expected Y.</code> si no. El archivo
+      de salida esperada para cada caso de muestra contiene exactamente el texto
+      <code>Correct.</code>
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3 segundos de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB (la pila cuenta dentro del total; no hay límite explícito de pila)</td></tr>
+        <tr><td>Número de ciudades \(N\)</td><td><span class="badge">\(1 \le N \le 200\,000\)</span></td></tr>
+        <tr><td>Distancia objetivo \(K\)</td><td><span class="badge">\(1 \le K \le 1\,000\,000\)</span></td></tr>
+        <tr><td>Longitud de una carretera \(L[i]\)</td><td><span class="badge">\(0 \le L[i] \le 1\,000\,000\)</span></td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td><td class="pts">9</td>
+            <td>\(1 \le N \le 100\); \(1 \le K \le 100\); además la red de carreteras
+                forma la <strong>línea más simple posible</strong>: para
+                \(0 \le i < N-1\), la carretera \(i\) conecta las ciudades \(i\) e
+                \(i+1\).</td>
+          </tr>
+          <tr>
+            <td>2</td><td class="pts">12</td>
+            <td>\(1 \le N \le 1\,000\); \(1 \le K \le 1\,000\,000\). Árbol general.</td>
+          </tr>
+          <tr>
+            <td>3</td><td class="pts">22</td>
+            <td>\(1 \le N \le 200\,000\); \(1 \le K \le 100\). Árbol general.</td>
+          </tr>
+          <tr>
+            <td>4</td><td class="pts">57</td>
+            <td>\(1 \le N \le 200\,000\); \(1 \le K \le 1\,000\,000\). Caso completo.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <p>Considera el caso de la Figura 1, donde \(N=4\), \(K=3\),</p>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>N = 4
+K = 3
+      0 1            1
+H  =  1 2     L  =  2
+      1 3            4
+
+best_path(4, 3, H, L)</pre></div>
+      <div class="io"><h4>Retorno esperado</h4><pre>2</pre></div>
+    </div>
+    <figure>
+      <img alt="Árbol con cuatro ciudades: la 1 al centro, conectada a la 0 (longitud 1), a la 2 (longitud 2) y a la 3 (longitud 4)."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 1.</figcaption>
+    </figure>
+    <p class="note">El recorrido puede empezar en la ciudad \(0\), ir a la ciudad
+       \(1\) y terminar en la ciudad \(2\). Su longitud será exactamente
+       \(1 + 2 = 3\) km y consta de dos carreteras. Es el mejor recorrido posible;
+       por lo tanto <code>best_path(N, K, H, L)</code> debe regresar \(2\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <p>Considera el caso de la Figura 2, donde \(N=3\), \(K=3\),</p>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>N = 3
+K = 3
+      0 1            1
+H  =        L  =
+      1 2            1
+
+best_path(3, 3, H, L)</pre></div>
+      <div class="io"><h4>Retorno esperado</h4><pre>-1</pre></div>
+    </div>
+    <figure>
+      <img alt="Línea de tres ciudades: 0 unida a 1 (longitud 1) y 1 unida a 2 (longitud 1)."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUkAAAGECAAAAACel40eAAAACXBIWXMAAAsSAAALEgHS3X78AAAVTUlEQVR42u2dy5mrurKAa/e3R2emHcH91KMz1gpBPbpjVgg4BBwCDgGHYEKAEKwQIAQzu1PuAAECowcP7yUoNFqrG9P4p1QvlUp/1XCOTcbXieAkeZI8SZ7jJHmSPEmiHH+fCNRRCShLEACEAiPAT5ILhkiFqN5+Shnn1Onzf50xDgBAmuel9peMB+wk6TDKPE9t15CAc3KSNHO83d0uJGFETpJ6C3O9u19MougkqeF4u7/bGOBAKAgoJxQnjcKTpANHxjlQ1VCLqhpbIhoHuvvVWMdj6NwESTF93TMaGm7+nL4OLcloYEwexmuLRBVE8jhJ9uMVqIbkZf9AoSrI6CTZcWHzONZ1XRcK/PB1kqzruq6z3jEMixkf68NwVpwk67pOejNTzHwFnSyT50my7jVeMl+/6j8MeCWSZEs+HuukEh3JrFN1z4V+aKtkydDsYMuZl79bFZmxZXfoPlj9VIhjnBczuYSuN2lteIh4dgcbgKzrukUZoyXZhojBWtFuY3YlcESVC0qlkmQZWbvoI3UkeVKMWbXq++3rr34pPMO43n2TtvaxHiQE0q/Mc4S2+0XezcT6UIkj9CelSAbRNreLG8nu1iXx6MnyV0OyoBvd8H5p1iMKbHpSimS4FUgIG6+yvCOTyfK7sduFgwOUChAAlHBzXVD+MxBKZLk0e3BTRFRZ4CkcQp0IVYxTTOZvLCtluoWGUV6JoiIZu4lk57OzrgyIPq2C/sREskldUItIPkmfBO6WH8nTJukRIpIvJ5FsQUI2yMAZUDaakiHyzPO25McYl7ep28ZmkximU7qDGiIAAFHi8ScbksRM8toCi1WgAFDdtOG3dJvweEHEIS3ZZXVot2TTEdMuntHuxjhkUhaQm0XyMhI0gKDz4i1CmVZYZnc6QjR5TTlUfgAA3aKZtgqdd9rjC5GaZMSBtspP+Zeu9Fe6nWhICrtIlh1JQiZIpmbrXeLKmbO5Iqn8s9RN78bkYNGTQgqbg8fZsRn/Mze+HoGEZOUgk6JPACk/7f+tk8nuinMHqARVWRSCMJMUOEjm46lqEkmN6Aqz8q0wyaQrSWLSEPqBSU+unP9GocxxkCznGByd42QzOafF2UrsT5JrBzlJulimykUamw994WEjFpAs3c3ZF54J+NFQlGGa3dUnXwfBQZLZZzexEmdGN5Ocs/tdOYpZ9y4B0+wmdkTU5rBbmzAhmt1GRclsulUXtXfZEUz+pJhP0iq0nTuJhKSDyeFTFkeAdXanuyFZiQ1u0mBIKyeSYsoxJxqhlSvpzH+S9+/rZiS1azEAmoVHYf41qCvpfpPMfy6b5Bb7VWm9HmRGmQyMBocRv0nmPz/5RrfiqgBZhLKckEmqUZNlv5L+hYFjS9Koc7tNEWV3Vb/IHZknN/eY5L3jyLa4XQBWoSTRcMaql9PQ6Fg1msHPXhWK9xZtcsfmfVDjNe0f5eNt3NqiP7VU2EuZ/H0pASinG96yEcrS2COx7XDR7ursdndGOmfyqk4bPze0k6ho6+G3kcknOAhl27aFvRQ5VmRUtzXF410kmTLdtiHZztTYaTMOe/VbRFqutt1SXldH8w1Jytpny9amtkifBN1OMf3WpuFuKTQkHbfbjdsRkNhxsx0iko777V6q32BsBNjutZOXoOkMX0k7W91ic1Y4DPO8rERFGGPGKmBZxd91lEYik3G/AvHYtGMOxdW9Qfxc+0zIZYs8HdxvozjyC8XE/qVG8NUW+SXROuUhIpL5r9G+JHFZ/3J+y7fRK93Dkyx//3QZnXbfYro6e9zeM+FoSN5+9fmfqHjIAPB2X3fXVtWGao7o0Lb7qe6tyeq6bvuJkGQDs93s627HkUm+ovdY5bk+Wdc3I3ghIam2T+ubRHdtesPXstsWmlYEhyWpNnKnj/f4e7InuUsmpHPxRwriqCSVmAZGwXNnbsmCnseJNpd/TJIDS/PUZIUW3Fs5LuLNZB2R5JSlmcxCAtBk1n07QZ/ohX5AktOWRqPsgDr3h1eOEZtSsYcjWXCNpdFOf+7EUk1bBlNm/2gkI72lGc5UdbmQJxaPqIjVVPr0Ex2LpNo3nz/dAhV5daz1ibJosCKhC4+ORNJqafQeJwAAjbKJtYiQjCo1dOLrdSfPnxwAotjx6lTJOwaJyx6c/PZWeUQpMCAMcgAB7+fUhpG+nOEoMjmwNNkSdWAfxr6eRyHpammMNtlS72Z+P16TJMZakoWW5p1l6LJfJ7Ld1meShUMpzwJLYzfPb9IYOyQ7fCYZuK2qqsYleC1+bTHXrH8nbvf01nYLkebtd+GGjmjlRemZlPB1f7OqBJQV5ACEAQMYnVNrHl5K47vjEzj419HrTz6zn9UslcNPAADyS6mEfPSPPrOfJN/LuvlkRcBdsTThH37mHZ9WcFcqVMKY/OnH2W2t2paWZpOx18qB63euVAR4AHKnMumTpdmzTFZqqU+S+QFyjyRv36mSnQl9eazdzW5x7RUki7k/D7YzktXtpkTEsU+Pti+SPlqaPZKsLr2CJEng2dPtyOKoliYqfAO5H5n01tLsjKTHlmZfJNOrv5ZmTyTLq8+WZkcWZ7h9wVeQ/sukUDbHsYT5+6Cey2R1/dWBJPHTY5Cey6RqaYKYev2sPpNULQ2NA79nj88kb7d+nSaKCJwkl438uhNL47nFqa4/e7E0fsvkoKjUc0vjM0nvFmD3OrvVXgvRcy8g/ZNJ1dLwmAGcJJdZGjV7FkUAJ8kNLE1C4CSJydJ4aHF2amm8k8nBAuyeLI1nMlldlFKfONshSE9k0rOi0t2S3Lel8Wh2+1dUuk+Z9LnU54MkKwGigpICpbCJ8Pi1feFfISlS8XaUB2GEBauk6AiWphtO3U5CPa+pnfquXX0Wbcn2dVhJFvaiB+dNktodsJs1iPaXZOaqDcO5TcrUQnte1AcnOcslmcVSaau1shfkHkhqthVwzvlkNEfc97LGS3steDy0+xbVnCsAADBOmLLdWVSQQ1qOFKbTsrT3RaWb2u4RkiCZnrvPEQhqb7s+6LUQ1YcZYO+VRUMjnlFzohCbpTGSVA/kcOkr+FIlmL1cLc2jrg9O8kFm21WVJX2isjQGktESa6xaeh3+t57Yxyb5CpdKTWHu2npUS6Mj+erkZkE/4H5d9d3uOHQqPRZJ5mQ4tDkJqkGp7Yl9WJLdBF3YN70X6QSLpZkm2XXrjhffsHsX2bSledY1ApLZFp5e+zZIMWFp4rrGQLI7qGOd3AxP0jy8pZkg2em4tVmuVggDFJZmgmS4Wf66xRdFCCzNO8mkl6S14/WevzyupWlHn5/8LmUYt8ESX/mrGiWBIzj66Gow7qWMmbdYK6WPYXazOD7IPtNLx17guhEfaQF2lp6UQsM3uzHFYmlGJF9yTjvahYRbGxFLA/afZ41kSD0pN1uGLiWg5fWfSw5gOd01bBYw/k8AljEQSYcYJAsd/ff2eGtcMtmKpK1cqrp9/7TFZbZreSOU5R2JSDYkU+n12Uod/7mW7reWd8sxze7CIUwsxg397SY5dL3wOLNbNkkwFIKmv79vI3G0e/AclVB+9d+VUX0l+O90wb0Dgo1klasiNKUgy2U354oSRkEyBQtJDgBAguiR8QUkKyQuZWcZiClLRsLnYH3Craz6dZiCXces2j8VAECYGPzIzr781ZN0eE1NAyr2RDK75QlupkCRLEy1NclzUSIhmavfetsh1SoWko1I8k/shmG4SH5ycFQkhVVNnuPPy2QTNgkkJD859wgqmSwtEc76UZ2zeyPjjWR256pGO2f3epn8KElxzu5tbDcKRfn1WasgAI2z+tV+y49OQIKC5Ee/pcBjd7rZ/Rn/vEIzueELVZZhx7ZbfNDD8o/k57MMWPTkJ79niXB2f0Qmq89nR3wi2VjWj6xKp4BKJvnnvrV0J7HIpPyi+cdkMsAik1IoP7AqnSNyzBWSHxDKD66k+0lSlvu5kCzHgaADSU7QkJRCk7pLmRv4UuDxgSRJqcgcauvTOR7OHdPklsV7zfyzb/gYHK1r20bycr3rkXaROG34qNKfq/r/y8UslnJrChaRBLddSC+tJxNYRBIKXDJpE0qhjSVTYRbJ/6WoZLIVSqLbO1NoPRmdHBftBRzHpuRuV7LUZtuVhCubeziKCd52byi/G6EsNnKj5f3kCKPjz/E2P0kbGaouGyUmfw89y+9LiURP9not2nputwNPlxvXfdtzei8NtjmTY7OEN/+PrO+30HZmYXWdoGEJb00CgK79us/BOxmwpAkGkn1ruXW3fLXopCM56Cx9XJYwZSfCVSDbwLLvkDhiiaEnaguBLZ/gXYPZwesYHOFyzLAHpifmYrPT9UIfq4jheRwHZAnTxmLpUSud6E1E8EOWh+vqOd6m3W9NXuCi973Qp2V6eNhsWByapHJUwWypKey90LPjsgS9yZjpSCuT12SwBiyP5KqDwY2Zc6qAapwtTtRBwx6w5B/cHOmBw2jvtD1ieWCSdTIISmxSU6gc3Xqhx8cLezQtVobNelmsdy+zYRLXtbPx8UJIcPqmADSakLXRwVfzeugP/8L+z8vRnm0H5W280kgpMCAMSAU5VGXb1KXn6Ha0XZ9Yv6p/gUf8GDlzs1/jMhZY4SOFkOZWVDO6fy30socs9+yq25p6ZaHLhKXRcgRHCXsc2qM9I3NRLo9XfvsRy5266n+5tEeDMhXT1VQkYMEGK+S5uog713B5MtxIAkAlGoPdFKASBgyAb1dler/tnaUzSZXpR9yVIcs4REDyY+N6r1QjFp4kl9fA3HbM0iuSY5a7Cns8IzkOUnfE0juSbyxjdpJczvKa7q/40kuSAPkt3xtLT0mOWUb+u+rekgRIr7sKezwmubMQ0muSI5Z+u+qek9xR2OM7yTeWcXCSXMHytoOwZw8k/70QsixBVEApMHJQkm8sk41ddZGW1bCLAmFAaTDnz+xmneRjxZevh37Vj0bZhiti3oxPrEIWsU1TkDB5HY3k9sWXrkoiyI5Gctviy8cMLcifRyO5XfGlpr6EcE0+1KZN9mK7ByHkdX3YM0w1AQDjivdTlpADpKOd1GFMDmG7tyy+HNWOkWDaqIzNkVGb7JLkG8uZRW6DOtvJylBdiSgrjkZS3fsDMLNgMJn5QVUz6zfPeUzSVri1tPgynP+hRJHLZG8kMwrWr7mk+FLZIzNDwaraJNwVyYwDQOZ43RyW/b6tmYZKYclfuyH5bHKQmTPznuXLdZoGs536ZyfN9LkPkh0bRyWWMeewpz8gd4lH/+qSzFMNLrwj+ehlzNmGuIaQxco91/2ma+Y9yQGT58LP6XYFdcaGLm4/02mH0HOSTwAA1pYJzPOZ7GFPa+lX9KboWwkknsska3ZRRAsCWWsI2TZ05esiAqrRPZ6RlNKSLUoJDFmOve7HBhKpSiUp9uBPZguTK4aw57lZi65k+pUci+Qbyx5b6xJs0KwomvSkjkayrotgKuxpBSne4vHav1Acm+R0CEmNMfNchcwm7nZEkmOW0asVSbbRTr7WxX8enmRdZ8Ow539mRk2OqpIjIDm5Ass3e8DWq1RejZ8rYvkPAMDaRxsUXwIAuGxXbxbDuK0y6H6RjpbnK2LZNo82auZhNzeJ0g6Xx0al+iaUhyY5YlnM1QemzHEyTgodnKTaXMsikl0i17H5ER+9nsOTrOvivy4iKfNlNHnVL2UBLLI8Y+/qIyApT/8JXYJpuSbRdy00BEVs6A8gIJmZV1fVa9hb7szgg0q10dqlLzj8cDhhrz2k4dGn3bvf3bTla3IDlvwvGpLGE/ak48l7SezronPdAUDyjgINSZcT9iYazwRjmdZdgkcmU/vkbo8/zcu3uWsiKY9GzrGQlMfam+p3ywloDvvzg8GHjk8yt4pkT1LdcDp6FZPlv+rvj0+ysqtJ9j6l1WVK++dQkHQ5K0oe7QdskqTe6FNUs7sEu0zCIxinyGaQlONvnyH8a90vyEMIYGxalqnbcx6epLDIVavymFYr6I0VV5/Tz9kttjY4bPkjcMfP+kkyN7vE/+rLjExaQbnUS5L3huG92ozIbJks2yDQuJecKWLvm54UFeRCCmP1HVL6h46kbzNAQez6Cd9I/qhyWN3AbUFwe/Ui9+WzxGzzfZ/dfz4ukofBsow4mzPfZDKrNK7GYlfROdJRAMmZYQPp9ezevEUiVYTHGWQzX8PEzceg5+zWGD1nkIOX9ffRudC5rqmQUzuyW+1qL3H3hiTng0wcNuALVSNhmd3lB0AOjdrhSfJZJCVIkjmBHGRHTpkchKm/JEg312uQHTk+STpMSBhBXqQb6eiLpbhkkitfej7I/OfnpnNGy3LgAtdHH7JCxV5iPlnVH4B+C490kwosdUEc3DxKKZHkoUaIZQr6hPtoJf3wMilLRqnjHrphlV9oQPRqPhDhqVXjqlLTRtCyWo0OUuTp3SCS+TDDgoBkAHabI34PL5Y/vZiSKvL0KkQkqT30rroEs4KtujbeJTP6QAGauBsAghsAQJ7r3e3fnaPTN7Ht1IFmdl/Hq5bHtzht6bN+h5g56zPtP70k4JffdeYbD2pxKc2ZcWOVeb8PAEXcLb/1RWc6jBn1aTVZ3Qe3xpLBCBsa5X2FZz8aMoRUduehmN2tptR454WR5MP0EWW3FAbbDcB53gjlZNqRRg7u6Egk5dxWRHKPfXoXjGabM5Bsm7XLtHHkSaHYKiSZXlm1W122KDWSsQ/AoPEsEpmE8lvO1cf6e7Xr4QORRLP60OrC9Lr+Xr9lAn50GleNZHSN/pK1d2rt02hzLpbZDVA2+YjVVkdmhN+KhvCQbO030Afb4C5DJQmo6oK4TIuXPyvKrm8/bV6DuMXnxxydX5584A6oSNbdtA7XWa2p9hiI9CQAVN+tZ84f889cE11mfWo3Ga76SdK1ssl/zd7zc+9Ahg/3POZx3co+ITHvIDKlVGi68w02kkpPcntHfqUtU89R1wsdH0n1YBHHg8jUlrXaXugISfY9yQGARNY5/lSTmvpeoLhs9yiZI+HwQB/0pGJwmpipir9GOZKhD0TDqTWGVxIMLzMeTIRSJmF8lnWz8sUAOFAKoqoElFUlxok5Y8k0VpLjs6wdEpyW0nO8JMfnL5td+jCyxUSYSQKUt9yllJ/xyB5b4iYJACLNzXFjwNxO8UZPEgDKPNcUV5KAc9dMx0lSZjRyAAGiteeUAtMf9nuSdLHoAoAsWp04SW41zv3dJ8mT5EnyHCfJk+RJ8iR5jpPkSfIkeY6T5EnyJHmSPMdJ8iR5kjzHSfIkeZI8SZ7jJPlvjv8Hgd7kc0zVYXYAAAAASUVORK5CYII=">
+      <figcaption>Figura 2.</figcaption>
+    </figure>
+    <p class="note">No hay ningún recorrido válido (las longitudes posibles son
+       \(1\), \(1\) y \(2\); ninguna es \(3\)). En este caso
+       <code>best_path(N, K, H, L)</code> debe regresar \(-1\).</p>
+
+    <h3>Ejemplo 3</h3>
+    <p>Considera el caso de la Figura 3, donde \(N=11\), \(K=12\),</p>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>N = 11
+K = 12
+      0 1            3
+      0 2            4
+      2 3            5
+      3 4            4
+      4 5            6
+H  =  0 6     L  =  3
+      6 7            2
+      6 8            5
+      8 9            6
+      8 10           7
+
+best_path(11, 12, H, L)</pre></div>
+      <div class="io"><h4>Retorno esperado</h4><pre>2</pre></div>
+    </div>
+    <figure>
+      <img alt="Árbol con once ciudades enraizado visualmente en la 0; ramas hacia 1, 2-3-4-5 y 6-7-8 con 8 hacia 9 y 10."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 3.</figcaption>
+    </figure>
+    <p class="note">Un recorrido posible consta de \(3\) carreteras: de la ciudad
+       \(6\), pasando por la ciudad \(0\) y la ciudad \(2\), hasta la ciudad \(3\).
+       Otro recorrido empieza en la ciudad \(10\) y va, pasando por la ciudad \(8\),
+       hasta la ciudad \(6\). Ambos recorridos tienen longitud exactamente
+       \(12\) km, como se pide. El segundo es óptimo, pues no existe ningún recorrido
+       válido con una sola carretera. Por lo tanto
+       <code>best_path(N, K, H, L)</code> debe regresar \(2\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">Descomposición por centroides</span>
+      <span class="ptag">Divide y vencerás</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un árbol de \(N\) nodos; cada arista tiene longitud entera en
+       \([0, 10^6]\). Implementa <code>best_path(N, K, H, L)</code>, que debe
+       regresar el <strong>mínimo número de aristas</strong> en un camino simple
+       cuya longitud total sea <strong>exactamente \(K\)</strong>, o \(-1\) si no
+       existe. (Tarea funcional: el grader llama a tu función una vez y compara el
+       entero devuelto.)</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Las cuatro subtareas son una escalera de dificultad:
+                la #1 (\(N,K\le 100\), <em>línea</em>) admite fuerza bruta
+                \(O(N^2)\); la #2 (\(N\le 1000\)) admite \(O(N^2)\) probando pares
+                de nodos; la #3 (\(N\le 2\!\cdot\!10^5\) pero \(K\le 100\)) sugiere
+                DP en árbol indexada por distancia \(0..K\); la #4
+                (\(N\le 2\!\cdot\!10^5\), \(K\le 10^6\)) obliga a \(O(N\log N)\):
+                <strong>descomposición por centroides</strong>. Ojo: \(L\) puede ser
+                \(0\), y la suma de longitudes llega a \(\sim 2\!\cdot\!10^{11}\)
+                (usa \(64\) bits y poda).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo se ve un camino en un árbol?</summary>
+      <div class="body">
+        <p class="q">El grafo es un árbol, así que entre cualquier par de ciudades
+           hay un único camino simple. ¿Qué objeto tienes que optimizar entonces?
+           ¿Sobre qué estás buscando exactamente?</p>
+        <p>Buscas, entre <em>todos</em> los \(\binom{N}{2}\) caminos posibles
+           (uno por cada par de nodos), aquellos cuya longitud sea exactamente
+           \(K\), y de esos quedarte con el que use menos aristas. La dificultad no
+           es la conectividad (siempre hay camino), sino encontrar la longitud
+           exacta minimizando aristas, con \(N\) hasta \(2\!\cdot\!10^5\).</p>
+        <p class="q">¿Notaste que minimizar la <em>longitud</em> y minimizar el
+           <em>número de aristas</em> son objetivos distintos (porque hay aristas de
+           peso \(0\))? No puedes simplemente buscar el camino más corto.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (9 pts): el árbol es una línea</summary>
+      <div class="body">
+        <p class="q">Si la red es una línea \(0 - 1 - 2 - \dots - (N-1)\) y
+           \(N, K \le 100\), ¿cómo se ve un camino? ¿Cuántos hay?</p>
+        <p>Un camino en una línea queda determinado por sus dos extremos \(i < j\),
+           y su longitud es la suma de las aristas entre ellos. Precalcula prefijos
+           \(P[t] = L[0] + L[1] + \dots + L[t-1]\); entonces la longitud del camino
+           \(i \to j\) es \(P[j] - P[i]\) y usa \(j - i\) aristas. Recorre todos los
+           pares \((i, j)\), y cuando \(P[j] - P[i] = K\) minimiza \(j - i\). Es
+           \(O(N^2)\), holgadísimo con \(N \le 100\). Eso vale los primeros 9
+           puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (12 pts): árbol general, N chico</summary>
+      <div class="body">
+        <p class="q">Ahora el árbol es cualquiera, pero \(N \le 1000\). ¿Puedes
+           seguir probando "todos los caminos" sin que cueste demasiado?</p>
+        <p>Sí: haz un recorrido (BFS o DFS) <em>desde cada nodo</em> \(u\). Al
+           recorrer guardas, para cada otro nodo \(v\), la distancia acumulada y el
+           número de aristas desde \(u\). Cuando la distancia llega a \(K\),
+           actualizas la respuesta con el número de aristas. Son \(N\) recorridos de
+           \(O(N)\) cada uno \(= O(N^2)\), que con \(N \le 1000\) es \(\sim 10^6\):
+           cabe sin problema. Aquí ya no puedes indexar arreglos por \(K\)
+           ingenuamente (porque \(K\) llega a \(10^6\)), pero como solo comparas
+           "¿la distancia es \(K\)?", \(O(N^2)\) basta. Esto suma 21 puntos con la
+           Subtarea 1.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3 (22 pts): N grande pero K diminuto</summary>
+      <div class="body">
+        <p class="q">Aquí \(N\) explota a \(2\!\cdot\!10^5\), pero \(K \le 100\).
+           Cuando un límite es <em>pequeñísimo</em>, suele ser la dimensión de un
+           arreglo de DP. ¿Y si para cada nodo guardas información indexada por la
+           distancia \(0..K\)?</p>
+        <p>Enraíza el árbol. Para cada nodo \(v\) calcula
+           \(\mathrm{cnt}_v[d] =\) mínimo número de aristas para llegar de \(v\) a un
+           descendiente a distancia <em>exactamente</em> \(d\) (con \(0 \le d \le K\)).
+           Procesando los hijos de \(v\) uno por uno y <strong>combinando el hijo
+           nuevo contra lo ya acumulado</strong> antes de fundirlo, juntas dos
+           "ramas hacia abajo" que pasan por \(v\): si una llega a distancia \(d\) y
+           otra a \(K-d\), tienes un camino de longitud \(K\) que cruza \(v\).
+           Como cada arreglo tiene tamaño \(K+1 \le 101\), el costo total es
+           manejable. Esto da los 22 puntos de la Subtarea 3 (y, sumado, 43).</p>
+        <p class="q">Esta idea de "combinar dos ramas que se encuentran en un nodo"
+           es justo la semilla del caso completo. ¿Qué pasa cuando \(K\) también es
+           grande y no puedes pagar \(O(N \cdot K)\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave para el caso general</summary>
+      <div class="body">
+        <p class="q">Toma cualquier nodo \(u\). Todo camino óptimo \(P^{*}\) del árbol,
+           ¿qué relación tiene con \(u\)? ¿O pasa por \(u\), o…?</p>
+        <p>O bien \(P^{*}\) <strong>contiene a \(u\)</strong>, o bien \(P^{*}\) queda
+           <strong>enteramente dentro de una</strong> de las componentes que
+           resultan al borrar \(u\). Eso parte el problema: resuelvo "los caminos que
+           pasan por \(u\)" de forma directa, borro \(u\), y <em>recurro</em> en cada
+           componente. Los caminos que pasan por \(u\) se cuentan en \(O(\text{tam})\)
+           con la idea de la Pista 4 (una rama a distancia \(d\), otra a \(K-d\)).</p>
+        <p class="q">El peligro es la profundidad de la recursión: si eliges \(u\)
+           mal (p. ej. una hoja), una componente puede tener casi \(N\) nodos y caes
+           en \(O(N^2)\). ¿Qué nodo \(u\) garantiza que <em>todas</em> las
+           componentes al borrarlo tengan \(\le N/2\) nodos?</p>
+        <p>El <strong>centroide</strong>. Siempre existe y se halla en \(O(N)\).
+           Recurriendo sobre centroides, la profundidad es \(O(\log N)\) y el total
+           \(O(N \log N)\). Esto es la descomposición por centroides.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea (descomposición por centroides).</strong> Repetidamente
+           elige el centroide \(c\) de la componente actual, resuelve en
+           \(O(\text{tam})\) todos los caminos que <em>pasan por \(c\)</em>, borra
+           \(c\) y recurre en cada subcomponente. Como cada componente al borrar el
+           centroide tiene \(\le\) la mitad de los nodos, hay \(O(\log N)\) niveles
+           y el costo total es \(O(N \log N)\).</p>
+
+        <h3>Caminos que pasan por el centroide \(c\)</h3>
+        <p>Mantén un arreglo global \(\mathrm{best}[0..K]\), donde
+           \(\mathrm{best}[d]\) = mínimo número de aristas para llegar desde \(c\) a
+           algún nodo a distancia <em>exactamente</em> \(d\), considerando los
+           subárboles vecinos de \(c\) <strong>ya fundidos</strong>. Inicialízalo con
+           \(\mathrm{best}[0] = 0\) (el propio \(c\): distancia \(0\), \(0\) aristas).
+           Procesa los subárboles vecinos de \(c\) uno por uno; para cada uno,
+           primero recolectas sus nodos como pares \((d, \mathrm{prof})\) =
+           (longitud desde \(c\), número de aristas desde \(c\)), podando si
+           \(d > K\). Luego, en este orden:</p>
+        <ul>
+          <li><strong>FASE QUERY</strong> (antes de fundir): para cada nodo
+              \((d, \mathrm{prof})\) con \(d \le K\), si
+              \(\mathrm{best}[K-d]\) existe, candidato
+              \(= \mathrm{prof} + \mathrm{best}[K-d]\) y actualizas la respuesta.
+              Como \(\mathrm{best}\) solo trae subárboles <em>previos</em> (o \(c\)
+              mismo vía \(\mathrm{best}[0]=0\)), las dos mitades del camino caen en
+              subárboles distintos: el camino realmente cruza \(c\).</li>
+          <li><strong>FASE MERGE</strong> (después): para cada nodo,
+              \(\mathrm{best}[d] = \min(\mathrm{best}[d], \mathrm{prof})\).</li>
+        </ul>
+        <p>Consultar <em>antes</em> de fundir es lo que evita combinar dos nodos del
+           <em>mismo</em> subárbol (cuyo camino real no pasaría por \(c\)). El caso
+           "\(c\) es un extremo del camino" lo cubre \(\mathrm{best}[0]=0\): un nodo
+           a distancia \(K\) da candidato \(\mathrm{prof} + 0\).</p>
+
+        <h3>Hallar el centroide y recurrir</h3>
+        <p>Enraíza la componente en cualquier nodo, calcula tamaños de subárbol
+           \(D(v)\) con un DFS y camina hacia la componente "pesada" (la que tenga
+           \(> \text{tam}/2\) nodos) hasta que ninguna lo sea: ese nodo es el
+           centroide. Bórralo y recurre en cada vecino no borrado.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>// Globales
+adj            // listas de adyacencia: (vecino, longitud)
+removed[ ]     // marca de centroides ya borrados
+sub[ ]         // tamaño de subárbol (auxiliar)
+best[0..K]     // best[d] = min #aristas para llegar a distancia exacta d  (sentinela = +INF)
+touched        // lista de índices d realmente modificados en best[ ]
+ans = +INF
+
+funcion best_path(N, K, H, L):
+    construir adj a partir de H, L
+    best[0..K] = +INF          // conceptual; en la práctica se limpia por 'touched'
+    ans = +INF
+    decompose(0)               // 0 = cualquier nodo inicial
+    si ans == +INF: regresar -1
+    si no:          regresar ans
+
+funcion decompose(entrada):
+    // (1) centroide de la componente que contiene a 'entrada'
+    total = calcular_tamanos(entrada)         // DFS iterativo, ignora nodos 'removed'
+    c     = hallar_centroide(entrada, total)  // baja hacia el hijo con sub > total/2
+
+    // (2) caminos que pasan por c
+    best[0] = 0;  touched = {0}                // c consigo mismo
+    para cada vecino w de c con removed[w] == falso:
+        nodos = recolectar(w, dist0 = L(c,w), prof0 = 1)   // DFS iterativo; poda si dist > K
+        // FASE QUERY (antes de fundir este subárbol)
+        para cada (d, prof) en nodos con d <= K:
+            si best[K - d] != +INF:
+                ans = min(ans, prof + best[K - d])
+        // FASE MERGE (después)
+        para cada (d, prof) en nodos:
+            si prof < best[d]:
+                best[d] = prof;  touched.add(d)
+
+    // (3) limpiar SOLO los índices tocados  (NO recorrer 0..K)
+    para cada d en touched: best[d] = +INF
+    touched = {}
+
+    // (4) borrar c y recurrir
+    removed[c] = verdadero
+    para cada vecino w de c con removed[w] == falso:
+        decompose(w)
+
+// recolectar(w, dist0, prof0): DFS iterativo (pila explícita) desde w sin pasar por c
+//   ni por nodos removed; acumula dist en 64 bits; si dist > K no desciende;
+//   devuelve la lista de pares (dist, prof) con dist <= K.</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Fija un nivel de la recursión con
+           centroide \(c\). Cualquier camino simple cuyo nodo "más alto" respecto a
+           \(c\) sea \(c\) (es decir, que pase por \(c\)) se descompone en dos ramas
+           que salen de \(c\) hacia subárboles <em>distintos</em>, con longitudes
+           \(d\) y \(K-d\); la fase QUERY-antes-de-MERGE las empareja exactamente una
+           vez y suma sus profundidades, así que se considera con su número mínimo de
+           aristas. Todo camino que <em>no</em> pasa por \(c\) vive completo dentro
+           de una sola subcomponente y se trata en la llamada recursiva
+           correspondiente. Por inducción sobre los niveles, <em>todos</em> los
+           caminos del árbol se examinan, y cada uno con el menor número de aristas;
+           \(\mathrm{ans}\) guarda el mínimo global (o queda en \(+\infty\) si ninguno
+           mide \(K\), devolviendo \(-1\)).</p>
+
+        <p><strong>Complejidad.</strong> \(O(N \log N)\) en tiempo: \(O(\log N)\)
+           niveles de descomposición y en cada nivel el costo total (hallar
+           centroides + recolectar subárboles + query/merge) es \(O(N)\). Memoria
+           \(O(N + K)\): listas de adyacencia \(O(N)\) y el arreglo
+           \(\mathrm{best}[0..K]\) (\(\sim 4(K{+}1)\) bytes \(\approx 4\) MB para
+           \(K = 10^6\), dentro de 256 MB). Profundidad de pila de
+           <code>decompose</code>: \(O(\log N)\).</p>
+
+        <div class="note-box">
+          <strong>Trampas que cuestan puntos.</strong>
+          <ol>
+            <li><strong>Reset de \(\mathrm{best}[\,]\):</strong> límpialo
+                <em>solo</em> en los índices de <code>touched</code>, no recorriendo
+                \([0..K]\) por cada centroide. Recorrer \([0..K]\) cada vez es
+                \(O(N \cdot K)\) y revienta con \(K = 10^6\) (TLE/MLE).</li>
+            <li><strong>QUERY antes de MERGE:</strong> si fundes y luego consultas,
+                emparejarías dos nodos del <em>mismo</em> subárbol, cuyo camino real
+                no pasa por el centroide; sobrecontarías y darías resultados
+                inválidos.</li>
+            <li><strong>\(\mathrm{best}[0] = 0\)</strong> (el propio centroide) es
+                imprescindible para capturar caminos con el centroide como
+                <em>extremo</em> (\(K - d = 0\)).</li>
+            <li><strong>Pesos \(0\):</strong> hay nodos a distancia \(0\) con
+                \(\mathrm{prof} > 0\); funciona igual porque \(\mathrm{best}[0]=0\) ya
+                es el mínimo para la mitad de longitud \(0\), y se consultan todos los
+                nodos (incluidos \(d=0\)). La poda usa \(d > K\), válida porque los
+                pesos son \(\ge 0\) (la distancia no decrece al bajar).</li>
+            <li><strong>Overflow:</strong> la suma de \(L\) puede llegar a
+                \(\sim 2\!\cdot\!10^{11}\); acumula la distancia en \(64\) bits y poda
+                en cuanto pase \(K\) (así cabe en <code>int</code> al guardarla).</li>
+            <li><strong>Pila en sistemas con \(8\) MB:</strong> en la Subtarea 1 el
+                árbol es una <em>línea</em> de hasta \(\sim 10^5\) nodos; un DFS
+                <em>recursivo</em> de recolección o de tamaños desbordaría. Hazlos
+                <strong>iterativos</strong> (pila explícita). La recursión de
+                <code>decompose</code> sí es segura: su profundidad es
+                \(O(\log N)\).</li>
+            <li><strong>\(N = 1\)</strong> (sin aristas, \(K \ge 1\)): no hay caminos,
+                debe regresar \(-1\).</li>
+          </ol>
+        </div>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (solo C++)</span>
+<pre>- Acumula la distancia en 'long long' y poda con  if (dist > K) continue;
+  antes de descender (la suma de longitudes no cabe en int de 32 bits).
+- Haz los DFS de tamaños y de recolección ITERATIVOS con un std::vector
+  como pila; un DFS recursivo se desborda con la línea de la Subtarea 1.
+- Reserva best[] una sola vez (tamaño K+1) y reinícialo por 'touched',
+  no con std::fill sobre todo el rango.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
