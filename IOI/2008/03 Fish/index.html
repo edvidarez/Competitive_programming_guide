@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2008 · Tarea 3 — Fish</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2008 · Día 1 · El Cairo, Egipto</div>
+    <h1>Tarea <span class="num">3</span> — Fish</h1>
+    <p class="note">Peces · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Sherezade contó que muy lejos, en medio del desierto, hay un lago. Al
+       principio ese lago tenía \(F\) peces. Se eligieron \(K\) tipos distintos de
+       gemas, de las más valiosas de la Tierra, y a cada uno de los \(F\) peces se
+       le dio exactamente <strong>una</strong> gema para que se la tragara. Como
+       \(K\) puede ser menor que \(F\), dos o más peces podrían haberse tragado
+       gemas del mismo tipo.</p>
+
+    <p>Con el tiempo, algunos peces se comieron a otros. Un pez se puede comer a
+       otro <strong>si y solo si</strong> mide por lo menos el doble de largo: el
+       pez \(A\) puede comerse al pez \(B\) si y solo si
+       \(L_A \ge 2\,L_B\). No hay ninguna regla sobre <em>cuándo</em> decide comer
+       un pez: uno puede comerse a varios peces más chicos, uno tras otro, mientras
+       que otros peces pueden decidir no comerse a nadie, aunque puedan. Cuando un
+       pez se come a uno más chico, <strong>su longitud no cambia</strong>, pero
+       las gemas que estaban en el estómago del pez chico terminan, intactas, en el
+       estómago del pez grande.</p>
+
+    <p>Sherezade dijo que si logras encontrar el lago, te dejarán sacar
+       <strong>un</strong> pez y quedarte con todas las gemas de su estómago.
+       Quieres probar suerte, pero antes del largo viaje quieres saber
+       <strong>cuántas combinaciones distintas de gemas</strong> podrías obtener
+       atrapando un solo pez.</p>
+
+    <h2>La tarea</h2>
+    <p>Escribe un programa que, dada la longitud de cada pez y el tipo de gema que
+       cada pez se tragó originalmente, calcule <strong>el número de combinaciones
+       distintas de gemas que pueden terminar en el estómago de algún pez, módulo
+       un entero dado \(M\)</strong>. Una combinación se define únicamente por la
+       <em>cantidad</em> de gemas de cada uno de los \(K\) tipos. No hay noción de
+       orden entre las gemas, y dos gemas del mismo tipo son indistinguibles.</p>
+
+    <div class="note-box">
+      Una <strong>combinación</strong> es un vector de conteos: cuántas gemas de
+      tipo \(1\), cuántas de tipo \(2\), …, cuántas de tipo \(K\). Por ejemplo,
+      \([2,3,3]\) significa una gema de tipo \(2\) y dos gemas de tipo \(3\). Dos
+      formas distintas de llegar al mismo vector cuentan como <em>una sola</em>
+      combinación.
+    </div>
+
+    <h2>Entrada</h2>
+    <p>Tu programa lee de la entrada estándar:</p>
+    <ul>
+      <li>La línea 1 contiene el entero \(F\): el número original de peces en el
+          lago.</li>
+      <li>La línea 2 contiene el entero \(K\): el número de tipos de gemas. Los
+          tipos se representan con los enteros \(1\) a \(K\), inclusive.</li>
+      <li>La línea 3 contiene el entero \(M\).</li>
+      <li>Cada una de las siguientes \(F\) líneas describe a un pez con 2 enteros
+          separados por un espacio: la <strong>longitud</strong> del pez seguida
+          del <strong>tipo</strong> de gema que ese pez se tragó originalmente.</li>
+    </ul>
+    <p class="note"><strong>Nota:</strong> en todos los casos de prueba usados para
+       evaluar se garantiza que hay al menos una gema de cada uno de los \(K\)
+       tipos.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa escribe en la salida estándar una sola línea con un entero entre
+       \(0\) y \(M-1\) (inclusive): el número de combinaciones distintas de gemas
+       posibles <strong>módulo \(M\)</strong>.</p>
+    <p class="note">El valor de \(M\) no tiene más importancia que la de simplificar
+       los cálculos.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Número original de peces</td><td><span class="badge">\(1 \le F \le 500\,000\)</span></td></tr>
+        <tr><td>Número de tipos de gemas</td><td><span class="badge">\(1 \le K \le F\)</span></td></tr>
+        <tr><td>Módulo</td><td><span class="badge">\(2 \le M \le 30\,000\)</span></td></tr>
+        <tr><td>Longitud de un pez</td><td><span class="badge">\(1 \le L_X \le 1\,000\,000\,000\)</span></td></tr>
+        <tr><td>Salida</td><td>un entero en \([0,\,M-1]\)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+    <p class="note">El enunciado oficial no fija explícitamente un límite de tiempo
+       ni de memoria en estas páginas; aquí solo se reproducen las restricciones
+       que sí aparecen en el PDF.</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Conjunto de pruebas</th><th>Puntos</th><th>Restricción</th></tr></thead>
+        <tbody>
+          <tr><td>Pruebas con \(K\) chica <span class="note">(textual del PDF)</span></td><td class="pts">25</td><td>\(K \le 20\)</td></tr>
+          <tr><td>Pruebas con \(K\) mediana <span class="note">(textual del PDF)</span></td><td class="pts">70</td><td>\(K \le 7\,000\) (incluye los 25 puntos anteriores)</td></tr>
+          <tr><td>Total acumulado <span class="note">(derivado)</span></td><td class="pts">100</td><td>los \(\approx 30\) puntos restantes vienen de pruebas con \(K\) grande; el límite general es \(K \le 500\,000\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      <strong>Cómo se reparten los puntos.</strong> El PDF describe el puntaje así
+      (sección <em>GRADING</em>): «para varias pruebas, que valen <em>en total</em>
+      70 puntos, \(K\) no excede \(7\,000\); y para algunas de esas pruebas, que
+      valen <em>en total</em> 25 puntos, \(K\) no excede \(20\)». Esas son las
+      <strong>únicas dos capas literales</strong> del PDF (las dos primeras filas de
+      la tabla). No son subtareas con dependencias: son <strong>capas de peso</strong>
+      sobre el conjunto de pruebas, organizadas por el tamaño de \(K\). Los 25 puntos
+      son un <em>subconjunto</em> de los 70, y cada caso de prueba aporta su parte de
+      forma independiente. La tercera fila no la enuncia el PDF: es el <em>total
+      acumulado</em> de 100 puntos; los \(\approx 30\) puntos restantes provienen de
+      pruebas con \(K\) grande (hasta \(500\,000\)) y exigen la solución
+      \(O(F\log F + K\log K)\) con árbol de segmentos.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5
+3
+7
+2 2
+5 1
+8 3
+4 1
+2 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4</pre></div>
+    </div>
+    <p class="note">Hay 11 combinaciones posibles, así que la salida es
+       \(11 \bmod 7 = 4\). Las combinaciones son:
+       \([1]\), \([1,2]\), \([1,2,3]\), \([1,2,3,3]\), \([1,3]\), \([1,3,3]\),
+       \([2]\), \([2,3]\), \([2,3,3]\), \([3]\) y \([3,3]\).</p>
+    <p class="note">Algunas se logran así (recuerda que «pez \(i\)» es el de la
+       línea \(i+3\), con su longitud y tipo):</p>
+    <ul>
+      <li><strong>\([1]\)</strong>: puedes atrapar al segundo pez (longitud \(5\),
+          tipo \(1\)) o al cuarto (longitud \(4\), tipo \(1\)) antes de que coman a
+          nadie.</li>
+      <li><strong>\([1,2]\)</strong>: el segundo pez (\(5\)) se come al primero
+          (\(2\)); entonces tiene su gema de tipo \(1\) y la de tipo \(2\) del
+          primero.</li>
+      <li><strong>\([1,2,3]\)</strong>: el cuarto pez (\(4\)) se come al primero
+          (\(2\)); luego el tercero (\(8\)) se come al cuarto. Atrapas al tercero y
+          tendrá una gema de cada tipo.</li>
+      <li><strong>\([1,2,3,3]\)</strong>: el cuarto come al primero, el tercero
+          come al cuarto, el tercero come al quinto (\(2\), tipo \(3\)); atrapas al
+          tercero.</li>
+      <li><strong>\([3,3]\)</strong>: el tercero (\(8\)) se come al quinto
+          (\(2\)); lo atrapas.</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Combinatoria</span>
+      <span class="ptag">Estructuras de datos (Segment tree)</span>
+      <span class="ptag">Ordenamiento / barrido</span>
+      <span class="ptag">Aritmética modular</span>
+      <span class="ptag">Representante canónico</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(F\) peces; el pez \(i\) tiene longitud \(L_i\) y una gema de tipo
+       \(k_i \in \{1,\dots,K\}\). Un pez \(A\) puede comerse a \(B\) si y solo si
+       \(L_A \ge 2\,L_B\), y al hacerlo acumula sus gemas (la longitud de \(A\) no
+       cambia). Atrapas un solo pez y te quedas con las gemas de su estómago.
+       Cuenta cuántas <strong>combinaciones distintas</strong> (vector de conteos
+       por tipo) son alcanzables sobre todos los peces, módulo \(M\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(F,K \le 5\times10^5\) y \(L \le 10^9\) (longitudes grandes ⇒
+                ordena/comprime, no indices por longitud). \(M \le 30\,000\) es
+                <strong>compuesto</strong>: nada de inversos modulares. Las capas
+                de puntos te marcan el camino: \(K\le 20\) (25 pts) admite algo
+                casi ingenuo; \(K\le 7\,000\) (70 pts) admite \(O(K^2)\); el 100
+                exige \(O((F+K)\log K)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué puede terminar en un estómago?</summary>
+      <div class="body">
+        <p class="q">¿Importa el <em>orden</em> en que un pez se come a los demás?
+           Si un pez \(c\) quiere absorber a un conjunto de peces, ¿qué condición
+           basta para que pueda comérselos a todos él solo?</p>
+        <p><strong>Lema de fusión.</strong> Ordena un conjunto de peces por
+           longitud. El más largo se puede comer a todos los demás (uno por uno) si
+           y solo si su longitud es \(\ge 2\times\) la del <em>segundo</em> más
+           largo. ¿Por qué? Comer no cambia tu longitud; si el más largo \(c\)
+           cumple \(L_c \ge 2\times(\text{segundo})\ge 2\times(\text{cualquier
+           otro})\), entonces \(c\) puede comerse a cada uno directamente. Y si
+           \(L_c < 2\times(\text{segundo})\), nadie puede absorber al segundo, así
+           que jamás caben todos en uno.</p>
+        <p>Consecuencia: un pez «atrapador» \(c\) puede terminar conteniendo la
+           combinación \(C\) si y solo si \(C\) se forma con \(c\) mismo más
+           <em>cualquier</em> subconjunto de peces de longitud
+           \(\le \lfloor L_c/2\rfloor\). Es decir, para cada tipo \(t\), el conteo
+           \(c_t\) puede ir de \(0\) hasta</p>
+        <p>\[\mathrm{avail}_c(t)=\bigl(\#\{\text{peces de tipo }t\text{ con
+           longitud}\le\lfloor L_c/2\rfloor\}\bigr)+[\,t=k_c\,],\]</p>
+        <p>con la única obligación de que \(c_{k_c}\ge 1\) (la gema propia de \(c\)
+           siempre está). El \(+1\) es por la gema que \(c\) ya trae.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Evita contar dos veces: el atrapador canónico</summary>
+      <div class="body">
+        <p class="q">Si cada pez genera muchas combinaciones y muchas se repiten
+           entre peces distintos, ¿cómo cuentas cada combinación <em>exactamente
+           una</em> vez?</p>
+        <p>Asigna cada combinación \(C\) a un único «dueño»: el atrapador
+           <strong>más largo</strong> que la puede contener. Observa que si \(c\)
+           <em>no</em> es el pez más largo de su tipo, otro pez del mismo tipo y más
+           largo lo domina en <em>todas</em> las coordenadas (\(\mathrm{avail}\) más
+           grande), así que ese pez también contiene \(C\). Por lo tanto, solo el
+           <strong>pez más largo de cada tipo</strong> —su «representante»— puede
+           ser dueño canónico.</p>
+        <p>Ordena los \(K\) tipos por \((\text{longitud del representante},
+           \text{id del tipo})\) ascendente: un orden total estricto. La idea es
+           contar, para cada representante \(R_{J_1}\), solo las combinaciones cuyo
+           atrapador canónico (el más largo posible, y el más tardío en este orden)
+           sea exactamente \(R_{J_1}\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cuándo te «roba» la combinación un pez más largo?</summary>
+      <div class="body">
+        <p class="q">Fija el representante \(R_{J_1}\) (tipo \(J_1\), longitud
+           \(L_1\), umbral \(\text{half}=\lfloor L_1/2\rfloor\)). Define
+           \(E(J_1,t)=\#\{\text{peces de tipo }t\text{ con longitud}\le
+           \text{half}\}\) y \(N=E(J_1,J_1)\). Entonces \(c_{J_1}\) va de \(1\) a
+           \(N+1\). Si otro tipo \(J_2\) tiene un representante <em>más largo</em>,
+           ¿qué necesita para «robarte» la combinación \(C\)?</p>
+        <p><strong>Hecho clave.</strong> Un pez \(F_2\) estrictamente más largo
+           domina a \(F_1\) en <em>todas</em> las coordenadas <em>excepto</em> en
+           \(J_1\): para \(F_1\), \(\mathrm{avail}(J_1)=N+1\), pero para \(F_2\) es
+           \(E(J_2,J_1)\) (sin el \(+1\), porque \(J_1\) no es su tipo). Entonces,
+           para una \(C\) que \(F_1\) sí atrapa, \(F_2\) también la atrapa si y solo
+           si</p>
+        <p>\[c_{J_2}\ge 1 \quad\text{y}\quad c_{J_1}\le E(J_2,J_1).\]</p>
+        <p>El resto de las restricciones se cumplen solas. Eso hace que la pregunta
+           «¿algún tipo más tardío me roba \(C\)?» se <strong>factorice tipo por
+           tipo</strong>. Conviene partir las combinaciones según \(c_{J_1}\):</p>
+        <ul>
+          <li><strong>parcial</strong>: \(c_{J_1}\in\{1,\dots,N\}\) (son \(N\)
+              valores).</li>
+          <li><strong>llena</strong>: \(c_{J_1}=N+1\) (un solo valor).</li>
+        </ul>
+        <p>Para cualquier tipo \(J_2\) más tardío se cumple \(E(J_2,J_1)\ge N\). Por
+           eso una combinación <em>parcial</em> siempre es robada en cuanto pongas
+           cualquier gema de un tipo más tardío. Una combinación <em>llena</em>
+           (\(c_{J_1}=N+1\)) solo se salva de \(J_2\) cuando \(E(J_2,J_1)=N\)
+           (¡exactamente \(N\), no \(N+1\)!).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La fórmula cerrada (y un primer \(O(K^2)\) que vale 70)</summary>
+      <div class="body">
+        <p class="q">Con la factorización de la Pista 3, ¿puedes escribir el conteo
+           del representante \(R_{J_1}\) como un producto de factores
+           independientes por tipo?</p>
+        <p>Llama \(p\) a la posición de \(J_1\) en el orden por
+           \((\text{longitud del representante},\text{id})\). Para cada otro tipo
+           \(J_2\):</p>
+        <ul>
+          <li>\(\text{parcial\_factor}(J_2)=\bigl(E(J_1,J_2)+1\bigr)\) si \(J_2\) es
+              <em>anterior</em> a \(J_1\) (representante más corto, o igual de largo
+              con id menor); en otro caso vale \(1\).</li>
+          <li>\(\text{lleno\_factor}(J_2)=\bigl(E(J_1,J_2)+1\bigr)\) si
+              \(E(J_2,J_1)\le N\); en otro caso vale \(1\).</li>
+        </ul>
+        <p>Con \(P_{\text{parcial}}=\prod \text{parcial\_factor}\) y
+           \(P_{\text{lleno}}=\prod \text{lleno\_factor}\):</p>
+        <p>\[\mathrm{total}(J_1)=P_{\text{lleno}}+N\cdot P_{\text{parcial}},\qquad
+           \text{Respuesta}=\sum_{J_1=1}^{K}\mathrm{total}(J_1)\bmod M.\]</p>
+        <p>(El \(N\) cuenta las \(N\) opciones parciales \(c_{J_1}=1,\dots,N\); la
+           parte llena fija \(c_{J_1}=N+1\).)</p>
+        <p><strong>¿Cuáles \(J_2\) tienen \(\text{lleno\_factor}\) libre?</strong>
+           Sea \(L^\ast\) la menor longitud de un pez de tipo \(J_1\) que excede
+           \(\text{half}\) (siempre existe: el propio \(R_{J_1}\)). Entonces
+           \(E(J_2,J_1)=N\) ⟺ \(\lfloor L_2/2\rfloor<L^\ast\) ⟺ la longitud del
+           representante de \(J_2\) es \(\le 2L^\ast-1\). Esos tipos forman un
+           <strong>prefijo contiguo</strong> de tamaño \(\mathrm{cnt}\) en el orden
+           (con \(\mathrm{cnt}\ge p\)). Así:</p>
+        <p>\(P_{\text{parcial}}=\prod_{\text{pos }<\,p}(E(J_1,J_2)+1)\) y
+           \(P_{\text{lleno}}=P_{\text{parcial}}\cdot
+           \prod_{p<\text{pos}\le \mathrm{cnt}}(E(J_1,J_2)+1)\).</p>
+        <p>Para mantener \(E(J_1,t)\) de todos los tipos a la vez, haz un
+           <strong>barrido</strong>: procesa los tipos en orden creciente de
+           \(\text{half}\) y, con un puntero monótono, inserta cada pez de longitud
+           \(\le\text{half}\) incrementando \(H[t]\). Tras insertar,
+           \(H[t]=E(J_1,t)\). Si para cada \(J_1\) recorres los tipos del prefijo
+           \(1\dots\mathrm{cnt}\) multiplicando \((H[t]+1)\), obtienes
+           \(O(K^2)\) en total: suficiente para los <strong>70 puntos</strong>
+           (\(K\le 7\,000\)).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>El cuello de botella del \(O(K^2)\) es recalcular los productos
+           \(\prod (H[t]+1)\) sobre rangos del prefijo, para cada \(J_1\). Eso es
+           exactamente un <strong>producto por rango</strong> sobre un arreglo que
+           cambia un punto a la vez ⇒ <strong>árbol de segmentos</strong> con
+           actualización puntual y consulta de producto módulo \(M\).</p>
+
+        <p><strong>Idea.</strong> Coloca los tipos en las hojas según su posición en
+           el orden \((\text{longitud del representante},\text{id})\). La hoja del
+           tipo \(t\) guarda \((H[t]+1)\bmod M\) (inicialmente \(H[t]=0\), hoja
+           \(=1\)). Barre los peces por longitud creciente; al avanzar de \(J_1\) en
+           \(J_1\) el umbral \(\text{half}\) no decrece, así que un puntero único va
+           insertando peces y haciendo <em>una</em> actualización puntual por pez.
+           Para cada \(J_1\) en su posición \(p\):</p>
+        <ul>
+          <li>\(N=\#\{\text{peces de tipo }J_1\text{ con longitud}\le\text{half}\}\)
+              (búsqueda binaria en las longitudes de ese tipo).</li>
+          <li>\(L^\ast=\) menor longitud de un pez de tipo \(J_1\) mayor que
+              \(\text{half}\); \(\mathrm{cnt}=\#\{\text{tipos con representante}\le
+              2L^\ast-1\}\) (búsqueda binaria en las longitudes de representante
+              ordenadas).</li>
+          <li>\(P_{\text{parcial}}=\text{prod}(1,p-1)\),
+              \(P_{\text{lleno}}=P_{\text{parcial}}\cdot\text{prod}(p+1,\mathrm{cnt})\),
+              \(\mathrm{total}=P_{\text{lleno}}+(N\bmod M)\cdot P_{\text{parcial}}\).
+              (Se salta la hoja \(p\), que vale \(N+1\).)</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> Cada combinación se cuenta una sola
+           vez, en su atrapador <em>más largo</em> (Pista 2). Para ese atrapador
+           \(R_{J_1}\), un pez más largo \(J_2\) la roba ⟺
+           \(c_{J_2}\ge 1\) y \(c_{J_1}\le E(J_2,J_1)\) (Pista 3); separando en
+           parcial/lleno, eso deja libres exactamente los factores
+           \((E(J_1,J_2)+1)\) del prefijo \(1\dots\mathrm{cnt}\) (lleno) y
+           \(1\dots p-1\) (parcial). El producto por rango da esos factores en
+           \(O(\log K)\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer F, K, M
+para cada pez i: leer (L[i], kind[i])
+
+para cada tipo j:  repLen[j] = max L[i] entre los peces de tipo j
+                   lensDe[j] = longitudes de los peces de tipo j, ordenadas asc
+ordenar tipos por (repLen asc, id asc)   -> pos[j] = posicion 1..K
+repLenOrden = repLen en orden de posicion (asc)     // para buscar cnt
+
+ordenar todos los peces por longitud asc
+seg = SegTree(K)            // producto por rango mod M; hoja inicial = 1
+H[1..K] = 0
+ptr = 0                     // puntero monotono sobre peces ordenados
+respuesta = 0
+
+para J1 en orden de posicion p = 1..K:
+    half = floor(repLen[J1] / 2)
+    mientras ptr &lt; F y peces_ordenados[ptr].L &lt;= half:
+        t = peces_ordenados[ptr].kind
+        H[t] += 1
+        seg.set(pos[t], (H[t] + 1) mod M)      // una actualizacion puntual por pez
+        ptr += 1
+    N  = #(lensDe[J1] &lt;= half)                 // busqueda binaria
+    Lst = menor valor de lensDe[J1] que es &gt; half      // existe: el propio R_J1
+    cnt = #(repLenOrden &lt;= 2*Lst - 1)           // prefijo contiguo; busqueda binaria
+    Pparcial = seg.prod(1, p-1)                 // rango vacio -> 1
+    Plleno   = (Pparcial * seg.prod(p+1, cnt)) mod M
+    total    = (Plleno + (N mod M) * Pparcial) mod M
+    respuesta = (respuesta + total) mod M
+
+imprimir respuesta</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> ordenar peces y tipos domina,
+           \(O(F\log F + K\log K)\); \(F\) actualizaciones puntuales y \(K\)
+           consultas de rango, cada una \(O(\log K)\). Memoria \(O(F+K)\). El caso
+           oficial más grande (\(F=K=5\times10^5\)) corre en fracciones de
+           segundo.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Trampas y trucos (C++)</span>
+<pre>• M NO es primo: prohibido prefijos de producto + inverso modular.
+  Usa un segment tree de productos (set puntual + prod por rango).
+• Comer usa piso: un pez de longitud L come peces de longitud &lt;= floor(L/2).
+  Cuida la L impar.
+• Frontera fina: el factor "lleno" se libera solo cuando E(J2,J1) &lt;= N
+  (exactamente N, NO N+1). Es lo mismo que repLen(J2) &lt;= 2*Lst-1.
+• Solo el pez mas largo de cada tipo es atrapador; rompe empates de
+  repLen por id del tipo, de forma consistente.
+• El atrapador siempre trae su gema: c_{J1} en 1..N+1; "lleno" = N+1
+  (un valor), "parcial" = 1..N (factor N).
+• Usa 64 bits para 2*Lst-1 (llega a ~2e9) y para el producto antes de
+  reducir mod M. E/S rapida: la entrada llega a ~8 MB (scanf / lector propio).</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
