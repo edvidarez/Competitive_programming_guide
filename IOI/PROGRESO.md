@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **10 / 142**
+Total de tareas: **142** · Completadas: **11 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -26,7 +26,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Amazing Robots | `2003/05 Amazing Robots/index.html` |
 | [x] | 6 | Seeing the Boundary | `2003/06 Seeing the Boundary/index.html` |
 
-## IOI 2004 — 4 / 6
+## IOI 2004 — 5 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
@@ -34,7 +34,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 2 | Hermes | `2004/02 Hermes/index.html` |
 | [x] | 3 | Polygon | `2004/03 Polygon/index.html` |
 | [x] | 4 | Empodia | `2004/04 Empodia/index.html` |
-| [ ] | 5 | Farmer | `2004/05 Farmer/index.html` |
+| [x] | 5 | Farmer | `2004/05 Farmer/index.html` |
 | [ ] | 6 | Phidias | `2004/06 Phidias/index.html` |
 
 ## IOI 2005 — 0 / 6
