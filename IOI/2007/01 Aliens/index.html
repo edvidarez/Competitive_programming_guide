@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2007 · Tarea 1 — Aliens</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla genérica (subtareas / ejemplo de interacción) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{background:transparent;padding:0}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2007 · Día 1 · Zagreb, Croacia</div>
+    <h1>Tarea <span class="num">1</span> — Aliens</h1>
+    <p class="note">Alienígenas · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Mirko es un gran fan de los <em>crop circles</em> (círculos de las cosechas):
+       formaciones geométricas de cultivos aplastados, supuestamente de origen
+       alienígena. Una noche de verano decidió hacer su propia formación en el prado
+       de su abuela. Como buen patriota, eligió darle la forma de la parte de tablero
+       del escudo de armas de Croacia: un tablero de \(5\times 5\) con
+       <strong>13 casillas rojas</strong> y <strong>12 casillas blancas</strong>.</p>
+
+    <figure>
+      <svg viewBox="0 0 220 220" role="img" aria-label="Tablero 5x5 del escudo croata: 13 casillas rojas y 12 blancas, con esquinas y centro rojos.">
+        <rect x="0" y="0" width="220" height="220" fill="#ffffff"/>
+        <!-- casillas rojas: roja sii (col+fila) es par; esquinas y centro rojos -->
+        <g fill="#e11d2a">
+          <rect x="0" y="0" width="44" height="44"/><rect x="88" y="0" width="44" height="44"/><rect x="176" y="0" width="44" height="44"/>
+          <rect x="44" y="44" width="44" height="44"/><rect x="132" y="44" width="44" height="44"/>
+          <rect x="0" y="88" width="44" height="44"/><rect x="88" y="88" width="44" height="44"/><rect x="176" y="88" width="44" height="44"/>
+          <rect x="44" y="132" width="44" height="44"/><rect x="132" y="132" width="44" height="44"/>
+          <rect x="0" y="176" width="44" height="44"/><rect x="88" y="176" width="44" height="44"/><rect x="176" y="176" width="44" height="44"/>
+        </g>
+        <!-- rejilla 5x5 -->
+        <g stroke="#c7cedb" stroke-width="1" fill="none">
+          <path d="M0 0H220M0 44H220M0 88H220M0 132H220M0 176H220M0 220H220"/>
+          <path d="M0 0V220M44 0V220M88 0V220M132 0V220M176 0V220M220 0V220"/>
+        </g>
+      </svg>
+      <figcaption>La parte de tablero del escudo de armas de Croacia (las cuatro
+        esquinas y la casilla central \((3,3)\) son rojas: \(13\) rojas y
+        \(12\) blancas).</figcaption>
+    </figure>
+
+    <p>El prado de la abuela es un cuadrado dividido en \(N\times N\) celdas. La celda
+       de la esquina inferior izquierda tiene coordenadas \((1,1)\) y la de la esquina
+       superior derecha tiene coordenadas \((N,N)\).</p>
+
+    <p>Mirko decidió aplastar únicamente el pasto de las casillas rojas del tablero,
+       dejando intacto el resto. Eligió un <strong>entero impar \(M \ge 3\)</strong> y
+       aplastó el pasto de modo que cada casilla del tablero ocupa \(M\times M\) celdas
+       del prado, y el tablero entero cabe completamente dentro del prado.</p>
+
+    <figure>
+      <svg viewBox="0 0 342 342" role="img" aria-label="Prado 19x19 con la formación de Mirko (M=3) sombreada en gris; el centro está en (12,9).">
+        <defs>
+          <pattern id="grid" width="18" height="18" patternUnits="userSpaceOnUse">
+            <rect width="18" height="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.7"/>
+          </pattern>
+        </defs>
+        <rect width="342" height="342" fill="url(#grid)"/>
+        <!-- casillas rojas (pasto aplastado) en gris; cada una es un bloque 3x3 de celdas -->
+        <g fill="#9aa3b2">
+          <rect x="72"  y="270" width="54" height="54"/><rect x="180" y="270" width="54" height="54"/><rect x="288" y="270" width="54" height="54"/>
+          <rect x="126" y="216" width="54" height="54"/><rect x="234" y="216" width="54" height="54"/>
+          <rect x="72"  y="162" width="54" height="54"/><rect x="180" y="162" width="54" height="54"/><rect x="288" y="162" width="54" height="54"/>
+          <rect x="126" y="108" width="54" height="54"/><rect x="234" y="108" width="54" height="54"/>
+          <rect x="72"  y="54"  width="54" height="54"/><rect x="180" y="54"  width="54" height="54"/><rect x="288" y="54"  width="54" height="54"/>
+        </g>
+        <!-- centro de la formación en (12,9) -->
+        <circle cx="207" cy="189" r="4" fill="#111111"/>
+      </svg>
+      <figcaption>Ejemplo de prado y formación de Mirko, con \(N=19\) y \(M=3\). Las
+        celdas con pasto aplastado se muestran en gris. El centro de la formación está
+        en \((12,9)\) y se marca con un punto negro.</figcaption>
+    </figure>
+
+    <p>Después de que Mirko se durmió, su peculiar creación atrajo la atención de
+       <strong>alienígenas de verdad</strong>. Flotan en su nave muy por encima del
+       prado y examinan la formación con un dispositivo simple. Este dispositivo solo
+       puede <strong>determinar si el pasto de una celda dada está aplastado o no</strong>.</p>
+
+    <p>Los alienígenas hallaron <strong>una celda con pasto aplastado</strong> y ahora
+       quieren encontrar la <strong>celda central</strong> de la obra maestra de Mirko
+       para admirar su belleza. <strong>No conocen el tamaño \(M\)</strong> de cada
+       casilla de la formación.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Es una <strong>tarea interactiva</strong>: tu programa habla con el dispositivo
+       alienígena. Debes escribir un programa que, dado el tamaño \(N\) del prado y las
+       coordenadas \((X_0, Y_0)\) de una celda con pasto aplastado, y con la posibilidad
+       de interrogar al dispositivo, encuentre las coordenadas de la celda central de la
+       formación. El dispositivo se puede usar <strong>a lo más 300 veces</strong>.</p>
+
+    <div class="sig">
+      <span class="tag">Flujo del programa</span>
+<pre>1) Lee de la entrada estándar:  N  X0  Y0
+2) Repite (a lo más 300 veces):  pregunta "examine X Y" y lee "true"/"false"
+3) Al final, imprime:  "solution Xc Yc"   (la ejecución termina sola)</pre>
+    </div>
+
+    <h3>Comunicación con el evaluador</h3>
+    <p>Tu programa envía comandos al dispositivo por la <strong>salida estándar</strong>
+       y recibe respuestas leyendo de la <strong>entrada estándar</strong>.</p>
+    <ul>
+      <li>Al inicio, lee tres enteros \(N\), \(X_0\) y \(Y_0\) de la entrada estándar,
+          separados por espacios simples. \(N\) es el tamaño del prado y \((X_0, Y_0)\)
+          son las coordenadas de una celda con pasto aplastado.</li>
+      <li>Para examinar la celda \((X,Y)\) con el dispositivo, imprime una línea de la
+          forma <code>examine X Y</code> en la salida estándar. Si \((X,Y)\) no está
+          dentro del prado (es decir, si no se cumple \(1 \le X \le N\) y
+          \(1 \le Y \le N\)), <strong>o</strong> si usas esta función <strong>más de
+          300 veces</strong>, tu programa recibe <strong>cero puntos</strong> en ese
+          caso de prueba.</li>
+      <li>El dispositivo responde con una sola línea que contiene la palabra
+          <code>true</code> si la celda \((X,Y)\) está aplastada, y <code>false</code>
+          en caso contrario.</li>
+      <li>Cuando hayas encontrado la celda central, imprime una línea de la forma
+          <code>solution Xc Yc</code> en la salida estándar, donde \((X_C, Y_C)\) son
+          las coordenadas de la celda central. La ejecución de tu programa termina
+          automáticamente al imprimir la solución.</li>
+      <li>Para interactuar correctamente, tu programa necesita
+          <strong>vaciar (flush) la salida estándar después de cada escritura</strong>.</li>
+    </ul>
+    <p class="note">El concurso incluía ejemplos de código en los tres lenguajes
+       disponibles, solo para mostrar cómo dialogar con el dispositivo; no son
+       soluciones correctas y no obtienen todos los puntos.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tamaño del prado</td><td><span class="badge">\(15 \le N \le 2{,}000{,}000{,}000\)</span></td></tr>
+        <tr><td>Tamaño de cada casilla</td><td><span class="badge">\(M\) impar, \(M \ge 3\) y \(5M \le N\)</span> (luego \(M \lesssim 4\times 10^8\))</td></tr>
+        <tr><td>Celda dada \((X_0, Y_0)\)</td><td>está dentro de una casilla roja (pasto aplastado)</td></tr>
+        <tr><td>Usos del dispositivo</td><td><span class="badge">a lo más 300</span></td></tr>
+        <tr><td>Consultar fuera del prado o pasar de 300 usos</td><td>0 puntos en ese caso</td></tr>
+        <tr><td>Respuesta</td><td>cada caso tiene una respuesta única que <em>no</em> depende de las preguntas que hagas</td></tr>
+        <tr><td>Aritmética</td><td>las coordenadas requieren enteros de <strong>64 bits</strong></td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas con grupos enumerados.</strong> IOI 2007 repartía los puntos
+      <em>por casos de prueba</em> (cada caso aporta puntos), no por subtareas del tipo
+      “mínimo por grupo”. El enunciado define una única banda parcial explícita:
+      <em>“En casos de prueba que valen 40 puntos en total, el tamaño \(M\) de cada
+      casilla será a lo más 100.”</em> La solución oficial describe la progresión de
+      dificultad: <strong>40</strong> puntos con un escaneo lineal, <strong>70</strong>
+      con duplicación repetida (\((\log M)^2\) consultas) y <strong>100</strong> con
+      duplicación + búsqueda binaria (\(\approx 6\log_2 M\) consultas). Los archivos de
+      prueba vienen agrupados \(1\ldots 10\) (con subletras) por dificultad creciente de
+      \(M\) y \(N\), pero no hay grupos con restricciones y puntajes propios.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>En el siguiente ejemplo, los comandos van en la columna izquierda (renglón por
+       renglón) y la respuesta del dispositivo va en la columna derecha del renglón
+       correspondiente. Corresponde a \(N=19\), \(X_0=7\), \(Y_0=4\) (la formación de la
+       figura, con \(M=3\) y centro \((12,9)\)). Las consultas mostradas son solo
+       ilustrativas: <em>no</em> son una solución real.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>salida (comando)</th><th>entrada (respuesta)</th></tr></thead>
+        <tbody>
+          <tr><td></td><td><code>19 7 4</code></td></tr>
+          <tr><td><code>examine 11 2</code></td><td><code>true</code></td></tr>
+          <tr><td><code>examine 2 5</code></td><td><code>false</code></td></tr>
+          <tr><td><code>examine 9 14</code></td><td><code>false</code></td></tr>
+          <tr><td><code>examine 18 3</code></td><td><code>true</code></td></tr>
+          <tr><td><code>solution 12 9</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Pruebas</h3>
+    <p>Durante el concurso había tres formas de probar la solución: (1) simular el
+       dispositivo a mano; (2) escribir un programa que lo simule y usar la utilidad
+       <code>connect</code> (p. ej. <code>./connect ./solution ./device</code>); y
+       (3) usar la facilidad <code>TEST</code> del juez con un caso propio (en cuyo
+       caso \(N\) se limita a 100). Un caso de prueba tiene tres líneas: el tamaño
+       \(N\) y el tamaño \(M\); las coordenadas \(X_0\), \(Y_0\) de una celda con pasto
+       aplastado; y las coordenadas \(X_C\), \(Y_C\) de la celda central. El juez avisa
+       si \(N\) viola las restricciones, si \(M\) no es impar \(\ge 3\), si la formación
+       no cabe en el prado, o si la celda \((X_0,Y_0)\) no está aplastada.</p>
+    <div class="example">
+      <div class="io"><h4>Entrada válida (facilidad TEST)</h4><pre>19 3
+7 4
+12 9</pre></div>
+      <div class="io"><h4>Significa</h4><pre>N=19, M=3
+celda dada (X0,Y0) = (7,4)
+centro (Xc,Yc) = (12,9)</pre></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Búsqueda exponencial (doubling)</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Geometría / damero</span>
+      <span class="ptag">Divide y vencerás</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay un damero \(5\times 5\) escondido en un prado \(N\times N\). Cada casilla mide
+       \(M\times M\) celdas (\(M\) impar, desconocido) y las \(13\) casillas rojas
+       (esquinas y centro incluidas) tienen el pasto aplastado. Te dan \(N\) y una celda
+       roja \((X_0,Y_0)\); preguntando <code>examine X Y</code> \(\to\)
+       <code>true</code>/<code>false</code> (a lo más \(300\) veces) debes devolver el
+       centro de la casilla central \((3,3)\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(M\) puede llegar a \(\sim 4\times 10^8\), así que \(\log_2 M \approx 29\):
+                cualquier escaneo lineal sobre celdas se sale del presupuesto de
+                \(300\) preguntas. La cota \(300\) prácticamente <em>grita</em>
+                “logarítmico”: necesitas \(O(\log M)\) consultas por borde. La banda de
+                \(40\) puntos pone \(M \le 100\): ahí sí cabe un escaneo lineal.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo aprovechar que es un damero?</summary>
+      <div class="body">
+        <p class="q">¿Notaste que dos casillas <em>adyacentes</em> del tablero (vecinas
+           a izquierda/derecha o arriba/abajo) <strong>siempre alternan color</strong>?
+           ¿Qué te garantiza eso sobre el borde de tu casilla?</p>
+        <p>La casilla es roja sii \((\text{col}+\text{fila})\) es par. Tu celda dada
+           \((X_0,Y_0)\) cae dentro de alguna casilla roja \(F\). Como la casilla pegada
+           a la derecha de \(F\) es blanca (o ya está fuera de la formación), si caminas
+           hacia la derecha el pasto pasa de aplastado a <em>no</em> aplastado justo en
+           el borde de \(F\). Es decir: <strong>el borde de \(F\) es detectable</strong>
+           con <code>examine</code>. Lo mismo a la izquierda y hacia abajo.</p>
+        <p class="note">Plan en dos etapas: (1) hallar \(M\) y el centro \((X_C,Y_C)\)
+           de \(F\); (2) ubicar \(F\) dentro del \(5\times 5\) y saltar al centro
+           \((3,3)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Los primeros 40 puntos (\(M \le 100\))</summary>
+      <div class="body">
+        <p class="q">Si \(M\) es chico, ¿qué pasa si simplemente avanzas celda por
+           celda desde \((X_0,Y_0)\) hasta que el pasto deje de estar aplastado?</p>
+        <p>Con \(M \le 100\), un escaneo <strong>lineal</strong> a lo largo de la fila
+           \(y=Y_0\) (hacia la derecha hasta la primera blanca \(=X_R\), hacia la
+           izquierda hasta \(X_L\)) y de la columna \(x=X_0\) (hacia abajo hasta
+           \(Y_B\)) usa solo unas pocas decenas de consultas. De ahí
+           \(M = X_R-X_L+1\), \(X_C = X_L+\tfrac{M-1}{2}\), \(Y_C = Y_B+\tfrac{M-1}{2}\).
+           Eso, más la Etapa 2 (Pista 5), ya vale los <strong>40 puntos</strong>.</p>
+        <p>El problema: con \(M\sim 4\times 10^8\), avanzar de uno en uno necesitaría
+           cientos de millones de consultas. Hay que hallar el borde en
+           \(O(\log M)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Encontrar el borde rápido: duplicación (doubling)</summary>
+      <div class="body">
+        <p class="q">Para localizar \(X_R\) (la \(x\) más grande que sigue dentro de
+           \(F\)) sin escanear, ¿qué tal saltar con pasos que <strong>se duplican</strong>:
+           \(X_0+1, X_0+2, X_0+4, \dots, X_0+2^k\)?</p>
+        <p>Consulta esos offsets hasta la <strong>primera</strong> celda blanca (o fuera
+           del prado), llámala \(C_\text{last}\). El predecesor \(C_\text{prev}\) (el
+           último offset que dio <code>true</code>) sigue dentro de \(F\).</p>
+        <p><strong>Lema clave (por qué la duplicación no se pasa):</strong> supón que la
+           consulta en \(2^{k-1}\) cayó en \(F\) (roja), es decir
+           \(X_0+2^{k-1}\le X_R\). Como \(X_0\) también está en \(F\), la distancia
+           dentro de \(F\) cumple \(2^{k-1}\le X_R-X_0\le M-1\). Entonces la siguiente
+           consulta (al doble) satisface la cota fina</p>
+        <p style="text-align:center">\[X_0+2^{k}=(X_0+2^{k-1})+2^{k-1}\;\le\;X_R+2^{k-1}\;\le\;X_R+(M-1).\]</p>
+        <p>Pero la casilla blanca pegada a la derecha de \(F\) ocupa <em>todo</em> el
+           rango \([\,X_R+1,\;X_R+M\,]\), y la <em>siguiente</em> roja empieza recién en
+           \(X_R+M+1\). Como \(X_0+2^{k}\le X_R+M-1 < X_R+M+1\), el salto cae en \(F\)
+           (roja) o dentro de esa blanca: <strong>nunca brinca hasta la siguiente
+           roja</strong>. Conclusión: \(C_\text{prev}\) sigue dentro de \(F\) y
+           \(X_R\in[C_\text{prev},\,C_\text{last})\). (\(\sim\log_2 M\) consultas.)</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Afinar con búsqueda binaria → 100 puntos</summary>
+      <div class="body">
+        <p class="q">Ya tienes un intervalo \([C_\text{prev}, C_\text{last}]\) con
+           \(C_\text{prev}\) rojo y \(C_\text{last}\) blanco. Dentro de ese tramo el
+           patrón es <code>rojo…rojo|blanco…blanco</code>. ¿Qué técnica encuentra la
+           frontera en \(O(\log)\)?</p>
+        <p><strong>Búsqueda binaria</strong>: el predicado “la celda es roja” es
+           monótono en ese intervalo (primero todas rojas, luego todas blancas), así que
+           buscas la <em>última</em> \(x\) roja \(=X_R\). Repite el mismo
+           <em>doubling + binaria</em> para \(X_L\) (hacia la izquierda) y \(Y_B\)
+           (hacia abajo). En total \(\approx 6\log_2 M\) consultas para la Etapa 1.</p>
+        <div class="pseudo">
+          <span class="tag">Esquema 1D del escaneo (un borde)</span>
+          <svg viewBox="0 0 660 170" role="img" aria-label="Escaneo 1D: doubling desde X0 hasta la primera blanca, luego busqueda binaria para hallar XR.">
+            <rect width="660" height="170" fill="#0b0e18"/>
+            <!-- casilla F (roja) y blanca de junto -->
+            <rect x="60"  y="60" width="320" height="30" fill="#e11d2a" opacity="0.85"/>
+            <rect x="380" y="60" width="230" height="30" fill="#e9edf5" opacity="0.9"/>
+            <text x="220" y="80" font-size="13" fill="#0b0e18" text-anchor="middle" font-family="sans-serif">casilla F (roja)</text>
+            <text x="495" y="80" font-size="13" fill="#0b0e18" text-anchor="middle" font-family="sans-serif">casilla blanca</text>
+            <!-- eje -->
+            <line x1="40" y1="75" x2="630" y2="75" stroke="#9aa6c4" stroke-width="1"/>
+            <!-- borde XR (frontera) -->
+            <line x1="380" y1="48" x2="380" y2="118" stroke="#34d399" stroke-width="2" stroke-dasharray="4 3"/>
+            <text x="380" y="134" font-size="13" fill="#34d399" text-anchor="middle" font-family="sans-serif">XR = última roja</text>
+            <!-- puntos de doubling -->
+            <g font-family="sans-serif" font-size="12" fill="#e8ecf6" text-anchor="middle">
+              <circle cx="120" cy="75" r="5" fill="#fbbf24"/><text x="120" y="44">X0</text>
+              <circle cx="150" cy="75" r="4" fill="#e11d2a" stroke="#fff" stroke-width="1"/><text x="150" y="40">+1</text>
+              <circle cx="190" cy="75" r="4" fill="#e11d2a" stroke="#fff" stroke-width="1"/><text x="190" y="40">+2</text>
+              <circle cx="270" cy="75" r="5" fill="#e11d2a" stroke="#fff" stroke-width="1"/><text x="270" y="40">+4 = Cprev (roja)</text>
+              <circle cx="470" cy="75" r="5" fill="#ffffff" stroke="#9aa6c4" stroke-width="1.5"/><text x="470" y="40">+8 = Clast (blanca)</text>
+            </g>
+            <!-- bracket de la binaria -->
+            <path d="M270 150 V158 H470 V150" stroke="#5b8cff" stroke-width="1.5" fill="none"/>
+            <text x="370" y="170" font-size="12" fill="#5b8cff" text-anchor="middle" font-family="sans-serif">búsqueda binaria en [Cprev, Clast] → XR</text>
+          </svg>
+        </div>
+        <p class="note">Doubling solo (repetido) da \((\log M)^2\) consultas
+           \(\approx 70\) puntos; doubling + binaria baja a \(6\log_2 M\) y alcanza los
+           \(100\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Etapa 2: ubicar \(F\) en el \(5\times 5\) y saltar al centro</summary>
+      <div class="body">
+        <p class="q">Ya conoces \(M\) y el centro \((X_C,Y_C)\) de tu casilla \(F\).
+           ¿Cómo sabes en qué columna/fila del damero \(1\ldots 5\) estás, sin escanear
+           todo?</p>
+        <p>Los vecinos del <em>mismo</em> color están a <strong>dos casillas</strong>
+           (centro a centro \(=2M\)), porque mover \(\pm 2\) en columna no cambia la
+           paridad de \((\text{col}+\text{fila})\). Para la columna de \(F\):</p>
+        <ul>
+          <li>Mira si hay casilla roja a \(2M\) a la derecha (\(X_C+2M\)) y a la
+              izquierda (\(X_C-2M\)).</li>
+          <li>Si <strong>ambas</strong> existen \(\Rightarrow\) estás en la columna
+              central \(3\).</li>
+          <li>Si solo la derecha \(\Rightarrow\) col \(=1\) si además hay roja en
+              \(X_C+4M\), si no col \(=2\).</li>
+          <li>Si solo la izquierda \(\Rightarrow\) col \(=5\) si hay roja en \(X_C-4M\),
+              si no col \(=4\).</li>
+        </ul>
+        <p>Igual con la fila usando \(Y_C\pm 2M\) y \(Y_C\pm 4M\). <strong>Toda consulta
+           fuera del prado \([1,N]\) se trata como <code>false</code> sin preguntar</strong>
+           (esa casilla no existe). Con \((\text{col},\text{fila})\) en mano, saltas al
+           centro: \(X_\text{centro}=X_C+(3-\text{col})\cdot M\),
+           \(Y_\text{centro}=Y_C+(3-\text{fila})\cdot M\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Dos etapas. <em>Etapa 1:</em> con
+           <em>doubling + búsqueda binaria</em> en tres direcciones (derecha, izquierda,
+           abajo) halla los bordes \(X_R, X_L, Y_B\) de la casilla \(F\) que contiene
+           \((X_0,Y_0)\); de ahí \(M\) y el centro \((X_C,Y_C)\). <em>Etapa 2:</em>
+           identifica la posición \((\text{col},\text{fila})\) de \(F\) en el damero
+           \(5\times 5\) probando vecinos a \(2M\) y \(4M\), y salta al centro
+           \((3,3)\).</p>
+
+        <p><strong>Por qué es correcto.</strong> El borde de \(F\) es detectable porque
+           a su derecha/arriba hay una casilla blanca o el exterior (ambos
+           <code>false</code>). El lema de la Pista 3 garantiza que la duplicación no
+           brinca hasta la siguiente casilla roja (la distancia dentro de \(F\) es
+           \(&lt; M\) y entre dos rojas hay una blanca entera), así que el último punto
+           rojo del doubling sigue en \(F\) y la binaria afina \(X_R\) exactamente. En la
+           Etapa 2, como \((\text{col}+\text{fila})\) es par, el vecino a \(2\) casillas
+           es del mismo color (rojo) si existe; las cuatro pruebas a \(2M\)/\(4M\)
+           determinan sin ambigüedad la fila y la columna en \(\{1,\dots,5\}\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, X0, Y0
+
+funcion probe(X, Y):                 // consulta SEGURA al dispositivo
+    si X &lt; 1 o X &gt; N o Y &lt; 1 o Y &gt; N:
+        regresar false               // fuera del prado = no aplastado (NO se pregunta)
+    imprimir "examine", X, Y;  flush
+    leer palabra;  regresar (palabra == "true")
+
+// punto(dir, t): celda a distancia t desde (X0,Y0) en la dirección dir
+//   derecha=(X0+t, Y0)   izquierda=(X0-t, Y0)   abajo=(X0, Y0-t)
+
+funcion borde(dir):                  // devuelve la coordenada del último ROJO (borde de F)
+    // 1) DOUBLING hasta la primera blanca/borde
+    paso = 1;  prev = 0
+    mientras probe(punto(dir, paso)) es true:
+        prev = paso
+        paso = paso * 2
+    last = paso                      // primera consulta blanca / fuera de rango
+    // 2) BINARIA en (prev, last): rojo...rojo | blanco...blanco
+    lo = prev;  hi = last
+    mientras hi - lo &gt; 1:
+        mid = (lo + hi) / 2          // división entera
+        si probe(punto(dir, mid)) es true: lo = mid
+        si no:                              hi = mid
+    regresar coordenada que varía de punto(dir, lo)   // = X_R, X_L o Y_B
+
+XR = borde(derecha)                  // sobre la fila y = Y0
+XL = borde(izquierda)                // sobre la fila y = Y0
+YB = borde(abajo)                    // sobre la columna x = X0
+M  = XR - XL + 1                     // M impar
+XC = XL + (M-1)/2
+YC = YB + (M-1)/2                    // centro de F  (¡usar enteros de 64 bits!)
+
+// ETAPA 2: ubicar F en el damero 5x5
+funcion indice(rojo):                // rojo(k) = ¿hay casilla roja a k casillas (k*M) en +?
+    p2 = rojo(+2);  n2 = rojo(-2)
+    si p2 y n2: regresar 3           // vecino rojo a ambos lados -> columna/fila central
+    si p2:      regresar (rojo(+4) ? 1 : 2)
+    si n2:      regresar (rojo(-4) ? 5 : 4)
+    regresar 3                       // (no ocurre: F siempre tiene un vecino en su eje)
+
+col  = indice( k -> probe(XC + k*M, YC) )
+fila = indice( k -> probe(XC, YC + k*M) )
+
+Xc = XC + (3 - col ) * M
+Yc = YC + (3 - fila) * M
+imprimir "solution", Xc, Yc;  flush</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Etapa 1: \(\approx 6\log_2 M\) consultas
+           (dos por borde: doubling + binaria, tres bordes). Etapa 2: \(\le 8\)
+           consultas. Con \(M \lesssim 4\times 10^8\) \((\log_2 M \approx 29)\) el peor
+           caso ronda \(\sim 180\) consultas, cómodamente bajo \(300\). Tiempo
+           \(O(\log M)\), memoria \(O(1)\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Trucos de C++ (solo si usas C++)</span>
+<pre>• Usa  long long  para X/Y: XC + 4*M puede superar 2^31 (N hasta 2e9, M hasta 4e8).
+• Tras cada salida:  cout &lt;&lt; ... &lt;&lt; endl;  (endl ya hace flush) o  fflush(stdout);
+  olvidar el flush CUELGA la interacción.
+• Envuelve SIEMPRE las consultas en probe(): si la coordenada se sale de [1,N],
+  devuelve false sin preguntar (una sola consulta fuera de rango = 0 puntos).</pre>
+        </div>
+
+        <p class="note"><strong>Errores típicos:</strong> (1) escanear el eje equivocado
+           al buscar \(Y_B\) (variar \(y\) sobre \(x=X_0\), no al revés); (2) preguntar
+           fuera del prado en vez de tratarlo como centinela blanco; (3) overflow de
+           32 bits; (4) quedarse en lineal (40) o doubling repetido (70) sin la binaria;
+           (5) equivocar la paridad del damero (rojas: esquinas y centro, \(13\) en
+           total); (6) olvidar el flush.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
