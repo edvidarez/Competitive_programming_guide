@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **13 / 142**
+Total de tareas: **142** · Completadas: **14 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -37,12 +37,12 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Farmer | `2004/05 Farmer/index.html` |
 | [x] | 6 | Phidias | `2004/06 Phidias/index.html` |
 
-## IOI 2005 — 1 / 6
+## IOI 2005 — 2 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Garden | `2005/01 Garden/index.html` |
-| [ ] | 2 | Mean Sequence | `2005/02 Mean Sequence/index.html` |
+| [x] | 2 | Mean Sequence | `2005/02 Mean Sequence/index.html` |
 | [ ] | 3 | Mountain | `2005/03 Mountain/index.html` |
 | [ ] | 4 | Birthday | `2005/04 Birthday/index.html` |
 | [ ] | 5 | Rectangle Game | `2005/05 Rectangle Game/index.html` |
