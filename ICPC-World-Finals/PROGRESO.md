@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **192 / 200**
+Total de problemas: **200** · Completados: **193 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -275,7 +275,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Bridging the Gap | `2023/J/J.html` |
 | [x] | K | Alea Iacta Est | `2023/K/K.html` |
 
-## 2024 ICPC World Finals — 4 / 12
+## 2024 ICPC World Finals — 5 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -283,7 +283,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | B | Bingo for the Win! | `2024/B/B.html` |
 | [x] | C | Citizenship | `2024/C/C.html` |
 | [x] | D | Doubles Horseback Wrestling | `2024/D/D.html` |
-| [ ] | E | Flipping Container | `2024/E/E.html` |
+| [x] | E | Flipping Container | `2024/E/E.html` |
 | [ ] | F | Friendly Rivalry | `2024/F/F.html` |
 | [ ] | G | Kindergarten | `2024/G/G.html` |
 | [ ] | H | Maxwell's Demon | `2024/H/H.html` |
