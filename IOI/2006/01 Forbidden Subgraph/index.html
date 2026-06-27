@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2006 · Tarea 1 — Forbidden Subgraph</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas / mapeo (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2006 · Día 1 · Mérida, México</div>
+    <h1>Tarea <span class="num">1</span> — Forbidden Subgraph</h1>
+    <p class="note">Subgrafo prohibido · hoja oficial rotulada <em>Day 1 – Task 3</em> ·
+       PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+
+    <p>Decimos que dos grafos no dirigidos \(G\) y \(H\) son <strong>isomorfos</strong> si:</p>
+    <ul>
+      <li>tienen el mismo número de vértices, y</li>
+      <li>existe una correspondencia <strong>uno a uno</strong> entre sus vértices tal que,
+          para cualesquiera dos vértices <em>distintos</em> de \(G\), hay una arista entre
+          ellos <strong>si y solo si</strong> hay una arista entre sus vértices
+          correspondientes en \(H\).</li>
+    </ul>
+    <p>Por ejemplo, los dos grafos siguientes son isomorfos aunque se dibujen distinto:</p>
+
+    <figure>
+      <svg viewBox="0 0 615 290" role="img"
+           aria-label="Dos dibujos del mismo grafo. A la izquierda, los vértices a,b,c,d en una columna y g,h,i,j en otra, con aristas que cruzan entre las dos columnas. A la derecha, un cuadro exterior 1-2-3-4 con un cuadro interior 5-6-7-8 y cuatro radios que los unen.">
+        <!-- ===== Grafo izquierdo (dibujo bipartito) ===== -->
+        <g stroke="#1f2540" stroke-width="2" fill="none">
+          <!-- horizontales -->
+          <line x1="55" y1="35"  x2="215" y2="35"/>    <!-- a-g -->
+          <line x1="55" y1="105" x2="215" y2="105"/>   <!-- b-h -->
+          <line x1="55" y1="175" x2="215" y2="175"/>   <!-- c-i -->
+          <line x1="55" y1="245" x2="215" y2="245"/>   <!-- d-j -->
+          <!-- cruces -->
+          <line x1="55" y1="35"  x2="215" y2="105"/>   <!-- a-h -->
+          <line x1="55" y1="35"  x2="215" y2="175"/>   <!-- a-i -->
+          <line x1="55" y1="105" x2="215" y2="35"/>    <!-- b-g -->
+          <line x1="55" y1="105" x2="215" y2="245"/>   <!-- b-j -->
+          <line x1="55" y1="175" x2="215" y2="35"/>    <!-- c-g -->
+          <line x1="55" y1="175" x2="215" y2="245"/>   <!-- c-j -->
+          <line x1="55" y1="245" x2="215" y2="105"/>   <!-- d-h -->
+          <line x1="55" y1="245" x2="215" y2="175"/>   <!-- d-i -->
+        </g>
+        <g font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#0f1320" text-anchor="middle">
+          <circle cx="55"  cy="35"  r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="55"  y="40">a</text>
+          <circle cx="55"  cy="105" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="55"  y="110">b</text>
+          <circle cx="55"  cy="175" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="55"  y="180">c</text>
+          <circle cx="55"  cy="245" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="55"  y="250">d</text>
+          <circle cx="215" cy="35"  r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="215" y="40">g</text>
+          <circle cx="215" cy="105" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="215" y="110">h</text>
+          <circle cx="215" cy="175" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="215" y="180">i</text>
+          <circle cx="215" cy="245" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="215" y="250">j</text>
+        </g>
+
+        <!-- ===== Grafo derecho (dibujo de cubo) ===== -->
+        <g stroke="#1f2540" stroke-width="2" fill="none">
+          <!-- cuadro exterior 1-2-3-4 -->
+          <line x1="360" y1="30"  x2="575" y2="30"/>   <!-- 1-2 -->
+          <line x1="575" y1="30"  x2="575" y2="250"/>  <!-- 2-3 -->
+          <line x1="575" y1="250" x2="360" y2="250"/>  <!-- 3-4 -->
+          <line x1="360" y1="250" x2="360" y2="30"/>   <!-- 4-1 -->
+          <!-- cuadro interior 5-6-7-8 -->
+          <line x1="425" y1="92"  x2="510" y2="92"/>   <!-- 5-6 -->
+          <line x1="510" y1="92"  x2="510" y2="185"/>  <!-- 6-7 -->
+          <line x1="510" y1="185" x2="425" y2="185"/>  <!-- 7-8 -->
+          <line x1="425" y1="185" x2="425" y2="92"/>   <!-- 8-5 -->
+          <!-- radios -->
+          <line x1="360" y1="30"  x2="425" y2="92"/>   <!-- 1-5 -->
+          <line x1="575" y1="30"  x2="510" y2="92"/>   <!-- 2-6 -->
+          <line x1="575" y1="250" x2="510" y2="185"/>  <!-- 3-7 -->
+          <line x1="360" y1="250" x2="425" y2="185"/>  <!-- 4-8 -->
+        </g>
+        <g font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#0f1320" text-anchor="middle">
+          <circle cx="360" cy="30"  r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="360" y="35">1</text>
+          <circle cx="575" cy="30"  r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="575" y="35">2</text>
+          <circle cx="575" cy="250" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="575" y="255">3</text>
+          <circle cx="360" cy="250" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="360" y="255">4</text>
+          <circle cx="425" cy="92"  r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="425" y="97">5</text>
+          <circle cx="510" cy="92"  r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="510" y="97">6</text>
+          <circle cx="510" cy="185" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="510" y="190">7</text>
+          <circle cx="425" cy="185" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="425" y="190">8</text>
+        </g>
+      </svg>
+      <figcaption>Los dos grafos son <strong>isomorfos</strong> aunque se dibujen distinto
+        (de hecho ambos son el 3-cubo \(Q_3\)). Recreación fiel de la figura del enunciado oficial.</figcaption>
+    </figure>
+
+    <p>Una correspondencia uno a uno que lo demuestra es
+       \(\{a\text{–}1,\, b\text{–}6,\, c\text{–}8,\, d\text{–}3,\, g\text{–}5,\, h\text{–}2,\, i\text{–}4,\, j\text{–}7\}\),
+       pero existen otras.</p>
+
+    <p>Un <strong>subgrafo</strong> de un grafo \(G\) es un grafo cuyos conjuntos de
+       vértices y de aristas son <em>subconjuntos</em> de los de \(G\). Nota que \(G\) es
+       subgrafo de sí mismo.</p>
+
+    <p>Decimos que un grafo \(G\) <strong>contiene</strong> a otro grafo \(H\) si existe al
+       menos un subgrafo \(H'\) de \(G\) que es <em>isomorfo</em> a \(H\). La siguiente
+       figura muestra un grafo \(G\) que contiene al grafo \(H\) (aquí \(H\) es un
+       <em>“paw”</em>: un triángulo con una arista colgante).</p>
+
+    <figure>
+      <svg viewBox="0 0 600 250" role="img"
+           aria-label="A la izquierda el grafo H (un triángulo b-c-d con una arista colgante a-b); a la derecha un grafo G de ocho vértices con una copia de H resaltada.">
+        <!-- ===== H (paw) ===== -->
+        <g stroke="#1f2540" stroke-width="2" fill="none">
+          <line x1="110" y1="40" x2="110" y2="110"/>   <!-- a-b -->
+          <line x1="110" y1="110" x2="62" y2="190"/>    <!-- b-c -->
+          <line x1="110" y1="110" x2="158" y2="190"/>   <!-- b-d -->
+          <line x1="62" y1="190" x2="158" y2="190"/>    <!-- c-d -->
+        </g>
+        <g font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#0f1320" text-anchor="middle">
+          <circle cx="110" cy="40"  r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="110" y="45">a</text>
+          <circle cx="110" cy="110" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="110" y="115">b</text>
+          <circle cx="62"  cy="190" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="62"  y="195">c</text>
+          <circle cx="158" cy="190" r="13" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="158" y="195">d</text>
+        </g>
+        <text x="110" y="232" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2540">H</text>
+
+        <!-- ===== G (ocho vértices) ===== -->
+        <!-- aristas normales -->
+        <g stroke="#1f2540" stroke-width="2" fill="none">
+          <line x1="330" y1="45"  x2="560" y2="45"/>    <!-- 1-2 -->
+          <line x1="560" y1="45"  x2="560" y2="185"/>   <!-- 2-3 -->
+          <line x1="330" y1="45"  x2="330" y2="185"/>   <!-- 1-4 -->
+          <line x1="392" y1="85"  x2="498" y2="85"/>    <!-- 5-6 -->
+          <line x1="392" y1="145" x2="392" y2="85"/>    <!-- 8-5 -->
+          <line x1="498" y1="145" x2="392" y2="145"/>   <!-- 7-8 -->
+          <line x1="330" y1="45"  x2="392" y2="85"/>    <!-- 1-5 -->
+          <line x1="560" y1="45"  x2="498" y2="85"/>    <!-- 2-6 -->
+          <line x1="330" y1="185" x2="392" y2="145"/>   <!-- 4-8 -->
+        </g>
+        <!-- copia de H resaltada: triángulo 3-4-7 + colgante 7-6 -->
+        <g stroke="#e11d48" stroke-width="4" fill="none">
+          <line x1="330" y1="185" x2="560" y2="185"/>   <!-- 4-3 -->
+          <line x1="330" y1="185" x2="498" y2="145"/>   <!-- 4-7 -->
+          <line x1="560" y1="185" x2="498" y2="145"/>   <!-- 3-7 -->
+          <line x1="498" y1="145" x2="498" y2="85"/>    <!-- 7-6 (colgante) -->
+        </g>
+        <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#0f1320" text-anchor="middle">
+          <circle cx="330" cy="45"  r="12" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="330" y="49">1</text>
+          <circle cx="560" cy="45"  r="12" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="560" y="49">2</text>
+          <circle cx="560" cy="185" r="12" fill="#fff" stroke="#e11d48" stroke-width="3"/><text x="560" y="189">3</text>
+          <circle cx="330" cy="185" r="12" fill="#fff" stroke="#e11d48" stroke-width="3"/><text x="330" y="189">4</text>
+          <circle cx="392" cy="85"  r="12" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="392" y="89">5</text>
+          <circle cx="498" cy="85"  r="12" fill="#fff" stroke="#e11d48" stroke-width="3"/><text x="498" y="89">6</text>
+          <circle cx="498" cy="145" r="12" fill="#fff" stroke="#e11d48" stroke-width="3"/><text x="498" y="149">7</text>
+          <circle cx="392" cy="145" r="12" fill="#fff" stroke="#1f2540" stroke-width="2"/><text x="392" y="149">8</text>
+        </g>
+        <text x="445" y="232" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2540">G</text>
+      </svg>
+      <figcaption>El grafo \(G\) <strong>contiene</strong> a \(H\): el subgrafo resaltado en
+        rojo (triángulo \(3\,\text{–}\,4\,\text{–}\,7\) con la arista colgante \(7\,\text{–}\,6\))
+        es isomorfo a \(H\). Recreación fiel de la figura del enunciado oficial.</figcaption>
+    </figure>
+
+    <h2>La tarea</h2>
+    <p>Dados dos grafos no dirigidos \(G\) y \(H\), produce un subgrafo \(G'\) de \(G\) tal que:</p>
+    <ul>
+      <li>el número de vértices de \(G\) y de \(G'\) es el mismo, y</li>
+      <li>\(H\) <strong>no</strong> está contenido en \(G'\).</li>
+    </ul>
+    <p>Naturalmente, puede haber muchos subgrafos \(G'\) con esas propiedades. Produce uno
+       con <strong>tantas aristas como sea posible</strong>.</p>
+
+    <div class="note-box">
+      <strong>Algoritmo base (lo trae el enunciado).</strong> La estrategia más elemental es
+      recorrer las aristas de \(G\) en el orden en que aparecen en el archivo de entrada e ir
+      <em>intentando</em> agregar cada una a \(G'\), verificando en cada paso si \(H\) queda
+      contenido en \(G'\) o no. Implementar bien este voraz da <em>algunos</em> puntos, pero
+      existen estrategias mucho mejores. (Su número de aristas \(E_b\) es el umbral de la
+      calificación; ver abajo.)
+    </div>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>output-only</strong>: no entregas un programa, entregas
+       <strong>archivos de salida</strong>. Te dan <strong>10 archivos de entrada</strong>
+       <code>forbidden1.in</code> … <code>forbidden10.in</code> y debes producir
+       <strong>10 archivos de salida</strong> <code>forbidden1.out</code> … <code>forbidden10.out</code>,
+       uno por cada entrada. Puedes calcular cada \(G'\) como prefieras (a mano, con un
+       programa, con varios algoritmos distintos por archivo); solo se califican las salidas.</p>
+
+    <h3>Entrada</h3>
+    <p>Cada archivo <code>forbiddenK.in</code> contiene:</p>
+    <ul>
+      <li><strong>Línea 1:</strong> dos enteros separados por espacio: \(m\) y \(n\).</li>
+      <li><strong>Siguientes \(m\) líneas:</strong> cada una con \(m\) enteros separados por
+          espacio; representan los vértices de \(H\) en el orden \(1,\dots,m\). El \(i\)-ésimo
+          elemento de la \(j\)-ésima línea vale \(1\) si los vértices \(i\) y \(j\) están
+          unidos por una arista en \(H\), y \(0\) en caso contrario.</li>
+      <li><strong>Siguientes \(n\) líneas:</strong> cada una con \(n\) enteros separados por
+          espacio; representan los vértices de \(G\) en el orden \(1,\dots,n\). El \(i\)-ésimo
+          elemento de la \(j\)-ésima línea vale \(1\) si los vértices \(i\) y \(j\) están
+          unidos por una arista en \(G\), y \(0\) en caso contrario.</li>
+    </ul>
+    <p class="note">Salvo la línea 1, la entrada es simplemente la <strong>matriz de
+       adyacencia</strong> de \(H\) seguida de la de \(G\).</p>
+
+    <h3>Salida</h3>
+    <p>Cada archivo <code>forbiddenK.out</code> debe contener:</p>
+    <ul>
+      <li><strong>Línea 1:</strong> el encabezado del archivo, que debe contener
+          <code>#FILE forbidden K</code>, donde <code>K</code> es un número del 1 al 10 que
+          corresponde al archivo de entrada resuelto.</li>
+      <li><strong>Línea 2:</strong> un entero: \(n\).</li>
+      <li><strong>Siguientes \(n\) líneas:</strong> cada una con \(n\) enteros separados por
+          espacio; representan los vértices de \(G'\) en el orden \(1,\dots,n\). El \(i\)-ésimo
+          elemento de la \(j\)-ésima línea vale \(1\) si los vértices \(i\) y \(j\) están
+          unidos por una arista en \(G'\), y \(0\) en caso contrario.</li>
+    </ul>
+    <p class="note">Salvo las líneas 1 y 2, la salida es la <strong>matriz de adyacencia</strong>
+       de \(G'\) (simétrica, con diagonal en cero y aristas que sean un subconjunto de las de
+       \(G\)).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tipo de tarea</td><td><span class="badge">output-only · 10 instancias fijas</span></td></tr>
+        <tr><td>Vértices de \(H\)</td><td><span class="badge">\(3 \le m \le 4\)</span></td></tr>
+        <tr><td>Vértices de \(G\)</td><td><span class="badge">\(3 \le n \le 1000\)</span></td></tr>
+        <tr><td>Puntaje</td><td><span class="badge">por archivo, según las aristas (ver Calificación)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas con nombre.</strong> El puntaje es <strong>por archivo</strong> y
+      depende del número de aristas de tu \(G'\). Recibes puntaje (distinto de cero) por un
+      archivo de salida <em>solo si</em> cumple la especificación de la tarea (\(G'\) es
+      subgrafo válido de \(G\) y \(H\) no está contenido en \(G'\)). Si la cumple, sea
+      \(E_y\) = aristas de tu salida, \(E_b\) = aristas que produce el <em>algoritmo base</em> y
+      \(E_m\) = máximo de aristas entre las salidas de todos los concursantes. Tu puntaje para
+      ese caso es:
+      <ul style="margin-top:8px">
+        <li>\(30\,E_y / E_b\)\(\quad\)si \(E_y \le E_b\), o bien</li>
+        <li>\(30 + 70\,(E_y - E_b)/(E_m - E_b)\)\(\quad\)si \(E_y &gt; E_b\).</li>
+      </ul>
+      <span style="display:block;margin-top:8px">Es decir: superar al voraz base te da
+      \(\ge 30\), e igualar a la mejor entrega te da \(100\) en ese caso. Nuestras salidas
+      superan al base en <em>todos</em> los casos e igualan o superan la mejor entrega oficial
+      en todos (casos 1–7 demostrablemente óptimos; 8–10 a la par o por encima del mejor
+      reportado).</span>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Aquí \(m=3\) y \(n=5\). \(H\) es la <em>matriz</em> de un camino de 3 vértices
+       (\(P_3\): \(1\text{–}2\text{–}3\)) y \(G\) es el camino \(1\text{–}2\text{–}3\text{–}4\text{–}5\).</p>
+    <div class="example">
+      <div class="io"><h4>forbiddenK.in</h4><pre>3 5
+0 1 0
+1 0 1
+0 1 0
+0 1 0 0 0
+1 0 1 0 0
+0 1 0 1 0
+0 0 1 0 1
+0 0 0 1 0</pre></div>
+      <div class="io"><h4>forbiddenK.out</h4><pre>#FILE forbidden K
+5
+0 1 0 0 0
+1 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0
+0 0 0 0 0</pre></div>
+    </div>
+    <p class="note">Esta salida es <strong>correcta pero no óptima</strong>: solo conserva la
+       arista \(1\text{–}2\) (1 arista), y \(P_3\) en efecto no aparece (ningún vértice queda con
+       grado \(\ge 2\)). Pero se puede conservar <em>más</em> sin crear un \(P_3\): por ejemplo
+       \(\{1\text{–}2,\, 3\text{–}4\}\) (2 aristas) sigue sin tener ningún vértice de grado
+       \(\ge 2\). En la entrega se reemplaza la <code>K</code> del encabezado por el número del
+       archivo (1…10).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Emparejamiento (Blossom)</span>
+      <span class="ptag">Casuística estructural</span>
+      <span class="ptag">Max-cut / Kernighan-Lin</span>
+      <span class="ptag">Output-only / heurística</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Output-only. Te dan un grafo \(G\) (hasta \(n=1000\) vértices; en las instancias reales
+       hasta \(645\) y \(\sim 14\,000\) aristas) y un grafo prohibido \(H\) <em>pequeño</em>
+       (\(m=3\) o \(4\) vértices). Entrega un subgrafo abarcador \(G'\) (mismos vértices) con el
+       <strong>máximo de aristas</strong> que <strong>no contenga a \(H\) como subgrafo</strong>.
+       La clave: como \(m\le 4\), \(H\) solo puede ser uno de <strong>cinco</strong> grafos, y
+       cada uno colapsa a una <em>condición estructural simple</em> sobre \(G'\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(3\le m\le 4\) ⇒ hay <strong>exactamente 5</strong> grafos \(H\) posibles
+                (con al menos una arista). <em>No</em> escribas un detector genérico de
+                isomorfismo de subgrafos: <strong>clasifica</strong> \(H\) por
+                \((m,\ \#\text{aristas},\ \text{secuencia de grados})\) y resuelve el caso
+                correcto. Y como es <strong>output-only</strong> sobre 10 instancias fijas,
+                puedes permitirte algoritmos pesados (Blossom, metaheurísticas de \(\sim\)16 s)
+                por archivo: no hay límite de 1–2 s de un juez en línea.</td></tr>
+      </table>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 770 175" role="img"
+           aria-label="Los cinco grafos prohibidos posibles con 3 o 4 vértices: 2K2, P3, garra K1,3, triángulo K3 y paw.">
+        <g stroke="#1f2540" stroke-width="2" fill="none">
+          <!-- 2K2 (cx=77) -->
+          <line x1="52" y1="40" x2="52" y2="100"/>
+          <line x1="102" y1="40" x2="102" y2="100"/>
+          <!-- P3 (cx=230) -->
+          <line x1="192" y1="70" x2="230" y2="70"/>
+          <line x1="230" y1="70" x2="268" y2="70"/>
+          <!-- claw K1,3 (cx=383) -->
+          <line x1="383" y1="70" x2="383" y2="32"/>
+          <line x1="383" y1="70" x2="347" y2="104"/>
+          <line x1="383" y1="70" x2="419" y2="104"/>
+          <!-- K3 (cx=536) -->
+          <line x1="536" y1="34" x2="500" y2="102"/>
+          <line x1="536" y1="34" x2="572" y2="102"/>
+          <line x1="500" y1="102" x2="572" y2="102"/>
+          <!-- paw (cx=692) -->
+          <line x1="692" y1="28" x2="692" y2="66"/>
+          <line x1="692" y1="66" x2="660" y2="108"/>
+          <line x1="692" y1="66" x2="724" y2="108"/>
+          <line x1="660" y1="108" x2="724" y2="108"/>
+        </g>
+        <g fill="#5b8cff" stroke="#1f2540" stroke-width="1.5">
+          <circle cx="52" cy="40" r="7"/><circle cx="52" cy="100" r="7"/>
+          <circle cx="102" cy="40" r="7"/><circle cx="102" cy="100" r="7"/>
+          <circle cx="192" cy="70" r="7"/><circle cx="230" cy="70" r="7"/><circle cx="268" cy="70" r="7"/>
+          <circle cx="383" cy="70" r="7"/><circle cx="383" cy="32" r="7"/><circle cx="347" cy="104" r="7"/><circle cx="419" cy="104" r="7"/>
+          <circle cx="536" cy="34" r="7"/><circle cx="500" cy="102" r="7"/><circle cx="572" cy="102" r="7"/>
+          <circle cx="692" cy="28" r="7"/><circle cx="692" cy="66" r="7"/><circle cx="660" cy="108" r="7"/><circle cx="724" cy="108" r="7"/>
+        </g>
+        <g font-family="system-ui,sans-serif" font-size="14" fill="#1f2540" text-anchor="middle" font-weight="700">
+          <text x="77" y="150">2K₂</text>
+          <text x="230" y="150">P₃</text>
+          <text x="383" y="150">garra K₁,₃</text>
+          <text x="536" y="150">K₃</text>
+          <text x="692" y="150">paw</text>
+        </g>
+      </svg>
+      <figcaption>Los cinco grafos \(H\) posibles con \(3\le m\le4\). Cada uno se traduce a
+        una condición estructural sobre \(G'\) (ver abajo).</figcaption>
+    </figure>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿De verdad necesitas un detector genérico?</summary>
+      <div class="body">
+        <p class="q">\(H\) tiene solo \(3\) o \(4\) vértices. ¿Cuántos grafos \(H\) distintos
+           (con al menos una arista) hay realmente? ¿Y si en vez de un solucionador de
+           isomorfismo de subgrafos solo <em>clasificas</em> a \(H\) y atacas cada caso?</p>
+        <p>Con \(m\in\{3,4\}\) los únicos \(H\) interesantes son <strong>cinco</strong>:
+           \(2K_2\) (dos aristas disjuntas), \(P_3\) (camino de 3 vértices), la garra
+           \(K_{1,3}\), el triángulo \(K_3\) y el <em>paw</em> (triángulo + colgante).
+           Identifícalo por \((m,\ \#\text{aristas},\ \text{grados})\). Para cada uno,
+           <strong>“\(G'\) no contiene a \(H\)”</strong> se vuelve una propiedad simple de
+           \(G'\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Traduce cada \(H\) a una condición sobre \(G'\)</summary>
+      <div class="body">
+        <p class="q">Pieza por pieza: ¿qué grafos <em>no</em> contienen \(2K_2\)? ¿Qué obliga
+           prohibir \(P_3\)? Ojo con la garra: ¿la prohíbes como subgrafo o como subgrafo
+           <em>inducido</em>?</p>
+        <ul>
+          <li><strong>\(2K_2\)</strong> (dos aristas independientes): contenerlo significa tener
+              número de emparejamiento \(\ge 2\). Los grafos con emparejamiento \(\le 1\) son
+              <em>exactamente</em> una <strong>estrella</strong> o un <strong>triángulo</strong>.</li>
+          <li><strong>\(P_3\)</strong>: contenerlo significa que <em>algún</em> vértice tiene
+              grado \(\ge 2\). Prohibirlo ⇒ \(\Delta(G')\le 1\) ⇒ \(G'\) es un
+              <strong>emparejamiento</strong>.</li>
+          <li><strong>garra \(K_{1,3}\)</strong>: ¡como <em>subgrafo</em> aparece en cuanto un
+              vértice tiene grado \(\ge 3\) (las 3 hojas no necesitan ser no-adyacentes)!
+              Prohibirla ⇒ \(\Delta(G')\le 2\) ⇒ \(G'\) es unión de <strong>caminos y ciclos</strong>
+              (un <em>2-emparejamiento</em>).</li>
+          <li><strong>\(K_3\)</strong>: prohibirlo ⇒ \(G'\) es <strong>libre de triángulos</strong>.</li>
+          <li><strong>paw</strong>: lema clave — \(G'\) contiene un paw \(\iff\) algún
+              triángulo de \(G'\) tiene un vértice con vecino <em>fuera</em> del triángulo.
+              Prohibirlo ⇒ todo triángulo de \(G'\) es una componente \(K_3\)
+              <strong>aislada</strong>.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Los tres casos exactos (estrella, emparejamiento, 2-emparejamiento)</summary>
+      <div class="body">
+        <p class="q">¿Cuáles condiciones de la Pista 2 se resuelven <em>exacto</em> y rápido?
+           ¿Reconoces “\(\Delta\le 1\)” y “\(\Delta\le 2\)” como problemas de emparejamiento?</p>
+        <ul>
+          <li><strong>\(2K_2\)</strong> ⇒ la mejor \(G'\) es \(\max(\) estrella de grado máximo
+              \(\Delta(G)\), \(\ 3\) si \(G\) tiene algún triángulo \()\). Trivial: \(O(n^2)\)
+              para la estrella, \(O(n^3)\) para buscar un triángulo.</li>
+          <li><strong>\(P_3\)</strong> ⇒ <strong>emparejamiento máximo</strong> en grafo
+              general ⇒ algoritmo de <em>Blossom</em>.</li>
+          <li><strong>garra</strong> ⇒ subgrafo máximo con \(\Delta\le 2\) = <strong>2-emparejamiento
+              simple máximo</strong>. ¿Cómo lo reduces a un emparejamiento ordinario? Pista:
+              duplica cada vértice y parte cada arista en dos “nodos de arista”. (Cuidado: NO
+              es flujo bipartito; eso permitiría grados &gt; 2 o aristas repetidas.)</li>
+        </ul>
+        <p>Una sola rutina de Blossom sirve para \(P_3\) (directo) y para la garra (sobre el
+           grafo auxiliar).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Los dos casos NP-difíciles (\(K_3\) y paw)</summary>
+      <div class="body">
+        <p class="q">Subgrafo máximo libre de triángulos es NP-difícil. ¿Qué subgrafos son
+           <em>siempre</em> libres de triángulos y te dan una buena cota inferior? ¿Por qué un
+           “local search” de un solo flip se atora?</p>
+        <p>Cualquier subgrafo <strong>bipartito</strong> es libre de triángulos, así que un
+           <strong>corte máximo (max-cut)</strong> de \(G\) es una cota inferior fuerte. Pero
+           el max-cut por <em>un solo flip</em> (o incluso recocido) cae en óptimos-aguja; usa
+           <strong>Kernighan-Lin encadenado</strong> dentro de una búsqueda local iterada, y
+           luego un <strong>completado greedy</strong> que recupera ganancias de ciclos impares
+           (agrega aristas cuyos extremos no tengan vecino común en \(G'\)). Para el
+           <em>double-wheel</em> (caso 7) hay una construcción estructural <strong>óptima
+           demostrable</strong>. Para el <strong>paw</strong>: como “libre de triángulos” ya es
+           paw-free, corre la heurística de \(K_3\) y luego <strong>agrega triángulos
+           \(K_3\) aislados</strong> usando vértices que hayan quedado con grado \(0\) (bono que
+           conserva la propiedad paw-free).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+
+        <p><strong>Paso 0 — Clasificar \(H\).</strong> Lee \(m\), cuenta las aristas de \(H\) y
+           su secuencia de grados. Con \(m\le 4\) eso identifica de forma única uno de los 5
+           grafos. En las 10 instancias el reparto es:</p>
+
+        <div class="subtasks">
+          <table>
+            <thead><tr><th>\(H\)</th><th>Casos</th><th>Condición sobre \(G'\)</th><th>Cómo se resuelve</th></tr></thead>
+            <tbody>
+              <tr><td>\(2K_2\) <span class="note">grados [1,1,1,1]</span></td><td>1, 2</td><td>emparejamiento \(\le 1\): estrella o triángulo</td><td>exacto, \(O(n^3)\)</td></tr>
+              <tr><td>\(P_3\) <span class="note">[1,1,2]</span></td><td>3, 4</td><td>\(\Delta\le 1\) (emparejamiento)</td><td>exacto, Blossom</td></tr>
+              <tr><td>garra \(K_{1,3}\) <span class="note">[1,1,1,3]</span></td><td>5, 6</td><td>\(\Delta\le 2\) (2-emparejamiento)</td><td>exacto, Blossom + gadget</td></tr>
+              <tr><td>\(K_3\) <span class="note">[2,2,2]</span></td><td>7, 8</td><td>libre de triángulos</td><td>NP-difícil, heurística</td></tr>
+              <tr><td>paw <span class="note">[1,2,2,3]</span></td><td>9, 10</td><td>todo triángulo = \(K_3\) aislado</td><td>NP-difícil, heurística + bono</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Caso \(2K_2\): estrella o triángulo</h3>
+        <p>\(G'\) no contiene \(2K_2\) \(\iff\) su número de emparejamiento es \(\le 1\)
+           \(\iff\) \(G'\) es una estrella o un solo triángulo. Toma el mejor de ambos.</p>
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — 2K₂</span>
+<pre>mejor = estrella centrada en el vértice de grado máximo de G   // Δ(G) aristas
+si G tiene algún triángulo (u,v,w):
+    si 3 > aristas(mejor): mejor = ese triángulo
+devolver mejor</pre>
+        </div>
+
+        <h3>Caso \(P_3\): emparejamiento máximo</h3>
+        <p>\(P_3\)-libre \(\iff \Delta(G')\le 1 \iff G'\) es un emparejamiento. Maximiza
+           aristas = <strong>emparejamiento de cardinalidad máxima</strong> en grafo general
+           (Blossom).</p>
+
+        <h3>Caso garra: 2-emparejamiento vía reducción a emparejamiento</h3>
+        <p>Garra-libre (como subgrafo) \(\iff \Delta(G')\le 2\). El subgrafo máximo con
+           \(\Delta\le 2\) (un <em>2-emparejamiento simple</em>) se obtiene con la reducción
+           clásica de Tutte/Lovász a un emparejamiento ordinario:</p>
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — gadget de 2-emparejamiento</span>
+<pre>construir grafo auxiliar A:
+    por cada vértice u de G: crear 2 copias "externas"  u1, u2
+    por cada arista (u,v) de G:
+        crear 2 "nodos de arista"  x_uv (lado u),  y_uv (lado v)
+        unir x_uv con y_uv
+        unir x_uv con u1 y u2
+        unir y_uv con v1 y v2
+M = emparejamiento MAXIMO de A (Blossom)
+// |M| = |E(G)| + (tamaño del 2-emparejamiento)
+seleccionar la arista (u,v) de G  <=>  AMBOS x_uv, y_uv quedaron emparejados a copias de vertice
+// eso garantiza grado <= 2 en cada vertice de G'</pre>
+        </div>
+        <p class="note">No uses flujo bipartito aquí: permitiría violar el grado o repetir
+           aristas. La misma rutina de Blossom (DSU, \(\sim O(V\cdot E)\)) sirve para \(P_3\) y
+           para este gadget (caso 6: \(V\approx 8622\), corre en \(\sim 0.02\) s).</p>
+
+        <h3>Casos \(K_3\) y paw: heurística (NP-difícil)</h3>
+        <p>Subgrafo máximo libre de triángulos es NP-difícil. Tres capas:</p>
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — libre de triángulos</span>
+<pre>// (a) cota inferior bipartita: cualquier corte es libre de triángulos
+lado[v] = lados de un MAX-CUT por Kernighan-Lin ENCADENADO
+          dentro de busqueda local iterada (perturba volteando unos vertices y reoptimiza)
+G' = aristas de G que cruzan el corte
+
+// (b) completado greedy (recupera ciclos impares, p.ej. un C5)
+por cada arista (u,v) de G que aun no este en G', en algun orden:
+    si u y v NO tienen vecino comun en G' (test de interseccion de bitsets):
+        agregar (u,v) a G'        // no crea triangulo
+
+// (c) busqueda local en espacio de aristas, acotada por ~16 s de reloj
+repetir mientras quede tiempo (< 20 s del alarm):
+    patada: quita las aristas de un vertice al azar + unas pocas aristas al azar
+    re-agrega greedy como en (b);  conserva la mejor G' vista</pre>
+        </div>
+        <p><strong>Caso 7 (double-wheel), óptimo demostrable.</strong> Es un ciclo par
+           \(C_{n-2}\) más dos centros adyacentes a todo el ciclo y entre sí. Construcción:
+           conserva todo el ciclo + la arista centro-centro + el centro 0 a las posiciones
+           impares del ciclo + el centro 1 a las pares ⇒ \(|C| + |C|/2 + |C|/2 + 1\) aristas,
+           sin triángulos. <em>Cota superior:</em> hay un empaquetamiento de \(|C|\) triángulos
+           arista-disjuntos, así que hay que borrar al menos \(|C|\) aristas del total
+           \(2|C|+1+|C|\); la construcción alcanza esa cota ⇒ óptimo (\(=197\)).</p>
+        <p><strong>paw.</strong> Como “libre de triángulos” ya es paw-free y
+           \(\max\)-paw-free \(\ge \max\)-libre-de-triángulos, corre la heurística anterior y
+           luego agrega <strong>triángulos \(K_3\) aislados</strong> sobre vértices que hayan
+           quedado con grado \(0\) (cada \(K_3\) aislado es paw-free y suma 3 aristas).</p>
+
+        <p><strong>Por qué es correcto.</strong> Las equivalencias de la Pista 2 convierten
+           “\(G'\) no contiene a \(H\)” en una propiedad <em>verificable localmente</em>; los
+           casos \(2K_2/P_3/\)garra se resuelven de forma exacta (la estructura caracteriza el
+           óptimo y Blossom da el emparejamiento máximo). En \(K_3/\)paw la heurística es
+           <em>correcta por construcción</em> (todo lo que entrega es libre del patrón) y su
+           valor se acota por abajo con el max-cut y por arriba, donde aplica, con
+           empaquetamientos de triángulos (caso 7).</p>
+
+        <p><strong>Complejidad.</strong> Clasificación \(O(m^2+n^2)\). \(2K_2\): \(O(n^3)\) por
+           el triángulo. \(P_3\)/garra: Blossom \(\sim O(V\cdot E)\) (con \(V=n\), o
+           \(V=2n+2|E|\) en el gadget). \(K_3\)/paw: metaheurística acotada a \(\sim\)16 s de
+           reloj por caso, holgada bajo el <em>alarm</em> de 20 s; cada pase de KL es \(O(n^2)\)
+           y el test de vecino común \(O(n/64)\) por arista candidata con bitsets.</p>
+
+        <p><strong>Resultados (aristas por caso).</strong> \(3,\ 82,\ 52,\ 134,\ 23,\ 126,\
+           197,\ 195,\ 2868,\ 12148\). Casos 1–7 demostrablemente óptimos; 8–10 a la par o por
+           encima del mejor reportado oficial (el caso 10 supera el mejor declarado,
+           \(12148 &gt; 12125\)). Cada salida pasa un verificador independiente que comprueba
+           que \(G'\) es subgrafo válido de \(G\) y que \(H\) no está contenido.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Para el test "u y v sin vecino comun en G'" usa std::bitset&lt;MAXN&gt; por vertice
+con la fila de adyacencia de G': (adj[u] &amp; adj[v]).any() en O(n/64). Acelera
+muchisimo el completado greedy y la busqueda local del caso libre de triangulos.
+Y usa un Blossom basado en DSU O(VE), NO el O(V^3) de e-maxx: sobre el gadget
+del caso 6 (V ≈ 8622) el cubico es demasiado lento.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
