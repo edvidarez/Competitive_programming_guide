@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **33 / 142**
+Total de tareas: **142** · Completadas: **34 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -70,14 +70,14 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Pairs | `2007/05 Pairs/index.html` |
 | [x] | 6 | Trainings | `2007/06 Trainings/index.html` |
 
-## IOI 2008 — 3 / 6
+## IOI 2008 — 4 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Type Printer | `2008/01 Type Printer/index.html` |
 | [x] | 2 | Islands | `2008/02 Islands/index.html` |
 | [x] | 3 | Fish | `2008/03 Fish/index.html` |
-| [ ] | 4 | Linear Garden | `2008/04 Linear Garden/index.html` |
+| [x] | 4 | Linear Garden | `2008/04 Linear Garden/index.html` |
 | [ ] | 5 | Pyramid Base | `2008/05 Pyramid Base/index.html` |
 | [ ] | 6 | Teleporters | `2008/06 Teleporters/index.html` |
 

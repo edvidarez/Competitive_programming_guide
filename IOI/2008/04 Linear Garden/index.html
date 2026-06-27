@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2008 · Tarea 4 — Linear Garden</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:var(--code)}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2008 · Día 2 · El Cairo, Egipto</div>
+    <h1>Tarea <span class="num">4</span> — Linear Garden</h1>
+    <p class="note">Jardín lineal · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Ramsés II acaba de volver victorioso de la batalla. Para conmemorar su
+       victoria, decidió construir un jardín majestuoso. El jardín consistirá en
+       una larga hilera de plantas que irá desde su palacio en Luxor hasta el
+       templo de Karnak. Estará formado únicamente por plantas de <strong>loto</strong>
+       y plantas de <strong>papiro</strong>, ya que simbolizan el Alto y el Bajo
+       Egipto respectivamente.</p>
+
+    <p>El jardín debe contener exactamente \(N\) plantas. Además, debe estar
+       <strong>balanceado</strong>: en cualquier sección contigua del jardín, el
+       número de plantas de loto y el de papiro no deben diferir en más de 2.</p>
+
+    <p>Un jardín se puede representar como una cadena de letras <code>L</code>
+       (loto) y <code>P</code> (papiro). Por ejemplo, para \(N=5\) hay 14 jardines
+       balanceados posibles. En orden alfabético, son:
+       <code>LLPLP</code>, <code>LLPPL</code>, <code>LPLLP</code>,
+       <code>LPLPL</code>, <code>LPLPP</code>, <code>LPPLL</code>,
+       <code>LPPLP</code>, <code>PLLPL</code>, <code>PLLPP</code>,
+       <code>PLPLL</code>, <code>PLPLP</code>, <code>PLPPL</code>,
+       <code>PPLLP</code> y <code>PPLPL</code>.</p>
+
+    <p>Los jardines balanceados de cierta longitud se pueden ordenar
+       alfabéticamente y luego numerar empezando desde 1. Por ejemplo, para
+       \(N=5\), el jardín número 12 es <code>PLPPL</code>.</p>
+
+    <h3>Tarea</h3>
+    <p>Escribe un programa que, dados el número de plantas \(N\) y una cadena que
+       representa un jardín balanceado, calcule el <strong>número asignado</strong>
+       a ese jardín <strong>módulo cierto entero \(M\) dado</strong>. Nota que,
+       para resolver la tarea, el valor de \(M\) no tiene más importancia que la
+       de simplificar los cálculos.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>La línea 1 contiene el entero \(N\), el número de plantas del jardín.</li>
+      <li>La línea 2 contiene el entero \(M\).</li>
+      <li>La línea 3 contiene una cadena de \(N\) caracteres <code>L</code> (loto)
+          o <code>P</code> (papiro) que representa un jardín balanceado.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir en la salida estándar una sola línea que contenga
+       un entero entre 0 y \(M-1\) (inclusive): el número asignado al jardín
+       descrito en la entrada, <strong>módulo \(M\)</strong>.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Número de plantas</td><td><span class="badge">\(1 \le N \le 1{,}000{,}000\)</span></td></tr>
+        <tr><td>Módulo</td><td><span class="badge">\(7 \le M \le 10{,}000{,}000\)</span></td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Límite de tiempo / memoria</td><td>No aparecen en estas páginas del enunciado.</td></tr>
+      </table>
+    </div>
+
+    <!-- En 2008 el puntaje se reparte por GRUPOS de casos. El PDF solo describe
+         explícitamente el bloque de 40 puntos (N <= 40); el resto es el caso
+         general. Lo presentamos como Subtareas. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Grupo</th><th>Puntos</th><th>Restricción</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">40</td><td>\(N \le 40\)</td></tr>
+          <tr><td>2</td><td class="pts">60</td><td>Sin restricción adicional (caso general, \(N\) hasta \(1{,}000{,}000\))</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      El enunciado solo distingue un grupo de manera explícita: «en entradas que
+      valen en total 40 puntos, \(N\) no excederá 40». Ahí basta una DP de conteo
+      sencilla (o incluso fuerza bruta con enteros grandes para \(N\) muy chica).
+      Los otros 60 puntos exigen la solución \(O(N)\) para \(N\) hasta
+      \(10^6\). La puntuación del IOI es por grupos de casos (todo-o-nada por
+      grupo); el PDF de soluciones muestra una distribución de puntajes entre
+      participantes, pero no desglosa pesos por grupo más allá del bloque de 40.
+      La solución \(O(N)\) resuelve los 100 puntos.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada 1</h4><pre>5
+7
+PLPPL</pre></div>
+      <div class="io"><h4>Salida 1</h4><pre>5</pre></div>
+    </div>
+    <p class="note">El número realmente asignado a <code>PLPPL</code> es
+       <strong>12</strong>. Entonces la salida es 12 módulo 7, que es 5.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada 2</h4><pre>12
+10000
+LPLLPLPPLPLL</pre></div>
+      <div class="io"><h4>Salida 2</h4><pre>39</pre></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Combinatoria</span>
+      <span class="ptag">Conteo / ranking de cadenas</span>
+      <span class="ptag">Sumas de prefijos</span>
+      <span class="ptag">Programación dinámica</span>
+      <span class="ptag">Aritmética modular</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(N\), \(M\) y una cadena balanceada \(S\) de <code>L</code>/<code>P</code>
+       (balanceada = en todo subsegmento contiguo, \(\#L\) y \(\#P\) difieren a lo
+       más en 2). Calcula la <strong>posición de \(S\)</strong> (numerada desde 1)
+       entre <em>todas</em> las cadenas balanceadas de longitud \(N\) en orden
+       alfabético, módulo \(M\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\) hasta \(10^6\) ⇒ necesitas un algoritmo \(O(N)\); el subgrupo
+                \(N \le 40\) (40 pts) admite una DP de conteo más directa. El
+                número de jardines balanceados crece exponencialmente, así que
+                <strong>jamás los enumeres</strong>: hay que contarlos. \(M\) puede
+                ser tan chico como 7 y <strong>no es primo</strong>: trabaja todo
+                módulo \(M\) y nunca dividas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo medir "balanceado"?</summary>
+      <div class="body">
+        <p class="q">La condición habla de <em>todos</em> los subsegmentos a la
+           vez. ¿Y si a cada prefijo le asignas un número y traduces la condición a
+           una propiedad de esos números?</p>
+        <p>Mapea <code>L</code> a \(+1\) y <code>P</code> a \(-1\). Para el prefijo
+           de longitud \(k\) define su altura \(\mathrm{Diff}(k) = \#L - \#P\)
+           dentro de ese prefijo (con \(\mathrm{Diff}(0)=0\)). Para cualquier
+           subsegmento \(U\) entre las posiciones \(a\) y \(b\) se cumple
+           \(\mathrm{Diff}(U) = \mathrm{Diff}(b) - \mathrm{Diff}(a)\). ¿Qué te dice
+           esto sobre la diferencia entre dos alturas de prefijo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La observación clave: una franja de altura 2</summary>
+      <div class="body">
+        <p class="q">Si \(|\mathrm{Diff}(U)|\le 2\) para <em>todo</em> subsegmento
+           equivale a \(|\mathrm{Diff}(b)-\mathrm{Diff}(a)|\le 2\) para todo par de
+           prefijos, ¿qué condición geométrica cumple el conjunto de todas las
+           alturas?</p>
+        <p>Una cadena es balanceada <strong>si y solo si</strong> todas sus alturas
+           de prefijo caben en una franja horizontal de altura 2, es decir
+           \(\max(\mathrm{Diff}) - \min(\mathrm{Diff}) \le 2\). Esa es toda la
+           teoría del problema: dibuja el "grafo de alturas" y pídele que no se
+           salga de una banda de span \(\le 2\).</p>
+        <figure>
+          <svg viewBox="0 0 620 250" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-label="Grafo de alturas (sumas de prefijos) de la cadena LPLLPLPPLPLL, contenido en una franja de altura 2.">
+            <rect x="0" y="0" width="620" height="250" fill="#0b0e18"/>
+            <!-- franja de altura 2 (entre Diff=0 y Diff=2) -->
+            <rect x="40" y="40" width="560" height="160" fill="#5b8cff" opacity="0.12"/>
+            <!-- lineas de nivel -->
+            <line x1="40" y1="40"  x2="600" y2="40"  stroke="#2a3252" stroke-dasharray="4 4"/>
+            <line x1="40" y1="120" x2="600" y2="120" stroke="#2a3252" stroke-dasharray="4 4"/>
+            <line x1="40" y1="200" x2="600" y2="200" stroke="#2a3252" stroke-dasharray="4 4"/>
+            <!-- etiquetas eje Y (valores de Diff) -->
+            <text x="30" y="44"  fill="#9aa6c4" font-size="12" text-anchor="end">+2</text>
+            <text x="30" y="124" fill="#9aa6c4" font-size="12" text-anchor="end">+1</text>
+            <text x="30" y="204" fill="#9aa6c4" font-size="12" text-anchor="end">0</text>
+            <!-- poligonal de alturas: LPLLPLPPLPLL -->
+            <polyline fill="none" stroke="#34d399" stroke-width="2.5"
+              points="40,200 86.7,120 133.3,200 180,120 226.7,40 273.3,120 320,40 366.7,120 413.3,200 460,120 506.7,200 553.3,120 600,40"/>
+            <g fill="#34d399">
+              <circle cx="40" cy="200" r="3.5"/><circle cx="86.7" cy="120" r="3.5"/>
+              <circle cx="133.3" cy="200" r="3.5"/><circle cx="180" cy="120" r="3.5"/>
+              <circle cx="226.7" cy="40" r="3.5"/><circle cx="273.3" cy="120" r="3.5"/>
+              <circle cx="320" cy="40" r="3.5"/><circle cx="366.7" cy="120" r="3.5"/>
+              <circle cx="413.3" cy="200" r="3.5"/><circle cx="460" cy="120" r="3.5"/>
+              <circle cx="506.7" cy="200" r="3.5"/><circle cx="553.3" cy="120" r="3.5"/>
+              <circle cx="600" cy="40" r="3.5"/>
+            </g>
+            <text x="320" y="230" fill="#9aa6c4" font-size="12" text-anchor="middle">posición del prefijo (0 … N)</text>
+            <text x="320" y="20"  fill="#e8ecf6" font-size="13" text-anchor="middle">Cadena: L P L L P L P P L P L L  (span = 2 ✓)</text>
+          </svg>
+          <figcaption>Figura 1. Alturas de prefijo \(\mathrm{Diff}=\#L-\#P\) de
+             <code>LPLLPLPPLPLL</code>. Todas caben en una franja de altura 2, así
+             que la cadena es balanceada.</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Primeros 40 puntos: una DP de conteo</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 40\) no necesitas la fórmula cerrada. Si llevas un
+           prefijo que ocupa la franja \([\textit{lo},\textit{hi}]\) y estás a
+           altura \(c\), ¿cuántas formas hay de completar las letras que faltan sin
+           salirte de span \(\le 2\)?</p>
+        <p>Eso es una DP: estado = (cuántas letras faltan, dónde está \(c\) dentro
+           de la franja, cuánto span queda libre). Como las alturas siempre caben
+           en una banda de 2, hay pocos estados distintos. Calcúlala módulo \(M\) y
+           ya tienes con qué contar cuántas cadenas hay debajo de cada decisión.
+           Esto basta para el grupo de 40 puntos; para \(N=10^6\) querrás
+           convertir esa DP en una <strong>fórmula con potencias de 2</strong>
+           (pistas siguientes).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — De "numerar" a "contar lo que va antes"</summary>
+      <div class="body">
+        <p class="q">El número asignado a \(S\) es su posición en orden
+           alfabético. ¿Cómo lo obtienes sin generar la lista? ¿Cuándo, al
+           recorrer \(S\) letra por letra, existe una alternativa <em>menor</em>?</p>
+        <p>\(\text{rango}(S) = 1 + \#\{\text{cadenas balanceadas estrictamente
+           menores que } S\}\). Como el alfabeto es \(\{L,P\}\) con \(L<P\), una
+           cadena es menor que \(S\) si en la primera posición donde difieren tiene
+           la letra más chica. Recorriendo \(i=0,1,\dots\), <strong>solo cuando
+           \(S[i]=P\)</strong> hay una alternativa menor: poner <code>L</code> ahí.
+           Para cada una de esas posiciones, suma cuántas cadenas balanceadas
+           empiezan con ese prefijo "menor" y se completan de cualquier forma
+           válida. Al final \(\text{rango} = (\text{acumulado}+1)\bmod M\). No
+           olvides el \(+1\) (la numeración arranca en 1).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Contar completaciones: forma cerrada (medio vs borde)</summary>
+      <div class="body">
+        <p class="q">Si fijaste un prefijo cuya franja es \([\textit{lo},\textit{hi}]\),
+           la altura actual es \(c\) y faltan \(K\) letras, ¿de qué depende el
+           número de completaciones balanceadas? ¿Importa el signo de \(c\), o solo
+           dónde está dentro de la franja?</p>
+        <p>Por la simetría \(L\leftrightarrow P\), el conteo solo depende del
+           <strong>span actual</strong> y de si \(c\) está en el <strong>medio</strong>
+           o en un <strong>borde</strong> de la franja. Con \(\text{span}=hi-lo\):</p>
+        <ul>
+          <li><strong>span = 2</strong> (la franja ya está "llena", no puede
+              crecer):
+            <ul>
+              <li>\(c\) en el medio (\(lo<c<hi\)): el siguiente paso es libre
+                  (caben \(\uparrow\) y \(\downarrow\)) ⇒ \(2^{\lceil K/2\rceil}\).</li>
+              <li>\(c\) en un borde (\(c=lo\) o \(c=hi\)): el siguiente paso está
+                  forzado hacia el centro ⇒ \(2^{\lfloor K/2\rfloor}\).</li>
+            </ul>
+          </li>
+          <li><strong>span = 1</strong> (la franja todavía puede crecer hacia
+              arriba <em>o</em> hacia abajo):
+              \(2^{\lfloor K/2\rfloor} + 2^{\lceil K/2\rceil} - 1\). Se suman las
+              completaciones que se quedan en \([lo,hi+1]\) y las que se quedan en
+              \([lo-1,hi]\); el \(-1\) quita la cadena alternante \(LPLP\dots\) que
+              se contó dos veces.</li>
+        </ul>
+        <p class="note">(El caso span = 0 solo aparece con el prefijo vacío y da el
+           total de balanceadas de longitud \(K\); no se usa dentro del barrido.)
+           Casos base: \(K=0\) da 1 en todas las fórmulas.</p>
+        <figure>
+          <svg viewBox="0 0 620 240" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-label="Diagrama: en el medio de la franja el siguiente paso es libre; en un borde está forzado hacia el centro.">
+            <rect x="0" y="0" width="620" height="240" fill="#0b0e18"/>
+            <!-- bordes de la franja (altura 2) -->
+            <line x1="40" y1="60"  x2="580" y2="60"  stroke="#5b8cff" stroke-width="2"/>
+            <line x1="40" y1="200" x2="580" y2="200" stroke="#5b8cff" stroke-width="2"/>
+            <line x1="40" y1="130" x2="580" y2="130" stroke="#2a3252" stroke-dasharray="5 5"/>
+            <text x="595" y="64"  fill="#9aa6c4" font-size="11" text-anchor="start">borde</text>
+            <text x="595" y="134" fill="#9aa6c4" font-size="11" text-anchor="start">medio</text>
+            <text x="595" y="204" fill="#9aa6c4" font-size="11" text-anchor="start">borde</text>
+            <defs>
+              <marker id="aok" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#34d399"/>
+              </marker>
+              <marker id="abad" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#f87171"/>
+              </marker>
+            </defs>
+            <!-- escenario MEDIO: paso libre -->
+            <circle cx="150" cy="130" r="5" fill="#e8ecf6"/>
+            <line x1="150" y1="130" x2="210" y2="60"  stroke="#34d399" stroke-width="2" marker-end="url(#aok)"/>
+            <line x1="150" y1="130" x2="210" y2="200" stroke="#34d399" stroke-width="2" marker-end="url(#aok)"/>
+            <text x="150" y="225" fill="#34d399" font-size="13" text-anchor="middle">en el MEDIO: libre (↑ y ↓)</text>
+            <text x="150" y="40"  fill="#9aa6c4" font-size="12" text-anchor="middle">2^⌈K/2⌉</text>
+            <!-- escenario BORDE: paso forzado -->
+            <circle cx="420" cy="60" r="5" fill="#e8ecf6"/>
+            <line x1="420" y1="60" x2="480" y2="130" stroke="#34d399" stroke-width="2" marker-end="url(#aok)"/>
+            <line x1="420" y1="60" x2="480" y2="25"  stroke="#f87171" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#abad)"/>
+            <text x="487" y="22" fill="#f87171" font-size="14" text-anchor="start">✗</text>
+            <text x="420" y="225" fill="#34d399" font-size="13" text-anchor="middle">en el BORDE: forzado al centro</text>
+            <text x="430" y="100" fill="#9aa6c4" font-size="12" text-anchor="middle">2^⌊K/2⌋</text>
+          </svg>
+          <figcaption>Figura 2. Con span = 2, desde el <em>medio</em> el paso
+             siguiente es libre (de ahí \(2^{\lceil K/2\rceil}\)); desde un
+             <em>borde</em> está forzado hacia el centro porque salirse rompería la
+             franja (de ahí \(2^{\lfloor K/2\rfloor}\)).</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Recorre \(S\) manteniendo, para el prefijo ya
+           fijado, la altura actual \(c\) y los extremos \(lo=\min\) y \(hi=\max\)
+           de las alturas vistas (arrancan en 0, la altura del prefijo vacío). En
+           cada posición \(i\) con \(S[i]=P\), poner <code>L</code> da un prefijo
+           estrictamente menor; si ese prefijo sigue siendo balanceable
+           (\(nhi-nlo\le 2\)), suma su número de completaciones \(g(K,\text{span},
+           \text{medio})\) con \(K=N-i-1\). Después avanza \(c\) con la letra real.
+           La respuesta es \((\text{acumulado}+1)\bmod M\).</p>
+
+        <p><strong>Por qué es correcto.</strong> El rango es \(1\) más el número de
+           cadenas balanceadas estrictamente menores. Dos cadenas se comparan en la
+           primera posición donde difieren; con \(L<P\), la única alternativa menor
+           aparece cuando \(S[i]=P\) (cambiar esa <code>P</code> por <code>L</code>
+           y luego completar como sea). Las completaciones tienen forma cerrada en
+           potencias de 2 según el span y si la altura quedó en medio o en borde
+           (Pista 5), gracias a la simetría \(L\leftrightarrow P\) y a que la
+           franja tiene altura \(\le 2\). Todo se hace módulo \(M\), sin dividir
+           nunca, normalizando las restas con \((+M)\bmod M\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, M, S            // S: cadena de 'L'/'P' de longitud N
+
+// potencias de 2 modulo M (basta hasta floor(N/2)+1)
+pot2[0] = 1 mod M
+para i = 1 .. N:
+    pot2[i] = (pot2[i-1] * 2) mod M
+
+// g = #completaciones balanceadas de las K letras restantes, mod M
+funcion g(K, span, enMedio):
+    f = pot2[ floor(K/2) ]
+    c = pot2[ ceil(K/2)  ]
+    si span == 2:
+        si enMedio: regresa c                  // 2^ceil(K/2)   (paso libre)
+        si no:      regresa f                  // 2^floor(K/2)  (paso forzado)
+    si span == 1:
+        regresa (f + c - 1 + M) mod M          // +M evita negativos
+
+// barrido de ranking
+acum = 0
+c = 0;  lo = 0;  hi = 0          // alturas del prefijo vacio (Diff = 0)
+para i = 0 .. N-1:
+    si S[i] == 'P':              // 'L' < 'P': hay una letra menor aqui
+        nc  = c + 1             // poner 'L'  (L = +1)
+        nlo = min(lo, nc)
+        nhi = max(hi, nc)
+        si nhi - nlo &lt;= 2:        // el prefijo con 'L' sigue siendo balanceable
+            span    = nhi - nlo
+            enMedio = (nlo &lt; nc) y (nc &lt; nhi)
+            K       = N - i - 1
+            acum    = (acum + g(K, span, enMedio)) mod M
+    // avanzar al caracter real de S
+    si S[i] == 'L': c = c + 1
+    si no:          c = c - 1
+    lo = min(lo, c)
+    hi = max(hi, c)
+
+imprimir (acum + 1) mod M</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N)\) en tiempo (precomputo de
+           potencias de 2 más un barrido con trabajo \(O(1)\) por posición) y
+           \(O(N)\) en memoria (tabla de potencias). En la práctica \(N=10^6\)
+           corre en ~0.07 s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa E/S rápida: ios::sync_with_stdio(false) (o lectura char por char) porque
+la cadena puede tener hasta 10^6 caracteres. OJO: M puede valer 7 y NO es
+primo; trabaja todo mod M, nunca dividas y normaliza las restas con (x + M) % M.
+Precomputa las potencias de 2 mod M hasta floor(N/2)+1.</pre>
+          <p class="note">Nada más exótico hace falta: la dificultad está en la
+             combinatoria, no en el lenguaje.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
