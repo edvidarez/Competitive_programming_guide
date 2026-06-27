@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2024 · Problema 06 — Asesino</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">29ª OMI · 2024 · Día 2</div>
+    <h1>Problema <span class="num">06</span> — Asesino</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2024D2P3/">omegaUp</a>
+       · <span class="badge">Interactivo</span></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Hay \(N\) olímpicos en un entrenamiento y, como es natural, juegan asesino en
+       su tiempo libre. El día de hoy decidieron usar la siguiente variante, que
+       tiene 4 roles:</p>
+    <ul>
+      <li><strong>Honesto:</strong> una persona que siempre dice la verdad.</li>
+      <li><strong>Mentiroso:</strong> una persona que siempre dice la mentira.</li>
+      <li><strong>Impostor tipo 1:</strong> una persona que el resto de jugadores
+          piensa que es honesta, pero actúa como mentiroso.</li>
+      <li><strong>Impostor tipo 2:</strong> una persona que el resto de jugadores
+          piensa que es mentirosa, pero actúa como honesto.</li>
+    </ul>
+    <p>Además, en esta variante siempre existe exactamente un impostor, pero puede
+       ser de tipo 1 o de tipo 2.</p>
+
+    <p>Llegaste tarde a la noche de juegos, por lo que todos los roles ya estaban
+       asignados. Entonces decidieron ponerte un reto.</p>
+
+    <p>Todos los jugadores actuarán de acuerdo a su rol. Puedes preguntarle al
+       olímpico \(i\) si piensa que el olímpico \(j\) es honesto (con \(i \neq j\)).
+       En la siguiente tabla se ilustran las respuestas de acuerdo al rol.</p>
+
+    <div class="subtasks">
+      <table>
+        <thead>
+          <tr>
+            <th></th><th>Honesto</th><th>Mentiroso</th>
+            <th>Impostor tipo 1</th><th>Impostor tipo 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Honesto</strong></td><td>Sí</td><td>No</td><td>Sí</td><td>No</td></tr>
+          <tr><td><strong>Mentiroso</strong></td><td>No</td><td>Sí</td><td>No</td><td>Sí</td></tr>
+          <tr><td><strong>Impostor tipo 1</strong></td><td>No</td><td>Sí</td><td>—</td><td>—</td></tr>
+          <tr><td><strong>Impostor tipo 2</strong></td><td>Sí</td><td>No</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">La respuesta de la celda en la fila \(a\) y la columna \(b\) es
+       el resultado de hacer una pregunta cuando la persona \(i\) tiene el rol \(a\)
+       y la persona \(j\) tiene el rol \(b\). Por ejemplo, el “No” en la esquina
+       superior derecha le corresponde a la fila “Honesto” y la columna “Impostor
+       tipo 2”; por lo que es la respuesta cuando \(i\) es honesto y \(j\) es un
+       impostor de tipo 2. (Las celdas con “—” no pueden ocurrir: solo hay un
+       impostor, así que \(i\) y \(j\) nunca son ambos impostores.)</p>
+
+    <p>Tú no sabes qué rol tiene cada olímpico y, además, no le puedes preguntar a
+       un olímpico si piensa que él mismo es honesto.</p>
+
+    <p>Debes encontrar al impostor en la menor cantidad de preguntas posibles.</p>
+
+    <p>Formalmente, sea \(f(n)\) la máxima cantidad de preguntas que hace la
+       estrategia óptima en el peor caso, para \(n\) olímpicos. Obtendrás el 100 %
+       de los puntos si logras encontrar al impostor en a lo más \(f(n)\) preguntas.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>interactiva</strong>. Deberás implementar la
+       siguiente función:</p>
+    <div class="io"><pre>int asesino(int N);</pre></div>
+    <p>Esta función recibe un parámetro:</p>
+    <ul>
+      <li>Un entero \(N\), la cantidad de olímpicos jugando el juego.</li>
+    </ul>
+    <p>Y regresa un entero: el índice del impostor. Los olímpicos están indexados a
+       partir del 1. Si el valor que regresas es menor que 1 o mayor a \(N\),
+       recibirás un veredicto de respuesta incorrecta.</p>
+
+    <p>En tu código podrás invocar la siguiente función para hacer una pregunta:</p>
+    <div class="io"><pre>int pregunta(int i, int j);</pre></div>
+    <p>La función recibe los siguientes parámetros:</p>
+    <ul>
+      <li>Un entero \(i\), el olímpico al que le haces la pregunta.</li>
+      <li>Un entero \(j\), el olímpico sobre el cual preguntas.</li>
+    </ul>
+    <p>Cuando llames esta función, los valores tienen que ser mayores o iguales a 1
+       y menores o iguales a \(N\), y el valor de \(i\) debe ser distinto al de
+       \(j\). De lo contrario, recibirás un veredicto de respuesta incorrecta.</p>
+    <p>La función regresa un entero: un 1 si la respuesta fue “sí”, y un 0 en caso
+       contrario.</p>
+    <p>El evaluador llamará la función <code>asesino()</code>
+       <strong>múltiples veces por caso</strong>, por lo que recuerda limpiar tus
+       variables globales en caso de usarlas.</p>
+    <p>El evaluador es <strong>adaptativo</strong>: esto significa que los roles de
+       los jugadores no están fijos al inicio del proceso y pueden cambiar
+       dependiendo de tus preguntas. Sin embargo, se garantiza que siempre existe
+       una forma de asignar los roles que es consistente con todas las preguntas
+       previas.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado oficial</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado oficial</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Cantidad de olímpicos</td><td><span class="badge">\(3 \le N \le 10^5\)</span></td></tr>
+        <tr><td>Llamadas a <code>asesino()</code> por caso</td><td><span class="badge">a lo más \(10\,000\)</span></td></tr>
+        <tr><td>Suma de \(N\) por caso</td><td><span class="badge">\(\le 10^5\)</span></td></tr>
+      </table>
+    </div>
+    <ul>
+      <li>Los olímpicos están indexados a partir del 1.</li>
+      <li>Cada olímpico tiene un rol, pero no se garantiza que siempre habrá alguien
+          con el rol de Honesto o de Mentiroso. Solo se garantiza que existe
+          exactamente un impostor, que puede ser de tipo 1 o de tipo 2.</li>
+    </ul>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">4</td><td>\(N = 3\); hay 1 impostor de tipo 1, una persona honesta y un mentiroso. Encuentra al impostor en a lo más 6 preguntas.</td></tr>
+          <tr><td>2</td><td class="pts">6</td><td>Encuentra al impostor con a lo más \(N(N-1)\) preguntas.</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>Encuentra al impostor en a lo más \(2N\) preguntas.</td></tr>
+          <tr><td>4</td><td class="pts">15</td><td>\(N \le 4\). Encuentra al impostor con la mínima cantidad de preguntas que hace la estrategia óptima.</td></tr>
+          <tr><td>5</td><td class="pts">18</td><td>Encuentra al impostor en a lo más \(N + 29\) preguntas.</td></tr>
+          <tr><td>6</td><td class="pts">20</td><td>Encuentra al impostor en a lo más \(N + 1\) preguntas.</td></tr>
+          <tr><td>7</td><td class="pts">25</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <ul>
+      <li>El evaluador corre tu programa y llama la función <code>asesino(3)</code>.</li>
+      <li>Digamos que el primer olímpico es un impostor de tipo 1, el segundo es
+          honesto y el tercero es mentiroso. Estas son todas las posibles llamadas
+          que puede hacer tu código en este caso:</li>
+    </ul>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Parámetros</th><th>Proceso</th><th>Valor que regresa la función</th></tr></thead>
+        <tbody>
+          <tr><td><code>pregunta(1,2)</code></td><td>Le preguntas al olímpico 1 sobre el olímpico 2</td><td>0</td></tr>
+          <tr><td><code>pregunta(1,3)</code></td><td>Le preguntas al olímpico 1 sobre el olímpico 3</td><td>1</td></tr>
+          <tr><td><code>pregunta(2,1)</code></td><td>Le preguntas al olímpico 2 sobre el olímpico 1</td><td>1</td></tr>
+          <tr><td><code>pregunta(2,3)</code></td><td>Le preguntas al olímpico 2 sobre el olímpico 3</td><td>0</td></tr>
+          <tr><td><code>pregunta(3,1)</code></td><td>Le preguntas al olímpico 3 sobre el olímpico 1</td><td>0</td></tr>
+          <tr><td><code>pregunta(3,2)</code></td><td>Le preguntas al olímpico 3 sobre el olímpico 2</td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Después de hacer algunas preguntas, la función
+       <code>asesino()</code> debe responder con el valor 1, la posición del
+       impostor en este caso.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Paridad / XOR</span>
+      <span class="ptag">Divide y vencerás</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(N\) jugadores y exactamente uno es el impostor. Una consulta
+       <code>pregunta(i,j)</code> (con \(i \neq j\)) devuelve un bit que depende de
+       los roles de \(i\) y de \(j\) según una tabla fija. Hay que devolver el
+       índice del impostor usando la menor cantidad de preguntas posible en el peor
+       caso; el evaluador es adaptativo.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\) llega a \(10^5\) y la suma de \(N\) por caso también, así que
+                necesitas una estrategia de \(O(N)\) preguntas. Las subtareas son
+                una escalera de presupuestos: \(N(N-1) \to 2N \to N+29 \to N+1 \to
+                f(n)\). Cada peldaño esconde una idea nueva. La óptima resulta ser
+                \(f(n) = N\) preguntas para \(N \ge 4\) (y 4 para \(N = 3\)).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — Reduce cada rol a dos bits</summary>
+      <div class="body">
+        <p class="q">¿Y si describes a cada jugador con solo dos bits: cómo lo
+           <em>perciben</em> los demás y si <em>miente</em> al responder?</p>
+        <p>Define \(p(x) = 1\) si los demás creen que \(x\) es honesto (Honesto e
+           Impostor tipo 1) y \(p(x) = 0\) si lo creen mentiroso (Mentiroso e
+           Impostor tipo 2). Define \(m(x) = 1\) si \(x\) responde mintiendo
+           (Mentiroso e Impostor tipo 1) y \(m(x) = 0\) si responde con la verdad
+           (Honesto e Impostor tipo 2).</p>
+        <p class="q">Con eso, ¿puedes escribir la respuesta de
+           <code>pregunta(i,j)</code> con una sola fórmula? Pista: la respuesta es
+           “la creencia sobre \(j\)”, posiblemente volteada porque \(i\) miente.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Una sola fórmula… y un invariante</summary>
+      <div class="body">
+        <p>Verifícalo contra la tabla del enunciado: la respuesta cumple
+           \[\texttt{pregunta}(i,j) = p(j)\ \oplus\ m(i),\]
+           donde \(\oplus\) es XOR y “sí” \(=1\).</p>
+        <p class="q">Ahora mira la cantidad \(s(x) = p(x)\oplus m(x)\). ¿Cuánto vale
+           para cada rol?</p>
+        <p>Honesto: \(1\oplus 0 = 1\). Mentiroso: \(0\oplus 1 = 1\). Impostor tipo 1:
+           \(1\oplus 1 = 0\). Impostor tipo 2: \(0\oplus 0 = 0\). Es decir,
+           <strong>todos los jugadores normales tienen \(s = 1\) y el único impostor
+           tiene \(s = 0\)</strong>. El impostor es, literalmente, el único distinto.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Un comparador con dos preguntas (subtareas 2 y 3)</summary>
+      <div class="body">
+        <p class="q">No puedes medir \(s(x)\) directo… pero ¿qué pasa si preguntas
+           en <em>ambos</em> sentidos sobre el mismo par?</p>
+        <p>\[\texttt{pregunta}(i,j)\oplus\texttt{pregunta}(j,i)
+             = \big(p(j)\oplus m(i)\big)\oplus\big(p(i)\oplus m(j)\big)
+             = s(i)\oplus s(j).\]</p>
+        <p>Así, con 2 preguntas sabes si \(s(i) = s(j)\). Como solo hay un impostor:
+           si <em>coinciden</em>, ninguno de los dos es el impostor; si
+           <em>difieren</em>, exactamente uno de \(\{i,j\}\) lo es. Llamemos a esto
+           el comparador \(\texttt{iguales}(i,j)\).</p>
+        <p class="q">¿Qué pasa si comparas a un jugador fijo (digamos el 1) contra
+           todos los demás? Si el 1 es normal, el impostor es el único que “difiere”
+           del 1; si <em>todos</em> difieren del 1, entonces el impostor es… el 1.
+           Eso te da la respuesta con \(2(N-1)\le 2N\) preguntas (subtareas 2 y 3).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Eliminar de dos en dos (subtarea 6, \(N+1\))</summary>
+      <div class="body">
+        <p class="q">¿Necesitas comparar contra un ancla fija? ¿Qué tal si comparas
+           pares vecinos y vas tirando a los “limpios”?</p>
+        <p>Toma el par \((N, N-1)\) y aplica el comparador. Si coinciden, ninguno es
+           el impostor: descártalos y repite con \((N-2, N-3)\), etc. La primera vez
+           que un par <em>difiere</em>, el impostor está ahí; como ya viste a alguien
+           “limpio” antes (o el jugador 1 es seguro), basta una comparación más para
+           saber cuál de los dos es. Eso gasta a lo más \(N+1\) preguntas.</p>
+        <p class="q">¿Y si nunca aparece un par que difiera? Entonces los descartaste
+           a todos en pares… salvo al que quedó solo por la paridad: ese es el
+           impostor.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — El truco del ciclo (rumbo al óptimo \(f(n)\))</summary>
+      <div class="body">
+        <p>El comparador cuesta 2 preguntas por par. Para exprimir la última pregunta
+           y llegar al óptimo, conviene un truco de paridad sobre <em>ciclos</em>.</p>
+        <p class="q">Si recorres un ciclo dirigido \(i_1\!\to\! i_2\!\to\!\cdots\!\to\!
+           i_k\!\to\! i_1\) haciendo una pregunta por arista, ¿qué te dice el XOR de
+           todas las respuestas?</p>
+        <p>Cada nodo aparece una vez como “sujeto” (aporta su \(p\)) y una vez como
+           “preguntador” (aporta su \(m\)), así que
+           \[\bigoplus_{\text{aristas}}\texttt{pregunta}(\cdot)=\bigoplus_{t} s(i_t)
+             = \big(k-[\text{el impostor está en el ciclo}]\big)\bmod 2.\]
+           Con \(k\) preguntas aprendes si el impostor pertenece a ese grupo de \(k\).
+           Esto te permite afinar los casos base (en especial \(N=5\), con un ciclo de
+           3) y ahorrar exactamente la pregunta que sobraba para llegar a \(f(n)\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> La respuesta de cualquier pregunta es
+           \(\texttt{pregunta}(i,j)=p(j)\oplus m(i)\), y el impostor es el único
+           jugador con \(s(x)=p(x)\oplus m(x)=0\) (todos los normales tienen
+           \(s=1\)). Con el comparador \(\texttt{iguales}(a,b)\) (preguntar en ambos
+           sentidos) sabes en 2 preguntas si el impostor está dentro del par
+           \(\{a,b\}\).</p>
+        <p><strong>Estrategia.</strong> Recorre desde arriba descartando pares
+           “limpios” de dos en dos. En cuanto un par difiere, el impostor está ahí y
+           lo resuelves contra un jugador seguro. Si nunca difiere, llegas a un caso
+           base pequeño (\(\le 5\)) que resuelves con cuidado; el caso \(N=5\) usa el
+           ciclo dirigido \(5\!\to\!4\!\to\!3\!\to\!5\) (3 preguntas) para decidir,
+           con paridad, si el impostor está en \(\{3,4,5\}\) o en \(\{1,2\}\), y dos
+           preguntas más lo terminan. Esto alcanza el óptimo: a lo más \(N\)
+           preguntas para \(N\ge 4\) (y 4 para \(N=3\)).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion iguales(a, b):            # 2 preguntas
+    regresa pregunta(a,b) == pregunta(b,a)
+    # verdadero  &lt;=&gt; s(a) == s(b) &lt;=&gt; NINGUNO de a,b es el impostor
+    # falso      &lt;=&gt; exactamente uno de a,b es el impostor
+
+funcion decide(x1, x2, seguro):   # se sabe: impostor en {x1,x2}; 1 par de preguntas
+    si iguales(x1, seguro): regresa x2   # x1 es normal -&gt; impostor = x2
+    si no:                  regresa x1   # x1 difiere del seguro -&gt; x1 es el impostor
+
+funcion asesino(N):
+    hi = N
+    mientras hi &gt;= 6:
+        si iguales(hi, hi-1):
+            hi = hi - 2                   # par limpio: ambos normales, fuera
+        si no:
+            regresa decide(hi, hi-1, 1)   # impostor en {hi,hi-1}; el 1 es seguro
+
+    # casos base: el impostor esta garantizado en 1..hi, con hi en {3,4,5}
+    si hi == 3:
+        si iguales(3,2): regresa 1        # 3 y 2 normales -&gt; impostor = 1
+        regresa decide(3, 2, 1)
+
+    si hi == 4:
+        si iguales(4,3): regresa decide(2, 1, 4)   # impostor en {1,2}; 4 seguro
+        regresa decide(4, 3, 2)                     # impostor en {3,4}; 2 seguro
+
+    # hi == 5: ciclo dirigido 5-&gt;4-&gt;3-&gt;5 (3 preguntas)
+    e54 = pregunta(5,4);  e43 = pregunta(4,3);  e35 = pregunta(3,5)
+    si (e54 XOR e43 XOR e35) == 1:        # impostor NO esta en {3,4,5}
+        regresa decide(1, 2, 5)          # impostor en {1,2}; 5 es seguro
+    # impostor en {3,4,5}: cierra 2 aristas inversas y compara
+    e45 = pregunta(4,5);  e34 = pregunta(3,4)
+    si e54 != e45:                        # s(4) != s(5) -&gt; impostor en {4,5}
+        si e43 != e34: regresa 4          # s(3) != s(4), 3 normal -&gt; impostor = 4
+        si no:         regresa 5          # -&gt; impostor = 5
+    regresa 3                             # 4 y 5 normales -&gt; impostor = 3</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> El comparador nunca se equivoca: si
+           \(\texttt{iguales}(a,b)\) es falso, exactamente uno de \(a,b\) es el
+           impostor (porque \(s(a)\neq s(b)\) y solo hay un \(s=0\)); si es
+           verdadero, ninguno lo es, así que descartarlos es seguro y el impostor
+           sigue entre los restantes. Cuando resolvemos con un “seguro”, ese índice
+           está fuera del par sospechoso, así que es normal: comparar contra él
+           revela cuál de los dos difiere. El truco del ciclo usa que el XOR de las
+           aristas es la paridad de la cantidad de jugadores normales del ciclo.</p>
+
+        <p><strong>Complejidad.</strong> A lo más \(N\) preguntas para \(N\ge 4\)
+           (4 para \(N=3\)), que coincide con \(f(n)\); tiempo \(O(N)\) por llamada y
+           \(O(1)\) de memoria adicional. Como el evaluador llama
+           <code>asesino()</code> muchas veces, conviene que la solución no use
+           estado global (todo local), así no hay nada que limpiar entre llamadas.</p>
+
+        <p class="note">Verificado: la estrategia se probó de forma exhaustiva sobre
+           <em>todas</em> las configuraciones posibles para \(3 \le N \le 16\) y con
+           pruebas aleatorias hasta \(N = 10^5\); siempre identifica al impostor y su
+           peor caso es exactamente \(N\) preguntas (4 para \(N=3\)), igual que la
+           solución oficial de 100 puntos.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

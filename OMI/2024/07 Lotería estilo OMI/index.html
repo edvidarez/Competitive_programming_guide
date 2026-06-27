@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2024 · Problema 07 — Lotería estilo OMI</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">29ª OMI · 2024 · Día 2</div>
+    <h1>Problema <span class="num">07</span> — Lotería estilo OMI</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2024D2P4/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La lotería es un juego antiguo que data del 1400. Cada participante tiene un
+       tablero \(G\) con \(N\) filas y \(M\) columnas. El «Gritón» va leyendo cartas en
+       orden aleatorio y los jugadores van marcando las que aparecen en algún lugar de su
+       tablero. El primer jugador en marcar su tablero completo grita <em>Lotería</em> y es
+       declarado ganador.</p>
+
+    <p>En la OMI se organizó un juego de lotería, por supuesto, con reglas más
+       <em>interesantes</em>. En la lotería OMI se gritan sólo algunas cartas y los
+       jugadores marcan sus tableros. En la bolsa de frijoles hay frijoles güeros y
+       frijoles negros. Cuando se acaban las cartas, sólo puede declarar lotería el
+       participante cuyo tablero cumpla la siguiente condición:</p>
+
+    <p>Para cualquier subrectángulo del tablero que se elija, la cantidad de frijoles
+       güeros en sus 4 esquinas debe ser par. Es decir, <strong>para cualquier
+       subrectángulo, si te fijas sólo en las 4 casillas de las esquinas, puede haber
+       0, 2 ó 4 frijoles güeros en total</strong>.</p>
+
+    <p>Tu compañero de delegación estaba jugando pero tiene que ir al baño, así que te
+       pidió que tomes su lugar. Su tablero ya tiene \(K\) casillas marcadas y aún faltan
+       \(Q\) cartas por ser leídas. Además, te diste cuenta de que el gritón es un poco
+       torpe y seguido repite cartas que ya había dicho. En este caso, todos los
+       competidores acordaron quitar el frijol que esté en esa casilla, por si el gritón
+       vuelve a repetir esa carta.</p>
+
+    <p>Como el juego se te hizo un poco aburrido, decidiste calcular lo siguiente:</p>
+
+    <p>Para la configuración inicial que te dejó tu compañero y para cada carta que se
+       vaya leyendo, la cantidad de formas distintas que hay de colocar frijoles (güeros
+       o negros) en las casillas vacías del tablero, tal que la condición de triunfo se
+       siga cumpliendo. Dos formas de marcar un tablero se consideran distintas si
+       difieren en al menos una casilla. Al momento de contar las formas distintas, tienes
+       que considerar todas las casillas que ya tengan frijoles, es decir, no puedes
+       quitar frijoles, únicamente agregar frijoles nuevos a casillas que no están
+       marcadas.</p>
+
+    <p>Como la cantidad de opciones puede ser muy grande, debes responder el residuo de
+       cada respuesta al dividirla por \(10^9 + 7\).</p>
+
+    <h2>Entrada</h2>
+    <p>La primera línea de la entrada contiene un único entero \(T\), <strong>la cantidad
+       de subcasos</strong>. Lo siguiente es la descripción de los subcasos:</p>
+    <ul>
+      <li>La primera línea tiene los enteros \(N\), \(M\), \(K\) y \(Q\): la cantidad de
+          columnas y filas del tablero, el número de casillas marcadas que tiene
+          inicialmente y la cantidad de cartas que se van a leer.</li>
+      <li>Las siguientes \(K\) líneas tienen tres enteros cada una, \(c_i\), \(f_i\) y
+          \(v_i\), que representan la columna, la fila y el color del frijol que hay en
+          cada una de las \(K\) casillas que ya tiene marcadas el tablero. \(v_i = 1\)
+          significa que el frijol es güero; \(v_i = 0\) significa que el frijol es
+          negro.</li>
+      <li>Las últimas \(Q\) líneas tienen tres enteros cada una, \(c_j\), \(f_j\) y
+          \(v_j\), que representan la columna y la fila de la \(j\)-ésima carta que lee el
+          gritón. El valor \(v_j\) es \(1\) si al marcar la posición de la carta tomas un
+          frijol güero, \(0\) si es un frijol negro, y \(-1\) si ya había un frijol ahí y
+          lo quitas.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Para cada subcaso, debes imprimir \(Q + 1\) líneas, cada una con la cantidad de
+       formas distintas de marcar el tablero para la configuración inicial y para la
+       configuración después de leer cada una de las siguientes \(Q\) cartas.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>512 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Cantidad de subcasos</td><td><span class="badge">\(1 \le T \le 10^4\)</span></td></tr>
+        <tr><td>Tamaño del tablero</td><td><span class="badge">\(2 \le N, M \le 10^5\)</span></td></tr>
+        <tr><td>Marcadas iniciales / cartas</td><td><span class="badge">\(0 \le K, Q \le 10^5\)</span></td></tr>
+        <tr><td>Sumas globales</td><td>La suma de cada una de las variables \(N\), \(M\),
+            \(K\) y \(Q\) sobre todos los casos nunca excede \(10^5\).</td></tr>
+        <tr><td>Cota de marcadas</td><td>Siempre se cumple que \(K \le M \times N\).</td></tr>
+        <tr><td>Casillas iniciales</td><td>Para todo \(1 \le i \le K\): \(1 \le c_i \le N\),
+            \(1 \le f_i \le M\) y \(0 \le v_i \le 1\).</td></tr>
+        <tr><td>Cartas</td><td>Para todo \(1 \le j \le Q\): \(1 \le c_j \le N\),
+            \(1 \le f_j \le M\) y \(-1 \le v_j \le 1\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(N\times M \le 100\), \(K = N \times M\) y
+              \(Q = 0\). La suma de \(N\times M\) sobre todos los subcasos es a lo más \(100\).</td></tr>
+          <tr><td>2</td><td class="pts">7</td><td>\(N = 2\) y \(Q = 0\).</td></tr>
+          <tr><td>3</td><td class="pts">8</td><td>\(N = 2\). Además, el gritón nunca va a
+              repetir una carta.</td></tr>
+          <tr><td>4</td><td class="pts">10</td><td>\(N\times M \le 10^5\), \(K = N\times M\) y
+              \(Q = 0\). La suma de \(N\times M\) sobre todos los subcasos es a lo más \(10^5\).</td></tr>
+          <tr><td>5</td><td class="pts">19</td><td>\(Q = 0\). Además, el gritón nunca va a
+              repetir una carta.</td></tr>
+          <tr><td>6</td><td class="pts">12</td><td>Se garantiza que siempre habrá al menos una
+              forma de rellenar el tablero de manera válida, y que el gritón nunca va a
+              repetir una carta.</td></tr>
+          <tr><td>7</td><td class="pts">18</td><td>Se garantiza que el gritón nunca va a
+              repetir una carta.</td></tr>
+          <tr><td>8</td><td class="pts">21</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo 1</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2
+2 2 1 5
+1 1 1
+1 2 0
+2 1 1
+2 2 0
+1 2 -1
+1 2 1
+3 3 8 1
+1 1 1
+1 3 1
+2 1 0
+1 2 0
+2 3 0
+3 1 1
+2 2 1
+3 2 0
+3 3 0</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4
+2
+1
+1
+1
+0
+1
+0</pre></div>
+    </div>
+    <p class="note"><strong>Nota de transcripción:</strong> el markdown oficial del
+       segundo subcaso de este ejemplo trae un desliz: declara \(Q = 2\) pero sólo lista
+       una carta, y su salida quedó escrita al revés. Aquí se muestra la versión
+       consistente con la explicación oficial: \(Q = 1\) con la carta <code>3 3 0</code> y
+       salida \(1\) (configuración inicial) y \(0\) (tras la carta). El primer subcaso
+       (las seis primeras líneas) coincide exactamente con el oficial.</p>
+
+    <h3>Explicación del Ejemplo 1</h3>
+    <p>A continuación se muestra una ilustración del primer subcaso, un tablero de
+       \(2\times 2\). Las celdas actualizadas en cada paso están coloreadas con azul
+       claro.</p>
+    <figure>
+      <img alt="Los seis estados del tablero 2x2 del primer subcaso; en cada paso se resalta en azul la celda modificada."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 1: los seis estados del primer subcaso (configuración inicial y
+         tras cada una de las cinco cartas).</figcaption>
+    </figure>
+
+    <p>En el primer estado del tablero hay 4 formas de rellenarlo de tal manera que se
+       cumpla la propiedad; estas formas son:</p>
+    <figure>
+      <img alt="Las cuatro formas válidas de completar el primer estado del tablero 2x2."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 2: las 4 formas válidas en el primer estado (respuesta \(4\)).</figcaption>
+    </figure>
+
+    <p>En el segundo estado hay exactamente dos formas de rellenar el tablero:</p>
+    <figure>
+      <img alt="Las dos formas válidas de completar el segundo estado del tablero 2x2."
+           src="data:image/jpeg;base64,/9j/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCABCAZgDASIAAhEBAxEB/8QAHQABAQEBAAIDAQAAAAAAAAAAAAgHBgEJAgQFA//EAEIQAAAFAwIDAwkDCQkBAAAAAAABAgMEBQYHCAkREhMZIXgUFTg5WZe1t9QWMXciI1FXgZiyttUYJCYyNjdBQnSl/8QAGQEBAAMBAQAAAAAAAAAAAAAAAAECAwQF/8QANBEAAgECAwYCBwkBAAAAAAAAAAECAxEEEjEhIkFxgZFRwRMjM2FictEUMkNSU4OSk7Hh/9oADAMBAAIRAxEAPwD3+AMM3M7suuwdt7UHfViXHUKLWqLhC659HrNJmrjSoEpmjynGX2XWzJbTiFpStK0mRpMiMjIyH0uzS07frGz/APvYZC/rgAoABFeRMM6BMa5+srTLWsyahpV431UnodMplN1T5DdKIbUF+abkpfn0ksJNqOrlIzNxRrSZJNPMpOqdmlp2/WNn/wDewyF/XAW9HMtA9jy8bX73+hQACH9NWifGWQM0ag7Uu7MefpVPsfMEKiWvH/tTX635FBcs22qipnmRWiNzjLqEx3mcNSvz3Lx5UoSnQcjaINHuI7SlX3kfNWd6VSoZF1pMjVhkQ+KjPglCEprhqcWo+5KEkalGZERGYrOpClBzm7JEpScrIp8BJWnfSZo91PYStnUDjDIuov7PXdSkVGjqqOqbITLxx18eRSkefT5DMi48D7y49/A+4fT1G6crU0f2na+ccIZQy+1cDWX7Con+KM9XbcMB2BVrtpNJnsuwKvU5UR7qQp0lslrZNTSlpdaNt5ttxGkozhNxkrNFYyjNKUdGWCAAKkgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASbe+FqNqT3Ish2NkrJGT4lFtbCNiz6JR7KzLctsxWZU6sXe3KfUzR58VDzjiIENJrcJSiTHSRGRACsgE4XLt9aVrNoMu6rsy/nanU2BHU/OnzNW2QW2mG095qUo67wIhxWmfTloj1ZWHOyZhzKGo5+jQbmqVDOTUNT2RYynpEJ9TDykocrnOSOolREaiSZ8OPAu4QnFzcVqlfpdL/AFh7iTejdutm7dk30LEAQ9rg0T4yw/hijXXjrMOf6dUJeX8e0SRIPVNfr3PAqd5UamzmeDtaURdSJLkNcxFzJ6nMg0qSlRbD2aWnb9Y2f/3sMhf1wSCgAEJXbYGiaz5lzVKTVdU8u1LLuFmh3ffsHVLfCqVSZquQnUuEq5SkuIYN5gnnWmHG2jcPir8090tsTtrac3EkpOSM/mR95GWrHIXf/wDcCLzwU1o7dmk0+TTTT4p3RGZZ3HivJ2a5pqzWqepQICbNANAfsO/tReIod7XhWaLaGb4sG3E3rfFUuGVAivWVa05xhMyqSX5JteUy5LpINwySb6uBER8AAk/U3YvVZalvD/eXwOYN/GAbsXqstS3h/vL4HMG/gCWtcfpqaRPxSrv8rVUVKMrzFo6wXnfINAyjkmBc79btWSuTbkqlZDrdNRTnlsOx1utMw5bTaFqZedbNfLxMlHxMaewyhplLSeYySkiLmWaj7v0mfef7Qj7Oz1u+2z6Gbi/tGdaZUuqcn5mB6N/SK1Y+ICnfL2zRuV1f6YqX/ge/gMYbo39IrVj4gKd8vbNGzX1ZNEyLbMm0bjfqbcKUSOsqj1yXTnzIlEfAn4jrTqCPh3kSiIy4kfEjMhzYylPEYOpShrJNd1Y6KUowqqT4MwLZq9Vjgn8O4P8ACY/Y3K/R1tzxAYm+YVujQNO2mnEOlTG8PEmDqTVqdblPZbZptJqV1VKqIhtILlS2yc6Q8ppBF/1SZFx7+HEZ/uV+jrbniAxN8wrdHpYytDEYypVjpJt93c56UZQpqMuBQAAA5jQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJ/xz607Mn4AY0+N32KAE/459admT8AMafG77AFACWNpH/Y/I/iJyD/ADBLFMV+ixLmo0u36i9MbYmsLZecp9ReiPpSouBmh5hSHGlfoWhRKL7yMhwWn/SfhLS61V42F6XX4LFcqkqpVSNVL1q1UZcmSX1PyJBNzpTyW3XHVqWpaSIz49/cFPdrSk9HFrq5Rfbd/wCCrv4aMI6qopdFTqx7+sXbU4vcr9HW3PEBib5hW6KAE/7lfo6254gMTfMK3RQAA9X8uDV4GyTrHt24GV+efttlVh6Oto+ot9+py1MFw4cTNaXWTT3d5LTwHshxdFqsLGduw68R+XNUGIibz/f1SZSS+P7eI464dHmnS6rwqF6VzH63ZNXrUSr1mAitzW6dU58UkExKlQEPFFkvJ6TP5x1pRmbDJmZm03y6gFLNDDqMtctKL8PVxtdc230S6UnGU8S6j0zVpf3VFKz5JLbxbZP2jf0itWPiAp3y9s0A0b+kVqx8QFO+XtmgBc+W7F6rLUt4f7y+BzB47Jzay9mpgD3N0P6Ued2L1WWpbw/3l8DmDfwB64bu0u6HrolZ0rGA9sHS2dNwTJ8gmwLiwRTHXrjqLNOYqcphmQ0TaYaOhIaYS4bT/B01LNJpR0177ifbm2lcx4ttvLNq7a2A/Nlz0GHVaf1cN0TmJmQyl5HH+6/fyrLiMjYuegaWYmtSyMoTmodWvC6pty2NS1ul5Xc0eo0CFEYbgs/5pLpzWXIpNtkpXU5C4flp41ZooxPWcD6PMWYVuQjKo2pj6j0moJM+PK+xDaaWXEv0KSZCuFefDZpfp4d/uVKdR11f4ZKKy/h3txMJynHFqK8a6fKMqapP3Xi2/i2vhsl/Sltl7cFxZ51M0i4NvrCM6JQc3wIFCizMUUd5unRVWLaklTDCVxjJlo5EiQ8aE8CNx91fDmcUZ/p6ttE+2bgqlWXa9kbZenF27Mk31DtS1VVfC1IdiRn3m3n3pT7bcdC3UMxo77vSJbZuKSlvqN8/OWu6N/SK1Y+ICnfL2zRzO5da8iLcmANQE9XToGMM3w6tdk1RK5IFPkU+dTlS3TIj5GWnZjKnHD4JQ3zLUZJSZid30tJPR1KafJ1Iprqna/DW61Np5lhq0lqqdRr5lTk489qWzjoZ/gzRFty3HqJyFpWyttr6aH7jsum0quQqrQcGUqJHqNJqPlCGVGw608bTzb0OQ0vg6slkSHC5OfkT/bWvt76CMH4xs7KWFtD+ILOuamZ/xZ5tuK18aUunz4nVv2gsudKQxHQ43zNOLbPlMuKVqSfcZkOx01UuJlHcxzRqhsaqR6pZ5Y9tezoFcgPdWLPqEV+pS5iWXS/IdJkpcdtRoMyJw1oP8pCiLsNyv0dbc8QGJvmFbosvZxb1a83Z9Y2fUqn66olomrfxi5dpOS6FAAACC4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR9duk7S1qf3TMoFqW01WBkTzHgDHfmX7dWbCq/m/rVy9+t0PKmnOl1Oi1z8vDm6aOPHlIWCJ/xz607Mn4AY0+N32AMu1i6LNqvSlp9rOYz2u9P1TmR34dOolMdxFRW0S6jNlsw4jS1FEM0IN99rmURGZI4nwPgOcsvQ7oFs/VdTNJmeNujS1Vahc1gyLltmuWxp/ptObUcGRHjz4rrD/lX3Klx3W3CcLila0Gji3zr1ndvxpc+S9E9VO06VKnybYuy3LpfgwWFuvPxaXWYc6SlDaEqU4roMOmSUkZmZERfeOdj1C1dTO6jj3NeFLup1yWxjvDVeYrldok1MmIiXV5dNOHF6zfFBumzDfdNvm5ko6ajIicSZxhd/EqM/zVE/lWHcqb916t1fjlUeeWIk4U214U7c3WjGXPdav4Zr7HZnF7gm2ZtwWXgigVe0NvnCNJlvZvxlAelUzFFHYcXFlX1Qospg1IjEZtOx3nmXEfc426tCiNKjI9x7Jzay9mpgD3N0P6UNyv0dbc8QGJvmFbooASakCXXpO0AUDX1ZGkpzZ409wbcuq1a/Viumfi6gOPy10/yEiQww1HPptcZnet4yUZtmRNkXBZ732Tm1l7NTAHubof0oyzUdnXClv7weB6PXcx2tBl03Hd6wqhFl3DGbciypDlDNhh1K1kaHHS70JPgav+CMWmIo72BpVNW/SXfjarUivd91LTnxEt2vKPLZ4XivO5Lu3PifF2DsnaocXYUxrb9oWzSs/Q/NtuWtRmKfAidSwrQec6UdhCW2+Zxa3D5SLipxRn3mZgOh0b+kVqx8QFO+XtmgJB8t2L1WWpbw/wB5fA5g8drHtZe0rwB75KH9UKAAAT/2se1l7SvAHvkof1QdrHtZe0rwB75KH9UKAAAQdpS3NNuC3c86mavcG4LhCDEr2b4E+hSpmV6Oy3UYqbFtSMp9hS5JE80UiPIZNaeJE4w6jjzNqItx7WPay9pXgD3yUP6oUAAAn/tY9rL2leAPfJQ/qhlurTW7oy1SWHaeFtMervGORrwnZvxvPhWlYd/U6r1ORFgXrRZ859uLEecdW1HhxpMp5ZJ4NMx3XVmSG1KK0gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEfXbqx0taYN0zKB6ltStgY78+YAx35l+3V5QqR5w6NcvfrdDyp1vq9PrNc/Lx5eojjw5iFggAJ/wC1j2svaV4A98lD+qDtY9rL2leAPfJQ/qhQAACDtwTc024L0wRQKPaG4LhGrTGc34ynvRaZlejvuIixb6oUqU+aUSTMmmo7Lzzi/ubbaWtRklJmW49rHtZe0rwB75KH9UKAAAT/ANrHtZe0rwB75KH9UHax7WXtK8Ae+Sh/VCgAAEu7c+WcX5xydqhyjhTJVv3fbNUz/D823Ha1ZYqECX07CtBlzpSGFqbc5XULbPlM+Cm1JPvIyAVEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Z">
+      <figcaption>Figura 3: las 2 formas válidas en el segundo estado (respuesta \(2\)).</figcaption>
+    </figure>
+
+    <p>En el tercer estado existe una única forma de rellenar el tablero:</p>
+    <figure>
+      <img alt="La única forma válida de completar el tercer estado del tablero 2x2."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 4: la única forma válida en el tercer estado (respuesta \(1\)).</figcaption>
+    </figure>
+
+    <p>En el cuarto estado el tablero está completo, pero cumple la condición. Por lo tanto
+       existe una única forma de rellenar el tablero, que es no hacer nada (respuesta
+       \(1\)).</p>
+
+    <p>En el quinto estado existe una única forma de rellenar el tablero:</p>
+    <figure>
+      <img alt="La única forma válida de completar el quinto estado del tablero 2x2."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 5: la única forma válida en el quinto estado (respuesta \(1\)).</figcaption>
+    </figure>
+
+    <p>En el sexto estado el tablero está completo; sin embargo, hay 3 frijoles güeros en
+       las esquinas del (único, para este caso) subrectángulo. Por lo tanto el tablero no
+       cumple la condición, entonces no existe forma de rellenarlo para que la cumpla
+       (respuesta \(0\)).</p>
+
+    <p>Para el segundo subcaso, el tablero de \(3\times 3\) se ve inicialmente así (queda
+       una sola casilla vacía):</p>
+    <figure>
+      <img alt="Estado inicial del segundo subcaso: un tablero 3x3 con una casilla vacía."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 6: configuración inicial del segundo subcaso.</figcaption>
+    </figure>
+
+    <p>Se puede demostrar que colocando un frijol güero en la casilla faltante la
+       condición se cumple. Si por el contrario colocamos un frijol negro en esa casilla,
+       el subrectángulo que tiene por esquinas las casillas \((1, 2)\), \((1, 3)\),
+       \((3, 3)\) y \((3, 2)\) contiene en total 1 frijol güero en sus esquinas, por lo
+       que la condición no se cumple. Estas esquinas están coloreadas con rojo en la
+       siguiente imagen:</p>
+    <figure>
+      <img alt="El tablero 3x3 con un frijol negro en la casilla faltante; en rojo, las cuatro esquinas del subrectángulo que viola la condición."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 7: con un negro en la casilla faltante, las esquinas marcadas en
+         rojo suman 1 güero (impar): no cumple.</figcaption>
+    </figure>
+    <p>Ese caso es el estado que se obtiene después de la última carta mencionada
+       (<code>3 3 0</code>) y, como no cumple la condición, la respuesta es \(0\).</p>
+
+    <h2>Ejemplo 2</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2
+2 2 1 0
+1 1 0
+2 5 1 0
+1 1 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4
+32</pre></div>
+    </div>
+    <p class="note">Dos subcasos sin cartas (\(Q = 0\)). En el primero, un tablero
+       \(2\times 2\) con una casilla puesta admite \(4\) tableros válidos. En el segundo,
+       un tablero \(2\times 5\) con una casilla puesta admite \(32\) tableros válidos.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Conectividad dinámica offline</span>
+      <span class="ptag">DSU con paridad</span>
+      <span class="ptag">Segment tree sobre el tiempo</span>
+      <span class="ptag">Álgebra lineal en GF(2)</span>
+      <span class="ptag">Conteo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes un tablero de \(N\) columnas por \(M\) filas; cada casilla tiene un frijol
+       güero (\(1\)) o negro (\(0\)). El tablero es <em>válido</em> si, para todo
+       subrectángulo, el número de güeros en sus 4 esquinas es par. Partes de \(K\)
+       casillas ya puestas y procesas \(Q\) eventos que ponen, reemplazan o quitan el
+       frijol de una casilla. Tras la configuración inicial y tras cada evento, cuenta de
+       cuántas maneras se pueden rellenar las casillas vacías para que el tablero sea
+       válido, módulo \(10^9 + 7\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Las sumas de \(N\), \(M\), \(K\) y \(Q\) están acotadas por \(10^5\) en
+                total, así que todo debe correr en casi lineal (a lo más con un factor
+                logarítmico). Con \(Q = 0\) (subtareas 2, 4 y 5) basta una sola consulta
+                estática; con \(Q > 0\) y cartas repetidas (subtarea 8) los frijoles
+                aparecen y desaparecen en el tiempo, lo que pide conectividad
+                <em>dinámica</em>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué forma tiene un tablero válido?</summary>
+      <div class="body">
+        <p class="q">¿Ya intentaste describir TODOS los tableros válidos con una fórmula
+           sencilla? Si la condición vale para cada subrectángulo, ¿qué te dice eso de la
+           relación entre dos celdas que comparten fila o que comparten columna?</p>
+        <p>Trata de escribir el valor de la casilla en la fila \(i\), columna \(j\) como un
+           XOR de una etiqueta que dependa <em>sólo</em> de la fila y otra que dependa
+           <em>sólo</em> de la columna. ¿Se puede siempre?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — De rectángulos grandes a 2×2</summary>
+      <div class="body">
+        <p class="q">La condición habla de subrectángulos arbitrarios. ¿De verdad hay que
+           revisarlos todos? ¿Y si sólo exiges que en cada cuadro de \(2\times 2\)
+           adyacente las 4 esquinas sumen par?</p>
+        <p>El XOR de las 4 esquinas de un rectángulo grande se puede «armar» como XOR de
+           los cuadritos de \(2\times 2\) que cubre (se cancelan los bordes internos). Así
+           que controlar los \(2\times 2\) basta. ¿Notas que eso obliga a que
+           \(a_{ij} = u_i \oplus v_j\) para ciertas etiquetas de fila \(u_i\) y de columna
+           \(v_j\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Etiquetas como nodos, frijoles como aristas</summary>
+      <div class="body">
+        <p class="q">Si todo tablero válido es \(a_{ij} = u_i \oplus v_j\), decidir el
+           tablero es decidir las \(N + M\) etiquetas. Cada casilla ya puesta con valor
+           \(w\) impone la ecuación \(u_i \oplus v_j = w\). ¿Cómo modelas un montón de
+           ecuaciones de ese tipo?</p>
+        <p>Piensa en cada etiqueta como un nodo (\(N\) nodos de columna y \(M\) de fila) y
+           en cada frijol como una arista que une su fila con su columna, con «peso» igual
+           a su color. ¿Qué estructura te dice, rápido, en qué componente cae cada nodo y
+           con qué paridad relativa?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — El conteo exacto (ojo con el doble conteo)</summary>
+      <div class="body">
+        <p class="q">En un sistema de ecuaciones \(x_a \oplus x_b = w\) sobre
+           \(\{0,1\}\): si las ecuaciones son consistentes y forman \(c\) componentes
+           conexas, ¿cuántas soluciones de las variables hay? ¿Y cuántos <em>tableros</em>
+           distintos?</p>
+        <p>Hay \(2^{c}\) asignaciones de etiquetas, pero voltear TODAS las etiquetas a la
+           vez (\(u_i \to u_i \oplus 1\), \(v_j \to v_j \oplus 1\)) da el MISMO tablero.
+           Corrige ese doble conteo: el número de tableros válidos es \(2^{\,c-1}\)
+           (o \(0\) si alguna ecuación se contradice). Comprueba: \(2\times2\) con una
+           casilla puesta \(\Rightarrow\) \(4\) nodos, \(1\) arista, \(c = 3\),
+           \(2^{2} = 4\). ✓</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea por subtarea</summary>
+      <div class="body">
+        <ul>
+          <li><strong>Subtareas 1 y 4</strong> (\(Q=0\), tablero lleno \(K=N\times M\)):
+              no hay casillas vacías; sólo verificas consistencia. Une todas las aristas en
+              un DSU con paridad: si no hay contradicción la respuesta es \(1\)
+              (\(c=1\Rightarrow 2^{0}\)), si la hay es \(0\).</li>
+          <li><strong>Subtarea 2</strong> (\(N=2\), \(Q=0\)): caso estático chico; la misma
+              idea con sólo \(2\) columnas.</li>
+          <li><strong>Subtarea 5</strong> (\(Q=0\)): una única consulta estática con \(K\)
+              aristas; cuenta componentes con un DSU con paridad y responde
+              \(2^{\,c-1}\) o \(0\).</li>
+          <li><strong>Subtareas 3, 6 y 7</strong> (el gritón nunca repite carta): cada
+              casilla cambia a lo más una vez, pero aún hay una línea de tiempo: un frijol
+              puede ser quitado y dejar de aportar su ecuación. En la 6 además te prometen
+              que siempre es válido (nunca hay contradicción).</li>
+          <li><strong>Subtarea 8</strong> (general): el gritón repite cartas, así que una
+              casilla aparece y desaparece varias veces. Necesitas AGREGAR y QUITAR
+              aristas a lo largo del tiempo: conectividad dinámica.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Modelo.</strong> Un tablero es válido si y sólo si
+           \(a_{ij} = u_i \oplus v_j\) para alguna etiqueta de fila \(u_i\) y de columna
+           \(v_j\). Crea \(N + M\) nodos (\(N\) de columna, \(M\) de fila). Cada casilla con
+           un frijol de color \(w\) es una arista entre su columna y su fila con peso
+           \(w\), es decir la ecuación \(u_{\text{col}} \oplus v_{\text{fila}} = w\). En un
+           instante dado, si el sistema es consistente y tiene \(c\) componentes conexas,
+           la respuesta es \(2^{\,c-1} \bmod (10^9+7)\); si hay alguna contradicción, es
+           \(0\).</p>
+
+        <p><strong>La línea del tiempo.</strong> Hay \(Q+1\) instantes: el \(0\) es la
+           configuración inicial y los \(1\ldots Q\) son después de cada carta. Cada frijol
+           «vive» en un intervalo de instantes. Los frijoles iniciales empiezan en el
+           instante \(0\). Cuando una carta toca una casilla que ya tenía frijol, ese
+           frijol anterior deja de vivir en el instante anterior (cierras su intervalo); si
+           la carta es \(-1\) la casilla queda vacía, si no, nace un frijol nuevo desde ese
+           instante. Lo que siga vivo al final llega hasta el instante \(Q\).</p>
+
+        <p><strong>Conectividad dinámica offline.</strong> Como hay que agregar y quitar
+           aristas y el DSU no sabe «des-unir» eficientemente, construye un segment tree
+           sobre el eje del tiempo \([0, Q]\) e inserta cada arista en los
+           \(O(\log Q)\) nodos que cubren su intervalo de vida. Luego recorre el árbol con
+           DFS usando un DSU con paridad y <em>rollback</em> (unión por rango/tamaño y
+           <em>sin</em> compresión de caminos): al entrar a un nodo aplicas sus aristas, en
+           las hojas imprimes la respuesta del instante, y al salir deshaces (rollback) las
+           uniones de ese nodo.</p>
+
+        <p><strong>DSU con paridad y rollback.</strong> <code>find</code> sube hasta la raíz
+           acumulando la paridad (sin comprimir). Al unir, si los extremos ya están en la
+           misma componente, verificas que la paridad coincida con \(w\); si no, esa arista
+           es una contradicción (lleva un contador de contradicciones activas). Guarda en
+           una pila lo necesario para deshacer cada operación.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>// nodo de columna c  ->  c
+// nodo de fila    f  ->  N + f
+// arista (c, f, w)  significa   u_c XOR v_f = w     (w = color del frijol)
+
+DSU con paridad y rollback:
+    padre[], rango[], rel[]      // rel[x] = paridad de x hacia su padre
+    comp  = N + M                // número de componentes
+    malas = 0                    // ecuaciones contradictorias activas
+    pila historia
+
+    find(a):                     // SIN compresion de caminos
+        p = 0
+        mientras a != padre[a]: p ^= rel[a]; a = padre[a]
+        regresa (a, p)
+
+    union(a, b, w):
+        (ra, pa) = find(a);  (rb, pb) = find(b)
+        si ra == rb:
+            si (pa XOR pb) != w:  malas++;  apila("contradiccion")
+            si no:                          apila("nada")
+            regresa
+        si rango[ra] &lt; rango[rb]:  intercambia (ra,pa) con (rb,pb)
+        padre[rb] = ra;  rel[rb] = pa XOR pb XOR w
+        subio = (rango[ra] == rango[rb]);  si subio: rango[ra]++
+        comp--;  apila("union", rb, subio)
+
+    rollback():
+        op = pila.saca()
+        si op es "contradiccion":  malas--
+        si op es "union":          padre[rb]=rb; rel[rb]=0;
+                                   si subio: rango[ra]--;  comp++
+
+resolver_subcaso():
+    leer N, M, K, Q
+    ultimo = mapa vacio          // (col,fila) -> (valor, instante en que se puso)
+    por cada frijol inicial (c, f, w):  ultimo[(c,f)] = (w, 0)
+
+    para i de 1 a Q:
+        leer (c, f, w)
+        si (c,f) esta en ultimo:
+            (val, j) = ultimo[(c,f)]
+            inserta arista (c, f, val) en el intervalo de tiempo [j, i-1]
+        si w != -1:  ultimo[(c,f)] = (w, i)
+        si no:       borra (c,f) de ultimo
+    por cada (c,f) que quede en ultimo con (val, j):
+        inserta arista (c, f, val) en el intervalo [j, Q]
+
+    DFS(nodo, l, r):             // segment tree sobre el tiempo [0..Q]
+        por cada arista del nodo:  union(...)
+        si l == r:               // instante l
+            imprime (malas == 0) ? pot2[comp - 1] : 0
+        si no:
+            DFS(hijo_izq, l, m);  DFS(hijo_der, m+1, r)
+        deshaz (rollback) cada arista aplicada en este nodo
+
+principal():
+    precalcula pot2[0..]  modulo 1e9+7
+    leer T;  repetir T veces:  resolver_subcaso()</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Cada arista entra en \(O(\log Q)\) nodos del
+           segment tree y cada <code>union</code>/<code>rollback</code> cuesta
+           \(O(\log(N+M))\) por el <code>find</code> sin compresión. En total
+           \(O\big((K+Q)\,\log Q\,\log(N+M)\big)\) sumando todos los subcasos, con memoria
+           \(O\big((K+Q)\log Q + N + M\big)\). Suficiente para \(\sum N,M,K,Q \le 10^5\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// 1) E/S masiva: usa scanf/printf, o cin/cout con
+//    ios_base::sync_with_stdio(false); cin.tie(nullptr);
+// 2) Para "ultimo", un map&lt;pair&lt;int,int&gt;, ...&gt; basta; si pesa,
+//    compacta solo las columnas/filas que aparecen, o usa
+//    unordered_map con un buen hash de pares.
+// 3) Acumula la salida en un string y vacialo al final
+//    (endl fuerza flush; evitalo).</pre>
+          <p class="note">Inclúyelo únicamente si de verdad hace falta. Nunca pongas la
+             solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

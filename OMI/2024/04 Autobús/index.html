@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2024 · Problema 04 — Autobús</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">29ª OMI · 2024 · Día 2</div>
+    <h1>Problema <span class="num">04</span> — Autobús</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2024D2P1/#problems">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Hay \(n\) familias que están viajando en un autobús a Pénjamo, Guanajuato, para
+       ver el maratón más grande de "correr con una gallina". Cada familia tiene \(a_i\)
+       integrantes. El autobús tiene 2 columnas y \(f\) filas.</p>
+
+    <p>Una persona está contenta si:</p>
+    <ul>
+      <li>alguien de su familia se sienta en la misma fila,</li>
+      <li>o no hay nadie más sentado en su misma fila.</li>
+    </ul>
+
+    <p>Solamente hay un autobús. <strong>Se garantiza que todas las personas caben en el
+       autobús.</strong> Encuentra el <strong>número máximo de personas felices</strong>,
+       si asignas los lugares de manera óptima. <strong>Todas las personas deben tener un
+       lugar en el autobús.</strong></p>
+
+    <h2>Entrada</h2>
+    <p>La primera línea consiste de un entero \(n\) y un entero \(f\): el número de familias
+       y la cantidad de filas en el autobús. La segunda línea consiste de \(n\) enteros
+       \(a_1, a_2, \ldots, a_n\), la cantidad de integrantes de cada familia.</p>
+
+    <h2>Salida</h2>
+    <p>Un solo entero: el máximo número de personas felices que puedes obtener, asignando
+       óptimamente los lugares del autobús a las personas.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>512 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de familias</td><td><span class="badge">\(1 \le n \le 100\)</span></td></tr>
+        <tr><td>Integrantes por familia</td><td><span class="badge">\(1 \le a_i \le 10\)</span></td></tr>
+        <tr><td>Filas del autobús</td><td><span class="badge">\(1 \le f \le 500\)</span></td></tr>
+        <tr><td>Todos caben (garantía)</td><td><span class="badge">\(\sum_{i=1}^{n} a_i \le 2f\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">10</td><td>Se garantiza que \(n = 1\) (solo hay una familia).</td></tr>
+          <tr><td>2</td><td class="pts">20</td><td>Se garantiza que \(a_i\) es par para toda \(i\) (todas las familias tienen una cantidad par de integrantes).</td></tr>
+          <tr><td>3</td><td class="pts">30</td><td>Se garantiza que \(n = 2\) (solo hay dos familias).</td></tr>
+          <tr><td>4</td><td class="pts">40</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 3
+2 3 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4</pre></div>
+    </div>
+    <p class="note">En el primer ejemplo, los dos integrantes de la primera familia se
+       pueden sentar juntos en la primera fila; dos de la segunda familia se pueden sentar
+       juntos en la segunda fila. El que falta de la segunda familia se puede sentar en la
+       tercera fila junto al único miembro de la tercera familia. Esta asignación de
+       asientos se muestra en la imagen de abajo, donde las 4 personas felices están
+       coloreadas con azul claro.</p>
+    <figure>
+      <img alt="Autobús de 3 filas y 2 columnas: fila 1 con dos miembros de la familia 1 (felices), fila 2 con dos de la familia 2 (felices), fila 3 con un miembro de la familia 2 y uno de la familia 3 (infelices)."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Ejemplo 1: 4 personas felices (en azul claro). Las cifras indican a qué familia pertenece cada asiento.</figcaption>
+    </figure>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 3
+2 2 2</pre></div>
+      <div class="io"><h4>Salida</h4><pre>6</pre></div>
+    </div>
+    <p class="note">En el segundo ejemplo, una posible asignación de asientos con 6
+       personas felices se muestra en la imagen de abajo.</p>
+    <figure>
+      <img alt="Autobús de 3 filas y 2 columnas: cada fila tiene a las dos personas de una familia distinta; las 6 personas quedan felices."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Ejemplo 2: 6 personas felices (en azul claro).</figcaption>
+    </figure>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 5
+1 1 2 2</pre></div>
+      <div class="io"><h4>Salida</h4><pre>6</pre></div>
+    </div>
+    <p class="note">En el tercer ejemplo, una posible asignación de asientos con 6 personas
+       felices se muestra en la imagen de abajo.</p>
+    <figure>
+      <img alt="Autobús de 5 filas y 2 columnas: las familias de 2 ocupan filas completas con sus parejas y las familias de 1 se sientan solas en su fila; las 6 personas quedan felices."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Ejemplo 3: 6 personas felices (en azul claro).</figcaption>
+    </figure>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 5
+3 1 1 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>6</pre></div>
+    </div>
+    <p class="note">Cuarto ejemplo: con 5 filas alcanzan los lugares para que las 6
+       personas queden felices.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Conteo</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Un autobús tiene \(f\) filas de 2 asientos cada una (2 columnas). Hay \(n\) familias
+       de tamaños \(a_1,\dots,a_n\); todos caben (\(\sum a_i \le 2f\)) y todos deben
+       sentarse. Una persona es <em>feliz</em> si comparte su fila con un familiar o si va
+       sola en su fila. Maximiza el número de personas felices.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 100\), \(a_i \le 10\), \(f \le 500\): los números son diminutos, así
+                que la eficiencia no es el reto. La respuesta sale de una fórmula \(O(n)\);
+                lo difícil es <em>verla</em>. La garantía \(\sum a_i \le 2f\) asegura que
+                siempre se puede sentar a todos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">Cada fila tiene exactamente 2 asientos. ¿Cuándo una persona es
+           <strong>infeliz</strong>?</p>
+        <p>Una persona es feliz si va sola en su fila, o si su compañero de fila es de su
+           familia. Por descarte, alguien es infeliz <strong>solo</strong> cuando comparte
+           fila con una persona de <em>otra</em> familia. ¿No será más cómodo, entonces,
+           <em>minimizar infelices</em> en lugar de maximizar felices? Fíjate además que
+           las "filas malas" siempre tienen exactamente 2 infelices (los dos extraños que
+           comparten esa fila).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: una sola familia (\(n=1\))</summary>
+      <div class="body">
+        <p class="q">Si todos son de la misma familia, ¿pueden quedar <em>todos</em>
+           felices?</p>
+        <p>Siéntalos de dos en dos por fila: cada pareja queda feliz porque son familia. Si
+           sobra uno (familia impar), va solo en una fila y también queda feliz. Como caben
+           todos por la garantía, la respuesta es simplemente \(a_1\): todos felices.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2: todas las familias pares</summary>
+      <div class="body">
+        <p class="q">Si cada \(a_i\) es par, ¿sobra alguien al emparejar dentro de cada
+           familia?</p>
+        <p>No sobra nadie: cada familia se parte en parejas exactas que ocupan filas
+           completas, y ambos quedan felices. ¿Y siempre alcanzan las filas? Como
+           \(\sum a_i \le 2f\), el número de parejas \(\sum a_i/2 \le f\). Así que la
+           respuesta vuelve a ser \(\sum a_i\): todos felices.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3: dos familias (\(n=2\)) y el problema de los impares</summary>
+      <div class="body">
+        <p class="q">¿Qué cambia cuando una familia tiene tamaño impar?</p>
+        <p>Cada familia produce \(\lfloor a_i/2 \rfloor\) parejas felices y, si \(a_i\) es
+           impar, <strong>un sobrante</strong>. Un sobrante puede ir solo en una fila (y ser
+           feliz) <em>si queda fila libre</em>; pero si las filas escasean, dos sobrantes de
+           familias distintas tendrán que compartir fila y los dos serán infelices.
+           ¿Cuántas filas libres quedan después de acomodar todas las parejas? Esa cuenta es
+           la clave.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Construye la respuesta en dos pasos: primero acomoda todas las parejas dentro de
+           cada familia, luego reparte los sobrantes en las filas que queden.</p>
+
+        <p>Definamos:</p>
+        <ul>
+          <li>\(P = \sum_i \lfloor a_i/2 \rfloor\): el total de <strong>parejas</strong> que
+              se forman <em>dentro</em> de cada familia. Cada pareja ocupa una fila completa
+              y deja 2 personas felices. Usan \(P\) filas y aportan \(2P\) felices.</li>
+          <li>\(S = \sum_i (a_i \bmod 2)\): el número de <strong>sobrantes</strong> (cada
+              familia de tamaño impar deja exactamente uno).</li>
+          <li>\(r = f - P\): las <strong>filas que sobran</strong> tras sentar las parejas.</li>
+        </ul>
+
+        <p>Ahora reparte los \(S\) sobrantes en esas \(r\) filas:</p>
+        <ul>
+          <li><strong>Si \(S \le r\):</strong> cada sobrante toma su propia fila (va solo) y
+              queda feliz. Felices \(= 2P + S = \sum a_i\) (¡todos felices!).</li>
+          <li><strong>Si \(S > r\):</strong> hay más sobrantes que filas. Para sentarlos a
+              todos, exactamente \(S - r\) filas tendrán 2 sobrantes de familias distintas
+              (las "filas malas", \(2(S-r)\) infelices); las otras \(2r - S\) filas llevan un
+              sobrante solito y feliz. Felices \(= 2P + (2r - S)\).</li>
+        </ul>
+
+        <p>La garantía \(\sum a_i \le 2f\) implica \(2P + S \le 2f\), o sea \(S \le 2r\); por
+           eso \(2r - S \ge 0\): los sobrantes siempre caben.</p>
+
+        <p><strong>¿Por qué es óptimo?</strong> Emparejar dentro de la familia es lo mejor
+           posible por fila: una pareja del mismo deja 2 felices con 1 fila, mientras que un
+           sobrante solo deja 1 feliz por fila. Solo cuando faltan filas estamos
+           <em>obligados</em> a juntar dos extraños (0 felices en esa fila), y minimizamos el
+           daño llenando primero las filas solitarias. Romper una pareja familiar nunca
+           ayuda: perderías felicidad sin liberar una fila útil. Dicho de otro modo, todos
+           pueden ser felices si y solo si \(\sum_i \lceil a_i/2 \rceil \le f\); cada unidad
+           de déficit por encima de \(f\) cuesta exactamente 2 infelices.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Resolver(n, f, a[1..n]):
+    P <- 0          # parejas dentro de cada familia
+    S <- 0          # sobrantes (familias de tamano impar)
+    para i de 1 a n:
+        P <- P + piso(a[i] / 2)
+        S <- S + (a[i] mod 2)
+
+    felices <- 2 * P
+    r <- f - P                  # filas libres tras sentar parejas
+    si S <= r:
+        felices <- felices + S          # cada sobrante va solo y feliz
+    si no:
+        felices <- felices + (2*r - S)  # faltan filas: filas malas
+
+    regresa felices</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(n)\) en tiempo y \(O(1)\) en memoria adicional
+           (basta leer los tamaños y acumular dos contadores). Con \(n \le 100\) sobra
+           muchísimo.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
