@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2005 · Tarea 5 — Rectangle Game</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  /* Tabla de interacción */
+  .inter{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .inter table{width:100%;border-collapse:collapse;font-size:15px}
+  .inter th,.inter td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .inter th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .inter tr:last-child td{border-bottom:none}
+  .inter td:first-child{white-space:nowrap;color:var(--accent2);
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+    .inter td:first-child{white-space:normal}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2005 · Día 2 · Nowy Sącz, Polonia</div>
+    <h1>Tarea <span class="num">5</span> — Rectangle Game</h1>
+    <p class="note">El juego del rectángulo · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Es un juego de <strong>dos jugadores</strong>. Se les da un rectángulo de
+       \(x \times y\) (donde \(x\) y \(y\) son enteros positivos). Los jugadores
+       se turnan. Una jugada consiste en <strong>dividir un rectángulo en dos
+       rectángulos con un solo corte vertical u horizontal</strong>. Los
+       rectángulos resultantes deben tener dimensiones enteras positivas.</p>
+
+    <figure>
+      <svg viewBox="0 0 360 284" width="360" height="284" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,Menlo,monospace" font-size="15">
+        <rect x="0" y="0" width="360" height="284" fill="#0b0e18"/>
+        <rect x="50" y="24" width="280" height="210" fill="#11162a" stroke="#e8ecf6" stroke-width="2"/>
+        <line x1="120" y1="24" x2="120" y2="234" stroke="#5b8cff" stroke-width="1.4" stroke-dasharray="5 5"/>
+        <text x="120" y="256" text-anchor="middle" fill="#9aa6c4">1</text>
+        <line x1="190" y1="24" x2="190" y2="234" stroke="#5b8cff" stroke-width="1.4" stroke-dasharray="5 5"/>
+        <text x="190" y="256" text-anchor="middle" fill="#9aa6c4">2</text>
+        <line x1="260" y1="24" x2="260" y2="234" stroke="#5b8cff" stroke-width="1.4" stroke-dasharray="5 5"/>
+        <text x="260" y="256" text-anchor="middle" fill="#9aa6c4">3</text>
+        <line x1="50" y1="164" x2="330" y2="164" stroke="#34d399" stroke-width="1.4" stroke-dasharray="5 5"/>
+        <text x="36" y="169" text-anchor="middle" fill="#9aa6c4">1</text>
+        <line x1="50" y1="94" x2="330" y2="94" stroke="#34d399" stroke-width="1.4" stroke-dasharray="5 5"/>
+        <text x="36" y="99" text-anchor="middle" fill="#9aa6c4">2</text>
+      </svg>
+      <figcaption>Cortes posibles de un rectángulo \(4 \times 3\). En azul, los
+        cortes <strong>verticales</strong> (\(x = 1, 2, 3\)); en verde, los cortes
+        <strong>horizontales</strong> (\(y = 1, 2\)).</figcaption>
+    </figure>
+
+    <p>Después de cada corte, el rectángulo <strong>más pequeño</strong> (el de
+       menor área) se <strong>descarta</strong> y el otro se le pasa al otro
+       jugador. Si el rectángulo se corta en dos mitades iguales, se descarta una
+       de ellas. El jugador que <strong>recibe un rectángulo \(1 \times 1\)</strong>,
+       y por tanto no puede mover, <strong>pierde</strong> el juego.</p>
+
+    <p>Tu tarea es escribir un programa que juegue y <strong>gane</strong> el juego
+       del rectángulo. El programa usa una biblioteca especial para jugar.
+       Puedes suponer que, para los datos de prueba, <strong>siempre existe una
+       estrategia ganadora</strong> para tu programa.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una <strong>tarea funcional / de biblioteca</strong>: <em>no</em>
+       lees de entrada estándar, <em>no</em> escribes a salida estándar y
+       <em>no</em> usas archivos. Tu programa juega llamando a las funciones que
+       te da la biblioteca (<code>creclib</code> en C/C++, <code>preclib</code> en
+       Pascal).</p>
+
+    <div class="sig">
+      <span class="tag">Funciones que te da la biblioteca (C/C++)</span>
+<pre>typedef enum __direction { vertical, horizontal } direction;
+
+int  dimension_x();                      // ancho actual del rectángulo
+int  dimension_y();                      // alto actual del rectángulo
+void cut(direction dir, int position);   // tu jugada</pre>
+    </div>
+
+    <ul>
+      <li><code>dimension_x()</code> y <code>dimension_y()</code> regresan las
+          dimensiones <em>actuales</em> del rectángulo. Las dimensiones iniciales
+          son enteros de \(1\) a \(100\,000\,000\). Al menos una dimensión es mayor
+          que \(1\).</li>
+      <li><code>cut(dir, position)</code> es el procedimiento con el que haces tu
+          jugada. El parámetro <code>dir</code> describe la dirección y
+          <code>position</code> la posición del corte:
+        <ul>
+          <li>Si <code>dir = vertical</code>, el corte es vertical y
+              <code>position</code> es la coordenada \(x\) del corte (ver la
+              figura). Debes asegurar que
+              \(1 \le \texttt{position} \le \texttt{dimension\_x()} - 1\).</li>
+          <li>Si <code>dir = horizontal</code>, el corte es horizontal y
+              <code>position</code> es la coordenada \(y\) del corte. Debes asegurar
+              que \(1 \le \texttt{position} \le \texttt{dimension\_y()} - 1\).</li>
+        </ul>
+      </li>
+    </ul>
+
+    <p>Cuando arranca tu programa, la biblioteca actúa como el otro jugador
+       durante una partida. <strong>Tu programa juega primero</strong>: debe
+       cortar el rectángulo inicial. Cuando tu programa llama a <code>cut</code>,
+       tu jugada queda registrada y el control pasa al oponente. Después de que el
+       oponente mueve, el control regresa a tu programa. Los valores que regresan
+       <code>dimension_x()</code> y <code>dimension_y()</code> reflejan el
+       resultado de tu jugada y de la del oponente.</p>
+
+    <p>En cuanto tu programa <strong>gana</strong>, <strong>pierde</strong> o hace
+       una <strong>jugada ilegal</strong> (es decir, llama a <code>cut</code> con
+       parámetros inválidos), se le <strong>termina</strong>. Esa terminación es
+       automática, así que tu programa debe <strong>seguir jugando todo el tiempo
+       que pueda</strong>. No debe leer ni escribir archivos, no debe usar
+       entrada/salida estándar y no debe modificar memoria fuera del programa.
+       Violar cualquiera de estas reglas puede causar descalificación.</p>
+
+    <p class="note">La biblioteca también existe para FreePascal
+       (<code>preclib</code>), con
+       <code>type direction = (vertical, horizontal)</code>,
+       <code>function dimension_x():longint</code>,
+       <code>function dimension_y():longint</code> y
+       <code>procedure cut(dir:direction; position:longint)</code>.</p>
+
+    <p class="note">Para experimentar localmente, el paquete oficial incluye
+       <em>bibliotecas de oponente de ejemplo</em> (<code>creclib.c</code> /
+       <code>creclib.h</code> en C/C++, <code>preclib</code> en Pascal) que
+       juegan con una estrategia simple, además de programas de muestra
+       (<code>crec.c</code>, <code>prec.pas</code>) que ilustran el uso. En la
+       evaluación real tu programa enfrenta a un oponente distinto. Los detalles
+       de descarga y compilación (<code>gcc</code> / <code>g++</code> /
+       <code>ppc386</code>) son específicos del entorno de 2005 y se omiten aquí.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>14 s (se supone que la sobrecarga de la biblioteca no excede 4 s)</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Dimensiones iniciales</td><td><span class="badge">enteros \(1 \le x, y \le 100\,000\,000\)</span></td></tr>
+        <tr><td>Garantía</td><td><span class="badge">al menos una dimensión \(> 1\)</span></td></tr>
+        <tr><td>Distribución de casos</td><td><span class="badge">en el 50% de los casos las dimensiones no exceden 25</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Puntaje por caso de prueba, sin subtareas agrupadas.</strong> El
+      enunciado no define grupos de subtareas con pesos formales: solo da una
+      pista de distribución (“en el 50% de los casos las dimensiones no exceden
+      25”) y garantiza que, para los datos de prueba, siempre existe una
+      estrategia ganadora. El juego de pruebas oficial consta de 21 casos de
+      peso aproximadamente igual; ese conteo proviene de los datos de prueba, no
+      del texto del enunciado.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Abajo hay una interacción de muestra entre tu programa y la biblioteca
+       evaluadora. Muestra cómo puede transcurrir una partida. El juego empieza con
+       un tablero \(4 \times 3\). Para esa posición existe una estrategia
+       ganadora.</p>
+    <div class="inter">
+      <table>
+        <thead><tr><th>Tu programa llama</th><th>Qué ocurre</th></tr></thead>
+        <tbody>
+          <tr><td>dimension_x()</td><td>regresa 4</td></tr>
+          <tr><td>dimension_y()</td><td>regresa 3</td></tr>
+          <tr><td>cut(vertical, 1)</td><td>tu corte se registra y se le pasa un tablero \(3 \times 3\) a tu oponente, que lo corta a un tablero \(3 \times 2\); después de esto, el control regresa a tu programa</td></tr>
+          <tr><td>dimension_x()</td><td>regresa 3</td></tr>
+          <tr><td>dimension_y()</td><td>regresa 2</td></tr>
+          <tr><td>cut(horizontal, 1)</td><td>tu corte se registra y se le pasa un tablero \(3 \times 1\) a tu oponente, que lo corta a un tablero \(2 \times 1\); después de esto, el control regresa a tu programa</td></tr>
+          <tr><td>dimension_x()</td><td>regresa 2</td></tr>
+          <tr><td>dimension_y()</td><td>regresa 1</td></tr>
+          <tr><td>cut(vertical, 1)</td><td>tu corte da un tablero \(1 \times 1\), así que ganas; tu programa se termina automáticamente</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Teoría de juegos</span>
+      <span class="ptag">Teoría de números</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Greedy / O(log)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Juego imparcial sobre un rectángulo \(x \times y\). Una jugada corta un lado
+       y <strong>conserva la pieza de mayor área</strong>; recibir \(1 \times 1\)
+       pierde. Tú juegas primero y la posición inicial es ganadora. Hay que
+       implementar un jugador que, leyendo <code>dimension_x()</code>/
+       <code>dimension_y()</code> y llamando a <code>cut(dir, pos)</code>, gane
+       contra <em>cualquier</em> oponente.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Dimensiones hasta \(10^8\): un minimax/DP sobre las posiciones solo
+                alcanza para el \(\sim 50\%\) de casos (los de \(\le 25\)). Para el
+                100 necesitas <strong>caracterizar</strong> qué posiciones son
+                perdedoras con una fórmula \(O(\log)\), no explorarlas. La partida
+                puede durar \(O(x+y)\) jugadas, así que cada jugada debe costar
+                \(O(\log)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué libertad real te da una jugada?</summary>
+      <div class="body">
+        <p class="q">Como <em>siempre</em> conservas la pieza de mayor área, ¿a qué
+           valores puedes dejar un lado de longitud \(d\) con un solo corte?</p>
+        <p>Cortar el lado \(d\) en la posición \(p\) lo parte en piezas de tamaño
+           \(p\) y \(d-p\); te quedas con la mayor. Así que una jugada
+           <strong>encoge un solo lado</strong> de \(d\) a cualquier valor \(l\)
+           con \(\lceil d/2 \rceil \le l \le d-1\) (no puedes saltar de golpe a un
+           lado muy chico). El otro lado queda intacto. Esa es <em>toda</em> la
+           libertad que tienes en un turno.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cuándo pierde quien recibe el tablero?</summary>
+      <div class="body">
+        <p class="q">El terminal es \(1 \times 1\) (quien lo recibe pierde). ¿Puedes
+           clasificar cada posición como “perdedora” (pierde el que mueve) o
+           “ganadora” jugando con casos chiquitos?</p>
+        <p>Define una posición como <strong>perdedora</strong> si el jugador <em>a
+           quien le toca mover</em> pierde con juego óptimo. \((1,1)\) es perdedora
+           (terminal). Una posición es <strong>ganadora</strong> si existe alguna
+           jugada que deje al rival en una posición perdedora; es
+           <strong>perdedora</strong> si <em>todas</em> sus jugadas dejan al rival en
+           posiciones ganadoras. Con \(x, y \le 25\) puedes calcular esta tabla por
+           minimax/DP con memoización — eso ya vale \(\sim 50\%\). Ahora dibuja la
+           tabla y <strong>busca el patrón</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — El patrón (la observación clave)</summary>
+      <div class="body">
+        <p class="q">Marca con ★ las posiciones perdedoras en una cuadrícula chica.
+           ¿Qué tienen en común \(x\) y \(y\) en cada estrella? Pista: mira
+           \(x+1\) y \(y+1\).</p>
+        <figure>
+          <svg viewBox="0 0 384 376" width="384" height="376" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,Menlo,monospace" font-size="15">
+            <rect x="0" y="0" width="384" height="376" fill="#0b0e18"/>
+            <rect x="44" y="20" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="67" y="49" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="44" y="66" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="44" y="112" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="44" y="158" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="44" y="204" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="67" y="233" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="44" y="250" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="44" y="296" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="67" y="325" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="90" y="20" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="90" y="66" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="90" y="112" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="113" y="141" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="90" y="158" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="90" y="204" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="90" y="250" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="113" y="279" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="90" y="296" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="136" y="20" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="159" y="49" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="136" y="66" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="136" y="112" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="136" y="158" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="136" y="204" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="159" y="233" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="136" y="250" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="136" y="296" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="159" y="325" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="182" y="20" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="182" y="66" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="182" y="112" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="182" y="158" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="205" y="187" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="182" y="204" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="182" y="250" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="182" y="296" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="228" y="20" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="228" y="66" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="228" y="112" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="251" y="141" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="228" y="158" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="228" y="204" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="228" y="250" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="251" y="279" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="228" y="296" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="274" y="20" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="274" y="66" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="297" y="95" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="274" y="112" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="274" y="158" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="274" y="204" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="274" y="250" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="274" y="296" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="320" y="20" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="343" y="49" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="320" y="66" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="320" y="112" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="320" y="158" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="320" y="204" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="343" y="233" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <rect x="320" y="250" width="46" height="46" fill="#11162a" stroke="#2a3252"/>
+            <rect x="320" y="296" width="46" height="46" fill="#1f3a6e" stroke="#2a3252"/><text x="343" y="325" text-anchor="middle" fill="#ffd34d" font-size="20">★</text>
+            <text x="67" y="362" text-anchor="middle" fill="#9aa6c4">1</text>
+            <text x="113" y="362" text-anchor="middle" fill="#9aa6c4">2</text>
+            <text x="159" y="362" text-anchor="middle" fill="#9aa6c4">3</text>
+            <text x="205" y="362" text-anchor="middle" fill="#9aa6c4">4</text>
+            <text x="251" y="362" text-anchor="middle" fill="#9aa6c4">5</text>
+            <text x="297" y="362" text-anchor="middle" fill="#9aa6c4">6</text>
+            <text x="343" y="362" text-anchor="middle" fill="#9aa6c4">7</text>
+            <text x="205" y="372" text-anchor="middle" fill="#5b8cff" font-size="13">x</text>
+            <text x="32" y="48" text-anchor="middle" fill="#9aa6c4">7</text>
+            <text x="32" y="94" text-anchor="middle" fill="#9aa6c4">6</text>
+            <text x="32" y="140" text-anchor="middle" fill="#9aa6c4">5</text>
+            <text x="32" y="186" text-anchor="middle" fill="#9aa6c4">4</text>
+            <text x="32" y="232" text-anchor="middle" fill="#9aa6c4">3</text>
+            <text x="32" y="278" text-anchor="middle" fill="#9aa6c4">2</text>
+            <text x="32" y="324" text-anchor="middle" fill="#9aa6c4">1</text>
+            <text x="14" y="181" text-anchor="middle" fill="#5b8cff" font-size="13" transform="rotate(-90 14 181)">y</text>
+          </svg>
+          <figcaption>Posiciones <strong>perdedoras</strong> (★) para \(1 \le x, y \le 7\).
+            El patrón: \((x,y)\) es perdedora \(\iff\) \(x+1\) y \(y+1\) comparten la
+            misma <em>parte impar</em>.</figcaption>
+        </figure>
+        <p>Sea \(a = x+1\) y \(b = y+1\). Las estrellas caen exactamente donde \(a\)
+           y \(b\) tienen la <strong>misma parte impar</strong> (el número que queda
+           al quitarles todos los factores \(2\)); es decir, donde \(a/b\) es una
+           potencia de dos. Equivalente: \((x,y)\) es perdedora \(\iff\) existe un
+           entero \(k \ge 0\) con \(y+1 = 2^{k}\,(x+1)\) (o al revés). El caso
+           \(k=0\) es \(x = y\).</p>
+        <p class="note">Comprobación contra la tabla: para \(y=1\) las \(x\)
+           perdedoras son \(1,3,7,15,\dots\) (\(x+1\) potencia de dos); para \(y=2\)
+           son \(2,5,11,\dots\) (\(x+1 \in \{3,6,12,\dots\}\)). Coincide.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Caracterización.</strong> Define
+           \(\operatorname{impar}(v)\) = \(v\) sin sus factores \(2\). Entonces:</p>
+        <p>\[(x,y)\text{ es PERDEDORA} \iff \operatorname{impar}(x+1)=\operatorname{impar}(y+1).\]</p>
+        <p>En tu turno la posición siempre es <strong>ganadora</strong> (las partes
+           impares difieren, así que \(x \ne y\)). Necesitas una jugada que deje al
+           rival en una posición perdedora.</p>
+
+        <p><strong>La jugada ganadora.</strong> Sea \(d\) el lado <em>mayor</em> y
+           \(s\) el <em>menor</em>. Vas a encoger el lado mayor hasta \(l\) tal que
+           \(l+1\) sea el <strong>mayor múltiplo de \((s+1)\) por una potencia de
+           dos que sea estrictamente menor que \((d+1)\)</strong>. En código:
+           \(t = s+1\); mientras \(2t \le d+1\) haz \(t \leftarrow 2t\); luego
+           \(l = t-1\).</p>
+        <ul>
+          <li>Como \(x \ne y\), ese \(t\) existe con \(t-1 < d\) estricto, así que
+              \(1 \le l \le d-1\): es un corte <em>legal</em>.</li>
+          <li>Por construcción \(\lceil d/2 \rceil \le l \le d-1\): alcanzable con un
+              solo corte conservando la pieza mayor.</li>
+          <li>\(\operatorname{impar}(l+1) = \operatorname{impar}(s+1)\), así que la
+              nueva posición \((l, s)\) es <strong>perdedora</strong>: se la
+              entregas al rival.</li>
+        </ul>
+        <p>Si \(x \ge y\) encoges el ancho: <code>cut(vertical, l)</code>, dejando
+           \((l, y)\). Si \(y > x\) encoges el alto: <code>cut(horizontal, l)</code>,
+           dejando \((x, l)\).</p>
+
+        <p><strong>Por qué es correcto.</strong> En cada turno entregas una posición
+           perdedora; por inducción el rival nunca puede devolverte una perdedora, y
+           el juego solo termina cuando alguien recibe \(1 \times 1\) (perdedora con
+           \(x=y=1\)). Como tú siempre entregas perdedoras, ese alguien es el rival:
+           <strong>ganas contra cualquier oponente</strong>, óptimo o no. (Prueba de
+           que \(l\) cae en el rango: con \(a=d+1\), \(b=s+1\), \(a>b\), toma
+           \(k=\lfloor \log_2(a/b)\rfloor\); entonces \(2^{k}b \le a\) da
+           \(l = 2^{k}b-1 \le d-1\) — estricto porque \(a/b\) no es potencia exacta
+           de dos — y \(2^{k+1}b > a\) da \(l+1 > a/2\), o sea
+           \(l \ge \lceil d/2\rceil\).)</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion impar(v):
+    mientras v es par: v = v / 2
+    regresa v
+
+// el evaluador termina tu programa solo al ganar/perder; juega para siempre
+repetir indefinidamente:
+    x = dimension_x()
+    y = dimension_y()
+    // posicion ganadora: impar(x+1) != impar(y+1), por lo que x != y
+
+    si x >= y:  d = x;  s = y;  eje = vertical
+    si no:      d = y;  s = x;  eje = horizontal
+
+    // mayor 2^k*(s+1) estrictamente menor que d+1
+    t = s + 1
+    mientras 2*t <= d + 1:
+        t = 2 * t
+    l = t - 1                 // ceil(d/2) <= l <= d-1, e impar(l+1)=impar(s+1)
+
+    cut(eje, l)               // conserva el lado mayor con longitud l
+                              // -> nueva posicion (l, s): PERDEDORA para el rival</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> \(O(\log(\max(x,y)))\) por jugada para
+           hallar el múltiplo por potencia de dos; memoria \(O(1)\). La partida
+           puede durar hasta \(O(x+y)\) jugadas si el rival encoge de a \(1\) (hasta
+           \(\sim 2\times 10^8\) en el peor caso), pero el trabajo total
+           \(O((x+y)\log)\) termina en \(\sim 1\) s, holgado dentro de 14 s y
+           32 MB. <em>Nunca</em> recurras sobre la longitud de la partida ni hagas
+           minimax para \(x,y\) grandes: eso es la solución del \(\sim 50\%\) y se
+           pasa de tiempo.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Las dimensiones caben en int (<= 1e8), pero el intermedio 2^k*(s+1) y la
+posicion del corte pueden llegar a ~2e8: usa un tipo ancho (long long) para
+'t' y 'l' por seguridad antes de pasarlo a cut(...). No hace falta nada mas.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
