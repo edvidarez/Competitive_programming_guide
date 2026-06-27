@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2015 · Tarea 1 — Scales</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de ejemplo / datos */
+  .data{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .data table{width:100%;border-collapse:collapse;font-size:15px}
+  .data th,.data td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .data th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .data tr:last-child td{border-bottom:none}
+  .data td code{white-space:nowrap}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2015 · Día 1 · Almaty, Kazajistán</div>
+    <h1>Tarea <span class="num">1</span> — Scales</h1>
+    <p class="note">Balanzas · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Amina tiene seis monedas, numeradas del \(1\) al \(6\). Sabe que todas tienen
+       <strong>pesos distintos</strong> y quiere ordenarlas por peso. Para lograrlo
+       construyó un nuevo tipo de balanza.</p>
+
+    <p>Una balanza tradicional tiene dos platos: pones una moneda en cada plato y la
+       balanza te dice cuál de las dos es más pesada.</p>
+
+    <p>La nueva balanza de Amina es más compleja. Tiene <strong>cuatro platos</strong>,
+       etiquetados \(A\), \(B\), \(C\) y \(D\). La balanza tiene cuatro
+       <strong>configuraciones</strong>, cada una responde una pregunta diferente sobre
+       las monedas. Para usarla, Amina debe poner <strong>exactamente una moneda</strong>
+       en cada uno de los platos \(A\), \(B\) y \(C\). Además, en la cuarta configuración
+       también debe poner una moneda en el plato \(D\).</p>
+
+    <p>Las cuatro configuraciones le indican a la balanza que responda estas preguntas:</p>
+    <ol>
+      <li>¿Cuál de las monedas en los platos \(A\), \(B\) y \(C\) es la
+          <strong>más pesada</strong>?</li>
+      <li>¿Cuál de las monedas en los platos \(A\), \(B\) y \(C\) es la
+          <strong>más ligera</strong>?</li>
+      <li>¿Cuál de las monedas en los platos \(A\), \(B\) y \(C\) es la
+          <strong>mediana</strong>? (la que no es ni la más pesada ni la más ligera de
+          las tres).</li>
+      <li>Entre las monedas en los platos \(A\), \(B\) y \(C\), considera
+          <strong>solo</strong> las que son <strong>más pesadas</strong> que la moneda
+          del plato \(D\). Si hay alguna de esas, ¿cuál es la <strong>más ligera</strong>
+          de ellas? En caso contrario, si <strong>ninguna</strong> es más pesada que la
+          del plato \(D\), ¿cuál de las monedas en \(A\), \(B\) y \(C\) es la más
+          ligera?</li>
+    </ol>
+
+    <h2>La tarea</h2>
+    <p>Escribe un programa que ordene las seis monedas de Amina por peso. El programa
+       puede consultar la balanza para comparar pesos. Recibirás varios casos de prueba,
+       cada uno corresponde a un nuevo conjunto de seis monedas.</p>
+    <p>Tu programa debe implementar las funciones <code>init</code> y
+       <code>orderCoins</code>. En cada ejecución de tu programa, el evaluador llamará
+       primero a <code>init</code> <strong>exactamente una vez</strong> (esto te da el
+       número de casos de prueba y te permite inicializar variables) y luego llamará a
+       <code>orderCoins()</code> <strong>una vez por cada caso</strong>.</p>
+
+    <!-- ===== TAREA INTERACTIVA / FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>interactiva</strong>: no lees de la entrada estándar ni
+       escribes en la salida estándar. Implementas funciones que el evaluador (grader)
+       llama, y tú a tu vez llamas a las funciones de la balanza que él provee.</p>
+
+    <h3>Funciones que debes implementar</h3>
+    <ul>
+      <li><code>init(T)</code> — el evaluador la llama una sola vez al inicio.
+          <code>T</code> es el número de casos que tu programa deberá resolver en esta
+          ejecución, un entero del rango \(1, \dots, 18\). No regresa nada.</li>
+      <li><code>orderCoins()</code> — se llama exactamente una vez por caso. Debe
+          determinar el orden correcto de las monedas usando las funciones de la balanza
+          <code>getHeaviest()</code>, <code>getLightest()</code>,
+          <code>getMedian()</code> y/o <code>getNextLightest()</code>. Cuando ya conozca
+          el orden, lo reporta llamando a <code>answer()</code>. Tras llamar a
+          <code>answer()</code>, <code>orderCoins()</code> debe retornar. No regresa
+          nada.</li>
+    </ul>
+
+    <h3>Funciones del evaluador que puedes usar</h3>
+    <ul>
+      <li><code>answer(W)</code> — reporta la respuesta encontrada. <code>W</code> es un
+          arreglo de longitud \(6\) con el orden correcto: <code>W[0]</code> a
+          <code>W[5]</code> son los números de moneda (\(1\) a \(6\)) ordenados de la
+          <strong>más ligera a la más pesada</strong>. Solo puedes llamarla desde
+          <code>orderCoins()</code>, <strong>una vez por caso</strong>. No regresa
+          nada.</li>
+      <li><code>getHeaviest(A, B, C)</code>, <code>getLightest(A, B, C)</code>,
+          <code>getMedian(A, B, C)</code> — corresponden a las configuraciones 1, 2 y 3.
+          <code>A</code>, <code>B</code>, <code>C</code> son tres enteros
+          <strong>distintos</strong>, cada uno entre \(1\) y \(6\). Cada función devuelve
+          uno de los números <code>A</code>, <code>B</code>, <code>C</code>: el de la
+          moneda correspondiente (la más pesada / la más ligera / la mediana de las
+          tres).</li>
+      <li><code>getNextLightest(A, B, C, D)</code> — corresponde a la configuración 4.
+          <code>A</code>, <code>B</code>, <code>C</code>, <code>D</code> son cuatro
+          enteros <strong>distintos</strong>, cada uno entre \(1\) y \(6\). Devuelve uno
+          de <code>A</code>, <code>B</code>, <code>C</code>: la moneda
+          <strong>más ligera</strong> entre las de \(\{A,B,C\}\) que son más pesadas que
+          la del plato \(D\); o, si <strong>ninguna</strong> de las tres es más pesada
+          que <code>D</code>, simplemente la <strong>más ligera</strong> de las tres.</li>
+    </ul>
+
+    <div class="sig">
+      <span class="tag">Firmas a implementar (y a usar)</span>
+<pre>// Implementas:
+void init(int T);
+void orderCoins();
+
+// Las provee el evaluador (las llamas tú):
+void answer(int W[]);                         // W[0..5]: orden de ligera a pesada
+int  getHeaviest(int A, int B, int C);        // configuración 1
+int  getLightest(int A, int B, int C);        // configuración 2
+int  getMedian(int A, int B, int C);          // configuración 3
+int  getNextLightest(int A, int B, int C, int D);  // configuración 4</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> Lee la entrada así: la línea \(1\) trae
+      <code>T</code> (número de casos); cada una de las líneas \(2\) a \(T+1\) trae una
+      permutación de \(6\) números distintos de \(1\) a \(6\): el orden de las monedas de
+      la más ligera a la más pesada (es decir, los pesos "secretos" del caso). El
+      evaluador de muestra imprime el arreglo que tu programa pasó a
+      <code>answer()</code>.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Número de monedas</td><td><span class="badge">\(6\) (siempre)</span></td></tr>
+        <tr><td>Número de casos por ejecución</td><td><span class="badge">\(T \in \{1, \dots, 18\}\)</span></td></tr>
+        <tr><td>Numeración de las monedas</td><td><span class="badge">\(1\) a \(6\), todas con peso distinto</span></td></tr>
+        <tr><td>Llamadas a <code>answer()</code></td><td><span class="badge">exactamente \(1\) por caso</span></td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+    <p class="note">El puntaje <strong>no</strong> depende del tiempo ni de la memoria,
+       sino del <strong>número de pesadas</strong> (llamadas a las funciones de la
+       balanza). Ver «Puntaje».</p>
+
+    <!-- "SUBTAREAS": esta tarea NO tiene subtareas; el puntaje es por número de pesadas. -->
+    <h2>Puntaje (no hay subtareas)</h2>
+    <div class="note-box">
+      <strong>No hay subtareas en este problema.</strong> En vez de subtareas, tu puntaje
+      se basa en cuántas <em>pesadas</em> hace tu programa: el total de llamadas a
+      <code>getLightest()</code>, <code>getHeaviest()</code>, <code>getMedian()</code> y/o
+      <code>getNextLightest()</code>. Si tu programa <strong>no</strong> ordena bien las
+      monedas en algún caso de alguna ejecución, obtiene \(0\) puntos.
+    </div>
+    <p>Tu programa se ejecuta varias veces, con varios casos en cada ejecución. Sea
+       \(r\) el número de ejecuciones (fijo por los datos de prueba). Cada ejecución se
+       califica por separado según esta tabla:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Símbolo</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td class="pts">\(Q\)</td><td>el <strong>mínimo</strong> número de pesadas
+              con el que <em>siempre</em> es posible ordenar seis monedas (su valor no se
+              revela en el enunciado).</td></tr>
+          <tr><td class="pts">\(r\)</td><td>número de ejecuciones de tu programa (fijo por
+              los datos).</td></tr>
+          <tr><td class="pts">\(Q+y\)</td><td>el mayor número de pesadas entre
+              <strong>todos</strong> los casos de <strong>todas</strong> las ejecuciones
+              (\(y\) entero).</td></tr>
+          <tr><td class="pts">\(Q+x\)</td><td>en una ejecución dada, el mayor número de
+              pesadas entre sus \(T\) casos (\(x \ge 0\); si usas menos de \(Q\) pesadas
+              en cada caso, \(x=0\)).</td></tr>
+          <tr><td class="pts">puntaje</td><td>el de esa ejecución es
+              \(\dfrac{100}{\,r^{\,(x+y)/5 + 1}}\), truncado a dos decimales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">En particular, si tu programa hace a lo más \(Q\) pesadas en
+       <strong>cada</strong> caso de <strong>cada</strong> ejecución, entonces \(x=y=0\),
+       cada ejecución aporta \(100/r\) y el total es <strong>100 puntos</strong>.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Supón que las monedas están ordenadas \(3\ 4\ 6\ 2\ 1\ 5\) de la más ligera a la
+       más pesada (es decir, la moneda \(3\) es la más liviana y la \(5\) la más pesada).
+       Una posible secuencia de consultas y respuestas:</p>
+    <div class="data">
+      <table>
+        <thead><tr><th>Llamada</th><th>Devuelve</th><th>Explicación</th></tr></thead>
+        <tbody>
+          <tr><td><code>getMedian(4, 5, 6)</code></td><td>\(6\)</td>
+              <td>la moneda \(6\) es la mediana entre \(4\), \(5\) y \(6\).</td></tr>
+          <tr><td><code>getHeaviest(3, 1, 2)</code></td><td>\(1\)</td>
+              <td>la moneda \(1\) es la más pesada entre \(3\), \(1\) y \(2\).</td></tr>
+          <tr><td><code>getNextLightest(2, 3, 4, 5)</code></td><td>\(3\)</td>
+              <td>las monedas \(2\), \(3\) y \(4\) son todas más ligeras que la \(5\), así
+                  que se devuelve la más ligera de ellas: la \(3\).</td></tr>
+          <tr><td><code>getNextLightest(1, 6, 3, 4)</code></td><td>\(6\)</td>
+              <td>las monedas \(1\) y \(6\) son ambas más pesadas que la \(4\); entre la
+                  \(1\) y la \(6\), la más ligera es la \(6\).</td></tr>
+          <tr><td><code>getHeaviest(3, 5, 6)</code></td><td>\(5\)</td>
+              <td>la moneda \(5\) es la más pesada entre \(3\), \(5\) y \(6\).</td></tr>
+          <tr><td><code>getMedian(1, 5, 6)</code></td><td>\(1\)</td>
+              <td>la moneda \(1\) es la mediana entre \(1\), \(5\) y \(6\).</td></tr>
+          <tr><td><code>getMedian(2, 4, 6)</code></td><td>\(6\)</td>
+              <td>la moneda \(6\) es la mediana entre \(2\), \(4\) y \(6\).</td></tr>
+          <tr><td><code>answer([3, 4, 6, 2, 1, 5])</code></td><td>—</td>
+              <td>el programa encontró la respuesta correcta para este caso.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Entrada del evaluador de muestra</h3>
+    <p>Por ejemplo, una entrada con dos casos, donde las monedas están ordenadas
+       \(1\ 2\ 3\ 4\ 5\ 6\) y \(3\ 4\ 6\ 2\ 1\ 5\), se ve así:</p>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2
+1 2 3 4 5 6
+3 4 6 2 1 5</pre></div>
+      <div class="io"><h4>Salida (lo que pasaste a answer)</h4><pre>1 2 3 4 5 6
+3 4 6 2 1 5</pre></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Árbol de decisión</span>
+      <span class="ptag">Backtracking / Branch &amp; Bound</span>
+      <span class="ptag">Teoría de la información</span>
+      <span class="ptag">Búsqueda exhaustiva</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(6\) monedas con pesos distintos. Debes ordenarlas de la más ligera a la más
+       pesada usando una balanza con \(4\) consultas <strong>ternarias</strong>
+       (<code>getHeaviest</code>/<code>getMedian</code>/<code>getLightest</code> sobre un
+       trío \(\{A,B,C\}\), y <code>getNextLightest(A,B,C,D)</code>): cada consulta
+       devuelve <strong>una</strong> de las tres monedas \(A,B,C\). Implementas
+       <code>orderCoins()</code> (una vez por caso) y reportas con <code>answer</code>.
+       No hay subtareas: el puntaje depende del <strong>número máximo de pesadas</strong>
+       que uses.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Hay \(6! = 720\) órdenes posibles. Cada consulta tiene \(3\) resultados
+                posibles, así que \(k\) pesadas distinguen a lo más \(3^k\) casos. Como
+                \(3^5 = 243 < 720 \le 729 = 3^6\), <strong>se necesitan al menos
+                \(6\)</strong> pesadas, y \(6\) podrían bastar… pero el margen es
+                <em>diminuto</em> (\(729\) contra \(720\): solo \(9\) de holgura). Resolver
+                en \(\le 6\) en <em>todo</em> caso da los \(100\) puntos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuál es el verdadero "tamaño" del problema?</summary>
+      <div class="body">
+        <p class="q">¿Cuántas respuestas posibles hay? ¿Y cuánta información te da una
+           sola pesada? ¿No te recuerda esto a adivinar un número con preguntas de
+           "sí/no", pero con tres salidas en vez de dos?</p>
+        <p>El "objeto" a adivinar es una de las \(6! = 720\) permutaciones. Cada consulta
+           devuelve <strong>una de \(3\)</strong> monedas, o sea un resultado
+           <em>ternario</em>. Con \(k\) pesadas solo puedes producir \(3^k\) secuencias de
+           respuestas distintas, así que <strong>no</strong> puedes distinguir más de
+           \(3^k\) permutaciones. ¿Qué \(k\) mínimo cumple \(3^k \ge 720\)? Piensa el
+           problema como construir un <strong>árbol de decisión ternario</strong>: cada
+           nodo es una consulta, cada arista una de las \(3\) respuestas, cada hoja una
+           permutación.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La cota inferior y por qué el margen asusta</summary>
+      <div class="body">
+        <p class="q">\(3^5 = 243\), \(3^6 = 729\). ¿Te alcanzan \(5\) pesadas? ¿Y \(6\)?
+           ¿Qué tan "apretado" queda?</p>
+        <p>\(3^5 = 243 < 720\), así que \(5\) pesadas son imposibles. \(3^6 = 729 \ge 720\),
+           así que \(6\) pesadas <em>podrían</em> bastar… pero apenas: sobran \(9\)
+           secuencias de \(729\). Esto significa que el árbol de altura \(6\) que buscas
+           casi no tiene desperdicio: <strong>casi cada</strong> rama debe partir las
+           permutaciones de forma casi perfectamente equilibrada. ¿Bastará un greedy de
+           "elige la consulta que parte lo más parejo posible"? Guarda la duda: con un
+           margen tan chico, una decisión greedy temprana puede dejarte sin salida más
+           abajo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cuántas consultas distintas existen realmente?</summary>
+      <div class="body">
+        <p class="q">Para <code>getHeaviest(A,B,C)</code>, ¿cambia algo si reordenas
+           \(A,B,C\)? ¿Y cuántos tríos hay? ¿Y cuántas formas de elegir el umbral \(D\) en
+           <code>getNextLightest</code>?</p>
+        <p>El resultado de cualquier consulta depende <strong>solo del conjunto</strong>
+           \(\{A,B,C\}\) (y, en la configuración 4, además del umbral \(D\)); el orden en
+           que los pongas no importa. Por lo tanto basta enumerar:</p>
+        <ul>
+          <li><strong>H/M/L:</strong> un \(3\)-subconjunto de las \(6\) monedas:
+              \(\binom{6}{3}=20\) tríos \(\times\ 3\) tipos \(=60\) consultas.</li>
+          <li><strong>getNextLightest:</strong> elige el umbral \(D\) (\(6\) opciones) y un
+              \(3\)-subconjunto de las \(5\) restantes (\(\binom{5}{3}=10\)):
+              \(6\times 10 = 60\) consultas.</li>
+        </ul>
+        <p>Total: <strong>\(120\) consultas candidatas</strong>. Ojo con la semántica
+           exacta de <code>getNextLightest</code> (la rama "si <em>ninguna</em> supera a
+           \(D\)"); la veremos en la pista final.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Construye el árbol de decisión por búsqueda</summary>
+      <div class="body">
+        <p class="q">Si en un nodo aún son posibles un conjunto \(S\) de permutaciones,
+           ¿qué le hace una consulta a \(S\)? ¿En cuántos grupos lo parte? ¿Y cuándo sabes
+           que <em>ya no se puede</em> resolver \(S\) en las pesadas que te quedan?</p>
+        <p>Define el estado como el <strong>conjunto \(S\) de permutaciones aún
+           consistentes</strong> con las respuestas vistas. Una consulta \(q\) parte \(S\)
+           en a lo más \(3\) grupos (uno por cada moneda que \(q\) podría devolver). El
+           plan: en cada nodo, prueba consultas, particiona \(S\) y recursa con una pesada
+           menos. Dos podas clave de tipo <strong>branch &amp; bound</strong>:</p>
+        <ul>
+          <li><strong>Cota de información:</strong> un \(S\) de tamaño \(|S|\) no puede
+              resolverse en \(d\) pesadas si \(|S| > 3^d\). Y cada hijo debe quedar con
+              \(\le 3^{\,d-1}\) permutaciones; descarta de inmediato cualquier consulta
+              cuyo grupo más grande exceda eso.</li>
+          <li><strong>Detente al lograr la profundidad óptima:</strong> buscas un árbol de
+              altura \(6\); en cuanto una rama lo logra, no sigas.</li>
+        </ul>
+        <p>Con esto, ¿bastará tomar siempre la consulta del "split más parejo"? Casi…
+           pero recuerda el margen de \(9\): a veces hay que <strong>retroceder</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Construye <strong>una sola vez</strong> (en
+           <code>init</code>) el árbol de decisión ternario óptimo para las \(720\)
+           permutaciones, con altura \(6\). En cada caso, <code>orderCoins()</code> solo
+           <em>camina</em> ese árbol: emite la consulta del nodo al evaluador real, sigue
+           el hijo según la moneda devuelta, y al llegar a la hoja llama a
+           <code>answer</code> con la permutación. Como \(\lceil\log_3 720\rceil = 6\) y el
+           árbol deja las \(720\) hojas a profundidad \(6\), el máximo de pesadas por
+           ejecución es \(6 = Q\), así que \(x=0\) y obtienes \(100\) puntos.</p>
+
+        <p><strong>Cómo se construye el árbol (núcleo).</strong> <code>build(S, d)</code>:</p>
+        <ul>
+          <li>Si \(|S| = 1\): hoja con esa permutación.</li>
+          <li>Si \(|S| > 3^d\): <em>imposible</em> (poda por información) — falla.</li>
+          <li>Si no: evalúa las \(120\) consultas candidatas. Para cada una, particiona
+              \(S\) por el resultado y descártala si (a) no informa (un solo grupo no
+              vacío) o (b) su grupo mayor excede \(3^{\,d-1}\). Ordena las que quedan por
+              el tamaño del <em>peor</em> hijo (greedy: split más parejo primero) y prueba
+              construir recursivamente con \(d-1\); si algún hijo falla,
+              <strong>retrocede</strong> y prueba la siguiente consulta.</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> El greedy puro <em>no</em> garantiza
+           altura \(6\) (el margen es de solo \(9\)); el <strong>backtracking</strong>
+           convierte la búsqueda en un branch &amp; bound exhaustivo: si existe un árbol de
+           altura \(6\) para \(S\) (y existe, porque la cota de información se cumple con
+           holgura justa), la búsqueda lo encuentra. Las podas garantizan que sea rapidísima
+           (en la práctica solo hubo \(3\) retrocesos y \(1084\) nodos en total).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>init(T):
+    ARBOL = build( todas las 720 permutaciones de [1..6],  d = 6 )
+
+# S = permutaciones aun posibles ; d = pesadas disponibles
+build(S, d):
+    si |S| == 1: regresa Hoja(la unica permutacion de S)
+    si |S| > 3^d: regresa FALLO                 # poda por informacion
+
+    candidatas = las 120 consultas:
+        - getHeaviest / getMedian / getLightest sobre cada 3-subconjunto   (60)
+        - getNextLightest(A,B,C,D): umbral D + 3-subconjunto de los otros 5 (60)
+
+    validas = []
+    para cada q en candidatas:
+        grupos = particiona S por evalQuery(q, perm)     # a lo mas 3 no vacios
+        si solo un grupo no vacio: continua              # no informa
+        si max |grupo| > 3^(d-1): continua               # poda B&B
+        validas.add( (q, grupos, max|grupo|) )
+
+    ordena 'validas' por max|grupo| ascendente           # split mas parejo primero
+    para cada (q, grupos) en 'validas':
+        hijos = []
+        ok = verdadero
+        para cada g en grupos no vacios:
+            h = build(g, d-1)
+            si h == FALLO: ok = falso; rompe
+            hijos.add(h)
+        si ok: regresa Nodo(q, hijos)                    # exito
+        # si fallo: backtrack -> probar la siguiente consulta
+    regresa FALLO
+
+orderCoins():                                            # una vez por caso
+    nodo = ARBOL
+    mientras nodo no sea hoja:
+        r = <emitir nodo.q al evaluador real>            # getHeaviest/.../getNextLightest
+        nodo = hijo de nodo asociado a la moneda r
+    answer(nodo.permutacion)</pre>
+        </div>
+
+        <p><strong>La consulta clave a replicar bien.</strong> <code>evalQuery(q, perm)</code>
+           debe devolver lo mismo que la balanza real para cada permutación. Las tres
+           primeras son fáciles (más pesada / mediana / más ligera del trío). La trampa es
+           <code>getNextLightest(A,B,C,D)</code>: devuelve la más ligera de
+           \(\{A,B,C\}\) que sea <em>más pesada</em> que \(D\); pero si
+           <strong>ninguna</strong> de las tres supera a \(D\), devuelve la más ligera de
+           las tres. Si te equivocas en esa rama, tu árbol simulado se
+           <em>desincroniza</em> de la balanza real y entregas respuestas erróneas.</p>
+
+        <p><strong>Traza del ejemplo</strong> (orden secreto \(3\ 4\ 6\ 2\ 1\ 5\)). Con la
+           semántica anterior, las \(7\) consultas del enunciado se verifican a mano:
+           <code>getMedian(4,5,6)=6</code>, <code>getHeaviest(3,1,2)=1</code>,
+           <code>getNextLightest(2,3,4,5)=3</code> (las tres son más ligeras que la \(5\)),
+           <code>getNextLightest(1,6,3,4)=6</code> (la \(1\) y la \(6\) superan a la \(4\);
+           la más ligera de esas es la \(6\)), <code>getHeaviest(3,5,6)=5</code>,
+           <code>getMedian(1,5,6)=1</code>, <code>getMedian(2,4,6)=6</code>. El árbol
+           construido produce su propia secuencia de <strong>\(6\)</strong> pesadas y llega
+           a la hoja \([3,4,6,2,1,5]\). ✔</p>
+
+        <p><strong>Complejidad.</strong> El árbol se construye una sola vez en
+           <code>init</code>: cada nivel cuesta \(\sim 120 \times 720\) evaluaciones y hay
+           \(\le 6\) niveles, \(\approx 5\times 10^5\) operaciones (más backtracking
+           despreciable). En la práctica es instantáneo (\(<1\) ms), con \(1084\) nodos y
+           \(3\) retrocesos; memoria \(O(\text{nodos})\). Por cada caso,
+           <code>orderCoins</code> hace exactamente \(6\) pesadas y \(O(6)\) para caminar el
+           árbol, que se <strong>reutiliza</strong> en los \(\le 18\) casos. Óptimo en
+           pesadas: \(6 = \lceil\log_3 720\rceil = Q\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Cuidados (solo C++)</span>
+<pre>- Construye el arbol UNA vez en init() y reutilizalo para los T casos; rehacerlo
+  por caso seria caro y, sobre todo, innecesario.
+- Replica EXACTO la semantica de getNextLightest, incluida la rama "si ninguna
+  supera a D, devuelve la mas ligera de las tres". Es la fuente #1 de WA.
+- El orden de A,B,C NO importa: enumera 3-subconjuntos (no permutaciones) -> 120
+  consultas candidatas, no mas.
+- Un greedy puro de "minimizar el peor hijo" NO basta para garantizar altura 6
+  (margen 729 vs 720): hace falta el backtracking del branch & bound.
+- answer() solo se llama UNA vez por caso, con W de la moneda mas ligera a la mas
+  pesada (monedas 1-indexadas).</pre>
+        </div>
+
+        <p class="note"><strong>Verificación.</strong> Compilado con el evaluador oficial
+           (sin warnings). Probado sobre las \(720\) permutaciones tanto con el grader
+           oficial (\(0\) respuestas incorrectas, máximo de \(6\) pesadas, ninguna por
+           encima del presupuesto) como con un verificador independiente que camina el
+           árbol (\(720\) resueltas, todas a profundidad \(6\), \(0\) fallos). El ejemplo
+           del PDF coincide pesada por pesada.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
