@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2013 · Tarea 5 — Robots</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2013 · Día 2 · Brisbane, Australia</div>
+    <h1>Tarea <span class="num">5</span> — Robots</h1>
+    <p class="note">Robots · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>¡El hermanito de Marita dejó juguetes tirados por todo el piso de la sala!
+       Por suerte, Marita construyó unos robots especiales para recogerlos.
+       Necesita tu ayuda para decidir <strong>qué robots recogen qué juguetes</strong>.</p>
+
+    <p>Hay \(T\) juguetes. Cada juguete \(i\) tiene un <strong>peso</strong> entero
+       \(W[i]\) y un <strong>tamaño</strong> entero \(S[i]\). Los robots vienen en dos
+       tipos: <em>débiles</em> y <em>pequeños</em>.</p>
+
+    <ul>
+      <li>Hay \(A\) <strong>robots débiles</strong>. Cada robot débil tiene un
+          <strong>límite de peso</strong> \(X[i]\) y puede cargar cualquier juguete
+          cuyo peso sea <strong>estrictamente menor</strong> que \(X[i]\). El tamaño
+          del juguete no importa.</li>
+      <li>Hay \(B\) <strong>robots pequeños</strong>. Cada robot pequeño tiene un
+          <strong>límite de tamaño</strong> \(Y[i]\) y puede cargar cualquier juguete
+          cuyo tamaño sea <strong>estrictamente menor</strong> que \(Y[i]\). El peso
+          del juguete no importa.</li>
+    </ul>
+
+    <p>Cada robot de Marita tarda <strong>un minuto</strong> en guardar un juguete.
+       Robots distintos pueden guardar juguetes distintos <strong>al mismo tiempo</strong>
+       (en paralelo).</p>
+
+    <p>Tu tarea es determinar si los robots de Marita pueden guardar
+       <strong>todos</strong> los juguetes y, en caso afirmativo, el
+       <strong>menor tiempo</strong> (en minutos) en el que pueden hacerlo.</p>
+
+    <div class="note-box">
+      <strong>Ojo con “estrictamente menor”:</strong> un robot débil con límite
+      \(X[i]\) carga el juguete \(i\) sólo si \(W[i] &lt; X[i]\); si \(W[i] = X[i]\),
+      <em>no</em> lo puede cargar. Lo mismo para los pequeños con \(S[i] &lt; Y[i]\).
+    </div>
+
+    <h2>Ejemplos</h2>
+    <p>Como primer ejemplo, supongamos \(A = 3\) robots débiles con límites de peso
+       \(X = [6, 2, 9]\), \(B = 2\) robots pequeños con límites de tamaño
+       \(Y = [4, 7]\) y \(T = 10\) juguetes:</p>
+    <div class="io"><pre>Juguete   0   1   2   3   4   5   6   7   8   9
+Peso      4   8   2   7   1   5   3   8   7  10
+Tamaño    6   5   3   9   8   1   3   7   6   5</pre></div>
+    <p>El menor tiempo para guardar todos los juguetes es <strong>tres minutos</strong>,
+       por ejemplo:</p>
+    <div class="io"><pre>                Débil 0   Débil 1   Débil 2   Pequeño 0   Pequeño 1
+Primer minuto   Jug. 0    Jug. 4    Jug. 1    Jug. 6      Jug. 2
+Segundo minuto  Jug. 5              Jug. 3                Jug. 8
+Tercer minuto                       Jug. 7                Jug. 9</pre></div>
+
+    <p>Como segundo ejemplo, supongamos \(A = 2\) robots débiles con
+       \(X = [2, 5]\), \(B = 1\) robot pequeño con \(Y = [2]\) y \(T = 3\) juguetes:</p>
+    <div class="io"><pre>Juguete   0   1   2
+Peso      3   5   2
+Tamaño    1   3   2</pre></div>
+    <p>Ningún robot puede recoger el juguete de peso \(5\) y tamaño \(3\) (su peso
+       no es \(&lt; 2\) ni \(&lt; 5\), y su tamaño no es \(&lt; 2\)), así que es
+       <strong>imposible</strong> guardar todos los juguetes: la respuesta es \(-1\).</p>
+
+    <!-- ===== TAREA FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar
+       ni escribes en la salida estándar. Debes entregar un archivo (en C/C++ debe
+       incluir <code>"robots.h"</code>) que implemente la función
+       <code>putaway()</code>. El evaluador (grader) la llama <strong>una sola vez</strong>
+       con todos los datos:</p>
+    <ul>
+      <li><code>A</code>, <code>B</code> — el número de robots débiles y de robots
+          pequeños.</li>
+      <li><code>T</code> — el número de juguetes.</li>
+      <li><code>X</code> — arreglo de longitud \(A\): el límite de peso de cada robot
+          débil.</li>
+      <li><code>Y</code> — arreglo de longitud \(B\): el límite de tamaño de cada robot
+          pequeño.</li>
+      <li><code>W</code> — arreglo de longitud \(T\): el peso de cada juguete.</li>
+      <li><code>S</code> — arreglo de longitud \(T\): el tamaño de cada juguete.</li>
+    </ul>
+    <p>La función debe regresar el menor número de minutos necesario para guardar
+       todos los juguetes, o \(-1\) si no es posible. Puedes implementar funciones
+       auxiliares internas; tu envío <strong>no debe</strong> interactuar con stdin/stdout.</p>
+
+    <div class="sig">
+      <span class="tag">Firma(s) a implementar</span>
+<pre>// C / C++
+int putaway(int A, int B, int T, int X[], int Y[], int W[], int S[]);
+
+// Pascal
+function putaway(A, B, T : LongInt;
+                 var X, Y, W, S : array of LongInt) : LongInt;
+
+// Regresa el menor número de minutos para guardar TODOS los juguetes, o -1.</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> El grader incluido lee desde
+      <code>robots.in</code> con este formato: línea 1 = <code>A B T</code>;
+      línea 2 = los \(A\) valores <code>X[i]</code> (vacía si \(A = 0\)); línea 3 =
+      los \(B\) valores <code>Y[i]</code> (vacía si \(B = 0\)); las siguientes \(T\)
+      líneas traen <code>W[i] S[i]</code>. Construye los arreglos, llama a tu
+      <code>putaway</code> e imprime el entero que regresa.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>64 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de juguetes \(T\)</td><td><span class="badge">\(1 \le T \le 1\,000\,000\)</span></td></tr>
+        <tr><td>Número de robots</td><td><span class="badge">\(0 \le A, B \le 50\,000\) y \(1 \le A + B\)</span></td></tr>
+        <tr><td>Valores (límites, peso, tamaño)</td><td><span class="badge">\(1 \le X[i], Y[i], W[i], S[i] \le 2\,000\,000\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">14</td><td>\(T = 2\) y \(A + B = 2\) (exactamente dos juguetes y dos robots).</td></tr>
+          <tr><td>2</td><td class="pts">14</td><td>\(B = 0\) (todos los robots son débiles).</td></tr>
+          <tr><td>3</td><td class="pts">25</td><td>\(T \le 50\) y \(A + B \le 50\).</td></tr>
+          <tr><td>4</td><td class="pts">37</td><td>\(T \le 10\,000\) y \(A + B \le 1\,000\).</td></tr>
+          <tr><td>5</td><td class="pts">10</td><td>(Sin restricciones adicionales.)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>A = 3
+B = 2
+T = 10
+X = [6, 2, 9]
+Y = [4, 7]
+W = [4, 8, 2, 7, 1, 5, 3, 8, 7, 10]
+S = [6, 5, 3, 9, 8, 1, 3, 7, 6, 5]
+
+putaway(A, B, T, X, Y, W, S)</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>3</pre></div>
+    </div>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>A = 2
+B = 1
+T = 3
+X = [2, 5]
+Y = [2]
+W = [3, 5, 2]
+S = [1, 3, 2]
+
+putaway(A, B, T, X, Y, W, S)</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>-1</pre></div>
+    </div>
+    <p class="note">En el primer caso la mejor distribución guarda todos los juguetes
+       en \(3\) minutos. En el segundo, el juguete \((W=5, S=3)\) no cabe en ningún
+       robot, así que el resultado es \(-1\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Búsqueda binaria sobre la respuesta</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Cola de prioridad (heap)</span>
+      <span class="ptag">Two pointers</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(A\) robots débiles (cargan el juguete \(i\) si \(W[i] &lt; X[\cdot]\))
+       y \(B\) robots pequeños (cargan \(i\) si \(S[i] &lt; Y[\cdot]\)). Cada robot
+       guarda un juguete por minuto y trabajan en paralelo. Implementa
+       <code>putaway(...)</code> que regresa el <strong>menor número de minutos</strong>
+       para guardar los \(T\) juguetes, o \(-1\) si alguno no cabe en ningún robot.
+       (Funcional: el grader llama tu función una vez y reporta el entero que devuelve.)</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(T \le 10^6\) con \(3\) s pide algo cercano a \(O(T\log^2 T)\). La
+                subtarea 1 (\(T=2\)) es para entender el modelo; la 2 (\(B=0\)) aísla
+                el caso “solo débiles”; las 3 y 4 admiten soluciones más lentas
+                (\(O(T^2)\) o con búsqueda binaria “floja”) antes de pulir el caso
+                grande de la subtarea 5.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué significa “el menor tiempo”?</summary>
+      <div class="body">
+        <p class="q">Si fijas un presupuesto de \(K\) minutos, ¿cuántos juguetes puede
+           guardar <em>cada</em> robot como máximo? ¿Y la respuesta del problema no es
+           justo el menor \(K\) que “alcanza”?</p>
+        <p>Como todos trabajan en paralelo y cada robot tarda \(1\) minuto por juguete,
+           terminar en \(K\) minutos equivale a que <strong>cada robot guarde a lo más
+           \(K\) juguetes</strong>. Así, el problema se parte en dos: (1) una pregunta
+           de <em>factibilidad</em> “¿se puede en \(K\) minutos?” y (2) buscar el menor
+           \(K\) que la cumpla.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 y el caso \(-1\): ¿cuándo es imposible?</summary>
+      <div class="body">
+        <p class="q">Antes de pensar en tiempos: ¿hay algún juguete que
+           <em>ningún</em> robot pueda cargar jamás, sin importar cuántos minutos
+           tengas?</p>
+        <p>Un juguete \(i\) es cargable por <strong>algún</strong> robot débil
+           sólo si \(A &gt; 0\) y \(W[i] &lt; \max(X)\) (el robot débil más fuerte);
+           y por algún pequeño sólo si \(B &gt; 0\) y \(S[i] &lt; \max(Y)\). Si existe un
+           juguete que <strong>no</strong> es ni una cosa ni la otra, la respuesta es
+           \(-1\) y ni siquiera tiene sentido buscar el tiempo. En la subtarea 1
+           (\(T=2\), \(A+B=2\)) puedes resolver todo a mano, pero esta prueba de
+           imposibilidad debe hacerse <strong>siempre</strong> y <em>antes</em> de
+           cualquier búsqueda.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (\(B = 0\)): solo robots débiles</summary>
+      <div class="body">
+        <p class="q">Si todos los robots son débiles, fijado \(K\): ¿cuántos juguetes
+           caben en total? ¿Importa <em>cuál</em> robot toma cuál juguete, o solo
+           cuántos juguetes con peso por debajo de cada umbral hay?</p>
+        <p>Con \(B = 0\) la “alcanzabilidad” está <strong>anidada</strong>: lo que
+           alcanza un robot débil con límite \(X\) lo alcanza también cualquiera con
+           límite mayor. Ordena los juguetes por peso y los robots por \(X\); el robot
+           más fuerte cubre a todos los que el siguiente cubre, etc. Un argumento
+           goloso (tipo Hall) dice que se puede en \(K\) minutos si y solo si, para
+           <em>cada</em> umbral, el número de juguetes que <em>obligatoriamente</em>
+           necesitan robots de \(\ge\) ese umbral no supera \(K\) veces el número de
+           esos robots. ¿Cómo lo verificas de un barrido?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: monotonía ⇒ búsqueda binaria</summary>
+      <div class="body">
+        <p class="q">Si los juguetes se pueden guardar en \(K\) minutos, ¿se pueden
+           guardar también en \(K+1\)? ¿Y en \(K-1\)?</p>
+        <p>Sí: con más tiempo cada robot puede hacer todo lo que hacía con menos, así
+           que la factibilidad es <strong>monótona</strong> en \(K\). Eso habilita
+           <strong>búsqueda binaria sobre \(K\)</strong>: define
+           \(\text{check}(K)=\) “¿se puede en \(K\) minutos?” y encuentra el menor
+           \(K\in[1, T]\) con \(\text{check}(K)=\text{verdadero}\).</p>
+        <p>¿Por qué la cota superior es \(T\)? Porque con \(K = T\) un solo robot del
+           tipo adecuado podría guardar todos sus juguetes elegibles; si tras descartar
+           el \(-1\) sigue siendo factible, \(K=T\) siempre funciona. <strong>No</strong>
+           uses cotas basadas en “número de robots”: ignoran la alcanzabilidad.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtareas 3–4: cómo programar \(\text{check}(K)\) con ambos tipos</summary>
+      <div class="body">
+        <p class="q">Con los dos tipos, un juguete puede ser cargado por un débil
+           <em>o</em> por un pequeño. ¿A quién conviene asignar cada juguete para no
+           desperdiciar capacidad? Pista: hay juguetes que <strong>solo</strong> un
+           tipo puede cargar.</p>
+        <p>Haz dos fases. <strong>Fase débil primero:</strong> usa a los robots débiles
+           para <em>aliviar</em> a los pequeños, quitando los juguetes de <strong>mayor
+           tamaño</strong> que alcancen (los de tamaño \(\ge \max(Y)\) están
+           obligados a ir con un débil, y por ser los más grandes salen primero de forma
+           natural). <strong>Fase pequeña después:</strong> reparte los juguetes
+           restantes entre los robots pequeños. La pregunta fina es <em>en qué orden</em>
+           recorrer cada fase para que el greedy sea óptimo (las subtareas 3 y 4, con
+           \(T\) chico, perdonan implementaciones \(O(T^2)\); pulir el orden te lleva
+           al caso grande). ¿Notaste que conviene ordenar débiles por \(X\) ascendente y
+           sacar el mayor tamaño con un <em>max-heap</em>, y luego ir por tamaño
+           descendente repartiendo “cupos” entre pequeños?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Búsqueda binaria sobre \(K\) (minutos). Para
+           cada \(K\), un test goloso de dos fases dice si se puede. Antes de todo,
+           detecta el \(-1\): si algún juguete no es ni débil-elegible
+           (\(A&gt;0\) y \(W[i]&lt;\max X\)) ni pequeño-elegible (\(B&gt;0\) y
+           \(S[i]&lt;\max Y\)), regresa \(-1\).</p>
+
+        <p><strong>\(\text{check}(K)\), fase débil.</strong> Ordena los límites \(X\)
+           ascendentemente y los juguetes por peso ascendente. Recorre los robots
+           débiles de menor a mayor \(X\); con un puntero monótono, empuja a un
+           <strong>max-heap por tamaño</strong> todos los juguetes con \(W[i] &lt; X\)
+           (peso aún por debajo del umbral actual). Cada robot saca hasta \(K\)
+           juguetes —los de <em>mayor tamaño</em> disponibles— y los marca como
+           removidos. <em>Por qué es correcto:</em> la alcanzabilidad por peso está
+           anidada, así que sacar siempre el mayor tamaño alcanzable nunca “roba” un
+           juguete de alcance único y, a la vez, minimiza en <em>todo</em> umbral la
+           cola de tamaños grandes que tendrá que absorber la fase pequeña. Los
+           juguetes con tamaño \(\ge \max(Y)\) (que <em>obligatoriamente</em> deben ir
+           con un débil) tienen el tamaño mayor, así que se sacan primero solos.</p>
+
+        <p><strong>\(\text{check}(K)\), fase pequeña</strong> (sobre los juguetes
+           restantes). Ordena \(Y\) descendente y recorre los juguetes restantes por
+           <strong>tamaño descendente</strong>, manteniendo una bolsa de “cupos”. Al
+           pasar a un tamaño \(s\), agrega \(K\) cupos por cada robot pequeño con
+           \(Y &gt; s\) (otro puntero monótono). Cada juguete consume un cupo; si los
+           cupos llegan a \(0\), es <strong>infactible</strong>. <em>Por qué es
+           correcto:</em> por el orden descendente, un robot con \(Y\) mayor que el
+           tamaño grande actual también sirve a los menores, así que “poolear” cupos es
+           válido. Un juguete restante con tamaño \(\ge \max(Y)\) cae con cupos \(=0\)
+           ⇒ infactible, justo lo que queremos.</p>
+
+        <p><strong>Respuesta:</strong> el menor \(K\in[1,T]\) con
+           \(\text{check}(K)=\text{verdadero}\). Esto cubre las 5 subtareas con una sola
+           solución.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion putaway(A, B, T, X, Y, W, S):
+    maxX = (A &gt; 0) ? max(X) : 0
+    maxY = (B &gt; 0) ? max(Y) : 0
+    para cada juguete i:
+        si NO (A&gt;0 y W[i] &lt; maxX) y NO (B&gt;0 y S[i] &lt; maxY):
+            regresa -1                     // nadie puede cargarlo nunca
+
+    ordenar X ascendente
+    ordenar Y descendente
+    ordenar juguetes por peso ascendente   // orden P
+    ordenar juguetes por tamaño descendente// orden D  (precalculado una vez)
+
+    lo = 1;  hi = T
+    mientras lo &lt; hi:
+        K = (lo + hi) / 2
+        si check(K): hi = K
+        si no:       lo = K + 1
+    regresa lo
+
+funcion check(K):
+    removed[ ] = falso para todos
+    // ---- FASE DEBIL ----
+    heap = max-heap por tamaño (vacío)
+    p = 0                                   // puntero sobre orden P (peso asc)
+    para cada robot debil x en X (asc):
+        mientras p &lt; T y W[ P[p] ] &lt; x:
+            push(heap, P[p]);  p += 1
+        repetir hasta K veces y mientras heap no vacio:
+            j = pop_max_tamano(heap);  removed[j] = verdadero
+    // ---- FASE PEQUENA ----  (juguetes restantes, por tamaño desc)
+    cupos = 0;  q = 0                        // puntero sobre robots Y (desc)
+    para cada juguete j en orden D (tamaño desc):
+        si removed[j]: continuar
+        mientras q &lt; B y Y[q] &gt; S[j]:        // robots que sirven a este tamaño
+            cupos += K;  q += 1
+        si cupos == 0: regresa falso         // nadie puede con este juguete
+        cupos -= 1
+    regresa verdadero</pre>
+        </div>
+
+        <p><strong>Por qué cubre todo:</strong> con \(B=0\) (subtarea 2) la fase
+           pequeña no hace nada y la débil es exactamente el chequeo anidado de la
+           Pista 3; con \(A=0\) la fase débil no remueve nada y todo recae en la
+           pequeña. El \(-1\) se detecta arriba, antes de la binaria.</p>
+
+        <p><strong>Complejidad:</strong> preordenamientos una sola vez en
+           \(O(T\log T)\); la binaria hace \(O(\log T)\) iteraciones y cada
+           \(\text{check}(K)\) cuesta \(O(T\log T)\) por el max-heap de la fase débil
+           (la pequeña es \(O(T)\) usando el orden por tamaño precalculado y el arreglo
+           <code>removed</code>). Total \(O(T\log^2 T)\) en tiempo y \(O(A+B+T)\) en
+           memoria. Para \(T=10^6\) corre en \(\sim 2\) s y \(\sim 35\text{–}40\) MB,
+           dentro de los \(3\) s y \(64\) MiB.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Cuidado con los valores hasta 2e9: caben en int (2^31-1 ~= 2.147e9) pero al
+borde. Compara directo W[i] &lt; X (sin sumarlos) y lleva el contador de "cupos"
+como long long para que K*(numRobots) nunca desborde. Para la lectura de hasta
+10^6 juguetes, usa scanf o ios::sync_with_stdio(false) en el grader.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
