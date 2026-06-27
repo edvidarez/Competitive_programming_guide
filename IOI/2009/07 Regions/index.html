@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2009 · Tarea 7 — Regions</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:var(--code);padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2009 · Día 2 · Plovdiv, Bulgaria</div>
+    <h1>Tarea <span class="num">7</span> — Regions</h1>
+    <p class="note">Regiones · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La Agencia de las Naciones Unidas para el Desarrollo Regional (UNRDA) tiene
+       una estructura organizacional muy bien definida. Emplea a un total de \(N\)
+       personas, cada una proveniente de una de \(R\) regiones geográficamente
+       distintas del mundo. Los empleados están numerados del \(1\) al \(N\) por
+       <strong>antigüedad</strong>: el empleado número \(1\), el Presidente
+       (<em>Chair</em>), es el más antiguo. Las regiones están numeradas del \(1\)
+       al \(R\) sin ningún orden en particular. Todo empleado, excepto el
+       Presidente, tiene un <strong>único supervisor</strong>. Un supervisor
+       siempre es más antiguo que los empleados que supervisa.</p>
+
+    <p>Decimos que un empleado \(A\) es <strong>jefe</strong> (<em>manager</em>) de
+       un empleado \(B\) si y solo si \(A\) es el supervisor de \(B\), o bien \(A\)
+       es jefe del supervisor de \(B\). Así, por ejemplo, el Presidente es jefe de
+       todos los demás empleados. Además, claramente, dos empleados no pueden ser
+       jefes el uno del otro.</p>
+
+    <p>Por desgracia, la Oficina de Investigaciones de las Naciones Unidas (UNBI)
+       recibió varias quejas de que la UNRDA tiene una estructura desequilibrada
+       que favorece a algunas regiones del mundo más que a otras. Para investigar
+       las acusaciones, la UNBI quiere construir un sistema de cómputo que guarde
+       la estructura de supervisión de la UNRDA y luego pueda responder consultas
+       de la forma: dadas dos regiones <strong>distintas</strong> \(r_1\) y
+       \(r_2\), ¿cuántos pares de empleados \(e_1\) y \(e_2\) existen en la agencia
+       tales que el empleado \(e_1\) proviene de la región \(r_1\), el empleado
+       \(e_2\) proviene de la región \(r_2\), y \(e_1\) es jefe de \(e_2\)? Cada
+       consulta tiene dos parámetros (las regiones \(r_1\) y \(r_2\)) y su
+       resultado es un solo entero: el número de pares distintos \(e_1\) y \(e_2\)
+       que cumplen las condiciones anteriores.</p>
+
+    <h3>Tarea</h3>
+    <p>Escribe un programa que, dadas las regiones de origen de todos los empleados
+       de la agencia, así como los datos de quién supervisa a quién, responda
+       <strong>interactivamente</strong> las consultas descritas arriba.</p>
+
+    <div class="note-box">
+      <strong>Es una tarea interactiva (reactiva):</strong> primero lees todos los
+      datos de la estructura y luego, en línea, vas <em>alternando</em> entre leer
+      una consulta y escribir su respuesta. Debes mandar la respuesta de cada
+      consulta <em>antes</em> de poder recibir la siguiente, y debes hacer
+      <code>flush</code> de la salida estándar después de cada respuesta. No puedes
+      ver todas las consultas de golpe: hay que responderlas una por una, sobre la
+      marcha.
+    </div>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>La primera línea contiene los enteros \(N\), \(R\) y \(Q\), en ese orden,
+          separados por espacios simples.</li>
+      <li>Las siguientes \(N\) líneas describen a los \(N\) empleados de la agencia
+          en orden de antigüedad. La \(k\)-ésima de estas líneas describe al
+          empleado número \(k\):
+        <ul>
+          <li>La primera de estas líneas (la que describe al Presidente) contiene
+              un solo entero: la región de origen \(H_1\) del Presidente.</li>
+          <li>Cada una de las otras \(N-1\) líneas contiene dos enteros separados
+              por un espacio: el supervisor \(S_k\) del empleado \(k\), y la región
+              de origen \(H_k\) del empleado \(k\).</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>Interacción</h3>
+    <p>Después de leer los datos de entrada, tu programa debe empezar a
+       <strong>alternar</strong> entre leer consultas de la entrada estándar y
+       escribir los resultados de las consultas a la salida estándar. Las \(Q\)
+       consultas deben responderse una a la vez: tu programa debe enviar la
+       respuesta de la consulta que ya recibió antes de poder recibir la siguiente
+       consulta.</p>
+    <p>Cada consulta se presenta en una sola línea de la entrada estándar y consta
+       de dos enteros <strong>distintos</strong> separados por un espacio: las dos
+       regiones \(r_1\) y \(r_2\).</p>
+
+    <h2>Salida</h2>
+    <p>La respuesta de cada consulta debe ser una sola línea en la salida estándar
+       que contenga un único entero: el número de pares de empleados \(e_1\) y
+       \(e_2\) de la UNRDA tales que la región de origen de \(e_1\) es \(r_1\), la
+       región de origen de \(e_2\) es \(r_2\) y \(e_1\) es jefe de \(e_2\).</p>
+    <div class="note-box">
+      <strong>NOTA:</strong> los datos de prueba serán tales que la respuesta
+      correcta a cualquier consulta dada en la entrada estándar siempre será menor
+      que \(1{,}000{,}000{,}000\).
+      <br><br>
+      <strong>NOTA IMPORTANTE:</strong> para interactuar correctamente con el
+      evaluador, tu programa necesita hacer <code>flush</code> de la salida
+      estándar después de cada respuesta. También necesita evitar quedarse
+      bloqueado accidentalmente al leer de la entrada estándar, como podría pasar,
+      por ejemplo, al usar <code>scanf("%d\n")</code>. (Consulta la hoja de
+      información técnica para hacerlo correctamente.)
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>8 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>128 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de empleados</td><td><span class="badge">\(1 \le N \le 200{,}000\)</span></td></tr>
+        <tr><td>Número de regiones</td><td><span class="badge">\(1 \le R \le 25{,}000\)</span></td></tr>
+        <tr><td>Número de consultas</td><td><span class="badge">\(1 \le Q \le 200{,}000\)</span></td></tr>
+        <tr><td>Región de origen del empleado \(k\)</td><td><span class="badge">\(1 \le H_k \le R\) (para \(1 \le k \le N\))</span></td></tr>
+        <tr><td>Supervisor del empleado \(k\)</td><td><span class="badge">\(1 \le S_k < k\) (para \(2 \le k \le N\))</span></td></tr>
+        <tr><td>Regiones de una consulta</td><td><span class="badge">\(1 \le r_1, r_2 \le R\), con \(r_1 \ne r_2\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS / CALIFICACIÓN -->
+    <h2>Subtareas</h2>
+    <p>La calificación se reparte por <strong>grupos de casos de prueba</strong>
+       según las propiedades de la entrada (no son bloques de subtareas formales y
+       disjuntos: los grupos se traslapan). El PDF lo enuncia así:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Grupo</th><th>Puntos</th><th>Restricción de los casos</th></tr></thead>
+        <tbody>
+          <tr><td>A</td><td class="pts">30</td><td>\(R \le 500\) (pocas regiones).</td></tr>
+          <tr><td>B</td><td class="pts">55</td><td>Ninguna región tiene más de \(500\) empleados.</td></tr>
+          <tr><td>A&nbsp;∧&nbsp;B</td><td class="pts">15</td><td>Se cumplen <strong>ambas</strong> condiciones a la vez.</td></tr>
+          <tr><td>A&nbsp;∨&nbsp;B</td><td class="pts">70</td><td>Se cumple <strong>al menos una</strong> de las dos condiciones.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      Los grupos se traslapan: por inclusión-exclusión, \(30 + 55 - 15 = 70\)
+      puntos corresponden a casos donde se cumple al menos una condición. Los
+      \(100 - 70 = 30\) puntos restantes vienen de los casos <strong>más
+      difíciles</strong>, donde no se cumple ninguna de las dos (hay muchas
+      regiones <em>y</em> alguna región es enorme), y solo se obtienen con la
+      solución general (memoria \(O(N+R)\), método adaptativo + caché).
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Con \(N = 6\) empleados, \(R = 3\) regiones y \(Q = 4\) consultas. Primero se
+       leen las \(6\) líneas que describen a los empleados; después se alternan las
+       \(4\) consultas con sus respuestas (haciendo <code>flush</code> tras cada
+       una).</p>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6 3 4
+1
+1 2
+1 3
+2 3
+2 3
+5 1
+1 2
+1 3
+2 3
+3 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1
+3
+2
+1</pre></div>
+    </div>
+    <p class="note">Así se ve la interacción intercalada, tal como en el PDF (cada
+       respuesta sale justo después de su consulta, con <code>flush</code>):</p>
+    <div class="io"><pre>Entrada                 Salida
+6 3 4
+1
+1 2
+1 3
+2 3
+2 3
+5 1
+1 2
+                        1     [flush standard output]
+1 3
+                        3     [flush standard output]
+2 3
+                        2     [flush standard output]
+3 1
+                        1     [flush standard output]</pre></div>
+    <p class="note">El árbol de supervisión queda así (entre paréntesis, la región
+       de cada empleado): el \(1\) (región \(1\)) es jefe de todos; el \(1\) tiene
+       como subordinados directos al \(2\) (región \(2\)) y al \(3\) (región
+       \(3\)); el \(2\) tiene a \(4\) (región \(3\)) y \(5\) (región \(3\)); y el
+       \(5\) tiene a \(6\) (región \(1\)).</p>
+    <ul>
+      <li>Consulta \((r_1,r_2)=(1,2)\): empleados de la región \(1\) que son jefes
+          de empleados de la región \(2\). El único de la región \(2\) es el \(2\),
+          cuyos jefes son \(\{1\}\); de ellos, \(1\) está en la región \(1\) ⇒
+          <strong>1</strong>.</li>
+      <li>Consulta \((1,3)\): el \(1\) es jefe de los tres empleados de la región
+          \(3\) (los empleados \(4\), \(5\) y \(3\)) ⇒ <strong>3</strong>.</li>
+      <li>Consulta \((2,3)\): el \(2\) es jefe de \(4\) y \(5\) (ambos región
+          \(3\)), pero no del empleado \(3\) ⇒ <strong>2</strong>.</li>
+      <li>Consulta \((3,1)\): los de la región \(1\) son \(1\) y \(6\). El \(6\)
+          tiene como jefe al \(5\), que está en la región \(3\); el \(1\) no tiene
+          jefes ⇒ <strong>1</strong>.</li>
+    </ul>
+
+    <h2>Pruebas</h2>
+    <p>Si quieres probar tu solución con la interfaz de pruebas del sistema del
+       concurso, el archivo de entrada que proporciones debe incluir tanto los
+       datos de entrada como todas las consultas, tal como se ilustra en el
+       ejemplo de arriba.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">Recorrido de Euler / pre-orden</span>
+      <span class="ptag">Búsqueda binaria · Two pointers</span>
+      <span class="ptag">Sqrt decomposition (heavy/light)</span>
+      <span class="ptag">Interactivo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un árbol con raíz de \(N \le 200{,}000\) nodos (empleados; el padre
+       siempre tiene número menor que el hijo). Cada nodo pertenece a una de
+       \(R \le 25{,}000\) regiones. Llegan \(Q \le 200{,}000\) consultas
+       <strong>en línea</strong> \((r_1, r_2)\) con \(r_1 \ne r_2\); para cada una
+       cuenta cuántos pares \((e_1, e_2)\) hay con \(e_1\) en la región \(r_1\),
+       \(e_2\) en la región \(r_2\) y \(e_1\) <em>ancestro propio</em> de \(e_2\).
+       Hay que hacer <code>flush</code> tras cada respuesta.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>"\(e_1\) es jefe de \(e_2\)" significa "\(e_1\) es ancestro propio
+                de \(e_2\) en el árbol". \(N, Q\) hasta \(2\times10^5\) descartan
+                cualquier cosa cuadrática global. El reparto de puntos por
+                <em>tamaño de regiones</em> es la pista: hay un método bueno cuando
+                las regiones son chicas y otro cuando son grandes. La solución
+                completa los combina con un <strong>caché</strong> de consultas
+                repetidas.</td></tr>
+      </table>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Árbol del ejemplo con id de pre-orden e intervalo [in,out) en cada nodo">
+        <!-- aristas -->
+        <g stroke="#9aa6c4" stroke-width="2">
+          <line x1="280" y1="48" x2="180" y2="128"/>
+          <line x1="280" y1="48" x2="420" y2="128"/>
+          <line x1="180" y1="128" x2="110" y2="208"/>
+          <line x1="180" y1="128" x2="250" y2="208"/>
+          <line x1="250" y1="208" x2="250" y2="288"/>
+        </g>
+        <!-- nodos: fill por región (R1 azul, R2 verde, R3 ámbar) -->
+        <g font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">
+          <!-- nodo 1, región 1, id 0, [0,6) -->
+          <circle cx="280" cy="38" r="20" fill="#5b8cff" stroke="#0f1320" stroke-width="2"/>
+          <text x="280" y="44" font-size="18" font-weight="700" fill="#0f1320">1</text>
+          <text x="280" y="12" font-size="12" fill="#e8ecf6">id 0 · [0,6)</text>
+          <!-- nodo 2, región 2, id 1, [1,5) -->
+          <circle cx="180" cy="128" r="20" fill="#34d399" stroke="#0f1320" stroke-width="2"/>
+          <text x="180" y="134" font-size="18" font-weight="700" fill="#0f1320">2</text>
+          <text x="130" y="122" font-size="12" fill="#e8ecf6">id 1 · [1,5)</text>
+          <!-- nodo 3, región 3, id 5, [5,6) -->
+          <circle cx="420" cy="128" r="20" fill="#fbbf24" stroke="#0f1320" stroke-width="2"/>
+          <text x="420" y="134" font-size="18" font-weight="700" fill="#0f1320">3</text>
+          <text x="470" y="122" font-size="12" fill="#e8ecf6">id 5 · [5,6)</text>
+          <!-- nodo 4, región 3, id 2, [2,3) -->
+          <circle cx="110" cy="218" r="20" fill="#fbbf24" stroke="#0f1320" stroke-width="2"/>
+          <text x="110" y="224" font-size="18" font-weight="700" fill="#0f1320">4</text>
+          <text x="110" y="256" font-size="12" fill="#e8ecf6">id 2 · [2,3)</text>
+          <!-- nodo 5, región 3, id 3, [3,5) -->
+          <circle cx="250" cy="218" r="20" fill="#fbbf24" stroke="#0f1320" stroke-width="2"/>
+          <text x="250" y="224" font-size="18" font-weight="700" fill="#0f1320">5</text>
+          <text x="312" y="214" font-size="12" fill="#e8ecf6">id 3 · [3,5)</text>
+          <!-- nodo 6, región 1, id 4, [4,5) -->
+          <circle cx="250" cy="298" r="20" fill="#5b8cff" stroke="#0f1320" stroke-width="2"/>
+          <text x="250" y="304" font-size="18" font-weight="700" fill="#0f1320">6</text>
+          <text x="250" y="336" font-size="12" fill="#e8ecf6">id 4 · [4,5)</text>
+        </g>
+        <!-- leyenda de colores -->
+        <g font-family="system-ui,sans-serif" font-size="12" fill="#9aa6c4">
+          <rect x="400" y="262" width="12" height="12" fill="#5b8cff"/>
+          <text x="418" y="272" text-anchor="start">Región 1</text>
+          <rect x="400" y="282" width="12" height="12" fill="#34d399"/>
+          <text x="418" y="292" text-anchor="start">Región 2</text>
+          <rect x="400" y="302" width="12" height="12" fill="#fbbf24"/>
+          <text x="418" y="312" text-anchor="start">Región 3</text>
+        </g>
+      </svg>
+      <figcaption>El árbol del ejemplo. A cada nodo le asignamos su \(id\) de
+         pre-orden y su intervalo \([in, out)\). <strong>\(e_1\) es ancestro de
+         \(e_2\)</strong> si y solo si \(in[e_1] < in[e_2] < out[e_1]\), es decir,
+         el \(id\) de \(e_2\) cae dentro del intervalo de \(e_1\).</figcaption>
+    </figure>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué estructura es de verdad?</summary>
+      <div class="body">
+        <p class="q">"\(S_k\) es el supervisor de \(k\)" y "\(A\) es jefe de \(B\)
+           si \(A\) supervisa a \(B\) o supervisa a un jefe de \(B\)". ¿No te
+           recuerda eso a una relación entre nodos de un árbol?</p>
+        <p>Cada empleado es un nodo; su supervisor es su padre; el Presidente es la
+           raíz. Como \(S_k < k\), el padre siempre aparece antes que el hijo (los
+           datos vienen en orden topológico). "\(e_1\) es jefe de \(e_2\)" es
+           exactamente "<strong>\(e_1\) es ancestro propio de \(e_2\)</strong>".
+           La pregunta de cada consulta es: sumando sobre todos los \(e_2\) de la
+           región \(r_2\), ¿cuántos de sus ancestros están en la región \(r_1\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Convertir "ancestro" en algo numérico</summary>
+      <div class="body">
+        <p class="q">Preguntar "¿\(A\) es ancestro de \(B\)?" muchísimas veces es
+           caro si subes por punteros de padre. ¿Hay una forma de responderlo con
+           una sola comparación de números?</p>
+        <p>Sí: haz <strong>un DFS en pre-orden</strong> y numera los nodos
+           \(0,1,2,\dots,N-1\) según el orden de visita. Para el nodo \(v\) define
+           \(in[v]\) = su número, y \(out[v] = in[v] + \text{tamaño}(\text{subárbol
+           de } v)\). Entonces \(v\) es ancestro propio de \(w\) si y solo si
+           \(in[v] < in[w] < out[v]\); o sea, el \(id\) de \(w\) cae dentro del
+           intervalo \([in[v], out[v])\) de \(v\) (y \(w \ne v\)). Mira la figura de
+           arriba: el subárbol de un nodo ocupa un rango contiguo de \(ids\).</p>
+        <p>Como las consultas usan regiones <em>distintas</em>, \(e_1 \ne e_2\)
+           siempre, así que no hay que preocuparse por el caso "un nodo es ancestro
+           de sí mismo".</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Lo que conviene guardar por región</summary>
+      <div class="body">
+        <p class="q">La respuesta es "para cada \(e_2\) de \(r_2\), cuenta sus
+           ancestros que estén en \(r_1\)". ¿Qué tendrías que precalcular por cada
+           región para responder eso rápido?</p>
+        <p>Por cada región \(r\) guarda <strong>dos arreglos ordenados</strong>,
+           ambos construidos en un solo DFS:</p>
+        <ul>
+          <li><strong>\(ids[r]\)</strong>: los \(in\)-tiempos (los \(ids\)) de
+              todos los empleados de \(r\). Como los vas metiendo durante el
+              pre-orden, ya quedan ordenados.</li>
+          <li><strong>\(\text{ranges}[r]\)</strong>: una <em>función escalera</em>
+              sobre el espacio de \(ids\) que, en cada posición \(pos\), te dice
+              cuántos empleados de \(r\) son ancestros del nodo que ocupa esa
+              posición. Es decir: \(\text{profundidad-en-}r\) a lo largo del camino
+              raíz→nodo actual.</li>
+        </ul>
+        <p>¿Cómo construir la escalera de \(r\) en el mismo DFS? Lleva un contador
+           \(d_r\) (cuántos nodos de \(r\) hay ahorita en el camino desde la raíz):
+           al <strong>entrar</strong> a un nodo de \(r\) con id \(i\), haz
+           \(d_r{+}{+}\) y registra el escalón \((i+1,\ d_r)\); al
+           <strong>salir</strong>, haz \(d_r{-}{-}\) y registra \((pos_\text{actual},\ d_r)\).
+           El valor de la escalera en \(pos\) es el \(d\) del último escalón cuyo
+           inicio \(\le pos\). El detalle fino: el escalón de entrada empieza en
+           \(i+1\), no en \(i\), para que un nodo lea la profundidad <em>de antes de
+           entrar él mismo</em> (¡un nodo no es su propio jefe!).</p>
+        <p class="note">En total, sobre todas las regiones, se registran \(O(N)\)
+           escalones y \(O(N)\) ids (2 escalones + 1 id por nodo). Memoria
+           \(O(N+R)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Responder una consulta (tres formas, elige la más barata)</summary>
+      <div class="body">
+        <p class="q">Ya tienes \(ids[r_2]\) (ordenado) y \(\text{ranges}[r_1]\) (la
+           escalera, ordenada por posición). Con \(S_1=|ids[r_1]|\) y
+           \(S_2=|ids[r_2]|\), ¿de qué maneras puedes combinarlos?</p>
+        <ul>
+          <li><strong>(A)</strong> Para cada \(e_2 \in ids[r_2]\), búsqueda binaria
+              en \(\text{ranges}[r_1]\) del escalón que contiene a \(in[e_2]\) y
+              suma su profundidad ⇒ \(O(S_2 \log S_1)\).</li>
+          <li><strong>(B)</strong> Para cada escalón de \(\text{ranges}[r_1]\) (un
+              intervalo con profundidad constante \(d\)), búsqueda binaria en
+              \(ids[r_2]\) de cuántos \(e_2\) caen dentro, suma \(d \times
+              \text{cuenta}\) ⇒ \(O(S_1 \log S_2)\).</li>
+          <li><strong>(C)</strong> <em>Merge</em> lineal: recorre las dos listas
+              ordenadas a la vez (two pointers), acumulando \(d \times
+              (\#\,ids \text{ de } r_2 \text{ en el escalón actual})\) ⇒
+              \(O(S_1 + S_2)\).</li>
+        </ul>
+        <p>Elige por consulta el método de menor costo estimado entre
+           \(\{S_2\log S_1,\ S_1\log S_2,\ S_1+S_2\}\) (con una preferencia leve por
+           el merge, porque el acceso aleatorio de la búsqueda binaria castiga más
+           la caché).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Razonando por grupos de puntos</summary>
+      <div class="body">
+        <p class="q">Las restricciones de los grupos de puntos hablan de
+           <em>tamaños</em>. ¿Qué método de la Pista 4 le queda perfecto a cada
+           grupo?</p>
+        <ul>
+          <li><strong>Ninguna región &gt; 500 empleados</strong> (55 pts): todos
+              los \(S_i\) son chicos, así que el merge \(O(S_1+S_2)\) por consulta
+              es baratísimo. \(Q \times 1000\) operaciones, holgado.</li>
+          <li><strong>\(R \le 500\) regiones</strong> (30 pts): hay pocos pares
+              \((r_1,r_2)\) posibles (a lo más \(R^2 \le 250{,}000\)). Puedes
+              <strong>cachear</strong> la respuesta de cada par distinto; las
+              consultas repetidas salen en \(O(1)\). Incluso podrías precalcular
+              todo \(r_1\) contra todas las regiones de un jalón.</li>
+          <li><strong>Caso general</strong> (los 30 pts difíciles): hay regiones
+              enormes <em>y</em> muchas regiones. Ni el merge solo ni el caché solo
+              bastan: necesitas combinarlos con la elección adaptativa de método.</li>
+        </ul>
+        <p>La clave del caso general es separar regiones <strong>"pesadas"</strong>
+           (\(\ge c\) empleados; hay a lo más \(N/c\)) de las
+           <strong>"ligeras"</strong>, y balancear \(c\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Reducimos "jefe" a "ancestro propio", y
+           "ancestro" a "contención de intervalos" con un recorrido de Euler en
+           pre-orden. Por cada región guardamos dos arreglos ordenados (sus
+           \(ids\) y su función escalera de profundidad). Cada consulta se contesta
+           combinando esos arreglos con el método más barato de tres, y cacheamos
+           las respuestas de pares distintos.</p>
+
+        <h3>1) Preprocesamiento (un solo DFS, \(O(N)\))</h3>
+        <ul>
+          <li>Construye el árbol con las aristas \(S_k \to k\). Haz un
+              <strong>DFS iterativo</strong> en pre-orden (¡no recursivo!) que
+              asigne \(ids\) \(0..N-1\) y, de paso, llene \(ids[r]\) y
+              \(\text{ranges}[r]\) como en la Pista 3.</li>
+          <li>\(ids[r]\) queda ordenado automáticamente; \(\text{ranges}[r]\) es la
+              lista de escalones \((inicio, \text{profundidad})\), también ordenada
+              por \(inicio\).</li>
+        </ul>
+
+        <h3>2) Responder cada consulta \((r_1,r_2)\)</h3>
+        <ul>
+          <li>Si el par \((r_1,r_2)\) ya está en el <strong>caché</strong> (un hash
+              con clave \(r_1 \cdot R + r_2\), en 64 bits), regrésalo en \(O(1)\).</li>
+          <li>Si no, calcula \(S_1=|ids[r_1]|\), \(S_2=|ids[r_2]|\) y elige el
+              método A, B o C de la Pista 4 según cuál tenga menor costo estimado.
+              Guarda el resultado en el caché.</li>
+          <li>Imprime la respuesta y haz <code>flush</code>.</li>
+        </ul>
+
+        <h3>3) Por qué da el puntaje completo</h3>
+        <p>Separa las regiones en pesadas (\(\ge c\) empleados; a lo más \(N/c\)) y
+           ligeras. Las consultas distintas que tocan una región pesada usan el
+           método \(O(A \log B)\) (con \(A,B = \min,\max\) de \(S_1,S_2\)); el caché
+           impide repetir y acota su total. Las consultas solo entre regiones
+           ligeras usan el merge \(O(S_1+S_2)\), acotado por \(O(Q\cdot c)\).
+           Balanceando \(c\) sale aproximadamente \(O(N\sqrt{Q'\log N} + Q)\) para
+           \(Q'\) consultas distintas más los aciertos de caché, con memoria solo
+           \(O(N+R)\). Cómodo dentro de 8 s / 128 MB.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, R, Q
+padre[1] = 0;  region[1] = leer()
+para k = 2..N:
+    leer S_k, H_k;  padre[k] = S_k;  region[k] = H_k
+construir hijos[v] a partir de padre
+
+// --- DFS iterativo en pre-orden ---
+ids[r]    = []  para cada región r      // in-tiempos de los nodos de r (saldrán ordenados)
+ranges[r] = []  para cada región r      // escalones (inicio, profundidad), ordenados por inicio
+prof[r]   = 0   para cada región r
+pool = 0                                 // siguiente id a asignar
+pila = [(1, 0)]                           // (nodo, índice del próximo hijo)
+al ENTRAR por primera vez a un nodo v con región r:
+    id[v] = pool;  pool += 1
+    ids[r].append(id[v])
+    prof[r] += 1
+    ranges[r].append( (id[v] + 1, prof[r]) )      // empieza en id+1: excluye al propio v
+al SALIR de v (ya procesó todos sus hijos):
+    out[v] = pool
+    prof[r] -= 1
+    ranges[r].append( (pool, prof[r]) )
+// (implementa entrar/salir con la pila explícita de (nodo, próximo-hijo))
+
+// --- responder consultas en línea ---
+cache = mapa vacío
+repetir Q veces:
+    leer r1, r2                          // (1-based; resta 1 si usas 0-based internamente)
+    clave = (long long) r1 * R + r2
+    si clave en cache:
+        ans = cache[clave]
+    si no:
+        S1 = |ids[r1]|;  S2 = |ids[r2]|
+        costoA = S2 * log(S1+1)
+        costoB = S1 * log(S2+1)
+        costoC = (S1 + S2)               // con leve preferencia (factor < 1) por el merge
+        elegir el de menor costo:
+            A: ans = 0
+               para cada x en ids[r2]:
+                   d = profundidad de ranges[r1] en x   // búsqueda binaria por 'inicio'
+                   ans += d
+            B: ans = 0
+               para cada escalón [ini, sig) con prof d en ranges[r1]:
+                   ans += d * (#elementos de ids[r2] en [ini, sig))   // 2 búsquedas binarias
+            C: ans = 0;  i = 0           // merge two-pointers de ranges[r1] e ids[r2]
+               para cada escalón [ini, sig) con prof d en ranges[r1]:
+                   mientras i < S2 y ids[r2][i] < sig:
+                       si ids[r2][i] >= ini: ans += d
+                       i += 1
+        cache[clave] = ans
+    imprimir ans;  flush()</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Para un \(e_2\) en posición
+           \(pos=in[e_2]\), el valor de \(\text{ranges}[r_1]\) en \(pos\) es
+           exactamente cuántos nodos de \(r_1\) están en el camino raíz→\(e_2\)
+           <em>sin contar a \(e_2\)</em> (porque el escalón de entrada empieza en
+           \(id+1\)), o sea, cuántos ancestros de \(e_2\) están en \(r_1\). Sumar
+           eso sobre todos los \(e_2 \in r_2\) da justo la respuesta. Los tres
+           métodos calculan esa misma suma; solo cambian el orden de recorrido.</p>
+
+        <p><strong>Complejidad.</strong> Preprocesamiento \(O(N)\) tiempo,
+           \(O(N+R)\) memoria. Cada consulta distinta:
+           \(O(\min(S_2\log S_1,\ S_1\log S_2,\ S_1+S_2))\); cada repetida \(O(1)\)
+           por el caché. En total, alrededor de
+           \(O\!\left(N\sqrt{Q_\text{dist}\log N} + Q\right)\). (En la práctica el
+           caso más grande \(N=R=Q\) al máximo corrió en \(\approx 0.73\) s.)</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Trucos de C++ (solo C++)</span>
+<pre>1) DFS ITERATIVO obligatorio: los árboles pueden ser cadenas de profundidad
+   ~165,000 con N=200,000; un DFS recursivo desborda la pila (la solución
+   oficial recursiva hace SIGSEGV en esos casos). Usa una pila explícita.
+2) Tarea reactiva: fflush(stdout) DESPUÉS de cada respuesta, o el evaluador
+   se queda esperando. No uses scanf("%d\n") (puede bloquearse esperando el
+   siguiente carácter); lee con scanf("%d") o lectura rápida propia.
+3) Acumulador en long long: aunque la respuesta final es < 1e9, el producto
+   profundidad * cuenta puede pasarse de 32 bits a la mitad del cálculo.
+4) Clave del caché en 64 bits: r1*R + r2 con R hasta 25,000 da hasta ~6.25e8,
+   cabe en 32 bits justo, pero usa (long long) por seguridad.
+5) Al buscar en ranges[] por búsqueda binaria, usa como clave (pos, +INF) en
+   el segundo campo: las parejas entrada/salida de hojas comparten el mismo
+   'inicio', así la comparación depende solo del campo monótono.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
