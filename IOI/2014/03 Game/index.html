@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2014 · Tarea 3 — Game</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2014 · Día 1 · Taipéi, Taiwán</div>
+    <h1>Tarea <span class="num">3</span> — Game</h1>
+    <p class="note">Game (El juego) · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Jian-Jia es un niño al que le encantan los juegos. Cuando le hacen una
+       pregunta, prefiere proponer un juego antes que contestar de frente. Un día,
+       Jian-Jia le platica a su amiga Mei-Yu sobre la red de vuelos de Taiwán. Hay
+       \(n\) ciudades (numeradas \(0, 1, \dots, n-1\)) y algunas están conectadas por
+       vuelos. Cada vuelo une dos ciudades y se puede tomar en <strong>ambos
+       sentidos</strong>.</p>
+
+    <p>Mei-Yu quiere saber si es posible viajar entre cualquier par de ciudades en
+       avión (de forma directa o haciendo escalas); es decir, si la red de vuelos es
+       <strong>conexa</strong>. Jian-Jia no quiere soltar la respuesta, así que
+       propone un juego. Mei-Yu puede hacerle preguntas de la forma
+       <em>«¿Las ciudades \(u\) y \(v\) están conectadas <strong>directamente</strong>
+       por un vuelo?»</em>, y Jian-Jia responde de inmediato.</p>
+
+    <p>Mei-Yu preguntará por <strong>cada par de ciudades exactamente una vez</strong>,
+       lo que da un total de \(\binom{n}{2} = \dfrac{n(n-1)}{2}\) preguntas. Mei-Yu
+       <strong>gana</strong> si, tras recibir las respuestas de las primeras \(k\)
+       preguntas para algún \(k\), ya puede deducir si la red completa es conexa o no.
+       En cambio, si necesita las respuestas de <strong>todas</strong> las preguntas
+       para poder decidirlo, entonces el ganador es <strong>Jian-Jia</strong>.</p>
+
+    <div class="note-box">
+      <strong>El truco:</strong> para que el juego sea más divertido, los amigos
+      acuerdan que Jian-Jia puede <em>olvidarse</em> de la red de vuelos real e
+      ir <strong>inventando la red sobre la marcha</strong>, eligiendo cada respuesta
+      en función de las preguntas anteriores de Mei-Yu. Es decir, Jian-Jia es un
+      <strong>adversario adaptativo</strong>: sus respuestas sólo deben ser
+      consistentes con <em>algún</em> grafo posible. Tu tarea es ayudar a Jian-Jia a
+      ganar, decidiendo cómo debe responder cada pregunta.</p>
+    </div>
+
+    <h2>Ejemplos</h2>
+    <p>Las reglas se entienden mejor con tres ejemplos. En los tres hay \(n = 4\)
+       ciudades y, por lo tanto, \(\binom{4}{2} = 6\) rondas de pregunta y respuesta.</p>
+
+    <h3>Ejemplo 1 — Jian-Jia pierde</h3>
+    <p>Después de la ronda 4, Mei-Yu ya sabe <strong>con certeza</strong> que se puede
+       viajar entre cualquier par de ciudades, sin importar cómo responda Jian-Jia las
+       preguntas 5 y 6. Por eso pierde Jian-Jia.</p>
+    <div class="io"><pre>ronda   pregunta   respuesta
+1       0, 1       sí
+2       3, 0       sí
+3       1, 2       no
+4       0, 2       sí
+-----   --------   ---------
+5       3, 1       no
+6       2, 3       no</pre></div>
+    <p class="note">Las respuestas «sí» de las rondas 1, 2 y 4 son las aristas
+       \(0\!-\!1\), \(3\!-\!0\) y \(0\!-\!2\): ya conectan a las cuatro ciudades a
+       través de la \(0\). Como el grafo quedó conexo <em>antes</em> de tiempo,
+       Mei-Yu no necesita las dos últimas respuestas.</p>
+
+    <h3>Ejemplo 2 — Jian-Jia pierde</h3>
+    <p>Después de la ronda 3, Mei-Yu puede demostrar que, sin importar cómo responda
+       Jian-Jia las preguntas 4, 5 y 6, <strong>nunca</strong> se podrá viajar entre
+       las ciudades 0 y 1. Otra vez pierde Jian-Jia.</p>
+    <div class="io"><pre>ronda   pregunta   respuesta
+1       0, 3       no
+2       2, 0       no
+3       0, 1       no
+-----   --------   ---------
+4       1, 2       sí
+5       1, 3       sí
+6       2, 3       sí</pre></div>
+    <p class="note">Las tres aristas que tocan a la ciudad 0 —\((0,3)\), \((2,0)\) y
+       \((0,1)\)— recibieron «no». Eso deja a la ciudad 0 <strong>aislada</strong>, así
+       que el grafo no puede ser conexo y Mei-Yu lo sabe ya en la ronda 3.</p>
+
+    <h3>Ejemplo 3 — Jian-Jia gana</h3>
+    <p>Aquí Mei-Yu <strong>no</strong> puede determinar si la red es conexa hasta que
+       se contestan las seis preguntas. En concreto: como Jian-Jia respondió «sí» a la
+       última pregunta, sí es posible viajar entre cualquier par de ciudades; pero si
+       hubiera respondido «no», habría sido imposible. La conectividad dependía
+       justo de la última respuesta, así que gana Jian-Jia.</p>
+    <div class="io"><pre>ronda   pregunta   respuesta
+1       0, 3       no
+2       1, 0       sí
+3       0, 2       no
+4       3, 1       sí
+5       1, 2       no
+6       2, 3       sí</pre></div>
+    <p class="note">Las respuestas «sí» son las aristas \(1\!-\!0\), \(3\!-\!1\) y
+       \(2\!-\!3\): forman un <strong>árbol</strong> que conecta a las cuatro ciudades,
+       y su última arista cae exactamente en la última pregunta.</p>
+
+    <!-- ===== TAREA INTERACTIVA ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>interactiva / funcional</strong>: no lees de la
+       entrada estándar ni escribes en la salida estándar. Debes entregar un único
+       archivo (<code>game.c</code>, <code>game.cpp</code> o <code>game.pas</code>) que
+       implemente <strong>dos funciones</strong>. El evaluador hará lo siguiente:</p>
+    <ul>
+      <li>Primero llama a <code>initialize(n)</code> <strong>una vez</strong>, donde
+          \(n\) es el número de ciudades.</li>
+      <li>Luego llama a <code>hasEdge(u, v)</code> exactamente \(\binom{n}{2}\) veces.
+          Cada llamada es una pregunta de Mei-Yu, en el orden en que ella la hace, y
+          tú no conoces las preguntas futuras. Debes responder
+          <strong>de inmediato</strong> si existe un vuelo directo entre las ciudades
+          \(u\) y \(v\): regresa <code>1</code> si lo hay, o <code>0</code> si no.</li>
+    </ul>
+    <p>Como Jian-Jia inventa la red sobre la marcha, tus respuestas sólo deben ser
+       <strong>consistentes</strong> (debe existir <em>algún</em> grafo compatible con
+       todo lo que has respondido). El objetivo es que la conectividad de la red no
+       quede determinada sino hasta la <strong>última</strong> pregunta.</p>
+
+    <div class="sig">
+      <span class="tag">Firma(s) a implementar</span>
+<pre>// C / C++
+void initialize(int n);
+int  hasEdge(int u, int v);   // regresa 1 (hay vuelo directo) o 0 (no)
+
+// Pascal
+procedure initialize(n: longint);
+function  hasEdge(u, v: longint): longint;</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> El grader de ejemplo lee la entrada con
+      este formato: la <strong>línea 1</strong> trae \(n\); las
+      <strong>líneas siguientes</strong> traen cada una dos enteros \(u\) y \(v\) que
+      describen una pregunta sobre las ciudades \(u\) y \(v\). El grader llama a
+      <code>initialize(n)</code> y luego a <code>hasEdge(u, v)</code> por cada par, en
+      ese orden, e imprime el <code>0</code>/<code>1</code> que regresa cada llamada.
+      <strong>Ojo:</strong> el veredicto real (ganar/perder) lo decide el juez
+      interactivo verificando que tus respuestas mantengan la conectividad
+      indecidida hasta el final; no se compara contra una salida fija.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de ciudades \(n\)</td><td><span class="badge">\(2 \le n \le 1500\)</span></td></tr>
+        <tr><td>Número de preguntas</td><td><span class="badge">\(\binom{n}{2} = \dfrac{n(n-1)}{2}\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <div class="note-box">
+      Cada subtarea consta de <strong>varios juegos</strong>. Sólo obtienes los puntos
+      de una subtarea si tu programa hace que Jian-Jia <strong>gane todos</strong> los
+      juegos de esa subtarea (no hay crédito parcial dentro de una subtarea).
+    </div>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">15</td><td>\(n \le 4\)</td></tr>
+          <tr><td>2</td><td class="pts">27</td><td>\(n \le 80\)</td></tr>
+          <tr><td>3</td><td class="pts">58</td><td>\(n \le 1500\) (sin restricciones adicionales)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Las cotas de \(n\) por subtarea provienen de los datos oficiales de
+       prueba. En el caso más grande, \(n = 1500\) implica
+       \(\binom{1500}{2} = 1\,124\,250\) llamadas a <code>hasEdge</code>.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Reproducimos el <strong>Ejemplo 3</strong> (donde Jian-Jia gana) en el formato
+       del evaluador de muestra. El orden de preguntas es
+       \((0,3), (1,0), (0,2), (3,1), (1,2), (2,3)\).</p>
+    <div class="example">
+      <div class="io"><h4>Entrada del grader</h4><pre>4
+0 3
+1 0
+0 2
+3 1
+1 2
+2 3</pre></div>
+      <div class="io"><h4>Salida (una respuesta por línea)</h4><pre>0
+1
+0
+1
+0
+1</pre></div>
+    </div>
+    <p class="note">Es decir: <code>initialize(4)</code> y luego seis llamadas a
+       <code>hasEdge</code> que devuelven <code>0,1,0,1,0,1</code>
+       (no, sí, no, sí, no, sí). Las tres respuestas «sí» forman un árbol que conecta
+       a las cuatro ciudades, con su última arista justo en la última pregunta, así que
+       Mei-Yu no pudo decidir antes y gana Jian-Jia. <strong>Importante:</strong> ésta
+       es <em>una</em> estrategia ganadora; existen muchas otras respuestas válidas
+       para el mismo orden de preguntas.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Adversario adaptativo</span>
+      <span class="ptag">Union-Find (DSU)</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Conectividad</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Eres Jian-Jia, un <strong>adversario adaptativo</strong>. Mei-Yu pregunta, una
+       por una y en un orden desconocido, por las \(\binom{n}{2}\) posibles aristas de
+       un grafo sobre \(n\) vértices. A cada pregunta respondes <code>0</code> o
+       <code>1</code> al vuelo (<code>initialize(n)</code> y <code>hasEdge(u,v)</code>),
+       inventando el grafo sobre la marcha. <strong>Ganas</strong> si la conectividad
+       del grafo final no queda determinada sino hasta la última pregunta. Objetivo:
+       una estrategia de respuesta que siempre gane, para todo orden de preguntas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 1500\) y hasta \(m = \binom{n}{2} \approx 1.1\times10^6\)
+                llamadas en \(1\) s pide algo de costo \(O(1)\) amortizado por pregunta,
+                es decir \(O(n^2)\) total. La subtarea 1 (\(n\le4\)) es para entender la
+                condición de victoria; la 2 (\(n\le80\)) tolera una solución
+                \(O(n^4)\) tipo «puente»; la 3 (\(n\le1500\)) exige la versión
+                \(O(n^2)\) con estructuras de unión.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué sabe Mei-Yu en cada momento?</summary>
+      <div class="body">
+        <p class="q">Tras las primeras \(k\) preguntas, ¿qué información tiene Mei-Yu?
+           ¿Puede ya «cerrar» la pregunta de conectividad, o todavía le quedan dos
+           futuros posibles?</p>
+        <p>Conviene pensar en <strong>dos grafos</strong> que evolucionan con cada
+           respuesta. Sea \(G\) el grafo de las aristas que respondiste
+           <strong>«sí»</strong> (vuelos que <em>seguro</em> existen). Sea \(H\) el
+           grafo con las aristas «sí» <strong>más</strong> todas las que
+           <em>todavía no</em> has negado (las que aún podrían ser «sí»). En cualquier
+           momento, el grafo final estará «entre» \(G\) y \(H\). ¿Qué tiene que pasar
+           con \(G\) y con \(H\) para que Mei-Yu <em>no</em> pueda decidir aún si el
+           grafo final es conexo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(n\le4\)): ¿cuándo se decide la conectividad?</summary>
+      <div class="body">
+        <p class="q">Con \(n\le4\) hay a lo más \(6\) preguntas. ¿Puedes caracterizar
+           exactamente los dos momentos en que Mei-Yu «gana antes de tiempo»?</p>
+        <p>Mei-Yu puede concluir <strong>«es conexo»</strong> en cuanto \(G\) (las
+           aristas «sí») ya conecta a todos los vértices. Y puede concluir
+           <strong>«no es conexo»</strong> en cuanto \(H\) deja de ser conexo (algún
+           grupo de ciudades quedó separado del resto incluso usando todas las aristas
+           aún posibles). Mientras \(G\) esté <em>desconectado</em> y \(H\) esté
+           <em>conexo</em>, los dos futuros siguen vivos y Mei-Yu no sabe. Tu estrategia
+           debe mantener esas dos condiciones hasta el final. Con \(n\le4\) hasta puedes
+           simularlo a mano, pero la caracterización es lo que escala.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La invariante clave</summary>
+      <div class="body">
+        <p class="q">¿Y si tu única regla fuera: «mantén \(G\) desconectado y \(H\)
+           conexo después de cada respuesta»? ¿Qué te obliga a responder eso?</p>
+        <p>Esa es <strong>la</strong> invariante. Fíjate en su asimetría:</p>
+        <ul>
+          <li>\(H\) sólo <strong>pierde</strong> aristas con el tiempo (cada «no»
+              borra una arista de \(H\); cada «sí» no la quita). Para no romper la
+              conexidad de \(H\), no puedes negar una arista que sea la
+              <strong>única</strong> que aún mantiene unidas a dos partes de \(H\): esa
+              arista es un <em>puente</em> de \(H\) y estás <strong>obligado</strong> a
+              responder «sí».</li>
+          <li>\(G\) sólo <strong>gana</strong> aristas. Para no conectarlo antes de
+              tiempo, responde «sí» <strong>lo menos posible</strong>: di «sí»
+              únicamente cuando estás obligado por lo anterior.</li>
+        </ul>
+        <p>O sea: responde «no» por defecto, y «sí» sólo cuando negar la arista
+           desconectaría \(H\). ¿Cómo detectas «esta arista es la última que une a dos
+           pedazos»?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 2 (\(n\le80\)): la solución «puente»</summary>
+      <div class="body">
+        <p class="q">Si tu regla es «responde 1 sólo cuando la arista \((u,v)\) es un
+           puente de \(H\)», ¿cuánto cuesta verificarlo por pregunta y alcanza para
+           \(n\le80\)?</p>
+        <p>Implementación directa: mantén \(H\) (la matriz de adyacencia de aristas «no
+           negadas»). En cada <code>hasEdge(u,v)</code>, quita temporalmente la arista
+           \((u,v)\) y comprueba con un BFS/DFS si \(u\) y \(v\) siguen conectados en
+           \(H\). Si <strong>siguen</strong> conectados, la arista no es esencial:
+           responde \(0\) y bórrala de \(H\). Si <strong>no</strong>, era el único
+           puente: responde \(1\) y déjala. Cada chequeo es \(O(n^2)\) y hay
+           \(m = O(n^2)\) preguntas, así que es \(O(n^4)\): perfecto para
+           \(n\le80\) (subtareas 1 y 2), pero demasiado lento para \(n=1500\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 3 (\(n\le1500\)): cuenta aristas entre componentes</summary>
+      <div class="body">
+        <p class="q">El BFS por pregunta es el cuello de botella. ¿Y si en vez de
+           preguntar «¿es puente?» llevaras, para <em>cada par de componentes</em> de
+           \(G\), cuántas aristas de «quizás» todavía las unen en \(H\)?</p>
+        <p>Colapsa los vértices ya unidos por «sí» en <strong>componentes</strong>
+           (con un <strong>Union-Find</strong> sobre \(G\)). Para cada par de
+           componentes \((a,b)\) guarda un contador \(S[a][b]\) = número de aristas de
+           \(H\) que aún cruzan de \(a\) a \(b\). Una arista \((u,v)\) es «la última que
+           une a sus dos componentes» <strong>exactamente</strong> cuando ese contador
+           vale \(1\). Entonces: si \(S[a][b] > 1\), respondes \(0\) y decrementas; si
+           \(S[a][b] = 1\), respondes \(1\) y <strong>unes</strong> las dos componentes.
+           ¿Cómo actualizas la matriz \(S\) al unir, y por qué \(u\) y \(v\) siempre
+           están en componentes distintas?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Mantén la invariante de la Pista 3:
+           tras cada respuesta, \(G\) (aristas «sí») está <em>desconectado</em> y
+           \(H\) (aristas «no negadas») está <em>conexo</em>. La regla es: responde
+           <code>0</code> siempre que puedas, y <code>1</code> sólo cuando negar la
+           arista desconectaría \(H\). Eso ocurre exactamente cuando \((u,v)\) es la
+           <strong>última</strong> arista posible entre las dos componentes de \(G\) que
+           contienen a \(u\) y a \(v\).</p>
+
+        <p><strong>Estructuras.</strong> Representa las componentes de \(G\) con un
+           Union-Find «materializado»: \(\text{repr}[v]\) es el representante exacto de
+           la componente de \(v\) (así <em>find</em> es \(O(1)\)). Mantén una matriz
+           \(S\) de \(n\times n\) enteros donde \(S[a][b]\) = número de aristas de \(H\)
+           (las que aún no son «no» y no están dentro de una misma componente) que
+           conectan la componente \(a\) con la \(b\). Al inicio cada vértice es su propia
+           componente y \(S[a][b] = 1\) para todo par \(a \ne b\) (una sola arista
+           posible entre cada par de vértices).</p>
+
+        <p><strong>Responder.</strong> En <code>hasEdge(u,v)</code> sea
+           \(a = \text{repr}[u]\), \(b = \text{repr}[v]\). Siempre \(a \ne b\): un par
+           que ya está en la misma componente nunca se vuelve a preguntar (cada par se
+           pregunta una sola vez, y sólo unimos por aristas preguntadas). Entonces:</p>
+        <ul>
+          <li>Si \(S[a][b] > 1\): aún quedan <em>otras</em> aristas posibles entre \(a\)
+              y \(b\), así que negar ésta no desconecta \(H\). Responde \(0\) y haz
+              \(S[a][b] \mathrel{-}= 1\).</li>
+          <li>Si \(S[a][b] = 1\): es la <strong>única</strong> arista que aún puede unir
+              \(a\) con \(b\) en \(H\); negarla desconectaría \(H\). Responde \(1\) y
+              <strong>une</strong> \(a\) con \(b\) en \(G\) (unión por tamaño). Al unir,
+              para cada otra componente viva \(x\) la nueva componente hereda
+              \(S[\text{nuevo}][x] = S[a][x] + S[b][x]\) (las aristas que cruzaban a
+              \(a\) más las que cruzaban a \(b\)).</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> La invariante se preserva:</p>
+        <ul>
+          <li><em>\(H\) sigue conexo.</em> Sólo respondemos \(0\) (borramos una arista de
+              \(H\)) cuando todavía hay otra arista entre esas dos componentes
+              (\(S>1\)). Nunca quitamos la última liga entre dos pedazos de \(H\): cuando
+              quedaría sólo una (\(S=1\)), respondemos \(1\) y fusionamos. Así \(H\)
+              nunca se desconecta.</li>
+          <li><em>\(G\) sigue desconectado hasta el final.</em> Sólo decimos «sí» cuando
+              estamos obligados; cada «sí» une dos componentes distintas, así que hay a
+              lo sumo \(n-1\) respuestas «sí». La última unión (la que deja una sola
+              componente) ocurre forzosamente en la última pregunta, porque mientras
+              haya \(\ge 2\) componentes \(H\) sigue conexo y queda al menos una arista
+              entre las dos últimas componentes que apenas se cerrará al final.</li>
+        </ul>
+        <p>Equivalentemente: las respuestas «sí» forman un <strong>árbol generador</strong>
+           (exactamente \(n-1\), acíclicas) cuya última arista cae en la última pregunta,
+           y el grafo final es conexo. Esa es justo la condición de victoria de Jian-Jia.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>// repr[v] : representante exacto de la componente de v en G  (find O(1))
+// tam[r]  : tamaño de la componente r       (unión por tamaño)
+// vivo[r] : ¿r sigue siendo representante?
+// miemb[r]: lista de vértices de la componente r
+// S[a][b] : # de aristas de H que cruzan entre las componentes a y b
+
+funcion initialize(n):
+    para r en 0..n-1:
+        repr[r] = r;  tam[r] = 1;  vivo[r] = verdadero;  miemb[r] = [r]
+        para c en 0..n-1:
+            S[r][c] = (r != c) ? 1 : 0        // una arista posible por cada par
+
+funcion hasEdge(u, v):
+    a = repr[u];  b = repr[v]                 // garantizado a != b
+    si S[a][b] > 1:                           // quedan otras aristas entre a y b
+        S[a][b] -= 1;  S[b][a] -= 1
+        regresa 0                             // puedo negarla sin desconectar H
+    // S[a][b] == 1 : última arista posible entre a y b -> DEBE existir
+    si tam[a] < tam[b]: intercambia(a, b)     // a = la componente más grande
+    para cada x con vivo[x] y x != a y x != b:
+        S[a][x] += S[b][x];  S[x][a] = S[a][x]
+    tam[a] += tam[b];  vivo[b] = falso
+    para cada y en miemb[b]:                  // reetiqueta los miembros de b
+        repr[y] = a;  añade y a miemb[a]
+    regresa 1</pre>
+        </div>
+
+        <p><strong>Cómo sube de subtarea en subtarea.</strong> La misma invariante
+           («\(G\) desconectado, \(H\) conexo») se puede chequear de tres formas con
+           costos distintos: por fuerza bruta a mano (subtarea 1, \(n\le4\)); con el
+           test de puente por BFS, \(O(n^4)\) (subtarea 2, \(n\le80\)); o con el contador
+           \(S\) por par de componentes, \(O(n^2)\) (subtarea 3, \(n\le1500\)). Las tres
+           ganan; sólo cambia la eficiencia.</p>
+
+        <p><strong>Complejidad.</strong> <code>initialize</code> llena la matriz en
+           \(O(n^2)\). Cada <code>hasEdge</code> es \(O(1)\) salvo cuando hay unión; hay
+           a lo más \(n-1\) uniones y cada una recorre los \(O(n)\) representantes para
+           actualizar su fila de \(S\), más el reetiquetado de miembros que, por unión
+           por tamaño, suma \(O(n\log n)\) en total. Con \(m = \binom{n}{2}\) preguntas,
+           el total es \(O(n^2 + m) = O(n^2)\) en tiempo y \(O(n^2)\) en memoria (la
+           matriz \(S\) de \(n\times n\) enteros, \(\approx 9\) MB a \(n=1500\)).
+           Medido en el caso mayor (\(n=1500\), \(m=1\,124\,250\)): \(\sim 0.16\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Notas de implementación (C++)</span>
+<pre>- Reserva S como un solo bloque int S[n*n] (o vector&lt;int&gt;) para que la fila
+  S[a*n + x] quede contigua y el barrido del merge sea cache-friendly.
+- Mantener miemb[] (listas por representante) hace el reetiquetado proporcional
+  al tamaño de la componente chica; con unión por tamaño da O(n log n) total.
+- NO compares tu salida contra un .out fijo: es un juez con special judge.
+  Hay MUCHAS transcripciones ganadoras y los .out provistos mezclan estrategias
+  distintas (algunos vienen de la regla "puente", otros del contador S). El
+  veredicto correcto se obtiene verificando la invariante, no con diff.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
