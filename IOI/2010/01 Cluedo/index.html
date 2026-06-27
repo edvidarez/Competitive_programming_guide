@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2010 · Tarea 1 — Cluedo</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  /* Tabla "ilustrativa" de nombres */
+  .names{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0}
+  .names .col{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 14px}
+  .names .col h4{margin:0 0 6px;font-size:13px;color:var(--accent2);text-transform:uppercase;letter-spacing:.05em}
+  .names ol{margin:0;padding-left:24px}
+  .names li{margin:2px 0;font-size:15px}
+  @media(max-width:620px){
+    .names{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2010 · Día 1 · Waterloo, Canadá</div>
+    <h1>Tarea <span class="num">1</span> — Cluedo</h1>
+    <p class="note">Adivina al asesino, el lugar y el arma contra un asistente tramposo ·
+       PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Asesinaron al Dr. Black. La detective Jill debe determinar al
+       <strong>asesino</strong>, el <strong>lugar</strong> y el <strong>arma</strong>.
+       Hay seis posibles asesinos, numerados del 1 al 6. Hay diez posibles lugares,
+       numerados del 1 al 10. Hay seis posibles armas, numeradas del 1 al 6.</p>
+
+    <div class="note-box">
+      <strong>Solo a modo de ilustración</strong> mostramos los nombres de los
+      posibles asesinos, lugares y armas. Los nombres <em>no</em> se necesitan para
+      resolver la tarea: lo único que importa son los números.
+    </div>
+
+    <div class="names">
+      <div class="col">
+        <h4>Asesino</h4>
+        <ol>
+          <li>Professor Plum</li>
+          <li>Miss Scarlet</li>
+          <li>Colonel Mustard</li>
+          <li>Mrs. White</li>
+          <li>Reverend Green</li>
+          <li>Mrs. Peacock</li>
+        </ol>
+      </div>
+      <div class="col">
+        <h4>Lugar</h4>
+        <ol>
+          <li>Ballroom (salón de baile)</li>
+          <li>Kitchen (cocina)</li>
+          <li>Conservatory (invernadero)</li>
+          <li>Dining Room (comedor)</li>
+          <li>Billiard Room (sala de billar)</li>
+          <li>Library (biblioteca)</li>
+          <li>Lounge (sala de estar)</li>
+          <li>Hall (vestíbulo)</li>
+          <li>Study (estudio)</li>
+          <li>Cellar (sótano)</li>
+        </ol>
+      </div>
+      <div class="col">
+        <h4>Arma</h4>
+        <ol>
+          <li>Lead pipe (tubo de plomo)</li>
+          <li>Dagger (daga)</li>
+          <li>Candlestick (candelabro)</li>
+          <li>Revolver</li>
+          <li>Rope (cuerda)</li>
+          <li>Spanner (llave inglesa)</li>
+        </ol>
+      </div>
+    </div>
+
+    <p>Jill intenta una y otra vez adivinar la combinación correcta de asesino,
+       lugar y arma. Cada intento se llama una <strong>teoría</strong>. Le pide a su
+       asistente Jack que confirme o refute cada teoría, una por una. Cuando Jack
+       <em>confirma</em> una teoría, Jill termina. Cuando Jack <em>refuta</em> una
+       teoría, le informa a Jill que <strong>uno</strong> de los tres (asesino,
+       lugar o arma) está equivocado.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el procedimiento <code>Solve</code>, que hace el papel de
+       Jill. El evaluador (grader) llama a <code>Solve</code> muchas veces, cada vez
+       con un nuevo caso por resolver. Dentro de <code>Solve</code> llamas
+       repetidamente a la función <code>Theory(M, L, W)</code>, que el evaluador ya
+       implementa. <code>M</code>, <code>L</code> y <code>W</code> son números que
+       denotan una combinación concreta de asesino, lugar y arma.</p>
+    <ul>
+      <li><code>Theory(M, L, W)</code> regresa <strong>0</strong> si la teoría es
+          correcta.</li>
+      <li>Si la teoría está mal, regresa un valor <strong>1</strong>, <strong>2</strong>
+          o <strong>3</strong>: el <strong>1</strong> indica que el asesino está mal;
+          el <strong>2</strong> indica que el lugar está mal; el <strong>3</strong>
+          indica que el arma está mal.</li>
+      <li>Si <strong>más de uno</strong> está mal, Jack elige <strong>arbitrariamente</strong>
+          uno de los equivocados (no necesariamente de forma determinista).</li>
+      <li>Cuando <code>Theory(M, L, W)</code> regresa 0, <code>Solve</code> debe
+          retornar (terminar ese caso).</li>
+    </ul>
+
+    <div class="sig">
+      <span class="tag">Firmas — lo que implementa el concursante (cluedo.c / cluedo.cpp / cluedo.pas)</span>
+<pre>void Solve(void);              // C / C++
+procedure Solve;               // Pascal</pre>
+    </div>
+
+    <div class="sig">
+      <span class="tag">Firma — la provee el evaluador (cluedo.h / graderlib.pas) y la llamas desde Solve</span>
+<pre>int Theory(int M, int L, int W);
+  // M en 1..6  (asesino)
+  // L en 1..10 (lugar)
+  // W en 1..6  (arma)
+  // regresa 0 si (M,L,W) es la combinación oculta exacta;
+  // si no, regresa 1, 2 o 3 = índice de UNA característica equivocada
+  //   1 = asesino,  2 = lugar,  3 = arma
+  // si hay varias mal, Jack elige una cualquiera (no determinista).
+  // Cuando regresa 0, Solve debe retornar.</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Cuidado con el estado entre llamadas.</strong> El evaluador llama a
+      <code>Solve</code> hasta 100 veces seguidas, y cada llamada puede tener una
+      respuesta distinta. Asegúrate de <strong>reinicializar todas las variables</strong>
+      que use <code>Solve</code> cada vez que se le llama: nada de estado residual
+      entre casos.
+    </div>
+
+    <h3>Cómo se ejecuta y se califica (evaluador de muestra)</h3>
+    <ul>
+      <li>Carpeta de implementación: <code>/home/ioi2010-contestant/cluedo/</code>.</li>
+      <li>A implementar por el concursante: <code>cluedo.c</code>, <code>cluedo.cpp</code>
+          o <code>cluedo.pas</code>.</li>
+      <li>Interfaz del concursante: <code>cluedo.h</code> o <code>cluedo.pas</code>.</li>
+      <li>Interfaz del evaluador: <code>grader.h</code> o <code>graderlib.pas</code>.</li>
+      <li>Evaluador de muestra: <code>grader.c</code> / <code>grader.cpp</code> /
+          <code>grader.pas</code> y <code>graderlib.pas</code>.</li>
+      <li>Entrada del evaluador de muestra: <code>grader.in.1</code>. <em>Nota:</em>
+          cada línea de la entrada contiene tres números que denotan al asesino, el
+          lugar y el arma (un caso oculto por línea).</li>
+      <li>Salida esperada para esa entrada: si <code>Solve</code> resuelve
+          correctamente todos los casos, el archivo de salida contendrá
+          <code>OK t</code>, donde <code>t</code> es el <strong>máximo número de
+          llamadas a <code>Theory</code></strong> usado en cualquier caso.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Asesino \(M\)</td><td><span class="badge">\(1 \le M \le 6\)</span></td></tr>
+        <tr><td>Lugar \(L\)</td><td><span class="badge">\(1 \le L \le 10\)</span></td></tr>
+        <tr><td>Arma \(W\)</td><td><span class="badge">\(1 \le W \le 6\)</span></td></tr>
+        <tr><td>Combinaciones posibles</td><td><span class="badge">\(6 \times 10 \times 6 = 360\)</span></td></tr>
+        <tr><td>Llamadas a <code>Solve</code> por corrida</td><td><span class="badge">hasta 100</span></td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+    <p class="note">Esta tarea es <strong>funcional / interactiva</strong>: el recurso
+       que se limita y se mide no es el tiempo ni la memoria, sino el
+       <strong>número de llamadas a <code>Theory</code></strong> que hace cada
+       <code>Solve</code> (el límite depende de la subtarea; ver abajo).</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricción</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td class="pts">50</td>
+            <td>Cada corrida puede llamar a <code>Solve</code> hasta 100 veces (cada
+                llamada puede tener una combinación distinta como respuesta). Cada vez
+                que se llama, <code>Solve</code> debe encontrar la teoría correcta con
+                <strong>a lo más 360 llamadas</strong> a <code>Theory(M, L, W)</code>.
+                Reinicializa toda variable que use <code>Solve</code> en cada llamada.</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="pts">50</td>
+            <td>Cada corrida puede llamar a <code>Solve</code> hasta 100 veces. Cada vez,
+                <code>Solve</code> debe encontrar la teoría correcta con
+                <strong>a lo más 20 llamadas</strong> a <code>Theory(M, L, W)</code>.
+                Reinicializa toda variable que use <code>Solve</code> en cada llamada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Como ejemplo, supón que Miss Scarlet cometió el asesinato (asesino
+       \(M = 2\)) en el invernadero (lugar \(L = 3\)) usando un revólver
+       (arma \(W = 4\)). Cuando el procedimiento <code>Solve</code> hace las
+       siguientes llamadas a la función <code>Theory</code>, los resultados de la
+       segunda columna podrían ser los que se devuelven.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Llamada</th><th>Valor devuelto</th><th>Explicación</th></tr></thead>
+        <tbody>
+          <tr><td><code>Theory(1, 1, 1)</code></td><td>1, 2 o 3</td><td>Los tres están mal</td></tr>
+          <tr><td><code>Theory(3, 3, 3)</code></td><td>1 o 3</td><td>Solo el lugar es correcto</td></tr>
+          <tr><td><code>Theory(5, 3, 4)</code></td><td>1</td><td>Solo el asesino está mal</td></tr>
+          <tr><td><code>Theory(2, 3, 4)</code></td><td>0</td><td>Todo es correcto</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Fíjate en las dos primeras filas: como hay más de una
+       característica equivocada, el valor devuelto <em>no</em> es único — Jack puede
+       reportar cualquiera de las que están mal. Tu <code>Solve</code> debe funcionar
+       sea cual sea su elección.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Juego adversarial</span>
+      <span class="ptag">Greedy / Monótono</span>
+      <span class="ptag">Invariante</span>
+      <span class="ptag">Ad hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay una combinación oculta \((M, L, W)\) con \(M \in 1..6\),
+       \(L \in 1..10\), \(W \in 1..6\). Implementa <code>Solve</code>, que adivina
+       llamando a <code>Theory(M, L, W)</code>: devuelve 0 si aciertas, o el índice
+       (1, 2 o 3) de <em>una</em> característica equivocada. Si hay varias mal, el
+       evaluador (Jack) elige cuál reportar de forma <strong>adversarial</strong>.
+       Objetivo: acertar con <strong>\(\le 20\) llamadas</strong> en el peor caso,
+       contra cualquier elección de Jack.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Solo hay \(360\) combinaciones y \(6+10+6 = 22\) valores posibles en
+                total. La Subtarea 1 (\(\le 360\) llamadas) la pasa hasta una búsqueda
+                tonta. La Subtarea 2 pide \(\le 20\): justo \(22 - 3 + 1\). Ese número
+                tan ajustado es la pista de que la solución se mide en
+                <em>cuántos valores puedes descartar por llamada</em>, no en recorrer
+                combinaciones.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Contra qué estás jugando?</summary>
+      <div class="body">
+        <p class="q">Cuando refutan tu teoría te dicen <em>una</em> característica
+           equivocada, pero si hay varias mal, ¿quién decide cuál te dicen? ¿Puedes
+           confiar en que sea “justa” o determinista?</p>
+        <p>No. Jack es <strong>adversarial</strong>: si dos o tres características están
+           mal, te reporta <em>cualquiera</em> de ellas, y puede cambiar de criterio
+           entre llamadas. Tu algoritmo tiene que ser correcto y rápido
+           <strong>sin importar qué elija</strong>. Eso descarta cualquier estrategia
+           que dependa de “si me dijo 1, entonces…”: solo puedes apoyarte en
+           información que sea verdadera <em>pase lo que pase</em>.</p>
+        <p class="q">¿Qué información te da una refutación que sí es 100% confiable?</p>
+        <p>Si te dicen “la característica \(i\) está mal”, entonces es
+           <strong>seguro</strong> que tu valor actual de esa característica
+           <em>no</em> es el correcto. Eso siempre es cierto, lo elija como lo elija.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (50 pts): la versión cómoda</summary>
+      <div class="body">
+        <p class="q">Con \(\le 360\) llamadas permitidas y exactamente \(360\)
+           combinaciones, ¿qué es lo más simple que se te ocurre?</p>
+        <p>Probar las combinaciones una por una: un triple <code>for</code> sobre
+           \(M = 1..6\), \(L = 1..10\), \(W = 1..6\). Llama
+           <code>Theory(M, L, W)</code> y, en cuanto devuelva 0, terminaste. En el
+           peor caso recorres las 360, justo dentro del límite. Aquí ni siquiera te
+           importa <em>qué</em> característica te reportan como mala: ignoras el valor
+           devuelto (mientras no sea 0) y sigues iterando.</p>
+        <p>Eso ya vale 50 puntos. Pero para los otros 50 necesitas bajar de 360 a
+           \(\le 20\): no alcanza con barrer combinaciones, hay que descartar
+           <em>valores</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (50 pts): piensa en “valores”, no en combinaciones</summary>
+      <div class="body">
+        <p class="q">Hay \(22\) valores en total (6 asesinos + 10 lugares + 6 armas).
+           Si cada refutación te dejara tachar <em>un valor para siempre</em>,
+           ¿cuántas llamadas necesitarías en el peor caso?</p>
+        <p>La respuesta correcta usa \(1\) valor de cada característica: \(3\) valores
+           “buenos”. Quedan \(22 - 3 = 19\) valores “malos” por descartar. Si cada
+           refutación elimina uno de manera permanente, bastan \(19\) refutaciones
+           \(+\,1\) confirmación final \(= 20\) llamadas. ¡Ese es justo el límite de
+           la Subtarea 2!</p>
+        <p class="q">¿Cómo logras que <em>una sola</em> refutación tache un valor para
+           siempre, aunque Jack sea tramposo? ¿Y si recorrieras cada característica
+           siempre en el mismo sentido, de modo que “esta está mal” signifique
+           “puedo bajar al siguiente candidato sin volver atrás nunca”?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La idea clave: un invariante monótono</summary>
+      <div class="body">
+        <p>Mantén una teoría candidata \(T = (T_1, T_2, T_3)\) e inicialízala en el
+           <strong>máximo</strong> de cada característica: \(T = (6, 10, 6)\). Cada vez
+           que <code>Theory</code> te reporta que la característica \(i\) está mal,
+           <strong>decrementa solo esa</strong>: \(T_i \leftarrow T_i - 1\). Nunca
+           toques las otras dos.</p>
+        <p class="q">¿Por qué es seguro bajar, y nunca subir? Llama
+           \(\text{ans}\) a la combinación oculta. ¿Puedes mantener el invariante
+           \(T_f \ge \text{ans}_f\) para <em>toda</em> característica \(f\), todo el
+           tiempo?</p>
+        <ul>
+          <li><strong>Base:</strong> \(T = (6, 10, 6)\) son los máximos, así que
+              \(T_f \ge \text{ans}_f\) de entrada.</li>
+          <li><strong>Paso:</strong> solo bajas \(T_i\) cuando te dicen que la
+              característica \(i\) está mal, es decir \(T_i \neq \text{ans}_i\). Junto
+              con \(T_i \ge \text{ans}_i\) eso obliga \(T_i > \text{ans}_i\), luego
+              \(T_i - 1 \ge \text{ans}_i\). El invariante se conserva
+              <strong>sin importar cuál de las características malas eligió Jack</strong>.</li>
+        </ul>
+        <p>Como \(T_f\) nunca baja por debajo de \(\text{ans}_f\), cada decremento de
+           verdad tacha un valor que ya quedó descartado para siempre. Ahí está la
+           inmunidad al adversario.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Empieza con la teoría máxima \(T = (6, 10, 6)\).
+           Repite: pregunta <code>Theory(T_1, T_2, T_3)</code>. Si devuelve 0,
+           terminaste. Si devuelve \(i \neq 0\), baja \(T_i\) en \(1\) y vuelve a
+           preguntar. Las variables son <strong>locales</strong> a <code>Solve</code>,
+           así que cada caso arranca limpio desde \((6,10,6)\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>procedimiento Solve():
+    // Índices: 1 = asesino, 2 = lugar, 3 = arma
+    T[1] = 6        // máximo de cada característica
+    T[2] = 10
+    T[3] = 6
+    repetir:
+        i = Theory(T[1], T[2], T[3])
+        si i == 0:
+            regresar              // T es la combinación oculta; fin del caso
+        T[i] = T[i] - 1           // la característica i estaba mal: bájala uno
+</pre>
+        </div>
+
+        <p><strong>Por qué es correcto (independiente del adversario).</strong> Por el
+           invariante de la Pista 4, \(T_f \ge \text{ans}_f\) en todo momento, sin
+           importar qué característica mala reporte Jack. El algoritmo solo se detiene
+           cuando <code>Theory</code> devuelve 0, lo cual significa
+           \(T = \text{ans}\) exactamente. Por el invariante, \(T\) jamás “se pasa”
+           por debajo de la respuesta, así que ningún \(T_f\) baja de su valor
+           correcto: cuando los tres coinciden con \(\text{ans}\), la siguiente
+           llamada devuelve 0. Listo.</p>
+
+        <p><strong>Cota de llamadas (la magia del 20).</strong> Define
+           \(\text{sum}(T) = T_1 + T_2 + T_3\). Cada refutación baja
+           \(\text{sum}(T)\) en exactamente \(1\). Al inicio
+           \(\text{sum}(T) = 6 + 10 + 6 = 22\); como cada \(T_f \ge 1\), al final
+           \(\text{sum}(T) \ge 3\). Por lo tanto hay
+           <strong>a lo más \(22 - 3 = 19\) refutaciones</strong>, más \(1\) llamada
+           confirmatoria \(= 20\) llamadas, <em>siempre</em>, contra cualquier
+           estrategia adversarial. Esto cubre la Subtarea 2 (\(\le 20\)) y, con
+           holgura, la Subtarea 1 (\(\le 360\)): un mismo algoritmo da los 100
+           puntos.</p>
+
+        <p>El peor caso global es la respuesta \((1, 1, 1)\): hay que bajar el asesino
+           \(6 \to 1\) (\(5\) pasos), el lugar \(10 \to 1\) (\(9\) pasos) y el arma
+           \(6 \to 1\) (\(5\) pasos) \(= 19\) decrementos \(+\,1\) confirmación
+           \(= 20\). Por eso \(20\) es exacto, no se puede mejorar con esta familia
+           de límites.</p>
+
+        <h3>Cómo evoluciona \(T\) (visualización de la cota)</h3>
+        <div class="subtasks">
+          <table>
+            <thead><tr><th>Estado de \(T\)</th><th>\(\text{sum}(T)\)</th><th>Qué pasó</th></tr></thead>
+            <tbody>
+              <tr><td>\((6, 10, 6)\)</td><td>22</td><td>Teoría inicial (máximos)</td></tr>
+              <tr><td>\(\downarrow\) refutación reporta \(i\)</td><td>baja \(1\)</td><td>\(T_i \mathrel{-}= 1\); el invariante \(T \ge \text{ans}\) se conserva</td></tr>
+              <tr><td>\(\dots\)</td><td>\(\dots\)</td><td>a lo más \(19\) refutaciones (sum baja de \(22\) a \(\ge 3\))</td></tr>
+              <tr><td>\((\text{ans}_1, \text{ans}_2, \text{ans}_3)\)</td><td>\(\ge 3\)</td><td><code>Theory</code> devuelve 0 (\(+1\) llamada) → fin</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><strong>Complejidad.</strong> Por llamada a <code>Solve</code>: a lo más
+           \(20\) llamadas a <code>Theory</code>, tiempo y memoria \(O(1)\) (un arreglo
+           de \(3\) enteros). Se generaliza a
+           \(\bigl(\sum \text{opciones}\bigr) - (\text{núm. características}) + 1\)
+           llamadas en el peor caso.</p>
+
+        <div class="note-box">
+          <strong>Trampas clásicas.</strong>
+          <ol>
+            <li><strong>Estado residual entre casos:</strong> si usas variables
+                globales y no las reinicializas, el segundo <code>Solve</code> arranca
+                con la \(T\) del caso anterior y falla. Mantén \(T\) local (o
+                reinicialízala al principio de cada <code>Solve</code>).</li>
+            <li><strong>Suponer que Jack es justo o determinista:</strong> es
+                adversarial; tu correctitud descansa en el invariante
+                \(T \ge \text{ans}\), no en qué característica te reporte.</li>
+            <li><strong>Mezclar sentidos:</strong> empezar en el mínimo \((1,1,1)\) e
+                <em>incrementar</em> también es válido y simétrico, pero combinar
+                (empezar alto e incrementar, o bajo y decrementar) rompe el invariante
+                y puede ciclar. Elige un sentido y sé consistente.</li>
+            <li><strong>Olvidar retornar al recibir 0</strong> (o volver a llamar a
+                <code>Theory</code> tras un 0): es un error de protocolo.</li>
+            <li><strong>Índice mal mapeado:</strong> recuerda \(1 = \text{asesino}\),
+                \(2 = \text{lugar}\), \(3 = \text{arma}\); decrementa exactamente la
+                característica que te reportaron.</li>
+          </ol>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
