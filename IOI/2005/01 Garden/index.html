@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2005 · Tarea 1 — Garden</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+  svg.diagram{max-width:100%;height:auto;background:var(--panel);border:1px solid var(--border);border-radius:10px}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2005 · Día 1 · Nowy Sącz, Polonia</div>
+    <h1>Tarea <span class="num">1</span> — Garden</h1>
+    <p class="note">Jardín · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Byteman es dueño del jardín más hermoso de Bytetown. Plantó \(n\) rosas en
+       su jardín. Llegó el verano y las flores crecieron grandes y hermosas.
+       Byteman se dio cuenta de que él solo no puede cuidar todas las rosas, así
+       que decidió emplear a <strong>dos jardineros</strong> para que lo ayuden.
+       Quiere seleccionar <strong>dos áreas rectangulares</strong>, de modo que
+       cada jardinero cuide las rosas que están dentro de una de las áreas. Las
+       áreas deben ser <strong>disjuntas</strong> y cada una debe contener
+       <strong>exactamente \(k\) rosas</strong>.</p>
+
+    <p>Byteman quiere construir una cerca que rodee las áreas rectangulares, pero
+       anda corto de dinero, así que quiere usar la <strong>menor cantidad de
+       cerca posible</strong>. Tu tarea es ayudarlo a elegir las dos áreas
+       rectangulares.</p>
+
+    <p>El jardín forma un rectángulo de \(l\) metros de largo y \(w\) metros de
+       ancho. Está dividido en \(l\cdot w\) cuadros de \(1\,\text{m}\times
+       1\,\text{m}\) cada uno. Fijamos un sistema de coordenadas con ejes paralelos
+       a los lados del jardín. Todos los cuadros tienen coordenadas enteras
+       \((x,y)\) que cumplen \(1\le x\le l\) y \(1\le y\le w\). Cada cuadro puede
+       contener <strong>cualquier número de rosas</strong>.</p>
+
+    <p>Las áreas rectangulares que se seleccionen deben tener sus lados paralelos a
+       los lados del jardín, y los cuadros de sus esquinas deben tener coordenadas
+       enteras. Para \(1\le l_1\le l_2\le l\) y \(1\le w_1\le w_2\le w\), un área
+       rectangular con esquinas \((l_1,w_1)\), \((l_1,w_2)\), \((l_2,w_1)\) y
+       \((l_2,w_2)\):</p>
+    <ul>
+      <li>contiene todos los cuadros con coordenadas \((x,y)\) tales que
+          \(l_1\le x\le l_2\) y \(w_1\le y\le w_2\), y</li>
+      <li>tiene perímetro \(2\cdot(l_2-l_1+1)+2\cdot(w_2-w_1+1)\).</li>
+    </ul>
+
+    <p>Las dos áreas rectangulares deben ser <strong>disjuntas</strong>; es decir,
+       no pueden contener un cuadro en común. Incluso si comparten un lado, o parte
+       de él, deben rodearse con cercas separadas.</p>
+
+    <h3>Tarea</h3>
+    <p>Escribe un programa que:</p>
+    <ul>
+      <li>lea de la entrada estándar las dimensiones del jardín, el número de rosas
+          del jardín, el número de rosas que debe haber en cada área rectangular y
+          las posiciones de las rosas;</li>
+      <li>encuentre las esquinas de dos áreas rectangulares con
+          <strong>suma mínima de perímetros</strong> que cumplan las condiciones
+          dadas;</li>
+      <li>escriba en la salida estándar la suma mínima de perímetros de dos áreas
+          rectangulares que no se traslapen, cada una con exactamente el número
+          dado de rosas (o la palabra <code>NO</code> si no existe tal par de
+          áreas).</li>
+    </ul>
+
+    <h2>Entrada</h2>
+    <p>Entrada estándar.</p>
+    <ul>
+      <li>La primera línea contiene dos enteros \(l\) y \(w\) (\(1\le l,w\le 250\))
+          separados por un espacio: el largo y el ancho del jardín.</li>
+      <li>La segunda línea contiene dos enteros \(n\) y \(k\) (\(2\le n\le 5000\),
+          \(1\le k\le n/2\)) separados por un espacio: el número de rosas del
+          jardín y el número de rosas que debe haber en cada área rectangular.</li>
+      <li>Las siguientes \(n\) líneas contienen las coordenadas de las rosas, una
+          rosa por línea. La línea \((i+2)\) contiene dos enteros \(l_i\), \(w_i\)
+          (\(1\le l_i\le l\), \(1\le w_i\le w\)) separados por un espacio: las
+          coordenadas del cuadro que contiene la \(i\)-ésima rosa. Dos o más rosas
+          pueden estar en el mismo cuadro.</li>
+    </ul>
+    <p class="note">En el 50% de los casos de prueba, las dimensiones del jardín
+       cumplen \(l,w\le 40\).</p>
+
+    <h2>Salida</h2>
+    <p>Salida estándar. Debe contener una sola línea con exactamente un entero: la
+       suma mínima de perímetros de dos áreas rectangulares que no se traslapen,
+       cada una con exactamente \(k\) rosas; o la palabra <code>NO</code> si no
+       existe tal par de áreas.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>0.5 s</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MB</td></tr>
+        <tr><td>Tamaño del jardín</td><td><span class="badge">\(1 \le l,w \le 250\)</span></td></tr>
+        <tr><td>Número de rosas</td><td><span class="badge">\(2 \le n \le 5000\)</span></td></tr>
+        <tr><td>Rosas por área</td><td><span class="badge">\(1 \le k \le n/2\)</span></td></tr>
+        <tr><td>En el 50% de los casos</td><td><span class="badge">\(l,w \le 40\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas.</strong> El IOI 2005 calificaba <em>por caso de
+      prueba</em>, sobre 100 (los casos agrupados con sufijos <code>a</code>/<code>b</code>
+      comparten un mismo caso). El enunciado solo señala que en el 50% de los casos
+      \(l,w\le 40\), lo cual gradúa el crédito parcial para soluciones más lentas
+      (por ejemplo \(O(w^2 l^2)\), o la fuerza bruta \(O((wl)^2)\) sobre pares de
+      rectángulos); no hay una tabla formal de subtareas/puntos en el PDF.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Para los datos de entrada de la izquierda, el resultado correcto es
+       <strong>22</strong>:</p>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6 5
+7 3
+3 4
+3 3
+6 1
+1 1
+5 5
+5 5
+3 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>22</pre></div>
+    </div>
+
+    <figure>
+      <img alt="Jardín de 6×5. Un área rectangular cubre las columnas 1 a 3 y las
+                filas 1 a 3 (3 rosas, perímetro 12); otra cubre las columnas 3 a 5
+                y las filas 4 a 5 (3 rosas, perímetro 10). La rosa de la celda (6,1)
+                queda fuera de ambas. Suma de perímetros 22."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAI6CAAAAACS96bsAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAD/h4/MvwAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAAd0SU1FB+oGGwgdDxKTl08AAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMDYtMjdUMDg6Mjk6MTQrMDA6MDAM6zo4AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTA2LTI3VDA4OjI5OjE0KzAwOjAwfbaChAAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0wNi0yN1QwODoyOToxNCswMDowMCqjo1sAACt1SURBVHja7d13YBR1+j/wZ7Zk03sjQKghtACCdBEBRVTEeiKKFNFDsYvt7uud3vdsd7/v2bCBgoicWABBARUQUDoECDEk1BCSkIT0srvZOvP7IwkEmJmE3c8nz2b2ef1jMiNPnp1978zslM8IEhCCR4fdAPFvFECCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElQUQIKKAkhQUQAJKgogQUUBJKgogAQVBZCgogASVBRAgooCSFAZPPx3p+t4dqUT2211AXjeZdOeq+tSTHJ/08M/OfZoBL9WxfyORn7VHcXJArfiQm1tR36tC2VSPL+MCIXh4fyqSwUH+slM9nQN6Fx4u4tbr9a0jd25LQld9pQMk/dlFBi+WrSN34IxzHcs4Fj9+gdm8qvuTJPd8HgaQNB5/k9bXhKCQc+tOOgFA7/WQS9wXDCg47nYQdBzrC7Jb3boSwhBRQEkqCiABBUFkKCiABJUHL9T+b6H9jJ/+UJV+WB+x9J0hdIODkfRw9aFc2u5JX4dwONZPKoe4tpzGYeaYfyO/rXIrzfBfv3im9HzOzPUInoPCCoKIEFFASSoKIAElV9/C24w4SYnu2KGg3sfcXNr1bjWfSfDZvXZS7m12loUQBg3n2W17889z7HXcgfTZjcv5dhr69AmGBiuUgDAwfVibhfbI3YOnr22DgWQoKJNsLa4aiuqYqKjsNtoPQqgdriLC8vOnT11OqV7t6jYzomIpzeuAAVQM6p3/rw9xwEAOwCC+o29dWgwdketQQHUCNfZ794pOv9bfXr6pqcndmgHe/gUQG2oS/905cVf5zPnzZg5yPdXgu3gM0JaVr/ioRWXHk6yLXp4nQ8cZ2lBKwMoWq3YnRIV697PlZma/X+/YTfWIrVNsN3ibvwmJZT+EX09dqtEUf6qI7LT969NS8TurQUqARS3flLREEBBLBz2DnanRJH44fcKc5Z0fQ67uRaoBNC5eLOt6RXGDk7C7pQoWrleaV+v/rv+k7C7U6e8Dyge2GuVmgwYj90oUWT/8YjivH2/It7v0RrKa0Dnsqr+oY0/B9w1GLtRouh0scrM/IJu2P2pUgygeHpj6sedG+8wFEI5DhZEvHSyXGVmcX47DaDjq8pn+4ReSSmC5Og5lZn5uWOx+1OltA8ola/qeiPlr134o0Rl5plj2O2pUwqgfW3RALZXahJOrBWqs8vt2A2qUtoE131h3nospkf/4f04DpZLWLCrX4PtcvIbD5YBhQDatx51FRZCaEzCgJvHcxwNmngvIkB1dpBv70gpBLD2szoAALP5TObOsXOuxu6SqNB1MKgc6zMmYPenTiGA7uhra4pLAQBsOXmnnphE22Ef1jvhrPLMHn2w21OnEMCI5+utFQU56dkiQP0ms/5m7D6JMtUAdkvFbk+dQgCDhgAA5GXt37rPDrB7YdIg7EaJol6xKjPjfPwkvuoV0V27Trx+7Xf5AL/27+PTX6X8W3L/7fVK80L7xGG3p66FC1IDxrz8Ym8Ay+8HsRslivRTRynOmzi56eY4kedjuDzX4j0hkX+W/t8ZyPl9JHanRNGw+0/lyc/pPaM/AEiVxcWnLUJE9y4xYdi9Xqrlm5IM9x9d6Kw4LtLdI77rtsyPZc93BN0/DqDmwPGzOUeOAsCQwV0TrkrzrSMarbgrLnLi9sNQUerr13b7s+h7cn6RmSxMvi0cClcuPNr4+4EDADfMuSEau93mWnNb5uD+h8FWRwH0YSMfFw9UXjox4eon0qxZS5Zbmk/cdPDJu3r50EqwNQHsmAQgtI+BHvzW5LRPlxVcPKn7w7MSy35akH7J/1nxyv65Y31nV7BVe3YhAMHtaLwbv9Tl1XevirywltDFDF/0fKJ78TPpl/+v6+Zt9J1vxK0aGUECiPapHQdyOcOdgxZvqnbazM6AUFNAzM1zOgBsW1sp978WfN0rDbvd82234v+R6iChL22CfV731/5Rl5+9I7/HmNTOoToBoPzjPfL/58q+3XzlGpnWBDCvEHoPw26UtEwwREWm/UkSdI177B8rDoywrPc07GYbtWYf8FC26brR2I2SVhF0BqNB15C/HRsU71bKW5uD3Wkj+QC6LXXW89eY1W7Ouuku7D7JldtyUnne3gzs7hrJBtC5Z2L/aevqGr4qiZ+vveYxn9lnJa13WOV2zbxT2N01kt0HrFmd7jy3e9KLvQwg2T9d0OsvNC5CO1RTqza30haI3SAAKATQGO+W7GWr9t11Q+CxNVmTHupH54HboXyz2tyy0mTsBgFAIYBhd+d8ZwXrsQ+/1MUPe2RwNA2L0B6dqFabe7bQhwOo6/raQ9n5dRAaldo5Ps6HThySK5CnugkuLWltHb7kjwPqO3UaVO+SjMZQGkO63TKq7jgZfOSdVWwj1FcOlRMP9YgoVJmb6CP3itDXC83qF6M2t0tX7P4aUAA1q1OI2tzY2NbW4YsCqFn6eJWjF2EdsdtrRAHUrhEqIevTC7u7RhRA7bp5iOI1dIbrBmF314gCqF3Js/spzRp/j4/sAlIAtWzyNIUvwslzhmD31oQCqGHCfRPlp8/wnatLKIBa1vW+cTLXvETccZevbIDpca0aNzlm0eZLzocIKZMf7Ynd1wUUQG0b2fvrT480f5BXyNVPTQrC7qoZCqDGRT3a94Mjluo6CQD04ZGhw573rRErKYCaN3boyewdf1Q6BFP84NGpPXzsHfexdggHwQMG3CvVleg7BGN3IoMC6B+E8DDfHFqADsP4C9/MHwWQ4KIAElQUQIKKAkhQUQAJKgogQUUBJKgogAQVBZCgogASVBRAgooCSFBRAAkqCiBBRQEkqDwNoBTAsSmTwLe66aIXz/aaXCPXj7Se7WjJjYPfNi0QHc/Lk43yFyR6+if1PxS5ufVqr1sWx+1xekJRzccNr1p3FgAA9i11sqtu2F24hN+CMR5ysWxWn9HwX/uiEAAAQ8GmepcX5dS5a2QT6GkAdXsKRX69WjcH8wtgnXVdw6LQVQAAwLHvGSZGd7ZiDb8Foz8pMW22cZxo508BEgDoyg6W8/vwSBb5VaDkmRE/efgPW8PVtZBj9VM9mn4aBwAA/2RafdV4jq1LLz7DtNzGhgxEWRp+nbiCZ+8pmXJTPd1jERwe/sPWsEt8q9sbf2pYVbHd6jj5rf8AwM12DdW4OW9aICK/DTCAU36bRt+CCSoKIEFFASSoKIAEFQWQoKIAElQUQIKKAkhQUQAJKgogQUUBJKgogAQVBZCgogASVBRAgooCSFBRAAkqCiBBRQEkqCiABBUFkKCiABJUrbgxXXRIAWxHhCCkSSsCmHnANMKHHrFNNKXlTXDxfx565QB2m0SrWgygY/FGziM+EX/WYrQ2fleK3SPRsJYCmPvRER990GxbcVoc3EbqIi19CbG/nZdQYW9dKe1xOew285ncTskxgSajEbsbbVIPoLj8p1nZa7B7RCKaj6Xv+/0sSIK+w/CxvdMiaE+YA/UA/vFJ33sWch1vzHe5zyxYZnW7RQCA0/mrA6a9kMxzBFt/pfqprn2t9vFU/8yf5PphxoeVtsbR/kSnrfaLGzfU0c4gc2oBdC/Y/cQI7AaRnHt27t6LR2O25c565hR2W9qjslURty2beHMEdoM4al9acdkgrWLVV9Wv9cbuTGuU14DSuddD5nbF7g/Je+vlBgmu/2FDNXZnWqMcQOe/cp4b4Kdf/HauL5ed7vwgHbs1rVFMmGvV6gcmBGG3h8P8/kGFOac/OYLdnMYoBVA8/nbPWXHY3SF5b4vi02DWb7Jgd6ctSgGs+9e551L8dAMsbi5XnGdLP4vdnrYoZMy27JdHr/XXk09lNSozjxVht6ct8gF07f9k5PQQ7N6w5NlUZmYVYrenLfIBLHrHPb+j314Fc0BtDWg7h92etsgGsOrzPU9d0zRHABD8a2dwd5Xa3HOV2P1piuyZkLKl3fpkNK4AA0olsOVmO6WQzoHYzbaRE/Vqcytro7Eb1BLZADoKQ99p2gDrDruh/Nvdoqvf452xm20jJkHtogMD3SHIkmwABVdWVvPfzenpAMUzsHttK2kZtSpz4yKx+9MU2QCa+l1YBQgllVJAfITkSvWXLTAMWqsWwIQw7P40RTaA8a9e+Nm45GdH7D1jXGKc35wXSVOLWGwidnvaIhvA8Lub/bJrE4SPuh27z7aUqnYKPM1f9oTbSMsHWEQAyb+uio5MUlkqg7pgt6ct/nWEr5Wm91CcFT6ENsFMUQBlTL0xVGGO7skbsJvTGAqgnP+5VmHGyNvjsXvTGAqgnMTp8vd+BD5zFXZrWtPyra4hMeaoAOw229q0fcVm96UTheDnr6EPLGMtB/ClZyW9CbvNNvfW1e9kXJJAY+K/b/LTmwQ5avkTHRgeEep/l6aa7vnu0ZDmF6QJgdN+vjMcuy3todEmFBi7vjbo3WydJEoAOkHQJfz1tgTa/rJHAVQiREy7/lxe5vbMmuDhg/v2SI4L9tsrdHmiACoL7tJ5wPV/ttQHhwQHmmhB8UHLVY0uMJCuPuWLdmsIKgogQUUBJKgogAQVBZCgogASVBRAgooCSFBRAAkqCiBBRQEkqCiABBUFkKCiADJeBDquVw0yHqnRB959uhwLinIYPo/WmFt3xOl9GQWmc06mzZ7k1mmrUQBh4UK29fpz7XYF1+ptzwdWwsSfUQAJKgogQUUBJKj8+kuIycD85Qsut4nfc9UFJxg5VMccfNmvA7jcxvygXcDK5d/zOwwT+LLzXzbvy1xKhzjiiF8HkMeo17GmBI4dhzljOVbHQPuAjPHb/rZF+bZHASSoKIAEFQWQoKIAElSefguWeA6aGijwPDIVKPDsPYDrR9rA9YktOp4DkRrlD3l5GkDDm9+4PfynLXOXPR7G7eueUF36AL+Q6E8df5DfgjHsFatd/Hr/44Nf+PUunZNNoMdrwI69+PXqNHaL5hfAUmMKvyeuGqwFHBeM8bg7ld9hbsPvian84i3Kr149DaB7xo3cWgXxi2eT+FU/ve7v/IrD92Uvcaxe6XyBY/Utd0/lWP1L2XWKpxsjgeGFuZexSe23uoPrXpqb3xoKAER+a1cAp/w2jb4FE1QUQIKKAkhQ+WQAjQLPi3SMgv89d8d3ef1Olxxhn2Fb/fYkbodhdHnWzRwSKPbtwKtjTfM6gD/P5tHW/VxfNJcjSIsf5NqzVnm9+qLHBzXyyZ0Z30eLjaCiABJUFECCigJIUDE64KYLZtmUZA3i+MEQbUybBYvmbhRqS4wC2GUHyyuc6ses7srtnL7+6PTtAQzrOUae5dWqP2AUQEMC0wDqY3ncstsoVp/ANID8Li70B4w2dRLTzRDfbZrEtj5tgL1CX0IIKgogQUUBJKgogAQVBZCgogASVBRAgkr1QLSzoApCOoZh90g0TCWAZ7cfzquRgjv0n5CC3SXRLOUA/vbNugIAAIjZ+fBoOt1E+FAKoLjpjd3drjNZ8s5KFcvLXxmB3SfRKIUAug+/WvXQtT2Dqw7/uq0SfklJjcJulGiTQgArF9hfmmYCgNG3/HtFlbR77yTsRtFYa0NC6c4rbuQD6Di0/9U7G47QdJlf+AMU+MBzPRHYqypLq4oKEpPiY+LD2F7FShrJB7Bm3dTbmo4Qdh/8q6Xeit0nAvfpfZkZe6sBAKKuGt5zVC86ZsqBfACl4HkXZnSItYQhPkoHS93BD1c1XZZdtWUL3PrU0HDsnjRIPoDxbzX7RZKgZz/sPtuau/Tbj45fNOXH7f+8KZlGlWGtFZuVkkrTdcOw+2xr2Y8/d/ySSdVPPLmf5wiO/qnlAJ47bJ46jeVNFO1BwfOrZcYi3fBCBnZjmtNiAB2fZ8x4IRW7zTbm+vdO2ek7vy/Bbk1rWgig27zgsymv9sHusq2t32qWn/Hxdq5DQPsh1QCKjsxH3zz10+oiP7vzq/i9IwpzqhfsxW5OY1QCKDkzXrj7u0o49fd5O7DbbFuvpSvO2r6pCrs7bVG+GkYqfWlHqUUEcFt/svzleuxG25DzcJ3yzMyzdFqcJeUACjH/a60tTt+QZQfXtg49umF32naKLSozjxb1x+5PU1QuSDV0BslxzQNrPskF8ddhT2J32nZy1U48HinEbk9b1MeGEUym6Llh7xyHknSr/5yMbzj/q6TMTVfnMtTygejwB+4KAyg6jd1p21EPYEkFdn+a0opTcSE3XwVgLsPutO0UONTm1phbW4e0QmsuMRrkZ5cixKhuY4N5Pkzb/7QmgKEJAIF+dCnSQNXXGk+HYVhq1UWWgQaI7YrdadsZqHondEIQdn+a0qoA2lzBqdHYnbadNLU1YGd6IhdTrQlgbQmk+dOZkB4mlZkDk7Hb05bWBPBQRtCkUdiNtqHgPirfMwZ0wW5PW+QD6MxZt7286RfrTyfuuMfU6ooa8LDy9Y8po+k7CFPyZ0KqXt/ZYdz1Q0MBAKxf/zry8b7Yfbapa+8rLpWfEzTvGuzmNEY+gHVrzXm7NzwwomOArWzvun5PDMFus409mvWN/MHom2/xo8NRbUI+gGGTNtZCRsaAq2PEIvOke/3ui1/YzBzZSwI7zaOBwhiTD2DMG/EHzW5BPBCdOmliInaPCCZMs+TaL50opLzgb5sC/uQDqE/5sCLfYgyNTPTXKz+eHfThtsqLJ0X3+9/RdF8wa4qXY8XEYLeGa/zVHy8sbHYbsD5p+jMcnx/mtxg9K06Dwl8Y8H6WaLfaJAgKNJk6vngDnYPjgAKoSJg0vjLv8G+ZVSEjB/frmWSksYl4oAAqE0yJCUMfdDqCdDpBR0ME8kEBVCMIOggIwe5C02i7QlBRAAkqCiBBRQEkqCiABBUFkKCiABJUFECCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElQUQIKKAkhQUQAJKgogQUUBJKgogAQVBZCgogASVBRAgooCSFBRAAkqCiBBRQEkqDwNoNT0DxtGjRKYBlkAnmNR6dh+6oSL/8t5FC2+5fkudvk/KXlWbuzpGAkAQFeRDwBg6s2yV+loD5OHfbVMsOX2ZrmgpaMNA+onx4gAoKus6MmtddAVSp1FftVPRsXwqw7H0uWeuurp8GyuP1/nAgAwrnsLACD2PywHk7bN+lsSvwDm/eX/WA717Hig4Zki0251AoDxlx8XuHi1DqZ3Xc/ZvS+jwPjUjTc7vS+jwDVL9i31NIDi4MYntjQ8ST14AsteHUHXdOa2ICApeALLbbC7ceTefqMBAKB4B89H2axxjORYPbr/aI7Vg2UD6OlbITR9zN0AACAx/dS72Ja7rDrTj7lLar4gwM1vAwwAIsdNJIDk5ljcKb9g6FswQUUBJKgogAQVBZCgogASVBRAgooCSFBRAAkqCiBBRQEkqCiABBUFkKCiABJUFECCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElQUQIJK/b7ggjIhqiPLu7gJuZhKAHN/2Flsg4C4oXf0a309Qq6IYgCdy7/JKpIAAHZvmX1nCHafRKOUAmhdsOR4449lWwvrZwRiN0q0SSGA9lULzl4zvFNgXc7mAoATH8Tfjt0o0Sb5AIqn36t/4eb+MSCeuf6znQ74Y9WwJOxOiSbJB9Cy/tQzj0cDgK5btw6v/g5wcNfd2J0STZI/Dli1etJj0Y0/j7s3GSA/C7tRok2yAXSeKnks6vxv1w8EMJdgN0q0STaA9SdHDbswo2cyAPAbOZP4Ndl9QH333s2mC1E6EYKxGyXaJBvAkIsH3NXrxYgE7EaJNrXmYgSLE5L7YjdKtKkVAbRUAKQOxm6UaFMrApiVB3FjumI3SrSpFQHcfxwmTsbuk2hUywE8t+3soD91x+6TaFTLAVy5P2YOrQAJJy0GMOO74sfuZ/kcLkKaaSmA5gX7586JalUpQq5cCwGU3l1/16PJ2E0S7WohgMuXjXyyD3aPRMPUA7j1nS7zB3N+BDPxa6oB/OMfoS+NoDuHCUdq8Trz1/q/jPH0gcKEtIZKAMv+WvLX8QFNv9krbdi9Eg1SDmD134++ONF0/tespXRNKmFPcQtrfvPAi1POr//g7FpHKHavRIMUb0x/e8VN4Xsbn7Iu2Yp+LX2Kvg0T9hQCWP/RJ+UHj0hNvzoqim69FrtVokXyAbR+/n4xpDefkjQmDLtVokWyAbSsfL34kkm9bsDulGiSbABF072XfDt2De+F3SnRJNkAht17L3ZfxE/QiTaCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElQUQIKKAkhQUQAJKgogQUUBJKgogAQVBZCgogASVBRAgooCSFBRAAkqCiBBRQEkqCiABBUFkKCiABJUFECCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElSeBlBqGjO/4b9COxpCX4B21Kx2KCx0T5/EJdTUOAEATHUAAOAuY/lIr3qxMlzyvow8XZW7PMD7MufZxYb/1tXZASCgzlnD74k+gVaXmd8DqwKcdbUObtVdbtnJgodv9NjDDRERLJUAAIZElr1KJfEGbgEUnOVMm4XihiUbHSIBgGA1x3NrHYRqKYpj9bLgEH7V4dyhfjJTPV1xOT+Y4gAAMC17HAAgeZeeYav1o9d0FXktB92xabtYrgEdwwsBAODVWXYACPh26QZ+a5GgF51v13OrHjBl6nQ7t+quUbJvqacBlCLCG35oeHyIPpZlAK26qGhuCwKi9LFMN8GNu9FhYWEAAGHGcH6tQ5A+JIRfdWPja+DCJZ8QT7+EnN90N/xX4rjqZk2CdtSsdigsdDoMQ1BRAAkqCiBBRQEkqCiABBUFkKCiABJUFECCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElQUQIKKAkhQUQAJKgogQUUBJKgogARVywGkW8gIRy3dFyza7MEm7CaJdqmvASXn1gdeL8TukWiY6hrQ/dunuwunubB7JBqmEkBx2+K9RfVAg5kRjhQD6Nq22mGv4DcSDiEAKgF0102PCPjgyyomf6U6J6QTx+GGeBILzyQlBWF34YtqcgI7x3hdRTGAxmtiBRiyxusAOo4c23XKUm0Mjk0d1qdLYBsvJO+UZWfuL6o3B4UlDRjavRN2Nz7EmX1s9wlzjT44JnVo3y7B3pRSDKAuDgCCvD1OLR1673hlkRkAAKLWRoya06fNF5bHLCu/LS4rcQEAGDcnRt89s319ejj6492jFUUNQ+NGro0aOmeAF7VaOA7o5RcQ8/Kvdp//El1VBdmZc+40ttVi8lLW0u9zm352FhXBqX3z+2L35BNs//1q+/lRiKurIStr5lTPDxW3EECvToOIWQs25100pWbTmcyp3nxe2oxt9bJddRdNOZ1fePefIrH7QiceW7Dx1EVT6rbkZU0d4mk9lmOLX+rQS79eFuDj7+U9OZzj32TEvfjt3MumbTxe/lAcdmfYsl/8+bKhdnM/yH36Gg/rcQxg7rubZaZaVoX0iuL3Rxn58f1cmal576dMYTm6bztU+N4Gman1Pwb2jvWsIL+rYSwbVspOt/+y8gortb38z07KTi/57Bh2a7isG7+Sne7Y8tUVVmrCL4D7Pld4okX+0oPc/igb7iV7FQbp3/htGXZzqDIXWeVnFH+x17OK3AKY+4VizDI+NPP6q2xsXF6uMEdausV9RaW0JV85Zjnv1XhUklsAd36jOMu6+xCvv8rGR3mKswp/L8buDtHBZYqz6vcc8KgkrwCKpSqPlKrx7W1wbbHKWi7nLHZ7eKRSq/JM836PavIKYHWpyswq314DFqg9LiinCLs9PDUlKjPrfGsNWJKnMrM+26d3pLLVdlFL/HgNWHZKZabtiEePKOMVwNxMtbkOn34Xd6pegVFuwe4PTYHqrpOzwJPzZrwCePak2tz6M5z+LBOZtWpzz1Vi94emRPUoqN2jN5VXAO2qF/KL/B7KyIBZ9ZNs999bFByqT0KWPLp6mVcA4xLU5prYPrGXsRTV609jeD4N07fFJKnNNSa1tk5zvALYOVVtblBnTn+WicGqEUvw/TPZvHRQvR4tMNmTi/d4BbBDd5WZ+sQITn+WiX5qD80NTPDfwSTiU1Rm6j37ZPJamkk9VGZGDuL0V9lIUwtgn47Y7eGJ76UyM2yIR1niFcAgtdtVYkdx+qtsJKpdez+oC3Z7eALVroaM9OyKQG7bk/4ql53GDOP1V5nQ3xKvPDPNp3dfOes1RnlexAiPSqoH0OX5JfkjZiteupnylPd383E1b4ji7vS9N/rzFamD5ipuHLrM9+xicfUAFtsBLJ4dszNOeUxhTtjEKXwWDzNRLw9UmNPl/nZ0Wx97xonzFeaETLjLs42p6r869lMFwIEsz5rtcNdQ+RmDnvL5+xtH3K1wGPPRa/17oJK4OxR233vP9/DuYMV7Qpzf78/LzXQB5L+8Mrn7dWlXXnrI3INy1xz0fCTliku1Nd1D+9fKTb/zdv89Ct2g/xP75U6HJM/z9JZV5RvT02Jr7HoBAFymsEhPzlwE3uFcnH7Z1GufG9smS8o7Cf/ouuKyC8oC5s3u7kkxLTHd/PHi3ZdNHf78BE8LKgZQ38frvZ3o2alrFl68B5l0z/1X6fkuIjYGPj/s020XTxo+8zaPTjZpS/iMXj98ePFZ3/g/Tb/a47sred4XDKZxqcmfH2k2YeSsKT59FriZjvd2X7y62YUvgVPvv669DOrAlXFMr+TFh5tNuHrWbV6Mm8M1gABJj/fKLC/OOVEPsT2TO3QYOcznv3+cpxuROOpUxZnsfAm6d++UmDyxh/c1tSHhkZ4ZZSU5JywQ3TM5KXHYSG9GJ+IcQDDdemv1ueO55ULnbp0SI9twKTHQdbarouB4fl1Ij+SOcTRC2wXGm26qPXfiVBl07N4p0ctrM3gHEAAiI1O9L4LDkJBwNXYPvik8nNGxDP+9tIP4BAogQUUBJKgogAQVBZCgogASVBRAgooCSFBRAAkqCiBBRQEkqCiABBUFkKCiABJUjALYnu4VE9pVt1rH6HrA/CEs31Sx+BZ+t38LtsKhLJuVSryv4ccYBdCe6X2N5nK4vmjGzRIv0D4gQUUBJKgogASV1wH06Sd+tCX/HbvcK15/CRn1Dvsb6xyvPxnr1bPa1Qgln/wPh3sBXaN5NaxtXr8VvXuzb0pc8DDHQTBOr3iaX3FyhXxyH9Am8XyOCN/q5Mr4ZACJ/6AAElQUQIKKAkhQeRpAieeoRgaBb3We4/zpuV5qo+O6whB4jh1qlF8wnr7T0oFwp4f/tGU28/YkbscBdafrNvNLoPFw+Q5+C8aU69rF7yu8sSwz2aOHTreKu052suDhGz13N89Pi57r+RWu1QUdz+o6EDlW14vcPvYAYPhGboRtTwNICBP0JYSgogASVBRAgooCSFBRAAkqCiBBRQEkqCiABBUFkKCiABJUFECCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElQUQIKKAkhQUQAJKgogQUUBJKh4joFxEVHgNGaFZHPpjNweK2Kvd+sCgrkOtyG53Xq+b4NkcUZxKu2yWO2OsETPF1AbBdBcIiQFcagrWSpKT9aY4ntExXB4Je6a4uPH64KS+neK47icqg/XdevPvqyt0tEYC6HqSMhtPDp311bnZubXmMfP8XyskzYJoKV8wycTn+7IvrAzf+N/050S6GJvenBQKOv1lOPIV98UCAAQOvnpgSZeC8fx8zzh4X+xr7vzwzONo6dI5V2WcWjcXXv8h/XF4YPHDuntzVg7Em+itfCTqwLhyUL2pe1bJugaUifo4z+pYFzdsXJoQER0VKgBwJDyq4PX8tk+AiKfZ1/WPScUhAYQ9QKHvi0HH4kLTnvjpNMtelOG9xpQctT8tDCznsuQOuKvL+YEBeh1Tke96C57zjA1lGn5lW+VTJqQ7DqyMcPqOj1/bWc+O4Kn/7uHS91De81N7607ZTLz8mLtsvcKTLMfT9F5uVh4B7B+zdrwviesXGofWnC0z8wJnYXCjUtOOSTzP3uNYVl9x+LAj24yCDDl4eWv17qOr/pzCI/XYP2Rx9YRQFpxdkBc48BTxvGjWJd3F7y8viby7/fFef2p5B1Ad+T7Qa6IT+u8r3SZul9+u/O1TkY9RPScPH+LDc782LMDu+r2b3VvjNMBACTNcr3icmydwSWAm5eG6cwc6uZt6rhgcMNAcZIQwHooPTHvkV1W09+nx3pfivdxwNDx8eHhPbgMCJm5adxbPQL1APrglLf76AG2FTGsvq1q+oTGhRN/d6IgnuUy7F/GZ5FzeSwc8evC+9JCIyIiIiIiIiNYH3+Qzj6yw6p78k8M8sc9gEKgABDAZfcpo+7hro2F9d1nRgJkVzKsfvjqC0cuIvrqhCAer6FqxfHpw3mM0Fi1Ju56Xof+AKr+sssmjJjJ5LBG+z0TUnIqbdL5Xww3hgFY6hmWnz0j4vzPQgjoB/I41r1q9cT7dRwC6P4+r4+D21i+5mXrrBD6Yk8mxdrsTAhzFQkjLxybE7pFAADLXZ24Zj+LpRB8TzD7l7B1Se+5Jh4rQNtXVb9nR3YbOGpwGPvi7qPv14L+9mFsjoy23wB2ndE8EsZwvTuU08FisfiI4bFB7HfVCpbaZ/bj0bD71xxnZSVkbl3a+5bJzJ+6V7UkX4Lg2TFsqrXfAIZc/K3ULkJqJJ+/VL3I+fjccOZlXV/umnEzl4Ydi8sBAGy20tyDPz10C9viYu5KNxiu62+EsjIpKtHbfbj2G8CL1ddKMDyBS+mKBbveuoPDecQfvho5ncN2HQDcnW+oPpsPAOAqLMkrmMH0r9RsLAMw3Fq6cs9Zq2DqMHpyslflNBJA8YgFgsYzPAx4ofLexesdZRzO5Bz5NGZWNz5LI/CJelttUfauAzYAV8bb+odZFq/eKEgg7VtRajZXAAjbt8y50Zu1oEYCKG21wK2D2b8Y96ENGw/YdJ9lz57E+HiBeVHe07yecW1IBQAoPXl405YagBOfdZnIsHh5hgTgODemR4RYs/+HwoLCQtsd3vTKaRm0LalmQ23yrE6sy7r3f73/oA1ALFpZWD+F7beQr9dPnsLtChsAAIiPH3Ht6OUZAIe+HB7hdbUm9jN1AIaRj4wNAYAb0j44Iu39MMGLU33t9zhgc9KGLOO8key/pwYkjZs3fbAJAPa8leliWXnPwtSZPPYYLqLrN++VMQDO9N/Y1aw/AwCBT08KAQDoOPuBJIAdq7w45KiJNaCUt8gy44FI5nX1gweDvSRr5/pMgPQlrzE8tVD6vm1OWhssmaDbBfMhKNw0hVlFZwWALmFs44rLNC19Jdj3Hx7mcT1NrAGtn+674VlO6xNTl1v+9tJVAMLqInaHjF1f7Lr3urb57N94XwiYj7I7RyTaAfTJ53cekkdEA+Sle15PCwF0rVsy7OUUfvdtBN39QqIgleawO7e1dcmo+6Mbf9YJIHB8FwLHDAeoKWZWTzAA6KIuLOwBKQBleZ7X08Am2L3nzY4vD+H6qNvJG//rEE7ZA9mUkwr/Y5nkPt1Yu8gN7qpcAYR4Ltc7QMrQLeCqZVbOEAYXrbZSOu8FmxdXgbT/AIo5bzleHcf3dZimfusAK6uDgdLWQxE/72ispj9jB9ueNwAC5/bh8iKik5k+idoYAyDVX9gbiY8CAC+eMtzuAyid+TDnpTs5vwxjWpAFwphtKCvdJ040/92RmQkQMCmVT/MhACYWV+41COqqE8XyCwEMDgavUtTuA1iy9OcnZnN/FUHhlUIyswuywjoGXAizrUrUBUcABPPZAgOIANFx3pdpZOgSX+IuqL9wlY0JwOjF8YH2HsDyb5bPfuL8i3BLej7voihCZH9WFxYLw+fXn29Tn/l5XeCoOwXJmMJnN1aqgehBDN/msJFrJPOJ6PMVnQBxXTwv184DWLP2k3tfunAA+pShE5cxEsSqauEGZmsRoX/z+9A3rqgLGDiX3yIqOgFdxjGsF3PHeofr96uagmMxA3QZ6Hm59n0YxrL+vcl/uxA5++I9fF6PY7sj6s+R2K/WM0f3mUaPZ1gveEx/wbHR0vRrfgnAAM+PQ7fvANp/emv4i6K1kbn20/wkZmt0R3Xlha+9lV8HzLqKy51VPLgqzlWc/55auy39mtlM90sSXgx3p2c5G3/LyoUBE73YOWmTTbBdApDYX3ru+uVlZ9KXTb+5qw/terQvs+K7Pisff2sPowAAUL3m0I3Ps78ilRP34aeO9p45OV4PAOBauXzo04OZ1g+a8OAi24LeDWeeXDuyg2/z6r53DoM2XMr6TBjAfSdYlxXXDwRdYNB5gfroteyqP6EzBPT7T5Hd4bCXLuw5p8DNa+n8Esd4aA7LK6GgD75xa53T5ahd1GfUD14NnSFDLJ4dGvzvMrckieKKfsKDud4U4z40h1t07PzRArDtUKJJYPodddM/MkG0NZ8yPoVd9aiQOsj5+/JJ/aXTO2vmT41oP/squi56cFu3ZNw6OerU+oxxj/VnfWBASHgzeskbuQ+lBlR//3HunOe8uqxW4HFTVjO1n+88VVLhBtBF9eja744+7CofeG39Jb27Fz3A7gq7ggXLygTJEBSceNWY8bF8Lp0HAIBNM89FP/Qmw4JS5b+/qJAkIShYHz/6jqvDOBzdkap3fnRAHxVYW9tjzq2xXn02eQdQrKp3NOzLSwZjYBjDSzDrK62XfrQTGN6EKNYW5pWIQRFxHYJCuQzK0cR6zq2LYHSLWQOpuuTI6WoxNLpXl8hwTkN32itPZxUJUWnd47z8bPIOYHvmcEo6vbH9bHubsdndkt4QyHMHy13vAEOw13+BAkhQtcvPN9EOCiBBRQEkqCiABBUFkKCiABJUFECCigJIUFEACSoKIEFFASSoKIAEFQWQoKIAElQUQIKKAkhQUQAJKgogQUUBJKj+Py3YKnrf4O87AAAAAElFTkSuQmCC">
+      <figcaption>Ejemplo: \(l=6\), \(w=5\), \(n=7\), \(k=3\). Las dos áreas
+        elegidas tienen 3 rosas cada una. La de abajo a la izquierda (columnas
+        \(1\!-\!3\), filas \(1\!-\!3\)) tiene perímetro
+        \(2\cdot 3 + 2\cdot 3 = 12\); la de arriba (columnas \(3\!-\!5\), filas
+        \(4\!-\!5\)) tiene perímetro \(2\cdot 3 + 2\cdot 2 = 10\). Total
+        \(12+10=22\). La rosa de \((6,1)\) sobra y no se cuida.</figcaption>
+    </figure>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Geometría (rectángulos)</span>
+      <span class="ptag">Sumas de prefijos 2D</span>
+      <span class="ptag">Two pointers</span>
+      <span class="ptag">Línea separadora</span>
+      <span class="ptag">Prefijo/sufijo mínimos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En una rejilla de \(l\times w\) con rosas (varias pueden compartir cuadro),
+       elige <strong>dos rectángulos disjuntos</strong>, cada uno con
+       <strong>exactamente \(k\) rosas</strong>, minimizando la suma de sus
+       perímetros. El perímetro de un rectángulo de \(a\) columnas por \(b\) filas
+       es \(2a+2b\). Imprime ese mínimo, o <code>NO</code> si no se puede.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(l,w\le 250\) y \(n\le 5000\) en \(0.5\) s. Hay hasta
+                \(\sim(lw)^2/4 \approx 10^9\) rectángulos posibles; el número de
+                <em>pares</em> es astronómico, así que enumerar pares es imposible.
+                Pero \(O(w^2\,l)\approx 8\times 10^6\) sí cabe holgado. La pregunta
+                es cómo bajar de "pares" a "uno a cada lado de una línea".</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué hace difícil al problema?</summary>
+      <div class="body">
+        <p class="q">¿Cuántos rectángulos posibles hay? ¿Y cuántos
+           <em>pares</em>? ¿De verdad necesitas mirar los dos rectángulos a la
+           vez, o la condición "disjuntos" esconde una estructura que los
+           separa?</p>
+        <p>Aunque supieras hallar rápido el mejor \(k\)-rectángulo, aquí pides
+           <em>dos</em> que no se toquen. Lo caro es el acoplamiento entre ellos.
+           Si encuentras una forma de <strong>desacoplarlos</strong>, el problema
+           se parte en dos búsquedas independientes.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cómo se ven dos rectángulos disjuntos?</summary>
+      <div class="body">
+        <p class="q">Toma dos rectángulos disjuntos cualesquiera. ¿Puedes
+           <em>siempre</em> trazar una recta horizontal o vertical (alineada con la
+           rejilla) que deje uno de un lado y otro del otro? ¿Qué pasaría si no se
+           pudiera?</p>
+        <p>Afirmación clave (teorema de la <strong>línea separadora</strong>): dos
+           rectángulos alineados a los ejes son disjuntos <strong>si y solo si</strong>
+           sus rangos de columnas no se traslapan <em>o</em> sus rangos de filas no
+           se traslapan. Si ambos rangos se traslaparan, existiría un cuadro común.
+           Por lo tanto siempre hay una línea de la rejilla (entre dos columnas o
+           entre dos filas) con un rectángulo enteramente de cada lado.</p>
+        <figure>
+          <svg class="diagram" viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- Panel A: línea separadora vertical -->
+            <rect x="20" y="30" width="270" height="165" fill="none" stroke="#2a3252" stroke-width="1.5"/>
+            <line x1="160" y1="30" x2="160" y2="195" stroke="#fbbf24" stroke-width="2" stroke-dasharray="7 5"/>
+            <rect x="45" y="60" width="80" height="105" fill="rgba(91,140,255,0.14)" stroke="#5b8cff" stroke-width="2.5"/>
+            <rect x="195" y="50" width="75" height="85"  fill="rgba(52,211,153,0.14)" stroke="#34d399" stroke-width="2.5"/>
+            <text x="85"  y="118" fill="#e8ecf6" font-size="18" font-weight="700" text-anchor="middle">A</text>
+            <text x="232" y="98"  fill="#e8ecf6" font-size="18" font-weight="700" text-anchor="middle">B</text>
+            <text x="160" y="214" fill="#fbbf24" font-size="13" text-anchor="middle">corte vertical (entre columnas)</text>
+            <!-- Panel B: línea separadora horizontal -->
+            <rect x="360" y="30" width="270" height="165" fill="none" stroke="#2a3252" stroke-width="1.5"/>
+            <line x1="360" y1="112" x2="630" y2="112" stroke="#fbbf24" stroke-width="2" stroke-dasharray="7 5"/>
+            <rect x="395" y="48" width="100" height="50" fill="rgba(52,211,153,0.14)" stroke="#34d399" stroke-width="2.5"/>
+            <rect x="440" y="128" width="150" height="52" fill="rgba(91,140,255,0.14)" stroke="#5b8cff" stroke-width="2.5"/>
+            <text x="445" y="78"  fill="#e8ecf6" font-size="18" font-weight="700" text-anchor="middle">B</text>
+            <text x="515" y="160" fill="#e8ecf6" font-size="18" font-weight="700" text-anchor="middle">A</text>
+            <text x="495" y="214" fill="#fbbf24" font-size="13" text-anchor="middle">corte horizontal (entre filas)</text>
+          </svg>
+          <figcaption>Todo par de rectángulos disjuntos admite una línea
+            separadora: vertical (izquierda) u horizontal (derecha).</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿En qué se convierte el problema con esa línea?</summary>
+      <div class="body">
+        <p class="q">Si <em>fijas</em> la línea separadora, los dos rectángulos ya
+           no se estorban: uno vive a cada lado. ¿Qué necesitas saber de cada lado
+           para combinarlos de forma óptima?</p>
+        <p>Para cada posible línea de corte, la mejor respuesta con esa línea es
+           <em>(mejor \(k\)-rectángulo de un lado)</em> \(+\) <em>(mejor
+           \(k\)-rectángulo del otro lado)</em>, y son independientes. Recíprocamente,
+           cualquier par partido por una línea es disjunto. Así que:</p>
+        <p style="text-align:center">\[
+          \text{respuesta} \;=\; \min_{\text{líneas de corte}}
+          \big(\text{mejor } k\text{-rect a un lado} + \text{mejor } k\text{-rect al otro}\big).
+        \]</p>
+        <p>El reto se reduce a, para cada coordenada frontera, conocer el
+           <strong>mínimo perímetro de un \(k\)-rectángulo confinado a un lado</strong>
+           de la línea. ¿Cómo precomputar eso para todas las líneas a la vez?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Cuatro arreglos por coordenada frontera</summary>
+      <div class="body">
+        <p class="q">Un rectángulo "a la izquierda del corte tras la columna \(x\)"
+           es lo mismo que un rectángulo cuya <em>columna derecha</em> es
+           \(\le x\). ¿Notas que basta indexar por <em>una sola</em> coordenada
+           del borde?</p>
+        <p>Define, sobre todos los \(k\)-rectángulos, el mínimo perímetro según una
+           coordenada de su borde:</p>
+        <ul>
+          <li><code>porFilaSup[b]</code> = mínimo perímetro de un \(k\)-rect cuya
+              fila superior es \(b\).</li>
+          <li><code>porFilaInf[a]</code> = mínimo perímetro de un \(k\)-rect cuya
+              fila inferior es \(a\).</li>
+          <li><code>porColDer[d]</code> = mínimo perímetro de un \(k\)-rect cuya
+              columna derecha es \(d\).</li>
+          <li><code>porColIzq[c]</code> = mínimo perímetro de un \(k\)-rect cuya
+              columna izquierda es \(c\).</li>
+        </ul>
+        <p>Con <strong>prefijos y sufijos de mínimos</strong> sacas, para cualquier
+           corte, el mejor de cada lado:</p>
+        <ul>
+          <li>Corte horizontal tras la fila \(y\): abajo necesitas fila superior
+              \(\le y\) (prefijo-mín de <code>porFilaSup</code>); arriba necesitas
+              fila inferior \(\ge y{+}1\) (sufijo-mín de <code>porFilaInf</code>).</li>
+          <li>Corte vertical tras la columna \(x\): a la izquierda, columna derecha
+              \(\le x\) (prefijo-mín de <code>porColDer</code>); a la derecha,
+              columna izquierda \(\ge x{+}1\) (sufijo-mín de
+              <code>porColIzq</code>).</li>
+        </ul>
+        <p>Falta lo pesado: ¿cómo llenas esos cuatro arreglos recorriendo
+           <em>todos</em> los \(k\)-rectángulos sin que explote el tiempo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Enumerar los \(k\)-rectángulos con dos punteros</summary>
+      <div class="body">
+        <p class="q">Fija la banda de filas \([y_1,y_2]\). Dentro de esa banda, al
+           mover el borde derecho \(x_2\) hacia la derecha, ¿el mejor borde
+           izquierdo \(x_1\) (el más a la derecha que aún deja \(\ge k\) rosas)
+           puede <em>retroceder</em>?</p>
+        <p>No: al crecer \(x_2\) solo entran más rosas, así que el \(x_1\) óptimo es
+           <strong>monótono no decreciente</strong>. Esto da un barrido de dos
+           punteros de costo \(O(l)\) por banda. Con una <strong>suma de prefijos
+           2D</strong> cuentas rosas de cualquier rectángulo en \(O(1)\).</p>
+        <p>Para cada \(x_2\), empuja \(x_1\) lo más a la derecha posible
+           manteniendo el conteo \(\ge k\); si en ese punto el conteo es
+           <em>exactamente</em> \(k\), registras ese rectángulo (su perímetro
+           actualiza los cuatro arreglos). Ojo: como un cuadro puede tener varias
+           rosas, el conteo puede <em>saltarse</em> \(k\); por eso verificas
+           \(==k\), no \(\le k\).</p>
+        <figure>
+          <svg class="diagram" viewBox="0 0 540 170" xmlns="http://www.w3.org/2000/svg">
+            <text x="270" y="22" fill="#9aa6c4" font-size="13" text-anchor="middle">Banda de filas fija [y1, y2]; deslizamos el borde derecho x2</text>
+            <!-- ventana resaltada cols 5-6 -->
+            <rect x="264" y="44" width="112" height="56" fill="rgba(91,140,255,0.16)"/>
+            <!-- 8 celdas -->
+            <g stroke="#2a3252" stroke-width="1.5" fill="none">
+              <rect x="40"  y="44" width="56" height="56"/>
+              <rect x="96"  y="44" width="56" height="56"/>
+              <rect x="152" y="44" width="56" height="56"/>
+              <rect x="208" y="44" width="56" height="56"/>
+              <rect x="264" y="44" width="56" height="56"/>
+              <rect x="320" y="44" width="56" height="56"/>
+              <rect x="376" y="44" width="56" height="56"/>
+              <rect x="432" y="44" width="56" height="56"/>
+            </g>
+            <!-- rosas (puntos) -->
+            <g fill="#e8ecf6">
+              <circle cx="68"  cy="72" r="6"/>
+              <circle cx="180" cy="72" r="6"/>
+              <circle cx="284" cy="72" r="6"/>
+              <circle cx="300" cy="72" r="6"/>
+              <circle cx="348" cy="72" r="6"/>
+              <circle cx="460" cy="72" r="6"/>
+            </g>
+            <!-- ventana = k rosas -->
+            <text x="320" y="40" fill="#34d399" font-size="13" font-weight="700" text-anchor="middle">= k rosas</text>
+            <!-- punteros -->
+            <line x1="292" y1="112" x2="292" y2="100" stroke="#fbbf24" stroke-width="2"/>
+            <line x1="348" y1="112" x2="348" y2="100" stroke="#fbbf24" stroke-width="2"/>
+            <text x="292" y="128" fill="#fbbf24" font-size="14" font-weight="700" text-anchor="middle">x1</text>
+            <text x="348" y="128" fill="#fbbf24" font-size="14" font-weight="700" text-anchor="middle">x2</text>
+            <text x="264" y="156" fill="#9aa6c4" font-size="12" text-anchor="middle">x1 solo avanza a la derecha conforme crece x2  →  O(l) por banda</text>
+          </svg>
+          <figcaption>Barrido de dos punteros dentro de una banda de filas: el borde
+            izquierdo \(x_1\) persigue al derecho \(x_2\) para encerrar
+            exactamente \(k\) rosas.</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+        <p>Junta las cinco ideas. Esta es exactamente la solución modelo oficial.</p>
+        <ol>
+          <li><strong>Suma de prefijos 2D</strong> \(R[x][y]\) = número de rosas en
+              el rectángulo \((1,1)\!-\!(x,y)\). Construir es \(O(lw)\); contar en
+              cualquier rectángulo es \(O(1)\).</li>
+          <li><strong>Enumera todos los \(k\)-rectángulos</strong> recorriendo cada
+              banda de filas \([y_1,y_2]\) y deslizando dos punteros sobre las
+              columnas (Pista 5). Por cada \(k\)-rect registrado, su perímetro
+              actualiza los cuatro arreglos por coordenada frontera (Pista 4).</li>
+          <li><strong>Prefijos/sufijos de mínimos</strong> sobre esos cuatro
+              arreglos, y combina los dos lados en cada línea de corte (Pista 3).
+              El mínimo global es la respuesta; si nada se pudo combinar, imprime
+              <code>NO</code>.</li>
+        </ol>
+
+        <p><strong>¿Por qué basta registrar el rectángulo "más apretado" por banda
+           y borde derecho?</strong> Toma cualquier \(k\)-rect \(Q\). Encógelo por
+           la izquierda saltando columnas vacías hasta que su columna izquierda
+           tenga rosas: el conteo sigue siendo \(k\) y el perímetro no aumenta. Ese
+           es justo el que registra el barrido para ese borde derecho (quitar una
+           columna no vacía más caería por debajo de \(k\)). El encogimiento por
+           filas se captura porque iteramos <em>todas</em> las bandas \([y_1,y_2]\).
+           Como cada arreglo es un mínimo bajo una restricción de <em>un solo
+           lado</em>, un rectángulo dominante más apretado siempre tiene una
+           coordenada de borde del lado correcto, así que los prefijos/sufijos
+           mínimos no pierden el óptimo. Por eso esto da el <strong>óptimo exacto</strong>
+           (no una cota): se prueba con el teorema de la línea separadora más este
+           argumento de dominación por encogimiento.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer l, w, n, k
+R = matriz (l+1) x (w+1) llena de ceros          // suma de prefijos 2D
+para cada rosa (x, y):  R[x][y] += 1
+para x = 1..l, para y = 1..w:
+    R[x][y] += R[x-1][y] + R[x][y-1] - R[x-1][y-1]
+
+// conteo de rosas en columnas [cx1..cx2], filas [ry1..ry2], en O(1):
+funcion conteo(cx1, cx2, ry1, ry2):
+    regresa R[cx2][ry2] - R[cx1-1][ry2] - R[cx2][ry1-1] + R[cx1-1][ry1-1]
+
+INF = +infinito
+porFilaSup[1..w] = INF;  porFilaInf[1..w] = INF
+porColDer[1..l]  = INF;  porColIzq[1..l]  = INF
+
+para y1 = 1..w:                       // fila inferior de la banda
+  para y2 = y1..w:                    // fila superior de la banda
+    x1 = 1
+    para x2 = 1..l:                   // borde derecho del rectángulo
+        // empuja x1 a la derecha mientras siga habiendo &gt;= k rosas:
+        mientras x1 &lt; x2 y conteo(x1+1, x2, y1, y2) &gt;= k:
+            x1 = x1 + 1
+        si conteo(x1, x2, y1, y2) == k:
+            per = 2*(x2 - x1 + 1) + 2*(y2 - y1 + 1)
+            porFilaSup[y2] = min(porFilaSup[y2], per)
+            porFilaInf[y1] = min(porFilaInf[y1], per)
+            porColDer[x2]  = min(porColDer[x2],  per)
+            porColIzq[x1]  = min(porColIzq[x1],  per)
+
+// prefijos / sufijos de mínimos sobre UNA coordenada frontera
+prefSup[0] = INF
+para y = 1..w:  prefSup[y] = min(prefSup[y-1], porFilaSup[y])    // mejor con fila superior &lt;= y  (lado de ABAJO)
+sufInf[w+1] = INF
+para y = w..1:  sufInf[y] = min(sufInf[y+1], porFilaInf[y])      // mejor con fila inferior &gt;= y   (lado de ARRIBA)
+prefDer[0] = INF
+para x = 1..l:  prefDer[x] = min(prefDer[x-1], porColDer[x])     // mejor con col derecha &lt;= x     (lado IZQUIERDO)
+sufIzq[l+1] = INF
+para x = l..1:  sufIzq[x] = min(sufIzq[x+1], porColIzq[x])       // mejor con col izquierda &gt;= x   (lado DERECHO)
+
+ans = INF
+para y = 1..w-1:  ans = min(ans, prefSup[y] + sufInf[y+1])       // corte horizontal tras la fila y
+para x = 1..l-1:  ans = min(ans, prefDer[x] + sufIzq[x+1])       // corte vertical tras la columna x
+
+si ans == INF:  imprimir "NO"
+si no:          imprimir ans</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> hay \(\sim w^2/2\) bandas de filas, cada una
+           \(O(l)\) por los dos punteros, así que \(O(w^2\,l)\). En el peor caso
+           \(l=w=250\) son \(\sim 7.8\times 10^6\) operaciones, cómodo en \(0.5\) s.
+           Memoria: la matriz de prefijos \(O(lw)\) enteros (\(251\times 251\),
+           \(\approx 250\) KB) más \(O(l+w)\) de los arreglos por borde — holgado en
+           32 MB. Si orientas el barrido por el lado más corto obtienes
+           \(O(w\,l\,\min(w,l))\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa scanf/printf (o ios::sync_with_stdio(false)) para leer hasta ~5000 rosas.
+Los conteos caben en int (a lo más 5000 rosas), pero inicializa los arreglos
+de perímetros con un INF grande (p. ej. 1e9) y compara con == k EXACTO.</pre>
+          <p class="note">Inclúyelo solo si de verdad hace falta; nunca pongas la
+             solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
