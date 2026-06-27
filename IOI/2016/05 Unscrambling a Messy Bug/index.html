@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2016 · Tarea 5 — Unscrambling a Messy Bug</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2016 · Día 2</div>
+    <h1>Tarea <span class="num">5</span> — Unscrambling a Messy Bug</h1>
+    <p class="note">Traducción aproximada del título: «Descifrando un bug travieso». PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Ilshat es un ingeniero de software que trabaja en estructuras de datos
+       eficientes. Un día inventó una estructura nueva. Esta estructura puede
+       guardar un conjunto de enteros no negativos de \(n\) bits, donde \(n\) es
+       una potencia de dos; es decir, \(n = 2^{b}\) para algún entero no
+       negativo \(b\).</p>
+
+    <p>La estructura empieza vacía. Un programa que la use debe seguir estas
+       reglas:</p>
+    <ul>
+      <li>El programa puede agregar elementos (enteros de \(n\) bits) a la
+          estructura, uno por uno, llamando a la función <code>add_element(x)</code>.
+          Si intenta agregar un elemento que ya está presente, no pasa nada.</li>
+      <li>Después de agregar el último elemento, el programa debe llamar a la
+          función <code>compile_set()</code> exactamente una vez.</li>
+      <li>Por último, el programa puede llamar a <code>check_element(x)</code>
+          para comprobar si el elemento \(x\) está presente en el conjunto. Esta
+          función se puede usar varias veces.</li>
+    </ul>
+
+    <p>Cuando Ilshat implementó por primera vez esta estructura, cometió un bug
+       en la función <code>compile_set()</code>. El bug <strong>reordena los
+       dígitos binarios de cada elemento del conjunto de la misma manera</strong>.
+       Ilshat quiere que encuentres el reordenamiento exacto de dígitos que causa
+       el bug.</p>
+
+    <p>Formalmente, considera una sucesión \(p = [p_0, \dots, p_{n-1}]\) en la que
+       cada número de \(0\) a \(n-1\) aparece exactamente una vez. A una sucesión
+       así la llamamos <strong>permutación</strong>. Considera un elemento del
+       conjunto cuyos dígitos en binario son \(a_0, \dots, a_{n-1}\) (con \(a_0\)
+       siendo el bit más significativo). Cuando se llama a
+       <code>compile_set()</code>, este elemento se reemplaza por el elemento
+       \(a_{p_0}, a_{p_1}, \dots, a_{p_{n-1}}\).</p>
+
+    <p>La <strong>misma</strong> permutación \(p\) se usa para reordenar los
+       dígitos de todos los elementos. Cualquier permutación es posible,
+       incluyendo la posibilidad de que \(p_i = i\) para cada \(0 \le i \le n-1\).</p>
+
+    <p>Por ejemplo, supongamos que \(n = 4\), \(p = [2, 1, 3, 0]\), y que insertaste
+       en el conjunto los enteros cuyas representaciones binarias son \(0000\),
+       \(1100\) y \(0111\). Llamar a <code>compile_set</code> cambia estos
+       elementos a \(0000\), \(0101\) y \(1110\), respectivamente.</p>
+
+    <p>Tu tarea es escribir un programa que encuentre la permutación \(p\)
+       interactuando con la estructura de datos. Debe (en este orden):</p>
+    <ol>
+      <li>elegir un conjunto de enteros de \(n\) bits,</li>
+      <li>insertar esos enteros en la estructura,</li>
+      <li>llamar a la función <code>compile_set</code> para disparar el bug,</li>
+      <li>comprobar la presencia de algunos elementos en el conjunto modificado,</li>
+      <li>usar esa información para determinar y devolver la permutación \(p\).</li>
+    </ol>
+
+    <p>Ten en cuenta que tu programa puede llamar a <code>compile_set</code>
+       <strong>solo una vez</strong>.</p>
+
+    <p>Además, hay un límite en cuántas veces tu programa llama a las funciones de
+       la biblioteca. En concreto, puede:</p>
+    <ul>
+      <li>llamar a <code>add_element</code> a lo más \(w\) veces (\(w\) es por
+          «writes», escrituras),</li>
+      <li>llamar a <code>check_element</code> a lo más \(r\) veces (\(r\) es por
+          «reads», lecturas).</li>
+    </ul>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar <strong>una</strong> función (método):</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int[] restore_permutation(int n, int w, int r)</pre>
+    </div>
+    <ul>
+      <li>\(n\): el número de bits en la representación binaria de cada elemento
+          del conjunto (y también la longitud de \(p\)).</li>
+      <li>\(w\): el máximo número de operaciones <code>add_element</code> que tu
+          programa puede realizar.</li>
+      <li>\(r\): el máximo número de operaciones <code>check_element</code> que tu
+          programa puede realizar.</li>
+      <li>la función debe devolver la permutación restaurada \(p\).</li>
+    </ul>
+
+    <p>En el lenguaje C el prototipo es un poco distinto: en lugar de devolver el
+       arreglo, lo escribes en uno provisto.</p>
+    <div class="sig">
+      <span class="tag">Variante en C</span>
+<pre>void restore_permutation(int n, int w, int r, int* result)</pre>
+    </div>
+    <p class="note">\(n\), \(w\) y \(r\) tienen el mismo significado; para cada
+       \(i\), debes guardar el valor \(p_i\) en <code>result[i]</code>.</p>
+
+    <h3>Funciones de la biblioteca</h3>
+    <p>Para interactuar con la estructura, tu programa debe usar estas tres
+       funciones (métodos):</p>
+    <div class="sig">
+      <span class="tag">API provista por el evaluador</span>
+<pre>void    add_element(string x)
+void    compile_set()
+boolean check_element(string x)</pre>
+    </div>
+    <ul>
+      <li><code>add_element(x)</code>: agrega al conjunto el elemento descrito por
+          \(x\), una cadena de caracteres <code>'0'</code> y <code>'1'</code> que
+          da la representación binaria del entero a agregar. La longitud de \(x\)
+          debe ser \(n\).</li>
+      <li><code>compile_set()</code>: debe llamarse exactamente una vez. Tu
+          programa <strong>no</strong> puede llamar a <code>add_element()</code>
+          después de esta llamada, ni a <code>check_element()</code> antes de
+          ella.</li>
+      <li><code>check_element(x)</code>: comprueba si el elemento \(x\) está en el
+          conjunto modificado. \(x\) es una cadena de <code>'0'</code> y
+          <code>'1'</code> de longitud \(n\). Devuelve <code>true</code> si \(x\)
+          está en el conjunto modificado, y <code>false</code> en caso
+          contrario.</li>
+    </ul>
+    <p>Si tu programa viola cualquiera de estas restricciones, el resultado de
+       calificación será «Wrong Answer».</p>
+    <p>Para todas las cadenas, el primer carácter da el bit <strong>más
+       significativo</strong> del entero correspondiente. El evaluador fija la
+       permutación \(p\) antes de llamar a <code>restore_permutation</code>.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño \(n\)</td><td><span class="badge">\(n = 2^{b}\) (potencia de dos), hasta \(n = 128\)</span></td></tr>
+        <tr><td>Restricción dura</td><td><span class="badge">\(\le w\) escrituras y \(\le r\) lecturas; \(1\) sola llamada a <code>compile_set</code></span></td></tr>
+      </table>
+    </div>
+    <p class="note">Tiempo y memoria tomados del paquete oficial de la tarea. El
+       cuello de botella real no es el tiempo, sino el número de llamadas
+       \(w\) (escrituras) y \(r\) (lecturas).</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">20</td><td>\(n = 8\), \(w = 256\), \(r = 256\), y \(p_i \neq i\) para a lo más \(2\) índices \(i\) (\(0 \le i \le n-1\))</td></tr>
+          <tr><td>2</td><td class="pts">18</td><td>\(n = 32\), \(w = 320\), \(r = 1024\)</td></tr>
+          <tr><td>3</td><td class="pts">11</td><td>\(n = 32\), \(w = 1024\), \(r = 320\)</td></tr>
+          <tr><td>4</td><td class="pts">21</td><td>\(n = 128\), \(w = 1792\), \(r = 1792\)</td></tr>
+          <tr><td>5</td><td class="pts">30</td><td>\(n = 128\), \(w = 896\), \(r = 896\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>El evaluador hace la llamada <code>restore_permutation(4, 16, 16)</code>:
+       tenemos \(n = 4\) y el programa puede hacer a lo más \(16\) «writes» y
+       \(16\) «reads».</p>
+    <div class="example">
+      <div class="io"><h4>Llamadas del programa</h4><pre>add_element("0001")
+add_element("0011")
+add_element("0100")
+compile_set()
+check_element("0001") -> false
+check_element("0010") -> true
+check_element("0100") -> true
+check_element("1000") -> false
+check_element("0011") -> false
+check_element("0101") -> false
+check_element("1001") -> false
+check_element("0110") -> false
+check_element("1010") -> true
+check_element("1100") -> false</pre></div>
+      <div class="io"><h4>Valor de retorno</h4><pre>[2, 1, 3, 0]</pre></div>
+    </div>
+    <p class="note">Solo una permutación es consistente con estos valores
+       devueltos por <code>check_element()</code>: la permutación
+       \(p = [2, 1, 3, 0]\). Por eso <code>restore_permutation</code> debe
+       devolver \([2, 1, 3, 0]\).</p>
+
+    <h3>Evaluador de ejemplo</h3>
+    <p>El evaluador de ejemplo lee la entrada en el siguiente formato:</p>
+    <ul>
+      <li>línea 1: los enteros \(n\), \(w\), \(r\);</li>
+      <li>línea 2: \(n\) enteros que dan los elementos de \(p\).</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Divide y vencerás</span>
+      <span class="ptag">Bitmask</span>
+      <span class="ptag">Construcción</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Un evaluador fija una permutación oculta \(p\). Tú implementas
+       <code>restore_permutation(n, w, r)</code>. Primero eliges y agregas
+       cadenas de \(n\) bits con <code>add_element</code> (a lo más \(w\)).
+       Luego llamas <code>compile_set()</code> <strong>una vez</strong>: a partir
+       de ahí, cada elemento guardado \(a_0\dots a_{n-1}\) queda transformado en
+       \(a_{p_0}\dots a_{p_{n-1}}\) (la posición de salida \(i\) recibe el bit que
+       estaba en la posición de entrada \(p_i\)). Por último puedes preguntar con
+       <code>check_element</code> (a lo más \(r\)) si una cadena está en el
+       conjunto modificado. Con esas respuestas debes reconstruir \(p\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El costo no es el tiempo, sino \(w\) y \(r\). La subtarea 5
+                (\(n = 128\), \(w = r = 896\)) exige un esquema \(O(n\log n)\):
+                \(\tfrac{n}{2}\log_2 n = 448\) escrituras y \(n\log_2 n = 896\)
+                lecturas. Como \(\log_2 128 = 7\), eso da exactamente \(448\) y
+                \(896\). La subtarea 1 (\(p\) difiere de la identidad en \(\le 2\)
+                índices) invita a fuerza bruta; la 4 (\(w = r = 1792\)) permite el
+                doble de holgura que la 5.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — La restricción que lo cambia todo</summary>
+      <div class="body">
+        <p class="q">¿Notaste que <code>compile_set()</code> se llama
+           <strong>exactamente una vez</strong>, y que <em>todas</em> las
+           escrituras van antes y <em>todas</em> las lecturas van después?</p>
+        <p>Eso parte el problema en dos fases globales que no se pueden mezclar:
+           una fase de <strong>escritura</strong> en la que diseñas el conjunto
+           sin conocer todavía ninguna respuesta, y una fase de
+           <strong>lectura</strong> en la que ya puedes ser adaptativo (usar lo
+           que respondió <code>check_element</code> para decidir la siguiente
+           pregunta). ¿Qué información puedes «codificar» en las cadenas que
+           agregas, de modo que después una simple pregunta de pertenencia te
+           revele algo sobre \(p\)?</p>
+        <p class="q">¿Y qué hace exactamente el bug? Si la entrada tiene un
+           <code>'1'</code> en la posición \(j\), ¿en qué posición de salida
+           aparece ese <code>'1'</code> después de compilar?</p>
+        <p>Conviene fijar la convención: la salida \(i\) toma el bit de la
+           entrada \(p_i\), o sea \(t_i = a_{p_i}\). Trabaja directamente con
+           índices de cadena \(0\dots n-1\), sin invertir nada.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (n=8, p casi la identidad): fuerza bruta</summary>
+      <div class="body">
+        <p class="q">Si te prometen que \(p\) difiere de la identidad en a lo más
+           \(2\) posiciones, ¿no basta con probar todas las posibles
+           «transposiciones»?</p>
+        <p>Con \(n = 8\) hay solo \(\binom{8}{2} = 28\) pares de posiciones.
+           Puedes agregar pocas cadenas «testigo» (por ejemplo, las que tienen un
+           solo bit encendido) y, después de compilar, hacer preguntas que
+           distingan «¿el bit \(i\) se quedó en su lugar o se intercambió con el
+           \(j\)?». Con \(w = r = 256\) te sobra muchísimo presupuesto. Es la
+           forma de asegurar los primeros \(20\) puntos sin la idea general.</p>
+        <p class="q">¿Te das cuenta de que esta subtarea solo te pide una
+           detección local de cambios, no reconstruir toda una permutación
+           arbitraria?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas 2 y 3 (n=32): el compromiso entre w y r</summary>
+      <div class="body">
+        <p class="q">Para \(p\) arbitraria, ¿cómo localizarías el origen de
+           <em>cada</em> bit de salida?</p>
+        <p>Una idea directa: en la escritura agregas \(n\) «prefijos de unos»
+           (la cadena con los primeros \(k\) bits en <code>'1'</code> y el resto
+           en <code>'0'</code>, para cada \(k\)). Eso son \(O(n)\) escrituras. En
+           la lectura, para cada posición de salida vas preguntando hasta ubicar
+           de qué bit de entrada proviene; eso cuesta del orden de \(n^2/2\)
+           lecturas.</p>
+        <p>Mira los presupuestos: la subtarea 2 da \(w = 320\) (apretado en
+           escrituras) pero \(r = 1024\) (holgado en lecturas) — favorece pocas
+           escrituras y muchas lecturas. La subtarea 3 invierte la balanza:
+           \(w = 1024\), \(r = 320\) — necesitas <strong>recortar lecturas</strong>.</p>
+        <p class="q">¿No te sugiere ese intercambio que la solución ideal debería
+           gastar pocas <em>y</em> deterministas lecturas, sin depender del azar?
+           ¿Qué estructura recursiva gastaría solo \(O(n\log n)\) en cada fase?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La pregunta de pertenencia que decide «mitad izquierda o derecha»</summary>
+      <div class="body">
+        <p>Piensa en dividir y vencer sobre las posiciones. Toma un subconjunto
+           \(B\) (ordenado) de índices de <strong>entrada</strong> y su mitad
+           izquierda \(A\). En la escritura, por cada índice \(i \in A\) agregas
+           una cadena que tiene: <code>'1'</code> en \(i\), <code>'0'</code> en
+           los demás índices de \(B\), y <code>'1'</code> en
+           <strong>todo lo que está fuera de \(B\)</strong> (un «contexto fijo»
+           que hace únicos a los elementos entre subproblemas distintos).</p>
+        <p class="q">Después de compilar, ¿qué pinta tiene ese elemento? Sus unos
+           caen en \(\{i\}\) más el complemento de \(B\), pero <em>movidos</em> por
+           \(p\): la posición de salida \(k\) vale \(1\) sii \(p_k \in \{i\}\cup
+           (\text{complemento de }B)\). Como \(p\) es biyección, hay
+           <strong>una sola</strong> posición \(k^\ast\) con \(p_{k^\ast} = i\).</p>
+        <p>En la lectura, para una posición de salida \(k\) construyes una
+           consulta con <code>'1'</code> en todas las posiciones de salida que
+           <em>no</em> están en tu subproblema (el mismo «contexto fijo» visto del
+           lado de salida), <code>'0'</code> en las demás, y un <code>'1'</code>
+           extra en \(k\). Esa consulta coincide con algún elemento compilado
+           <strong>sii</strong> \(p_k\) cayó en la mitad izquierda \(A\).</p>
+        <p class="q">¿Ves entonces lo que significa la respuesta?
+           <code>check_element</code> verdadero \(\Rightarrow\) «\(p_k\) está en
+           \(A\)»; falso \(\Rightarrow\) «\(p_k\) está en la mitad derecha». ¿Y si
+           recurres en cada mitad hasta llegar a conjuntos de tamaño \(1\)?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Un único algoritmo de divide y vencerás
+           \(O(n\log n)\) resuelve las cinco subtareas. Como
+           <code>compile_set</code> se llama una sola vez, separamos
+           <em>todas</em> las escrituras (no adaptativas, planificadas solo con
+           índices de entrada que tú controlas), luego <code>compile_set</code>, y
+           después <em>todas</em> las lecturas (adaptativas, que descienden por el
+           árbol de recursión).</p>
+
+        <p><strong>Fase de escritura.</strong> En un nodo que cubre el subconjunto
+           ordenado \(B\) de índices de entrada (\(|B| = m \ge 2\)), sea \(A\) la
+           primera mitad de \(B\). Construyes una «base» con <code>'1'</code> en
+           todos los índices fuera de \(B\) y <code>'0'</code> dentro de \(B\). Por
+           cada \(i \in A\) agregas la base con el bit \(i\) encendido (exactamente
+           un bit izquierdo de \(B\) en \(1\); los demás bits de \(B\) en \(0\); el
+           contexto externo en \(1\)). Luego recurres en \(A\) y en la segunda
+           mitad \(C\).</p>
+
+        <p><strong>Fase de lectura (adaptativa).</strong> Cada nodo maneja un par
+           \((P, B)\): \(P\) son posiciones de <strong>salida</strong> y \(B\) los
+           bits de <strong>entrada</strong> correspondientes, con la invariante
+           \(\{p_k : k \in P\} = B\) y \(|P| = |B|\). Para cada \(k \in P\) haces
+           una consulta con <code>'1'</code> en todas las posiciones de salida
+           fuera de \(P\), <code>'0'</code> en las demás de \(P\), y un
+           <code>'1'</code> extra en \(k\). Si <code>check_element</code> es
+           verdadero, \(p_k\) está en la mitad izquierda \(A\) (grupo izquierdo);
+           si es falso, está en la mitad derecha \(C\). Como \(p\) es biyección, el
+           grupo izquierdo tiene exactamente \(|A|\) elementos. Recurres en
+           \((\text{grupo izquierdo}, A)\) y \((\text{grupo derecho}, C)\).</p>
+
+        <p><strong>Caso base.</strong> Cuando \(|P| = 1\), el único índice de
+           entrada \(B_0\) es el origen de la única posición de salida \(P_0\), así
+           que \(p_{P_0} = B_0\).</p>
+
+        <p><strong>Por qué es correcto.</strong> La transformación del evaluador es
+           \(t_i = a_{p_i}\). El elemento escrito para el bit \(i \in A\) compila a
+           unos en (complemento de \(P\)) más la única posición \(k^\ast\) con
+           \(p_{k^\ast} = i\); la consulta de lectura para \(k\) pone unos en
+           (complemento de \(P\)) más la posición \(k\). Ambos patrones coinciden
+           <strong>sii</strong> \(k = k^\ast\), es decir \(p_k = i\) para algún
+           \(i \in A\) — equivalente a «\(p_k\) está en la mitad izquierda». La
+           correspondencia «complemento de \(B\) en entrada» \(=\) «complemento de
+           \(P\) en salida» se sigue de la invariante. En el caso base la biyección
+           obliga a \(p_{P_0} = B_0\). Por inducción sobre el tamaño del nodo, cada
+           \(p_k\) se fija al valor correcto. Como el enunciado garantiza que la
+           permutación consistente es <strong>única</strong>, la salida iguala
+           exactamente la \(p\) oculta.</p>
+
+        <p><strong>Detalle fino.</strong> Es esencial que la escritura y la lectura
+           partan \(B\) <em>de forma idéntica</em> (misma lista ordenada, misma
+           mitad izquierda) para que el caso base sea coherente.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>// Convención del evaluador: salida[i] = entrada[p[i]].
+// Trabajamos con índices de cadena. perm[k] guardará p[k]. N = n global.
+
+funcion writePhase(B):            // B: lista ORDENADA de índices de entrada
+    m = |B|
+    si m == 1: regresar
+    half = m / 2
+    base = cadena de longitud N
+    para cada posicion j en 0..N-1:
+        base[j] = '1' si j NO esta en B, si no '0'
+    para t en 0..half-1:
+        e = base
+        e[B[t]] = '1'             // un bit de la mitad izquierda encendido
+        add_element(e)
+    A = B[0 .. half-1];  C = B[half .. m-1]
+    writePhase(A);  writePhase(C)
+
+funcion readPhase(P, B):          // P: posiciones de salida; B: bits de entrada; |P| = |B|
+    m = |P|
+    si m == 1: perm[P[0]] = B[0]; regresar
+    half = m / 2
+    base = cadena de longitud N
+    para cada posicion j en 0..N-1:
+        base[j] = '1' si j NO esta en P, si no '0'
+    grupoIzq = []; grupoDer = []
+    para cada k en P:
+        q = base; q[k] = '1'
+        si check_element(q): grupoIzq.agregar(k)   // p[k] en mitad izquierda
+        si no:               grupoDer.agregar(k)   // p[k] en mitad derecha
+    A = B[0 .. half-1];  C = B[half .. m-1]
+    readPhase(grupoIzq, A)
+    readPhase(grupoDer, C)
+
+funcion restore_permutation(n, w, r):
+    N = n;  perm = arreglo de tamaño n
+    todos = [0, 1, ..., n-1]
+    writePhase(todos)
+    compile_set()
+    readPhase(todos, todos)
+    regresa perm</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Operaciones de biblioteca:
+           \(\tfrac{n}{2}\log_2 n\) escrituras y \(n\log_2 n\) lecturas. Trabajo de
+           cómputo \(O(n^2 \log n)\) por construir cadenas de longitud \(n\);
+           memoria \(O(n)\) más pila \(O(\log n)\). Para \(n = 128\): \(448\)
+           escrituras y \(896\) lecturas — caben holgadas en la subtarea 4
+           (\(1792\) cada una) y <strong>justo</strong> en la 5 (\(896\) cada una).
+           Por eso una sola implementación se lleva los \(100\) puntos.</p>
+
+        <p class="note"><strong>Escalera de subtareas.</strong> S1 (\(p\) casi la
+           identidad): este mismo D&amp;V gasta solo \(12\) escrituras y \(24\)
+           lecturas. S2 (\(w = 320\), \(r = 1024\)): el método directo de
+           \(O(n)\) escrituras y \(\sim n^2/2 = 496\) lecturas también pasa; el
+           D&amp;V usa \(80\) y \(160\). S3 (\(w = 1024\), \(r = 320\)): el directo
+           debe recortar lecturas (barajar el orden da \(\sim n^2/4 = 248\) en
+           promedio); el D&amp;V ya usa \(160\) deterministas. S4 y S5
+           (\(n = 128\)) exigen \(O(n\log n)\): el D&amp;V produce \(448\) y
+           \(896\) exactos.</p>
+
+        <p class="note"><strong>Gotchas.</strong> (1) <code>compile_set</code> va
+           exactamente una vez: todas las <code>add_element</code> antes, todas las
+           <code>check_element</code> después. (2) <code>x[0]</code> es el bit
+           más significativo y el bug hace \(t_i = a_{p_i}\); se trabaja con índices
+           de cadena directamente, sin invertir. (3) En la subtarea 5 las lecturas
+           son \(896 = r\) exactamente; el evaluador falla si se baja de \(0\), pero
+           \(896\) llamadas dejan \(r\) en \(0\) (válido). (4) Verificar por
+           igualdad con la \(p\) de entrada es legítimo porque la permutación
+           consistente es única.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
