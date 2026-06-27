@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **195 / 200**
+Total de problemas: **200** · Completados: **196 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -275,7 +275,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | J | Bridging the Gap | `2023/J/J.html` |
 | [x] | K | Alea Iacta Est | `2023/K/K.html` |
 
-## 2024 ICPC World Finals — 7 / 12
+## 2024 ICPC World Finals — 8 / 12
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
@@ -286,7 +286,7 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | E | Flipping Container | `2024/E/E.html` |
 | [x] | F | Friendly Rivalry | `2024/F/F.html` |
 | [x] | G | Kindergarten | `2024/G/G.html` |
-| [ ] | H | Maxwell's Demon | `2024/H/H.html` |
+| [x] | H | Maxwell's Demon | `2024/H/H.html` |
 | [ ] | I | Steppe on It | `2024/I/I.html` |
 | [ ] | J | The Silk Road . . . with Robots! | `2024/J/J.html` |
 | [ ] | K | Tower of noiHa | `2024/K/K.html` |
