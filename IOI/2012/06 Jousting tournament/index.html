@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2012 · Tarea 6 — Jousting tournament</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .subtasks code{white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2012 · Día 2 · Sirmione - Montichiari, Italia</div>
+    <h1>Tarea <span class="num">6</span> — Jousting tournament</h1>
+    <p class="note">Torneo de justas · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Para su boda con Beatriz de Este en 1491, el duque de Milán Ludovico
+       Sforza le pidió a Leonardo que organizara las celebraciones, incluido un
+       gran <strong>torneo de justas</strong> que duró tres días enteros. Pero el
+       caballero más popular llega tarde…</p>
+
+    <h3>El torneo</h3>
+    <p>En un torneo de justas, los \(N\) caballeros se forman primero en una línea
+       y sus posiciones se numeran de \(0\) a \(N-1\) siguiendo el orden de la
+       línea. El maestro de justas organiza una <strong>ronda</strong> gritando
+       dos posiciones \(S\) y \(E\) (con \(0 \le S < E \le N-1\)). Compiten
+       <strong>todos</strong> los caballeros cuyas posiciones están entre \(S\) y
+       \(E\) (inclusive): el ganador continúa en el torneo y vuelve a su lugar en
+       la línea, mientras que los perdedores quedan eliminados y dejan el campo.
+       Después de eso, los caballeros restantes se compactan hacia el principio de
+       la línea <strong>conservando su orden relativo</strong>, de modo que sus
+       posiciones resultantes van de \(0\) a \(N-(E-S)-1\). El maestro de justas
+       grita otra ronda, repitiendo este proceso hasta que queda un solo
+       caballero.</p>
+    <p>Leonardo sabe que todos los caballeros tienen fuerzas distintas,
+       representadas como <strong>rangos distintos</strong> de \(0\) (el más débil)
+       a \(N-1\) (el más fuerte). También conoce los comandos exactos que el
+       maestro de justas gritará para las \(C\) rondas: es Leonardo, después de
+       todo… y está seguro de que en cada una de esas rondas <strong>ganará el
+       caballero con el rango más alto</strong>.</p>
+
+    <h3>El caballero tardío</h3>
+    <p>\(N-1\) de los \(N\) caballeros ya están formados en la línea; solo falta el
+       caballero más popular. Ese caballero tiene rango \(R\) y va llegando un poco
+       tarde. Para beneficio del espectáculo, Leonardo quiere aprovechar su
+       popularidad y elegirle una posición en la línea que
+       <strong>maximice el número de rondas que el caballero tardío gane</strong>.
+       Nota que <em>no</em> nos interesan las rondas que no involucran al caballero
+       tardío, solo las rondas en las que él participa <strong>y</strong> gana.</p>
+
+    <h3>Ejemplo (del enunciado)</h3>
+    <p>Con \(N=5\) caballeros, los \(N-1\) que ya están formados tienen rangos
+       \([1, 0, 2, 4]\), respectivamente. En consecuencia, el caballero tardío
+       tiene rango \(R=3\). Para las \(C=3\) rondas, el maestro de justas piensa
+       gritar las posiciones \((S,E)\), en este orden:
+       \((1,3),\ (0,1),\ (0,1)\).</p>
+    <p>Si Leonardo inserta al caballero tardío en la <strong>primera</strong>
+       posición, los rangos en la línea serán \([3, 1, 0, 2, 4]\). La primera
+       ronda involucra a los caballeros (en posiciones \(1, 2, 3\)) con rangos
+       \(1, 0, 2\), dejando como ganador al de rango \(2\). La nueva línea es
+       \([3, 2, 4]\). La siguiente ronda es \(3\) contra \(2\) (posiciones
+       \(0, 1\)), y gana el de rango \(R=3\), dejando la línea \([3, 4]\). La ronda
+       final (posiciones \(0, 1\)) tiene a \(4\) como ganador. Así, el caballero
+       tardío gana <strong>una sola</strong> ronda (la segunda).</p>
+    <p>En cambio, si Leonardo lo inserta <strong>entre</strong> los de rangos \(1\)
+       y \(0\), la línea queda así: \([1, 3, 0, 2, 4]\). Esta vez la primera ronda
+       involucra a \(3, 0, 2\), y gana el de rango \(R=3\). La siguiente línea de
+       salida es \([1, 3, 4]\), y en la siguiente ronda (\(1\) contra \(3\)) vuelve
+       a ganar el de rango \(R=3\). La línea final es \([3, 4]\), donde gana \(4\).
+       Así, el caballero tardío gana <strong>dos</strong> rondas: esta es de hecho
+       la mejor colocación posible, pues no hay forma de que el tardío gane más de
+       dos veces.</p>
+
+    <h2>Tu tarea</h2>
+    <p>Debes escribir un programa que elija la <strong>mejor posición</strong> para
+       el caballero tardío de modo que se maximice el número de rondas ganadas por
+       él, como quiere Leonardo. En concreto, debes implementar una rutina llamada
+       <code>GetBestPosition(N, C, R, K, S, E)</code>, donde:</p>
+    <ul>
+      <li><code>N</code> es el número de caballeros;</li>
+      <li><code>C</code> es el número de rondas gritadas por el maestro de justas
+          (\(1 \le C \le N-1\));</li>
+      <li><code>R</code> es el rango del caballero tardío; los rangos de
+          <em>todos</em> los caballeros (tanto los ya formados como el tardío) son
+          distintos y se eligen de \(0, \dots, N-1\). El rango \(R\) del tardío se
+          da de forma explícita aunque pueda deducirse (es el único valor de
+          \(0..N-1\) que no aparece en <code>K</code>);</li>
+      <li><code>K</code> es un arreglo de \(N-1\) enteros que representa los rangos
+          de los \(N-1\) caballeros que ya están en la línea de salida;</li>
+      <li><code>S</code> y <code>E</code> son dos arreglos de tamaño \(C\): para
+          cada \(i\) entre \(0\) y \(C-1\) inclusive, la \((i+1)\)-ésima ronda
+          gritada por el maestro de justas involucrará a todos los caballeros desde
+          la posición <code>S[i]</code> hasta la posición <code>E[i]</code>,
+          inclusive. Puedes asumir que para cada \(i\) se cumple
+          <code>S[i] &lt; E[i]</code>.</li>
+    </ul>
+    <p>Los comandos pasados a esta rutina son válidos: <code>E[i]</code> es menor
+       que el número de caballeros que quedan para la \((i+1)\)-ésima ronda, y
+       después de los \(C\) comandos quedará <strong>exactamente un</strong>
+       caballero.</p>
+    <p><code>GetBestPosition(N, C, R, K, S, E)</code> debe devolver la mejor
+       posición \(P\) donde Leonardo debe colocar al caballero tardío
+       (\(0 \le P \le N-1\)). Si hay varias posiciones equivalentes, devuelve la
+       <strong>más pequeña</strong>. (La posición \(P\) es la posición 0-indexada
+       del caballero tardío en la línea resultante. Es decir, \(P\) es el número de
+       <em>otros</em> caballeros que quedan parados antes de él en la solución
+       óptima. En particular, \(P=0\) significa que el tardío queda al inicio de la
+       línea, y \(P=N-1\) que queda al final.)</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar
+       ni escribes a la salida estándar (y tampoco interactúas con ningún otro
+       archivo). Debes entregar <strong>exactamente un</strong> archivo, llamado
+       <code>tournament.c</code>, <code>tournament.cpp</code> o
+       <code>tournament.pas</code>, que implemente el subprograma descrito arriba
+       con la siguiente firma. El evaluador (grader) lo llama una sola vez con
+       todos los datos. Puedes implementar otros subprogramas auxiliares.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar (tournament.c / tournament.cpp / tournament.pas)</span>
+<pre>// C / C++
+int GetBestPosition(int N, int C, int R, int *K, int *S, int *E);
+  // N: número de caballeros (posiciones 0 .. N-1)
+  // C: número de rondas  (1 &lt;= C &lt;= N-1)
+  // R: rango del caballero tardío  (rangos distintos, 0 .. N-1)
+  // K: arreglo de N-1 rangos, los caballeros ya formados
+  // S, E: arreglos de tamaño C; la ronda i compite las posiciones S[i]..E[i]
+  // regresa: la mejor posición P (0 .. N-1) para insertar al tardío; en
+  //          caso de empate, la P más pequeña.
+
+// Pascal
+function GetBestPosition(N, C, R : LongInt;
+                         var K, S, E : array of LongInt) : LongInt;</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Grader de muestra.</strong> El evaluador de muestra que viene con el
+      entorno espera la entrada en este formato (solo para probar localmente; tu
+      función <em>no</em> lee de stdin): la línea \(1\) trae <code>N</code>,
+      <code>C</code>, <code>R</code>; las líneas \(2 \dots N\) traen cada
+      <code>K[i]</code>; y las líneas \(N+1 \dots N+C\) traen
+      <code>S[i]</code> y <code>E[i]</code>.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo de CPU</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de caballeros \(N\)</td><td><span class="badge">\(2 \le N \le 100\,000\)</span></td></tr>
+        <tr><td>Número de rondas \(C\)</td><td><span class="badge">\(1 \le C \le N-1\)</span></td></tr>
+        <tr><td>Rangos</td><td><span class="badge">distintos, \(0 \le \text{rango} \le N-1\)</span></td></tr>
+        <tr><td>Cada ronda</td><td><span class="badge">\(0 \le S[i] < E[i] \le (\text{vivos}-1)\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). Una fila por subtarea. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">17</td><td>\(N \le 500\)</td></tr>
+          <tr><td>2</td><td class="pts">32</td><td>\(N \le 5\,000\)</td></tr>
+          <tr><td>3</td><td class="pts">51</td><td>\(N \le 100\,000\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>El ejemplo del enunciado, expresado como llamada a la función y también en
+       el formato del grader de muestra:</p>
+    <div class="example">
+      <div class="io"><h4>Entrada / llamada</h4><pre>GetBestPosition(
+   N = 5, C = 3, R = 3,
+   K = [1, 0, 2, 4],
+   S = [1, 0, 0],
+   E = [3, 1, 1])
+
+// formato del grader de muestra:
+5 3 3
+1
+0
+2
+4
+1 3
+0 1
+0 1</pre></div>
+      <div class="io"><h4>Salida / retorno</h4><pre>1</pre></div>
+    </div>
+    <p class="note">Insertar al tardío entre los rangos \(1\) y \(0\)
+       (\(P=1\), la línea queda \([1,3,0,2,4]\)) le hace ganar \(2\) rondas, que es
+       el máximo posible. La posición \(P=1\) es la más pequeña que alcanza ese
+       máximo, así que la respuesta es \(1\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">Estructuras de datos (BIT / segment tree)</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Simulación</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N\) caballeros con rangos distintos \(0..N-1\) en una línea.
+       \(N-1\) ya están colocados (arreglo <code>K</code>); falta uno de rango
+       \(R\). El maestro ejecuta \(C\) rondas: cada ronda \([S,E]\) hace competir
+       las posiciones \(S..E\) <em>entre los vivos actuales</em>, gana siempre el
+       de mayor rango, el resto sale y los vivos se compactan al inicio. Implementa
+       <code>GetBestPosition</code> que devuelva la posición \(P\) donde insertar al
+       tardío para <strong>maximizar las rondas que él gana</strong> (solo cuentan
+       las que juega y vence); ante empate, la \(P\) más pequeña.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Las tres subtareas son una escalera: la #1 (\(N\le 500\)) admite
+                fuerza bruta \(O(N^3)\) —probar las \(N\) posiciones y simular cada
+                torneo en \(O(N^2)\)—; la #2 (\(N\le 5\,000\)) pide
+                <strong>construir el árbol de rondas una sola vez</strong> y
+                trabajar en \(O(N^2)\); la #3 (\(N\le 10^5\)) obliga a
+                \(O(N\log N)\): un <em>range/segment tree</em> para localizar al
+                \(k\)-ésimo vivo, más una observación de <em>desplazamiento</em> que
+                evita probar las \(N\) posiciones.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es realmente un torneo de justas?</summary>
+      <div class="body">
+        <p class="q">Cada ronda fusiona un rango de caballeros en uno solo
+           (el ganador). Si dibujas “quién se fusiona con quién”, ¿qué figura te
+           queda? ¿Y de qué depende esa figura?</p>
+        <p>Te queda un <strong>árbol</strong>: las hojas son los \(N\) caballeros y
+           cada ronda crea un nodo interno cuyos hijos son los competidores de esa
+           ronda; el nodo “es” el ganador, que sube a competir en rondas
+           posteriores. La observación liberadora: la <strong>forma</strong> de ese
+           árbol (qué posiciones se fusionan en cada ronda) depende
+           <em>únicamente</em> de la secuencia de comandos \((S,E)\) sobre
+           posiciones — <strong>no</strong> de quién es el tardío ni de dónde lo
+           insertes. Cambiar al tardío solo cambia las <em>etiquetas</em> (los
+           rangos ganadores), no la silueta. Así que el árbol se puede construir
+           <strong>una sola vez</strong>.</p>
+        <p class="q">¿Y cuándo gana una ronda un caballero? El de mayor rango. ¿Qué
+           rango tiene, entonces, el ganador del nodo que cubre un subárbol
+           completo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (17 pts): la fuerza bruta honesta</summary>
+      <div class="body">
+        <p class="q">Con \(N\le 500\), ¿necesitas ser listo? ¿Qué pasa si
+           simplemente pruebas <em>cada</em> posición posible del tardío y simulas
+           el torneo entero contando sus victorias?</p>
+        <p>Para cada posición candidata \(P\) (de \(0\) a \(N-1\)): construye la
+           línea insertando al tardío en \(P\), y simula las \(C\) rondas. Cada
+           ronda recorre el rango \([S,E]\) de los vivos, encuentra el de mayor
+           rango (gana), cuenta \(+1\) si ese ganador es el tardío, elimina al resto
+           y compacta la lista. Simular un torneo es \(O(N^2)\) (cada una de las
+           \(\le N-1\) rondas escanea \(O(N)\) y compactar la lista cuesta
+           \(O(N)\)). Probar las \(N\) posiciones da \(O(N^3)\). Con \(N\le 500\),
+           \(N^3 = 1.25\times 10^8\): cabe en 1 s. Eso te da los primeros 17
+           puntos.</p>
+        <p class="q">Pero \(O(N^3)\) repite trabajo idéntico: ¿de verdad necesitas
+           reconstruir y re-simular el torneo desde cero para cada \(P\), si la
+           Pista 1 dice que la forma del árbol no cambia?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (32 pts): construye el árbol UNA vez</summary>
+      <div class="body">
+        <p class="q">Si la forma del árbol es la misma para todas las \(P\),
+           ¿puedes construirlo una sola vez y luego, para cada posición, solo
+           “subir” por el árbol contando victorias?</p>
+        <p>Sí. Construye el árbol de rondas una vez (mantén una lista de nodos
+           <em>vivos</em>; en cada ronda \([S,E]\) toma los vivos en ese rango, crea
+           un nodo interno con ellos como hijos, su ganador es el de mayor rango, y
+           reemplaza ese tramo por el ganador). Eso cuesta \(O(N\cdot C)=O(N^2)\).
+           Después, para cada candidata \(P\): coloca al tardío y recorre el camino
+           desde su hoja hacia la raíz mientras él siga siendo el de mayor rango de
+           cada nodo que visita; el número de nodos que sube es el número de rondas
+           que gana. Evaluar una posición es \(O(N)\), y son \(N\) posiciones, así
+           que el total es \(O(N^2)\). Con \(N\le 5\,000\) eso es \(\sim 2.5\times
+           10^7\): cómodo. (Ojo: el \(O(N^3)\) de la Pista 2 ya es
+           \(\sim 1.25\times 10^{11}\) aquí, demasiado lento.) Con esto sumas 49
+           puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: pinta de blanco y negro</summary>
+      <div class="body">
+        <p class="q">Solo importa el rango <em>relativo</em> a \(R\). ¿Qué pasa si
+           coloreas a cada caballero según si es más débil o más fuerte que el
+           tardío?</p>
+        <p>Pinta de <strong>blanco</strong> a todo caballero con rango \(&lt; R\)
+           (el tardío les gana) y de <strong>negro</strong> a todo caballero con
+           rango \(&gt; R\) (le ganan al tardío). El ganador de un nodo es el de
+           mayor rango de <em>todo</em> su subárbol. Entonces:</p>
+        <ul>
+          <li>El tardío gana la ronda de un nodo \(X\) <strong>si y solo si</strong>
+              él es el de mayor rango en el subárbol de \(X\); es decir, si todas
+              las demás hojas del subárbol de \(X\) son <em>blancas</em>.</li>
+          <li>En cuanto en su rama aparece un negro, su racha termina ahí (gana el
+              negro más fuerte).</li>
+        </ul>
+        <p>Por lo tanto, para una colocación fija, el tardío gana la
+           <strong>cadena</strong> de rondas desde su hoja subiendo por el árbol
+           mientras cada nodo ancestro sea <em>todo-blanco</em> (aparte de él
+           mismo). Buscamos, para su hoja, el <strong>ancestro más alto cuyo
+           subárbol sea todo-blanco</strong>: la altura de esa cadena es el número
+           de victorias.</p>
+        <p class="q">Esto ya hace cada evaluación más limpia, pero seguimos probando
+           las \(N\) posiciones. Para \(N=10^5\), \(O(N^2)\) es \(10^{10}\): no
+           entra. ¿Hay manera de <em>no</em> probarlas una por una?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 3 (51 pts): el truco del desplazamiento</summary>
+      <div class="body">
+        <p class="q">Insertar al tardío en una posición empuja a sus vecinos. ¿Qué
+           le pasa al <em>primer</em> caballero del intervalo de un nodo si metes al
+           tardío justo antes de él, como nuevo elemento más a la izquierda de ese
+           intervalo?</p>
+        <p>Esa es la <strong>observación del desplazamiento</strong>: insertar al
+           tardío justo antes del primer caballero de un intervalo lo convierte en
+           el elemento <em>más a la izquierda</em> de ese intervalo y
+           <strong>empuja</strong> a ese primer caballero fuera del subárbol. Por
+           eso no hace falta probar cada \(P\): basta procesar el árbol
+           <em>una sola vez</em> permitiendo que el descendiente más a la izquierda
+           de cada nodo sea <strong>negro</strong> (porque el tardío lo desaloja) y
+           exigiendo que <em>el resto</em> sea blanco. A esa condición la
+           llamamos <strong><code>almost_all_white</code></strong>: el intervalo es
+           todo-blanco salvo, a lo más, su primer caballero.</p>
+        <p>Compáralo con la Pista 4: ahí pedíamos <code>all_white</code> (todo
+           blanco). Ahora, para cada nodo, guardamos también
+           <code>almost_all_white</code>, y eso ya incorpora “de un solo barrido” la
+           mejor inserción posible dentro de ese nodo.</p>
+        <p class="q">Falta un detalle técnico: los \(S,E\) se refieren a posiciones
+           <em>entre los vivos</em>, que cambian al compactar tras cada ronda.
+           ¿Cómo localizas rápido cuál es la hoja original que ocupa la
+           \(k\)-ésima posición viva, sin recorrer toda la lista cada vez?</p>
+        <p>Con un <strong>árbol de conteos</strong> (un BIT o segment tree donde
+           cada posición original vale \(1\) si está viva y \(0\) si murió). Una
+           consulta <code>find_knight(k)</code> = “posición original del
+           \(k\)-ésimo vivo” se resuelve por búsqueda sobre prefijos en
+           \(O(\log N)\). Al fusionar un rango, se restan \(1\) los perdedores (el
+           ganador conserva su lugar): así la compactación es implícita.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea general.</strong> Combinamos las tres observaciones:
+           (1) el árbol de rondas tiene una forma fija que dependemos solo de los
+           comandos; (2) el tardío gana mientras su subárbol-ancestro sea
+           todo-blanco; (3) por el desplazamiento, basta exigir
+           <code>almost_all_white</code> (todo blanco salvo el primer caballero del
+           intervalo), lo que resuelve <em>todas</em> las posiciones de un solo
+           barrido. Y para mapear posiciones vivas a hojas originales usamos un
+           árbol de conteos. Todo junto: \(O(N\log N)\).</p>
+
+        <h3>Qué guarda cada nodo</h3>
+        <p>Para cada nodo del árbol (hoja o ronda) mantenemos, sobre su intervalo de
+           hojas, cuatro datos:</p>
+        <ul>
+          <li><code>all_white</code> — todas las hojas del subárbol son blancas
+              (rango \(&lt; R\)).</li>
+          <li><code>almost_all_white</code> — todas blancas salvo, a lo más, la
+              hoja <em>más a la izquierda</em> del intervalo (la que el tardío
+              desaloja al insertarse como nuevo primer elemento).</li>
+          <li><code>best</code> — la longitud máxima de cadena de victorias que
+              <em>termina</em> en este nodo (cuántas rondas seguidas gana el tardío
+              si su racha llega hasta aquí arriba).</li>
+          <li><code>where</code> — la posición inicial \(P\) que logra ese
+              <code>best</code> (propagada desde el mejor hijo; ante empate, el hijo
+              más a la izquierda, para respetar “la \(P\) más pequeña”).</li>
+        </ul>
+
+        <h3>La regla de fusión</h3>
+        <p>Al fusionar el intervalo \([s,e]\) (en coordenadas de vivos) en un nuevo
+           nodo, primero localizas a sus hijos con <code>find_knight(s)</code>,
+           …, <code>find_knight(e)</code>; sea <code>mejor_hijo</code> el hijo con
+           mayor <code>best</code> (empate → el más a la izquierda). Entonces:</p>
+        <ul>
+          <li>Si el intervalo es <code>almost_all_white</code>: el tardío, colocado
+              como primer elemento del intervalo, <strong>gana esta ronda</strong>
+              encima del mejor hijo ⇒
+              <code>best = mejor_hijo.best + 1</code> y
+              <code>where = mejor_hijo.where</code>.</li>
+          <li>Si no: la racha no atraviesa este nodo; se <em>arrastra</em> lo mejor
+              hallado abajo ⇒ <code>best = mejor_hijo.best</code> y
+              <code>where = mejor_hijo.where</code>.</li>
+        </ul>
+        <p>Los agregados <code>all_white</code> / <code>almost_all_white</code> del
+           nodo nuevo se calculan de sus hijos: <code>all_white</code> = todos los
+           hijos son <code>all_white</code>; <code>almost_all_white</code> = el hijo
+           más a la izquierda es <code>almost_all_white</code> y los demás son
+           <code>all_white</code> (el único negro tolerado vive en la hoja más a la
+           izquierda). La respuesta final es <code>where</code> del nodo raíz (la
+           última fusión, cuando queda un solo caballero).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion GetBestPosition(N, C, R, K, S, E):
+    # 1) Colorear: blanco = rango &lt; R  (lo vence el tardío);  negro = rango &gt; R
+    #    Cargar los N-1 caballeros de K en hojas, reservando un hueco para el
+    #    tardío (la referencia reserva el índice 0 y desplaza S,E en +1: esa
+    #    codificación es la que MATERIALIZA la observación del desplazamiento).
+    para cada hoja: color = BLANCO si rango &lt; R   sino NEGRO
+                    best  = 0
+                    where = (posición/índice asociado a esa hoja)
+                    all_white        = (color == BLANCO)
+                    almost_all_white = verdadero      # una sola hoja: su "primero"
+
+    # 2) Árbol de conteos sobre las N posiciones, todas VIVAS (= 1)
+    activo[0..N-1] = 1
+    # find_knight(k): índice original del k-ésimo vivo, por prefijos, O(log N)
+
+    raiz = ninguno
+    # 3) Procesar las C rondas; cada una fusiona un rango de VIVOS en un nodo
+    para cada ronda (s, e):                      # s,e en coordenadas de VIVOS
+        hijos = [ find_knight(s), find_knight(s+1), ..., find_knight(e) ]
+        nodo  = nuevo_nodo(hijos)
+
+        # agregados de color
+        nodo.all_white        = AND de hijo.all_white para todo hijo
+        nodo.almost_all_white = hijos[0].almost_all_white
+                                Y (hijos[1..] son todos all_white)
+
+        # mejor hijo: máx best; empate -> el más a la izquierda
+        mh = argmax_izquierda(hijos, clave = best)
+
+        si nodo.almost_all_white:
+            nodo.best  = mh.best + 1             # el tardío gana ESTA ronda
+            nodo.where = mh.where
+        si no:
+            nodo.best  = mh.best                 # la racha no cruza; se arrastra
+            nodo.where = mh.where
+
+        # compactar: el ganador (máx rango) se queda vivo; los demás "mueren"
+        ganador = el hijo cuyo subárbol contiene el máximo rango
+        para cada posición viva original p en [s..e], p != pos(ganador):
+            activo[p] = 0                        # resta 1 en el árbol de conteos
+        nodo ocupa el lugar (vivo) del ganador
+        raiz = nodo
+
+    # 4) La respuesta es el 'where' de la última fusión (la raíz)
+    regresar raiz.where</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Por la Pista 4, el número de
+           rondas que gana el tardío es la altura de la cadena de nodos
+           <em>todo-blancos-salvo-él</em> sobre su hoja. La Pista 5 muestra que, al
+           insertarlo como elemento más a la izquierda de un intervalo, desaloja a
+           su primer caballero; por eso la condición exacta sobre cada nodo no es
+           “todo blanco” sino <code>almost_all_white</code> (todo blanco salvo el
+           primero). La regla de fusión va construyendo, de abajo hacia arriba, la
+           mejor cadena que termina en cada nodo: cuando un nodo cumple
+           <code>almost_all_white</code> suma \(+1\) a la mejor cadena de su mejor
+           hijo; si no, solo arrastra esa mejor cadena hacia arriba sin extenderla.
+           Como cada hoja se procesa, de forma amortizada, una sola vez a lo largo
+           de todas las fusiones (la suma de tamaños de los intervalos es
+           \(N+C-1\)), esta segunda fase es \(O(N)\); el <code>find_knight</code> y
+           la baja de los perdedores añaden el factor \(\log N\). El desempate “la
+           \(P\) más pequeña” se respeta porque <code>where</code> se propaga
+           siempre desde el hijo <em>más a la izquierda</em> que alcanza el máximo.
+           Esto reproduce exactamente la respuesta \(1\) del ejemplo.</p>
+
+        <p><strong>Complejidad.</strong> \(O(N\log N)\) en tiempo y \(O(N)\) en
+           memoria (el árbol de conteos y los \(N+C-1\) nodos). El factor
+           \(\log N\) viene del <code>find_knight</code> (localizar al
+           \(k\)-ésimo vivo) y de desactivar a los perdedores; la fase de victorias
+           es \(O(N)\) amortizado. La referencia oficial corre \(N=100\,000\) en
+           \(\approx 0.03\) s, muy holgado para el límite de 1 s / 256 MiB.</p>
+
+        <div class="note-box">
+          <strong>Trampas que cuestan puntos.</strong>
+          <ol>
+            <li><strong><code>almost_all_white</code> ≠ <code>all_white</code>:</strong>
+                permite que <em>solo</em> el primer caballero del intervalo sea
+                negro (lo desaloja la inserción del tardío). Confundirlo con “todo
+                blanco” da resultados <em>menores</em> que el óptimo.</li>
+            <li><strong>Posiciones vivas vs. originales:</strong> los \(S,E\) son
+                índices <em>entre los vivos</em>, que se compactan tras cada ronda.
+                Hay que mapear “\(k\)-ésimo vivo” → hoja original con el árbol de
+                conteos (<code>find_knight</code>) y desactivar (restar \(1\)) a los
+                perdedores, dejando solo al ganador en su lugar. No uses los índices
+                originales directamente.</li>
+            <li><strong>El hueco del tardío:</strong> la referencia reserva el índice
+                \(0\) como hueco del tardío, carga <code>K[0..N-2]</code> en las
+                posiciones \(1..N-1\) y desplaza \(s=S+1,\ e=E+1\). Esa codificación
+                es la que materializa la observación del desplazamiento; sin un
+                esquema así, el mapeo de la respuesta \(P\) se vuelve enredado.</li>
+            <li><strong>Empates:</strong> devuelve la \(P\) más pequeña. Propaga
+                <code>where</code> desde el mejor hijo <em>más a la izquierda</em>,
+                no desde cualquiera que empate.</li>
+            <li><strong>Solo cuentan las rondas que él juega y gana:</strong> las
+                rondas que no involucran al tardío no suman; el modelo ya lo respeta
+                porque solo subimos por su rama.</li>
+          </ol>
+        </div>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Trampa de compilación (solo C++ / libc++)</span>
+<pre>- En clang/libc++ moderno (macOS), un arreglo global llamado 'rank' choca
+  con std::rank bajo 'using namespace std;'  =>  error:
+  "reference to 'rank' is ambiguous".
+- Renombra ese símbolo global (p. ej. rank -> kr_rank). NO cambia el
+  algoritmo; en el libstdc++ de 2012 compilaba sin problema.
+- Reserva los arreglos con holgura (MAXN &gt;= N = 100000).</pre>
+        </div>
+
+        <p class="note"><strong>Nota honesta sobre complejidades.</strong> Una
+           solución \(O(N^2)\) (Pistas 2–3, construyendo el árbol una vez) basta
+           para las subtareas 1 y 2 (49 pts), pero con \(N=10^5\) sería
+           \(\sim 10^{10}\) y <em>no</em> entra en 1 s. La solución de 100 puntos es
+           la \(O(N\log N)\) de arriba (la referencia oficial, de Giovanni
+           Paolini).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
