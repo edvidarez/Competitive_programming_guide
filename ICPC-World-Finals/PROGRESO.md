@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving
 
-Total de problemas: **200** · Completados: **177 / 200**
+Total de problemas: **200** · Completados: **178 / 200**
 
 Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 
@@ -259,11 +259,11 @@ Marca `[x]` cuando el `LETRA.html` del problema esté terminado y revisado.
 | [x] | Y | Compression | `2022/Y/Y.html` |
 | [x] | Z | Archaeological Recovery | `2022/Z/Z.html` |
 
-## 2023 ICPC World Finals — 0 / 11
+## 2023 ICPC World Finals — 1 / 11
 
 | ✓ | Problema | Título | Archivo |
 |---|----------|--------|---------|
-| [ ] | A | Riddle of the Sphinx | `2023/A/A.html` |
+| [x] | A | Riddle of the Sphinx | `2023/A/A.html` |
 | [ ] | B | Schedule | `2023/B/B.html` |
 | [ ] | C | Three Kinds of Dice | `2023/C/C.html` |
 | [ ] | D | Carl's Vacation | `2023/D/D.html` |
