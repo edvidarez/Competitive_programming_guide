@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **26 / 142**
+Total de tareas: **142** · Completadas: **27 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -59,13 +59,13 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | The Valley of Mexico | `2006/05 The Valley of Mexico/index.html` |
 | [x] | 6 | Joining Points | `2006/06 Joining Points/index.html` |
 
-## IOI 2007 — 2 / 6
+## IOI 2007 — 3 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Aliens | `2007/01 Aliens/index.html` |
 | [x] | 2 | Flood | `2007/02 Flood/index.html` |
-| [ ] | 3 | Sails | `2007/03 Sails/index.html` |
+| [x] | 3 | Sails | `2007/03 Sails/index.html` |
 | [ ] | 4 | Miners | `2007/04 Miners/index.html` |
 | [ ] | 5 | Pairs | `2007/05 Pairs/index.html` |
 | [ ] | 6 | Trainings | `2007/06 Trainings/index.html` |
