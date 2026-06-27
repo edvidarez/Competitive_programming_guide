@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2004 · Tarea 3 — Polygon</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2004 · Día 1 · Atenas, Grecia</div>
+    <h1>Tarea <span class="num">3</span> — Polygon</h1>
+    <p class="note">Polígono · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Un <strong>polígono</strong> es el conjunto de todos los puntos sobre su
+       borde o encerrados por él. Un polígono es <strong>convexo</strong> si para
+       cualesquiera dos puntos \(X\) y \(Y\) del polígono, el segmento que los une
+       queda dentro del polígono. En esta tarea <em>todos</em> los polígonos son
+       convexos, tienen al menos dos vértices, sus vértices son distintos y con
+       coordenadas enteras, y no hay tres vértices colineales. De aquí en adelante,
+       la palabra “polígono” siempre se refiere a un polígono de ese tipo.</p>
+
+    <p>Dados dos polígonos \(A\) y \(B\), la <strong>suma de Minkowski</strong> de
+       \(A\) y \(B\) está formada por todos los puntos de la forma
+       \((x_1+x_2,\;y_1+y_2)\), donde \((x_1,y_1)\) es un punto de \(A\) y
+       \((x_2,y_2)\) es un punto de \(B\). Resulta que la suma de Minkowski de dos
+       polígonos también es un polígono. La figura siguiente muestra un ejemplo:
+       dos triángulos y su suma de Minkowski.</p>
+
+    <figure>
+      <img alt="Dos triángulos a la izquierda, un signo +, otro triángulo, un signo = y el hexágono resultante: su suma de Minkowski."
+           src="data:image/png;base64,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">
+      <figcaption>La suma de Minkowski de dos triángulos: el resultado “mezcla”
+         por ángulo los lados de ambos sumandos.</figcaption>
+    </figure>
+
+    <p>Estudiamos la <strong>operación inversa</strong> a la suma de Minkowski.
+       Para un polígono dado \(P\), buscamos dos polígonos \(A\) y \(B\) tales que:</p>
+    <ul>
+      <li>\(P\) sea la suma de Minkowski de \(A\) y \(B\), es decir \(P = A \oplus B\);</li>
+      <li>\(A\) tenga entre 2 y 4 vértices distintos, es decir, sea un
+          <strong>segmento</strong> (2 vértices), un <strong>triángulo</strong>
+          (3 vértices) o un <strong>cuadrilátero</strong> (4 vértices);</li>
+      <li>\(A\) tenga <strong>tantos vértices como sea posible</strong>, esto es:
+        <ul>
+          <li>\(A\) debe ser un cuadrilátero, si es posible;</li>
+          <li>si \(A\) no puede ser cuadrilátero, debe ser un triángulo, si es posible;</li>
+          <li>en otro caso, debe ser un segmento.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <p>Es claro que ni \(A\) ni \(B\) pueden ser iguales a \(P\), porque entonces el
+       otro sumando tendría que ser un punto, que no es un polígono válido.</p>
+
+    <p>Se te entrega un conjunto de archivos de entrada, cada uno con la descripción
+       de un polígono \(P\). Para cada archivo de entrada debes hallar los polígonos
+       \(A\) y \(B\) que cumplen lo anterior, y crear un archivo de salida con las
+       descripciones de \(A\) y \(B\). Para los archivos de entrada dados, esos
+       polígonos \(A\) y \(B\) <em>siempre</em> existen. Si hay muchos resultados
+       correctos, basta con que encuentres y entregues uno de ellos.</p>
+
+    <div class="note-box">
+      <strong>Tarea output-only (solo salidas).</strong> El enunciado lo dice
+      explícitamente: <em>no entregues programas, solo los archivos de salida</em>.
+      Son 10 instancias; tú produces 10 archivos de salida. El formato de cada
+      salida espeja al de su entrada, pero lo que se califica son los archivos
+      que entregas, no un programa que corra en el evaluador.
+    </div>
+
+    <h2>Entrada</h2>
+    <p>Se te dan 10 instancias en los archivos de texto <code>polygon1.in</code> a
+       <code>polygon10.in</code>, donde el número después de <code>polygon</code> es
+       el número de entrada. Cada archivo de entrada está organizado así:</p>
+    <ul>
+      <li>La primera línea contiene un entero \(N\): el número de vértices del
+          polígono \(P\).</li>
+      <li>Las siguientes \(N\) líneas describen los vértices en orden
+          <strong>antihorario</strong> (counter-clockwise), un vértice por línea. La
+          línea \(I+1\) (para \(I = 1, 2, \ldots, N\)) contiene dos enteros \(X_I\)
+          y \(Y_I\), separados por un espacio: las coordenadas del \(I\)-ésimo
+          vértice del polígono. Todas las coordenadas de entrada son enteros no
+          negativos.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Debes entregar 10 archivos de salida correspondientes a los archivos de
+       entrada, que describan los polígonos \(A\) y \(B\) pedidos. La primera línea
+       debe contener el texto:</p>
+    <div class="io"><pre>#FILE polygon I</pre></div>
+    <p>donde el entero \(I\) (\(1 \le I \le 10\)) es el número del archivo de entrada
+       correspondiente.</p>
+    <p>El formato de salida es parecido al de entrada. La segunda línea contiene un
+       entero \(N_A\): el número de vértices de \(A\) (\(2 \le N_A \le 4\)). Las
+       siguientes \(N_A\) líneas describen los vértices de \(A\) en orden
+       antihorario, un vértice por línea. La línea \(I+2\) (para
+       \(I = 1, 2, \ldots, N_A\)) contiene dos enteros \(X\) y \(Y\), separados por
+       un espacio: las coordenadas del \(I\)-ésimo vértice del polígono \(A\).</p>
+    <p>La línea \(N_A+3\) debe contener un entero \(N_B\): el número de vértices de
+       \(B\) (\(2 \le N_B\)). Las siguientes \(N_B\) líneas describen los vértices de
+       \(B\) en orden antihorario, un vértice por línea. La línea \(N_A+J+3\) (para
+       \(J = 1, 2, \ldots, N_B\)) contiene dos enteros \(X\) y \(Y\), separados por
+       un espacio: las coordenadas del \(J\)-ésimo vértice del polígono \(B\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Modalidad</td><td><span class="badge">Output-only · 10 instancias</span></td></tr>
+        <tr><td>Polígono \(P\)</td><td>Convexo, en orden antihorario, sin tres vértices colineales; vértices distintos con coordenadas enteras no negativas.</td></tr>
+        <tr><td>Vértices de \(A\)</td><td><span class="badge">\(2 \le N_A \le 4\)</span> (segmento, triángulo o cuadrilátero)</td></tr>
+        <tr><td>Vértices de \(B\)</td><td><span class="badge">\(2 \le N_B\)</span></td></tr>
+        <tr><td>Condición a cumplir</td><td>\(P = A \oplus B\) con \(A\) del <em>mayor</em> número posible de vértices (cuadrilátero &gt; triángulo &gt; segmento).</td></tr>
+      </table>
+    </div>
+    <p class="note">El enunciado no fija cotas numéricas de \(N\) ni de las
+       coordenadas (es output-only y no hay programa que corra con límite de tiempo).
+       Para que te ubiques: en las instancias reales \(N\) llega hasta \(908\) y las
+       coordenadas hasta \(\sim 164{,}619\); ese análisis de escala lo retomamos en
+       la pestaña <em>Upsolving</em>.</p>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Output-only:</strong> 10 archivos de entrada, se entregan 10 de salida.
+      El puntaje es <em>por instancia</em> (no hay subtareas con niveles ni crédito
+      parcial dentro de una instancia). Para que una instancia cuente, se exige que
+      \(A\) sea <strong>válido</strong>, que \(P = A \oplus B\) (salvo traslación) y
+      que \(A\) tenga el <strong>máximo</strong> número de vértices posible
+      (cuadrilátero; si no, triángulo; si no, segmento), con \(B\) válido
+      (\(\ge 2\) vértices).
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>El archivo de entrada <code>polygon0.in</code> describe el polígono \(P\) de
+       5 vértices que se muestra a la derecha (una “casita”):</p>
+    <div class="example">
+      <div class="io"><h4>Entrada · polygon0.in</h4><pre>5
+0 1
+0 0
+2 0
+2 1
+1 2</pre></div>
+      <figure style="margin:0">
+        <img alt="Polígono P de ejemplo: un pentágono con forma de casa, base de ancho 2 y un pico arriba."
+             src="data:image/png;base64,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">
+        <figcaption>El polígono \(P\) de <code>polygon0.in</code>.</figcaption>
+      </figure>
+    </div>
+
+    <p>Para esa entrada, <strong>cualquiera</strong> de los dos archivos de salida de
+       abajo es correcto, ya que en ambos casos \(A\) es un triángulo y no puede ser
+       un cuadrilátero.</p>
+    <div class="example">
+      <div class="io"><h4>Salida posible 1</h4><pre>#FILE polygon 0
+3
+0 0
+2 0
+1 1
+2
+0 1
+0 0</pre></div>
+      <div class="io"><h4>Salida posible 2</h4><pre>#FILE polygon 0
+3
+0 0
+1 0
+1 1
+3
+0 1
+0 0
+1 0</pre></div>
+    </div>
+    <figure>
+      <img alt="Cuatro figuras: arriba, un triángulo A y un segmento vertical B (salida 1); abajo, un triángulo A y otro triángulo B (salida 2)."
+           src="data:image/png;base64,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">
+      <figcaption>Arriba: la salida 1, con \(A\) triángulo (izquierda) y \(B\)
+         segmento (derecha). Abajo: la salida 2, con \(A\) triángulo y \(B\)
+         triángulo. En ambas, \(A \oplus B = P\).</figcaption>
+    </figure>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Suma de Minkowski</span>
+      <span class="ptag">Teoría de números (gcd)</span>
+      <span class="ptag">Meet in the middle</span>
+      <span class="ptag">Output-only</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un polígono convexo \(P\) (en orden antihorario). Debes
+       <strong>descomponerlo</strong> como suma de Minkowski \(P = A \oplus B\),
+       donde \(A\) tiene el mayor número de vértices posible entre 2 y 4
+       (cuadrilátero &gt; triángulo &gt; segmento) y \(B\) tiene \(\ge 2\) vértices.
+       Es output-only: 10 instancias, entregas 10 salidas. Como el evaluador acepta
+       la respuesta <em>salvo traslación</em>, basta reconstruir \(A\) y \(B\) con la
+       forma correcta y moverlos a coordenadas no negativas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>En las instancias reales \(N\) llega a \(908\) y, por dirección,
+                el “grosor” entero de cada lado (su gcd) puede ser grande
+                (hasta \(405\)), pero la <em>suma</em> de esos grosores es
+                \(\le 3000\). Eso es la clave: hace que el espacio de búsqueda
+                quede <strong>acotado</strong> aunque sea output-only.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué le hace la suma de Minkowski a los lados?</summary>
+      <div class="body">
+        <p class="q">¿Ya te fijaste en lo que pasa con los <em>vectores-arista</em>
+           de \(A\) y \(B\) cuando formas \(A \oplus B\)? Mira otra vez la figura del
+           enunciado: ¿de dónde salen los lados del polígono resultante?</p>
+        <p>La suma de Minkowski de dos convexos toma <strong>todos</strong> los
+           vectores-arista de \(A\) y de \(B\) y los <strong>ordena por ángulo</strong>
+           para armar el borde del resultado. Es decir, el multiconjunto de lados de
+           \(A \oplus B\) es la <em>unión</em> de los lados de \(A\) y los de \(B\).</p>
+        <p>Entonces descomponer \(P\) es <strong>repartir los lados de \(P\)</strong>
+           entre \(A\) y \(B\). ¿Cómo describirías “un lado” de forma que se pueda
+           repartir en pedazos?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Aristas primitivas y su multiplicidad</summary>
+      <div class="body">
+        <p class="q">Un lado \(E_i = V_{i+1}-V_i\) puede tener coordenadas con un
+           factor común. ¿Y si lo separas en “dirección” por “cuántas veces”?</p>
+        <p>Escribe cada lado como \(E_i = n_i \cdot e_i\), donde \(e_i\) es el vector
+           <strong>primitivo</strong> (con \(\gcd\) de sus componentes igual a 1) y
+           \(n_i = \gcd(|\Delta x|, |\Delta y|)\) es su multiplicidad entera. Como
+           \(P\) es estrictamente convexo y va en orden antihorario, las \(N\)
+           direcciones \(e_i\) son <strong>distintas</strong> y ya vienen ordenadas
+           por ángulo.</p>
+        <p>Un polígono \(A\) es sumando de \(P\) exactamente cuando sus lados son
+           \(\{k_i\,e_i\}\) con \(0 \le k_i \le n_i\) y \(\sum_i k_i\,e_i = (0,0)\)
+           (un polígono cerrado: sus lados suman cero). El complemento
+           \(k'_i = n_i - k_i\) define \(B\), y como \(\sum_i n_i\,e_i = (0,0)\)
+           (porque \(P\) cierra), \(B\) también cierra automáticamente.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cuántos vértices tiene A? ¿Cuándo es válido B?</summary>
+      <div class="body">
+        <p class="q">Si \(A\) usa ciertas direcciones, ¿cuántos vértices tendrá? ¿Y
+           qué necesita \(B\) para no degenerar en un punto?</p>
+        <p>El número de vértices de \(A\) es la cantidad de direcciones con
+           \(k_i &gt; 0\):</p>
+        <ul>
+          <li><strong>2</strong> direcciones que suman cero ⇒ deben ser
+              <em>antiparalelas</em> ⇒ \(A\) es un <strong>segmento</strong>.</li>
+          <li><strong>3</strong> direcciones distintas que suman cero ⇒
+              <strong>triángulo</strong>.</li>
+          <li><strong>4</strong> direcciones distintas que suman cero ⇒
+              <strong>cuadrilátero</strong>.</li>
+        </ul>
+        <p>Puestas punta con cola en orden de ángulo, 3 o 4 direcciones distintas que
+           cierran siempre forman un convexo no degenerado. Y \(B\) es válido
+           (\(\ge 2\) vértices) <strong>si y solo si</strong> quedan
+           \(\ge 2\) direcciones con remanente \(k'_i &gt; 0\).</p>
+        <p class="note">Cuidado: con \(N\) chico, un triángulo o cuadrilátero podría
+           consumir casi todas las direcciones y dejar a \(B\) con una sola ⇒ \(B\)
+           inválido. La maximalidad de \(A\) está condicionada a que \(B\) siga
+           siendo polígono.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Lo que vuelve la búsqueda ACOTADA</summary>
+      <div class="body">
+        <p class="q">Parece que hay que probar muchísimas combinaciones de
+           \(k_i\)… pero, ¿cuántos pedazos distintos puede aportar <em>una</em>
+           dirección a \(A\)?</p>
+        <p>Observa: para cada dirección, \(A\) usa <strong>un solo</strong> término
+           \(k_i\,e_i\) con \(1 \le k_i \le n_i\). O sea, los “sub-vectores”
+           disponibles son \(\{\,k\cdot e_i : 1 \le k \le n_i\,\}\), y en total son
+           solo \(S = \sum_i n_i \le 3000\). Cada lado de \(A\) es exactamente uno de
+           esos sub-vectores.</p>
+        <p>Entonces:</p>
+        <ul>
+          <li><strong>Segmento</strong> = 2 sub-vectores de direcciones distintas que
+              suman \((0,0)\) (par antiparalelo, mismo \(k\)).</li>
+          <li><strong>Triángulo</strong> = 3 sub-vectores de 3 direcciones distintas
+              que suman \((0,0)\).</li>
+          <li><strong>Cuadrilátero</strong> = 4 sub-vectores de 4 direcciones
+              distintas que suman \((0,0)\).</li>
+        </ul>
+        <p>Buscar 2, 3 o 4 sub-vectores que se cancelen, de entre \(\le 3000\), es
+           perfectamente manejable. ¿Cómo encontrarías los 4 del cuadrilátero sin
+           probar las \(\binom{3000}{4}\) combinaciones?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Por la Pista 1, descomponer \(P\) es repartir sus
+           lados; por la Pista 2, los lados son \(n_i\,e_i\) con direcciones
+           primitivas distintas; por la Pista 4, un sumando elige un sub-vector
+           \(k_i\,e_i\) (\(1\le k_i\le n_i\)) por cada dirección que use, y
+           segmento/triángulo/cuadrilátero son 2/3/4 sub-vectores de direcciones
+           distintas que suman \((0,0)\). Como 4 es el máximo global, en cuanto
+           encuentres <em>un</em> cuadrilátero válido ya es óptimo; si no, buscas
+           triángulo; si no, segmento. Siempre exigiendo que a \(B\) le queden
+           \(\ge 2\) direcciones.</p>
+
+        <p><strong>Cómo encontrar el cuadrilátero rápido — meet in the middle.</strong>
+           Genera todos los <em>pares</em> de sub-vectores de direcciones distintas y
+           guárdalos en una tabla hash por su suma \(w\). Un cuadrilátero es dos pares
+           \((w)\) y \((-w)\) que juntos usen 4 direcciones distintas. Para cada par
+           con suma \(w\), busca en la tabla los pares con suma \(-w\); si hay uno
+           compatible (4 direcciones distintas y \(B\) válido), listo. El número de
+           pares es \(P_{\text{cnt}} = \sum_{i&lt;j} n_i n_j\) (\(\le \sim 4.4\)M en el
+           peor caso), y en la práctica los “cubos” de la tabla nunca pasan de unos
+           cientos, así que el emparejado explora todas las combinaciones reales.</p>
+
+        <p><strong>Triángulo y segmento</strong> son más simples: para el triángulo,
+           por cada par con suma \(w\) busca un único sub-vector igual a \(-w\) de una
+           tercera dirección distinta; para el segmento, por cada sub-vector busca su
+           opuesto (par antiparalelo). En ambos, verifica que \(B\) conserve
+           \(\ge 2\) direcciones.</p>
+
+        <p><strong>Reconstrucción.</strong> Para \(A\), toma una arista \(k_i\,e_i\)
+           por cada dirección usada, ordénalas por ángulo y colócalas punta con cola
+           desde el origen. Para \(B\), una arista \((n_i-k_i)\,e_i\) por cada
+           dirección con remanente positivo, igual. Finalmente traslada \(A\) y \(B\)
+           a coordenadas \(\ge 0\): eso solo mueve \(P\) por una traslación, que el
+           evaluador acepta.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Resolver(P):                      // P convexo, antihorario
+    para cada lado E_i = V[i+1] - V[i]:
+        g   = gcd(|E_i.x|, |E_i.y|)
+        e_i = E_i / g                     // direccion primitiva
+        n_i = g                           // multiplicidad
+    // las direcciones e_i son distintas y ya van por angulo
+
+    // sub-vectores disponibles  (S = suma de n_i  <= 3000)
+    Sub = mapa { (k * e_i) -> (dir=i, k) }   para 1<=k<=n_i, cada i
+
+    // todos los pares de DIRECCIONES distintas
+    Pares = lista vacia
+    para i < j:
+        para 1<=ki<=n_i, 1<=kj<=n_j:
+            w = ki*e_i + kj*e_j
+            Pares.agregar( (w, i, j, ki, kj) )
+    PorSuma = agrupar Pares por su valor w
+
+    // ---- CUADRILATERO (meet in the middle): prioridad maxima ----
+    para cada par D=(w,...) en Pares:
+        para cada par Z en PorSuma[ -w ]:
+            si {dirs(D)} y {dirs(Z)} son 4 direcciones distintas
+               y quedan >= 2 direcciones con remanente para B:
+                return Reconstruir( sub-vectores de D y Z )
+
+    // ---- TRIANGULO ----
+    para cada par (w, i, j, ki, kj) en Pares:
+        si (-w) esta en Sub con direccion l, l != i, j
+           y quedan >= 2 direcciones con remanente para B:
+            return Reconstruir( {ki*e_i, kj*e_j, (-w)} )
+
+    // ---- SEGMENTO ----
+    para cada sub-vector v = k*e_i en Sub:
+        si (-v) esta en Sub (par antiparalelo)
+           y quedan >= 2 direcciones con remanente para B:
+            return Reconstruir( {v, -v} )
+
+funcion Reconstruir(subvectores_de_A):
+    A = recorrido punta-con-cola desde (0,0) de subvectores_de_A
+        ordenados por angulo
+    para cada direccion i con remanente r_i = n_i - k_i > 0:
+        agregar arista r_i * e_i a B
+    B = recorrido punta-con-cola desde (0,0) ordenado por angulo
+    trasladar A y B a coordenadas >= 0
+    return (A, B)</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> La suma de Minkowski de dos
+           convexos mezcla por ángulo sus vectores-arista, así que el multiconjunto
+           de lados de \(A \oplus B\) es la unión de los de \(A\) y \(B\). Por tanto
+           \(A\) es sumando de \(P\) si y solo si sus lados son un sub-reparto de las
+           aristas primitivas de \(P\) que cierra (suma \((0,0)\)); el resto va a
+           \(B\), que cierra solo. Buscar 4/3/2 sub-vectores que se cancelen cubre
+           todos los \(A\) candidatos, y la prioridad cuadrilátero &gt; triángulo
+           &gt; segmento con \(B\) válido garantiza la maximalidad pedida.</p>
+
+        <p><strong>Complejidad.</strong> Sub-vectores \(S=\sum n_i \le 3000\); pares
+           \(P_{\text{cnt}}=\sum_{i&lt;j} n_i n_j\) (\(\le \sim 4.4\)M). El
+           cuadrilátero por meet in the middle cuesta
+           \(O(P_{\text{cnt}}\log P_{\text{cnt}})\) más el emparejado por cubos
+           (cubos pequeños en la práctica); triángulo \(O(P_{\text{cnt}})\), segmento
+           \(O(S)\). Equivale a la complejidad oficial \(O(m^2 N^2)\) (\(m\) = máximo
+           gcd, \(N\) = número de aristas). En la práctica corre en \(&lt; 0.3\) s por
+           instancia, con \(\sim 100\) MB en el test más grande.</p>
+
+        <p class="note"><strong>Trampas frecuentes.</strong>
+           (1) No basta buscar 4 <em>aristas-copia</em> primitivas que sumen cero: un
+           sumando puede usar \(k_i &gt; 1\), así que hay que buscar sobre los
+           sub-vectores \(k\cdot e_i\) (una instancia exige un cuadrilátero con
+           coeficientes grandes, del orden de cientos).
+           (2) Olvidar la validez de \(B\): en un paralelogramo (\(N=4\)) un
+           triángulo o cuadrilátero consumiría todas las direcciones y dejaría \(B\)
+           como punto ⇒ el máximo real baja a segmento.
+           (3) \(N\) grande no implica cuadrilátero: hay instancias con \(N=118\) y
+           \(N=908\) que solo admiten <em>segmento</em> (no existen 3 ni 4
+           direcciones que sumen cero).
+           (4) La traslación de \(A\) y \(B\) a coordenadas \(\ge 0\) no cambia \(P\)
+           salvo una traslación, que el evaluador acepta.</p>
+
+        <p class="note"><strong>Qué sale en las 10 instancias</strong> [método, \(|A|\)/\(|B|\)]:
+           P1 triángulo 3/2 · P2 cuadrilátero 4/7 · P3 cuadrilátero 4/4 ·
+           P4 triángulo 3/3 · P5 segmento 2/2 · P6 segmento 2/116 ·
+           P7 segmento 2/906 · P8 triángulo 3/116 · P9 triángulo 3/79 ·
+           P10 cuadrilátero 4/119. El ejemplo del enunciado (<code>polygon0</code>)
+           sale triángulo + segmento, idéntico a la primera salida oficial.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Empaca cada sub-vector 2D (x,y) en una sola clave de 64 bits
+((int64)x << 32) | (uint32)y  para usar unordered_map<int64,...> y
+buscar opuestos / sumas en O(1) promedio. Como es output-only no hay
+limite de tiempo del juez: puedes darte un margen generoso, pero el
+algoritmo ya es acotado (S <= 3000), asi que no hace falta fuerza bruta.</pre>
+          <p class="note">Inclúyelo solo si de verdad ayuda. Nunca pongas la solución
+             completa en código real.</p>
+        </div>
+
+        <h3>Ejemplo resuelto (polygon0)</h3>
+        <p>\(P\) tiene vértices \((0,1),(0,0),(2,0),(2,1),(1,2)\). Sus lados, en orden
+           antihorario, dan estas direcciones primitivas con su multiplicidad:</p>
+        <ul>
+          <li>\((0,0)\to(2,0)\): vector \((2,0) = 2\cdot(1,0)\)  →  dirección \((1,0)\), \(n=2\)</li>
+          <li>\((2,0)\to(2,1)\): \((0,1)\), \(n=1\)</li>
+          <li>\((2,1)\to(1,2)\): \((-1,1)\), \(n=1\)</li>
+          <li>\((1,2)\to(0,1)\): \((-1,-1)\), \(n=1\)</li>
+          <li>\((0,1)\to(0,0)\): \((0,-1)\), \(n=1\)</li>
+        </ul>
+        <p>No hay 4 (ni siquiera 3) direcciones que dejen a \(B\) con \(\ge 2\)
+           direcciones <em>y</em> formen un cuadrilátero; pero sí existe un triángulo:
+           \(2\cdot(1,0) + (-1,1) + (-1,-1) = (0,0)\). Eso da
+           \(A =\) triángulo \((0,0),(2,0),(1,1)\). El remanente deja las direcciones
+           \((0,1)\) y \((0,-1)\) (antiparalelas) para
+           \(B =\) segmento \((0,1),(0,0)\). Esa es justo la primera salida oficial
+           del enunciado (idéntica salvo el orden de los dos extremos del segmento,
+           que es irrelevante).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
