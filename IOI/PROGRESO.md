@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **45 / 142**
+Total de tareas: **142** · Completadas: **46 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -94,12 +94,12 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 7 | Regions | `2009/07 Regions/index.html` |
 | [x] | 8 | Salesman | `2009/08 Salesman/index.html` |
 
-## IOI 2010 — 1 / 8
+## IOI 2010 — 2 / 8
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Cluedo | `2010/01 Cluedo/index.html` |
-| [ ] | 2 | Hotter Colder | `2010/02 Hotter Colder/index.html` |
+| [x] | 2 | Hotter Colder | `2010/02 Hotter Colder/index.html` |
 | [ ] | 3 | Quality of Living | `2010/03 Quality of Living/index.html` |
 | [ ] | 4 | Language | `2010/04 Language/index.html` |
 | [ ] | 5 | Memory | `2010/05 Memory/index.html` |
