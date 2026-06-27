@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **22 / 142**
+Total de tareas: **142** · Completadas: **23 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -48,7 +48,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Rectangle Game | `2005/05 Rectangle Game/index.html` |
 | [x] | 6 | Rivers | `2005/06 Rivers/index.html` |
 
-## IOI 2006 — 4 / 6
+## IOI 2006 — 5 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
@@ -56,7 +56,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 2 | Pyramid | `2006/02 Pyramid/index.html` |
 | [x] | 3 | Deciphering the Mayan Writing | `2006/03 Deciphering the Mayan Writing/index.html` |
 | [x] | 4 | A Black Box Game | `2006/04 A Black Box Game/index.html` |
-| [ ] | 5 | The Valley of Mexico | `2006/05 The Valley of Mexico/index.html` |
+| [x] | 5 | The Valley of Mexico | `2006/05 The Valley of Mexico/index.html` |
 | [ ] | 6 | Joining Points | `2006/06 Joining Points/index.html` |
 
 ## IOI 2007 — 0 / 6
