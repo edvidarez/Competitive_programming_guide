@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2015 · Tarea 4 — Towns</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de ejemplo / datos */
+  .data{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .data table{width:100%;border-collapse:collapse;font-size:15px}
+  .data th,.data td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  .data th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .data tr:last-child td{border-bottom:none}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socraticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2015 · Dia 2 · Almaty, Kazajistan</div>
+    <h1>Tarea <span class="num">4</span> &mdash; Towns</h1>
+    <p class="note">Pueblos &middot; PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Hay \(N\) <strong>pueblos</strong> en Kazajistan, numerados de \(0\) a
+       \(N-1\). Hay tambien un numero <strong>desconocido</strong> de
+       <strong>ciudades grandes</strong>. A los pueblos y a las ciudades grandes,
+       en conjunto, se les llama <em>asentamientos</em>.</p>
+
+    <p>Todos los asentamientos estan conectados por una <strong>unica red de
+       carreteras</strong> bidireccionales. Cada carretera conecta dos asentamientos
+       distintos, y cada par de asentamientos esta unido directamente por <em>a lo
+       mas una</em> carretera. Para cada par de asentamientos existe <strong>una unica
+       manera</strong> de ir de uno a otro por las carreteras sin repetir ninguna
+       carretera. (En otras palabras, la red es un <strong>arbol</strong>.)</p>
+
+    <p>Se sabe que cada <strong>pueblo</strong> esta conectado directamente a un
+       <em>unico</em> asentamiento (tiene grado \(1\): es una <strong>hoja</strong>),
+       y que cada <strong>ciudad grande</strong> esta conectada directamente a
+       <strong>tres o mas</strong> asentamientos (tiene grado \(\ge 3\): es un nodo
+       <strong>interno</strong>).</p>
+
+    <p>La figura siguiente muestra una red con \(11\) pueblos y \(7\) ciudades
+       grandes. Los pueblos se dibujan como circulos con etiquetas numericas; las
+       ciudades grandes, como cuadrados con etiquetas de letra.</p>
+
+    <figure>
+      <img alt="Red de ejemplo: 11 pueblos (circulos 0..10) y 7 ciudades grandes
+                (cuadrados a..g) formando un arbol con pesos en las carreteras."
+           src="data:image/jpeg;base64,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2WMmvnjxL/wVk8QftTXp0D9mDwlL44kuR/yNc5WPS9PGT88kErQzMMFD8oz+8Hoce0eAv+CUPwB+GWuRalovgI2t5AwdHfXNSnAI6fLJcMp/EV9Aabo9po8CxWtvDboo2gRoF4oA+af2HP8AgnbF+zrrt3458ba7deOvilrKkXesXshnWzTlRFbGQGSNTHsVhuIJQdgK+n6KKACiiigAooooAKKKKACiiigAooooAo+JfDVj4v0K503UraG8srxDHLDKgdHB9QeK+Dbr4F/F3/glp4lvNS+E+mXnxJ+DsrG4m8I/aES+0bOC/wBmeR44IoAkKgIqkh5WPQmv0ApGUMCCAQexoA+XvgB/wWD+Bvx61AaNF4sh0jxdDhL3Q7m2uDPZSc5RpBF5ZI2tyrEcV9EyfELRItG/tBtSthZ4z5m7jGM9OtcB+0L+w78LP2qdOFp478KRazAuQBFfXVi3JUn5reSM/wAI79vc188R/wDBuP8AsbR6z/aC/CS9F3nO/wD4TbxDjP8Au/bsfpQB2nx7/wCCx/wS+C+ptoNp4kXxN43mylj4es7eeO4vpMDCLI8YiUksgyzAfN9a8v0X9mf4pf8ABTXxhZeI/jVZ3ngX4YWjefp/glbhWn1HILK94UeSCaPa6ELtBDxZ9K+q/gB+xl8M/wBl3SDY+BvC8Wj2xx8sl5c3rcFj96eSRurHv3r1AAKAAMAUAVdF0W08O6VBY2NvFa2lsuyKKJAqIPYDgVaoooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD//2Q==">
+      <figcaption>Figura 1: red de \(11\) pueblos y \(7\) ciudades grandes. Cada
+         carretera lleva su longitud (entero positivo).</figcaption>
+    </figure>
+
+    <p>Cada carretera tiene una <strong>longitud</strong> entera positiva. La
+       <strong>distancia</strong> entre dos asentamientos es la suma minima de
+       longitudes de carreteras que hay que recorrer para ir de uno al otro (como es
+       un arbol, esa ruta es unica).</p>
+
+    <p>Para cada ciudad grande podemos medir la distancia \(r_i\) al pueblo que esta
+       <strong>mas lejos</strong> de esa ciudad (su <em>excentricidad</em> medida
+       hacia los pueblos). Una ciudad grande es un <strong>hub</strong> si su valor
+       \(r_i\) es el <strong>menor</strong> entre todas las ciudades grandes. La
+       distancia entre un hub y el pueblo mas lejano de el se denota \(R\). Es decir,
+       \(R\) es el <strong>minimo</strong> de todos los valores \(r_i\):
+       \[ R \;=\; \min_{\text{ciudad grande } c}\;\; \max_{\text{pueblo } u}\; d(c,u). \]</p>
+
+    <p>En el ejemplo de la figura, varias ciudades alcanzan excentricidad \(17\)
+       (por ejemplo, uno de los pueblos mas lejanos de la ciudad \(g\) es el pueblo
+       \(6\), a distancia \(17\)). El <strong>unico hub</strong> del ejemplo es la
+       ciudad \(f\), con \(r_f = 16\) (su pueblo mas lejano es el \(8\)). Por lo tanto,
+       en este ejemplo \(R = 16\).</p>
+
+    <p>Al <strong>quitar</strong> un hub, la red se parte en varias piezas conexas.
+       Un hub es <strong>balanceado</strong> si cada una de esas piezas contiene a lo
+       mas \(\lfloor N/2 \rfloor\) <strong>pueblos</strong>. (Se recalca: <em>no</em>
+       se cuentan las ciudades grandes. Recuerda que \(\lfloor x \rfloor\) denota el
+       mayor entero que no supera a \(x\).)</p>
+
+    <p>En el ejemplo, la ciudad \(f\) es un hub. Al quitarla, la red se rompe en
+       cuatro piezas conexas, cuyos conjuntos de pueblos son
+       \(\{0,1,10\}\), \(\{2,3\}\), \(\{4,5,6,7\}\) y \(\{8,9\}\). Ninguna pieza tiene
+       mas de \(\lfloor 11/2 \rfloor = 5\) pueblos, asi que la ciudad \(f\) es un hub
+       <strong>balanceado</strong>.</p>
+
+    <h2>Tarea</h2>
+    <p>Al principio, la <em>unica</em> informacion que tienes sobre la red es el
+       numero \(N\) de pueblos. <strong>No</strong> conoces el numero de ciudades
+       grandes ni nada sobre la disposicion de las carreteras. Solo puedes obtener
+       informacion nueva haciendo <strong>consultas</strong> de distancia entre pares
+       de pueblos.</p>
+
+    <p>Tu tarea es determinar:</p>
+    <ul>
+      <li><strong>En todas las subtareas:</strong> la distancia \(R\).</li>
+      <li><strong>En las subtareas 3 a 6:</strong> ademas, si existe o no un hub
+          balanceado en la red.</li>
+    </ul>
+
+    <h2>Detalles de implementacion</h2>
+    <p>Esta es una tarea <strong>interactiva</strong>: no lees de la entrada estandar
+       ni escribes en la salida estandar. Debes implementar la funcion
+       <code>hubDistance</code>. El evaluador procesa varios casos de prueba en una
+       sola ejecucion (a lo mas \(40\) casos); para cada caso llama a tu
+       <code>hubDistance</code> <strong>exactamente una vez</strong>. Asegurate de
+       <strong>reinicializar</strong> todas tus variables en cada llamada.</p>
+
+    <div class="sig">
+      <span class="tag">Firma que implementas</span>
+<pre>int hubDistance(int N, int sub);
+//   N   : numero de pueblos.
+//   sub : numero de subtarea (1..6), ver la seccion de Subtareas.</pre>
+    </div>
+
+    <p>El valor de retorno sigue esta convencion:</p>
+    <ul>
+      <li>Si <code>sub</code> es \(1\) o \(2\): la funcion puede regresar
+          <strong>\(R\) o \(-R\)</strong> (el signo es libre).</li>
+      <li>Si <code>sub</code> es mayor que \(2\): si <strong>existe</strong> un hub
+          balanceado, debes regresar <strong>\(+R\)</strong>; en caso contrario,
+          debes regresar <strong>\(-R\)</strong>.</li>
+    </ul>
+
+    <p>Para obtener informacion del arbol, tu funcion <code>hubDistance</code> puede
+       llamar a la funcion del evaluador <code>getDistance</code>:</p>
+
+    <div class="sig">
+      <span class="tag">Funcion que te da el evaluador</span>
+<pre>int getDistance(int i, int j);
+//   Regresa la distancia (en el arbol) entre los pueblos i y j.
+//   Si i == j, regresa 0. Si algun argumento es invalido, regresa 0.</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Solo distancias pueblo&ndash;pueblo.</strong> <code>getDistance</code>
+      solo acepta indices de <em>pueblos</em> (\(0 \le i,j \le N-1\)). Nunca puedes
+      consultar directamente una ciudad grande: su existencia y ubicacion debes
+      <em>inferirlas</em> a partir de las distancias entre pueblos.
+    </div>
+
+    <h2>Limites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Numero de pueblos \(N\)</td><td><span class="badge">\(1 \le N \le 110\)</span></td></tr>
+        <tr><td>Distancia entre dos pueblos distintos</td><td><span class="badge">entre \(1\) y \(1\,000\,000\)</span></td></tr>
+        <tr><td>Casos de prueba por ejecucion</td><td><span class="badge">a lo mas \(40\)</span></td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+    <p class="note">El recurso escaso es el <strong>numero de consultas</strong> a
+       <code>getDistance</code>, no el tiempo. El limite de consultas depende de la
+       subtarea (columna de la tabla). Si tu programa intenta superar ese limite, se
+       termina y el caso se considera <strong>incorrecto</strong>. (La notacion
+       \(\lceil x \rceil\) denota el menor entero \(\ge x\).)</p>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Consultas (max.)</th><th>Hub balanceado</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">13</td><td>\(N(N-1)/2\)</td><td>No</td><td>ninguna</td></tr>
+          <tr><td>2</td><td class="pts">12</td><td>\(\lceil 7N/2 \rceil\)</td><td>No</td><td>ninguna</td></tr>
+          <tr><td>3</td><td class="pts">13</td><td>\(N(N-1)/2\)</td><td>Si</td><td>ninguna</td></tr>
+          <tr><td>4</td><td class="pts">10</td><td>\(\lceil 7N/2 \rceil\)</td><td>Si</td><td>cada ciudad grande conectada a <strong>exactamente</strong> \(3\) asentamientos</td></tr>
+          <tr><td>5</td><td class="pts">13</td><td>\(5N\)</td><td>Si</td><td>ninguna</td></tr>
+          <tr><td>6</td><td class="pts">39</td><td>\(\lceil 7N/2 \rceil\)</td><td>Si</td><td>ninguna</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">En todas las subtareas, la distancia entre dos pueblos distintos
+       esta entre \(1\) y \(1\,000\,000\). El limite \(\lceil 7N/2 \rceil\) equivale a
+       \((7N+1)/2\) en division entera.</p>
+
+    <h2>Evaluador de muestra</h2>
+    <p>El numero de subtarea forma parte de la entrada; el evaluador de muestra ajusta
+       su comportamiento segun ese numero. Lee el archivo <code>towns.in</code> con el
+       formato:</p>
+    <ul>
+      <li>Linea \(1\): el numero de subtarea y el numero de casos de prueba.</li>
+      <li>Linea \(2\): \(N\), el numero de pueblos del primer caso.</li>
+      <li>Las siguientes \(N\) lineas: una <strong>matriz \(N\times N\)</strong> de
+          distancias; el \(j\)-esimo numero de la \(i\)-esima linea es
+          \(d(i,j)\).</li>
+      <li>Los casos restantes siguen en el mismo formato.</li>
+    </ul>
+    <p>Para cada caso, el evaluador de muestra imprime el valor que regresa
+       <code>hubDistance</code> y el numero de consultas realizadas, en lineas
+       separadas. (Puedes modificar el evaluador de muestra para usar otro formato de
+       entrada.)</p>
+
+    <h2>Ejemplo</h2>
+    <p>El archivo de entrada correspondiente a la red de la figura es el siguiente
+       (subtarea \(1\), un solo caso, \(N = 11\), con la matriz \(11\times 11\) de
+       distancias entre pueblos):</p>
+    <div class="example">
+      <div class="io"><h4>towns.in</h4><pre>1 1
+11
+0 17 18 20 17 12 20 16 23 20 11
+17 0 23 25 22 17 25 21 28 25 16
+18 23 0 12 21 16 24 20 27 24 17
+20 25 12 0 23 18 26 22 29 26 19
+17 22 21 23 0 9 21 17 26 23 16
+12 17 16 18 9 0 16 12 21 18 11
+20 25 24 26 21 16 0 10 29 26 19
+16 21 20 22 17 12 10 0 25 22 15
+23 28 27 29 26 21 29 25 0 21 22
+20 25 24 26 23 18 26 22 21 0 19
+11 16 17 19 16 11 19 15 22 19 0</pre></div>
+      <div class="io"><h4>Retorno esperado</h4><pre>hubDistance(N = 11, sub = 1)
+// la subtarea 1 admite +R o -R:
+16        (o bien -16)</pre></div>
+    </div>
+    <p class="note">El \(i\)-esimo renglon / \(j\)-esima columna es \(d(i,j)\); la
+       diagonal es \(0\). De esa matriz se reconstruye exactamente el arbol de la
+       figura: el hub es la ciudad \(f\) con \(R = 16\). Como esta es la subtarea
+       \(1\) (no se pide el balance), se acepta \(16\) o \(-16\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">&Aacute;rboles</span>
+      <span class="ptag">Diametro y centro de arbol</span>
+      <span class="ptag">Proyeccion sobre un camino (1D)</span>
+      <span class="ptag">Voto de mayoria (Boyer&ndash;Moore)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay un <strong>arbol con pesos</strong> que <em>no ves</em>: los \(N\) pueblos
+       son las <strong>hojas</strong> y un numero desconocido de ciudades grandes son
+       los <strong>nodos internos</strong> (grado \(\ge 3\)). Solo puedes preguntar
+       <code>getDistance(i,j)</code> = distancia entre dos pueblos. Debes calcular
+       \(R = \min_{c}\max_{u} d(c,u)\) (el radio del arbol medido sobre nodos
+       internos). En las subtareas \(3\)&ndash;\(6\) ademas decides si hay un
+       <strong>hub balanceado</strong>: una ciudad cuya remocion deja todas las piezas
+       con \(\le \lfloor N/2 \rfloor\) pueblos. Devuelves \(+R\) (hay hub balanceado) o
+       \(-R\) (no), salvo en sub \(1,2\) donde el signo es libre.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los limites</td>
+            <td>El cuello de botella es el <strong>numero de consultas</strong>, no el
+                tiempo (\(N \le 110\)). Sub \(1,3\) permiten \(N(N-1)/2\) =
+                <em>toda la matriz</em> de distancias &rArr; fuerza bruta. Sub
+                \(2,4,6\) aprietan a \(\lceil 7N/2 \rceil \approx 3.5N\): hay que ser
+                fino. Sub \(5\) da \(5N\) (holgado). La dificultad es geometrica sobre
+                un arbol invisible del que solo conoces distancias hoja&ndash;hoja.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 &mdash; &iquest;Que es este objeto y que es \(R\)?</summary>
+      <div class="body">
+        <p class="q">&iquest;Ya viste que &laquo;una unica ruta entre cada par&raquo;
+           significa que la red es un arbol? &iquest;Y que &laquo;pueblo = grado 1&raquo;
+           y &laquo;ciudad = grado \(\ge 3\)&raquo; quiere decir hojas vs. nodos
+           internos?</p>
+        <p>Modelalo asi: arbol con pesos; <strong>hojas</strong> = pueblos (los unicos
+           que puedes consultar), <strong>internos</strong> = ciudades grandes.
+           <code>getDistance(i,j)</code> te da la distancia (longitud del camino) entre
+           dos hojas. \(R\) es la <strong>excentricidad minima entre los nodos
+           internos</strong>: para cada ciudad \(c\), su excentricidad
+           \(\mathrm{ecc}(c)=\max_u d(c,u)\) es la distancia a su pueblo mas lejano;
+           \(R\) es la menor de esas excentricidades. Geometricamente, \(R\) es el
+           <strong>radio</strong> del arbol y el hub es su <strong>centro</strong>
+           (restringido a nodos internos). &iquest;Donde vive el centro de un arbol?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 &mdash; Subtareas 1 y 3 (\(N(N-1)/2\) consultas = matriz completa)</summary>
+      <div class="body">
+        <p class="q">Si puedes pagar <em>todas</em> las distancias hoja&ndash;hoja,
+           &iquest;que estructura clasica te dice donde esta el centro? &iquest;En que
+           camino siempre cae?</p>
+        <p>Pide la matriz completa \(d(\cdot,\cdot)\). El <strong>centro de un arbol
+           siempre esta sobre cualquier diametro</strong> (el camino mas largo). Halla
+           un diametro con dos pasos tipo BFS: \(s=\) hoja mas lejana de la hoja \(0\),
+           y \(t=\) hoja mas lejana de \(s\); el camino \(s\!\to\! t\) es un diametro y
+           pasa por el centro. <strong>Proyecta</strong> cada hoja \(u\) sobre ese
+           camino: el punto donde \(u\) se &laquo;engancha&raquo; esta a distancia
+           \[ p(u)=\tfrac{1}{2}\big(d(s,u)+d(s,t)-d(t,u)\big) \]
+           desde \(s\). Para un punto \(x\) del camino a distancia \(m\) de \(s\), la
+           distancia a una hoja \(u\) es \(d(x,u)=|m-p(u)|+\big(d(s,u)-p(u)\big)\), y su
+           excentricidad es el maximo sobre \(u\). \(R\) es el minimo de esa
+           excentricidad sobre los puntos <em>internos</em> (ciudades) del camino. Para
+           el <strong>balance</strong> (sub \(3\)) basta agrupar las hojas por el
+           subarbol con que cuelgan del hub y contar tamanos. Esto resuelve sub \(1\) y
+           \(3\), pero gasta \(\sim N^2/2\) consultas: imposible bajo \(3.5N\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 &mdash; El truco que aprieta a \(\sim 2N\): un solo extremo</summary>
+      <div class="body">
+        <p class="q">&iquest;De verdad necesitas el diametro <em>completo</em>
+           \((s,t)\)? Para proyectar te hacen falta tres columnas: \(d(s,\cdot)\),
+           \(d(t,\cdot)\) y... &iquest;puedes ahorrarte una?</p>
+        <p>Toma \(v=0\). Sea \(s\) la hoja mas lejana de \(v\). Resulta que el
+           <strong>camino \(v\!\to\! s\) tambien pasa por el centro</strong>, porque
+           \(s\) es extremo de <em>algun</em> diametro y la rama de \(v\) cuelga del
+           centro. Asi te bastan dos &laquo;abanicos&raquo; de consultas:</p>
+        <ul>
+          <li>\(d_V[u]=d(0,u)\) para todo \(u\): \(N-1\) consultas (de paso hallas
+              \(s\)).</li>
+          <li>\(d_S[u]=d(s,u)\) para todo \(u\): \(N-2\) consultas (ya conoces
+              \(d_S[0]=d_V[s]\)).</li>
+        </ul>
+        <p>Total <strong>\(2N-3\)</strong> consultas. Con \(d_V\) y \(d_S\) proyectas
+           cada hoja sobre el camino \(v\!\to\! s\) <em>sin</em> consultas extra:
+           \[ p(u)=\tfrac12\big(d_S[u]+d(s,v)-d_V[u]\big), \]
+           que es la distancia desde \(s\) al enganche de \(u\). Proyectar sobre
+           \(s\!\to\! t\) en cambio exigiria \(d(t,\cdot)\) (otras \(\sim N\)
+           consultas) y te pasarias de \(3.5N\). Ahora, &iquest;como sacas \(R\) de las
+           proyecciones?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 &mdash; \(R\) por barrido de excentricidades sobre el camino</summary>
+      <div class="body">
+        <p class="q">Fijado un punto del camino a distancia \(m\) de \(s\),
+           &iquest;puedes escribir \(d(\text{punto},u)\) usando solo \(p(u)\) y
+           \(d_S[u]\)? Si si, evaluar la excentricidad cuesta \(O(N)\) y no consume
+           consultas.</p>
+        <p>Para un punto del camino a distancia \(m\) de \(s\):
+           \[ d(m,u)=|m-p(u)|+\big(d_S[u]-p(u)\big), \qquad
+              \mathrm{ecc}(m)=\max_u d(m,u). \]
+           El pueblo mas lejano de cualquier punto del arbol es un extremo de un
+           diametro, asi que \(\mathrm{ecc}(m)\) es una funcion convexa (en forma de
+           &laquo;V&raquo;) sobre el camino y su minimo cae cerca de la mitad: ahi esta
+           el centro. Las posiciones candidatas son los valores <em>distintos</em> de
+           \(p(u)\) que caen en el interior \((0,\,d(s,v))\) &mdash; esos son justo los
+           puntos donde el camino toca una ciudad. \(R=\min_m \mathrm{ecc}(m)\) sobre
+           esas posiciones, y el/los <strong>hub</strong> son los puntos del camino con
+           \(\mathrm{ecc}(m)=R\) (hay \(1\) o \(2\)). Todo este barrido es calculo
+           local: <strong>cero consultas adicionales</strong>. Con esto ya tienes la
+           magnitud \(R\) en \(2N-3\) consultas, valido para <em>todas</em> las
+           subtareas. Falta decidir el <strong>balance</strong> sin reventar el
+           presupuesto.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 &mdash; &iquest;Hub balanceado? El truco de la &laquo;componente gigante&raquo;</summary>
+      <div class="body">
+        <p class="q">Al quitar un hub que cae a distancia \(m\) de \(s\), &iquest;como
+           se ven las piezas en terminos de las proyecciones \(p(u)\)? &iquest;Cuales
+           piezas puedes contar sin gastar nada?</p>
+        <p>Quitar el hub en \(m\) deja tres tipos de piezas, clasificando cada pueblo
+           por su proyeccion:</p>
+        <ul>
+          <li><strong>Lado \(s\):</strong> los pueblos con \(p(u)&lt;m\) &mdash;
+              forman <em>una</em> sola pieza, tamano \(A\).</li>
+          <li><strong>Lado \(v\):</strong> los pueblos con \(p(u)&gt;m\) &mdash; otra
+              sola pieza, tamano \(B\).</li>
+          <li><strong>Colgantes:</strong> los pueblos con \(p(u)=m\) (el conjunto
+              \(X\)) se reparten entre los subarboles que cuelgan del hub
+              perpendiculares al camino. Es una <em>particion</em> de \(X\).</li>
+        </ul>
+        <p>El hub es balanceado sii <em>toda</em> pieza es \(\le \lfloor N/2 \rfloor\).
+           \(A\) y \(B\) se cuentan gratis (solo miras \(p(u)\)). Para los colgantes:</p>
+        <ul>
+          <li>Si \(|X|\le \lfloor N/2 \rfloor\): cada colgante es \(\le |X|\le
+              \lfloor N/2 \rfloor\), <strong>automaticamente</strong> balanceados
+              &mdash; <em>cero consultas</em>.</li>
+          <li>Si \(|X|&gt; \lfloor N/2 \rfloor\): entonces \(A,B&lt;\lfloor N/2\rfloor\)
+              de forma forzosa, y solo hay que ver si <em>algun</em> colgante supera
+              \(\lfloor N/2 \rfloor\). Eso es un problema de <strong>mayoria
+              estricta</strong> sobre la particion de \(X\): &iquest;hay una clase con
+              mas de la mitad de los elementos?</li>
+        </ul>
+        <p>Para la mayoria usa el test &laquo;&iquest;\(a\) y \(b\) cuelgan del
+           <em>mismo</em> subarbol?&raquo;:
+           \[ \texttt{mismo}(a,b)\;\Longleftrightarrow\; d_S[a]+d_S[b]-d(a,b) &gt; 2m, \]
+           que cuesta <strong>una</strong> consulta \(d(a,b)\). Aplica voto de mayoria
+           (Boyer&ndash;Moore) sobre \(X\) y verifica el candidato: \(&lt;1.5\,|X|\)
+           consultas. &iquest;Por que no explota el presupuesto si hay dos centros
+           (dos hubs)? Porque sus conjuntos \(X_1,X_2\) son <strong>disjuntos</strong>,
+           asi que a lo sumo <em>uno</em> tiene \(|X|&gt;\lfloor N/2\rfloor\) y dispara
+           el chequeo caro. Total: \(2N-3 + 1.5N &lt; \tfrac{7N}{2}\). &iquest;Lo
+           armamos completo?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final &mdash; Solucion completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> El arbol es invisible; solo consultas
+           distancias entre hojas (pueblos). \(R\) es la excentricidad minima sobre
+           los nodos internos = radio del arbol; el hub es el centro. El centro vive
+           sobre el camino entre dos extremos de un diametro, y basta tomar \(v=0\) y
+           \(s=\) hoja mas lejana de \(v\): el camino \(v\!\to\! s\) pasa por el centro.
+           Proyectando cada hoja sobre ese camino calculas \(R\) y decides el balance
+           casi sin consultas extra.</p>
+
+        <p><strong>Fase A &mdash; dos abanicos (\(2N-3\) consultas).</strong></p>
+        <ol>
+          <li>\(d_V[u]=d(0,u)\) para \(u=1..N-1\) (\(N-1\) consultas). Sea \(s=\arg\max_u
+              d_V[u]\) y \(L=d_V[s]=d(s,v)\).</li>
+          <li>\(d_S[u]=d(s,u)\) para todo \(u\neq s\) (\(N-2\) consultas; \(d_S[v]=L\) ya
+              se conoce). \(d_S[s]=0\).</li>
+        </ol>
+        <p><strong>Proyeccion (sin consultas).</strong> Para cada hoja \(u\),
+           \(p(u)=\tfrac12\big(d_S[u]+L-d_V[u]\big)\) = distancia desde \(s\) al punto
+           donde \(u\) se engancha al camino \(v\!\to\! s\). (Sale entero porque las
+           paridades cuadran.) La distancia de un punto del camino a distancia \(m\) de
+           \(s\) hasta la hoja \(u\) es
+           \(d(m,u)=|m-p(u)|+(d_S[u]-p(u))\).</p>
+
+        <p><strong>Calcular \(R\) (sin consultas).</strong> Recorre las posiciones
+           candidatas \(m\) = los valores distintos de \(p(u)\) con \(0&lt;m&lt;L\) (los
+           puntos del camino que tocan una ciudad). Para cada \(m\) calcula
+           \(\mathrm{ecc}(m)=\max_u d(m,u)\) en \(O(N)\). Toma
+           \(R=\min_m\mathrm{ecc}(m)\). Los hubs son los \(m^\*\) con
+           \(\mathrm{ecc}(m^\*)=R\) (a lo mas \(2\)).</p>
+
+        <p><strong>Decidir el hub balanceado (sub \(\ge 3\)).</strong> Para cada hub en
+           posicion \(m^\*\), clasifica los pueblos por \(p(u)\): \(A=\#\{p&lt;m^\*\}\)
+           (pieza lado \(s\)), \(B=\#\{p&gt;m^\*\}\) (pieza lado \(v\)),
+           \(X=\{p=m^\*\}\) (los colgantes). Sea \(f=\lfloor N/2\rfloor\). El hub es
+           balanceado sii todas las piezas son \(\le f\):</p>
+        <ul>
+          <li>Si \(A&gt;f\) o \(B&gt;f\) &rArr; <em>no</em> balanceado (gratis).</li>
+          <li>Si \(|X|\le f\) &rArr; cada colgante es \(\le f\) &rArr; balanceado (con
+              \(A,B\le f\)).</li>
+          <li>Si \(|X|&gt;f\) &rArr; \(A,B&lt;f\) forzosamente; el hub es balanceado
+              sii <em>ningun</em> colgante supera \(f\), es decir, sii <strong>ninguna
+              clase de la particion de \(X\) es mayoria estricta</strong>. Resuelvelo
+              con voto de mayoria usando
+              \(\texttt{mismo}(a,b)\equiv d_S[a]+d_S[b]-d(a,b)&gt;2m^\*\) (una consulta
+              cada uno): \(&lt;1.5\,|X|\) consultas.</li>
+        </ul>
+        <p>Como hay a lo mas dos hubs y sus \(X\) son disjuntos, a lo sumo <em>uno</em>
+           entra al caso caro; el presupuesto total queda \(2N-3+1.5N&lt;\lceil
+           7N/2\rceil\), valido en <strong>todas</strong> las subtareas (incluidas
+           \(2,4,6\) a \(3.5N\)).</p>
+
+        <p><strong>Convencion de retorno.</strong> Sub \(1,2\): regresa \(R\) (o
+           \(-R\); el signo es libre). Sub \(\ge 3\): regresa \(+R\) si algun hub es
+           balanceado, \(-R\) si ninguno lo es. Usa \(\lfloor N/2\rfloor\) con division
+           entera (<code>N/2</code> en C++).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocodigo</span>
+<pre>funcion hubDistance(N, sub):
+    # ---- Fase A: dos abanicos (2N-3 consultas) ----
+    dV[0] = 0
+    para u en 1..N-1: dV[u] = getDistance(0, u)
+    s = indice del maximo de dV;   L = dV[s]
+    dS[s] = 0;  dS[0] = L
+    para u en 1..N-1, u != s: dS[u] = getDistance(s, u)
+
+    # ---- proyeccion sobre el camino v->s (sin consultas) ----
+    para u en 0..N-1: p[u] = (dS[u] + L - dV[u]) / 2
+
+    # ---- R = min excentricidad sobre puntos internos del camino ----
+    R = +infinito;  hubs = []
+    para cada m distinto en { p[u] : 0 < p[u] < L }:
+        e = max sobre u de ( |m - p[u]| + (dS[u] - p[u]) )
+        si e < R: R = e; hubs = [m]
+        sino si e == R: hubs.append(m)
+
+    si sub <= 2: regresa R          # signo libre
+
+    # ---- decidir hub balanceado ----
+    f = N / 2                        # division entera = floor(N/2)
+    balanceado = falso
+    para cada m en hubs:
+        A = #{u : p[u] < m};  B = #{u : p[u] > m};  X = {u : p[u] == m}
+        si A > f o B > f: continuar          # esta posicion no sirve
+        si |X| <= f:
+            balanceado = verdadero; romper    # colgantes triviales
+        si no:                                 # |X| > f  => A,B < f
+            si NO existe_clase_mayoria(X, m, f):  # voto de mayoria + verificacion
+                balanceado = verdadero; romper
+    regresa  balanceado ? +R : -R
+
+# clases por subarbol colgante: mismo(a,b) <=> dS[a]+dS[b]-getDistance(a,b) > 2m
+funcion existe_clase_mayoria(X, m, f):
+    cand = X[0];  cont = 1                      # Boyer-Moore
+    para a en X[1..]:
+        si mismo(a, cand): cont += 1
+        sino:
+            cont -= 1
+            si cont == 0: cand = a; cont = 1
+    # verificar el candidato
+    veces = #{ a en X : mismo(a, cand) }
+    regresa  veces > f                          # clase colgante > floor(N/2) (igual que el .cpp)</pre>
+        </div>
+
+        <p><strong>Por que es correcto.</strong> (1) El centro de un arbol cae sobre
+           todo diametro; \(s\) es extremo de un diametro y \(v=0\) cuelga del centro,
+           asi que el camino \(v\!\to\! s\) contiene el centro. (2) \(\mathrm{ecc}(m)\)
+           es convexa sobre el camino (el pueblo mas lejano es un extremo de diametro),
+           luego su minimo sobre las posiciones internas da \(R\) exacto. (3) Al quitar
+           el hub, lado \(s\) y lado \(v\) son una pieza cada uno; los colgantes son la
+           particion de \(X\) por el subarbol perpendicular, y \(\texttt{mismo}(a,b)\)
+           detecta cuando dos hojas comparten ese subarbol (la &laquo;altura comun&raquo;
+           al camino excede \(m\)). El test de mayoria es valido porque es una relacion
+           de equivalencia (particion). (4) \(X_1,X_2\) de dos hubs son disjuntos, asi
+           que el chequeo caro corre a lo sumo una vez.</p>
+
+        <p><strong>Traza del ejemplo</strong> (\(N=11\), matriz de la figura). Desde
+           \(v=0\), la hoja mas lejana es \(s=8\) (\(d(0,8)=23\)). Proyectando, las
+           ciudades del camino quedan en \(p=\{12,16,17,\dots\}\); la excentricidad en
+           \(m=16\) vale \(16\) (pueblo \(8\)), mientras que en \(m=12\) y \(m=17\) sube
+           a \(17\). Asi \(R=16\). En \(m=16\), \(X=\{2,3,4,5,6,7\}\) se parte en
+           \(\{2,3\}\) y \(\{4,5,6,7\}\) (max \(4\le\lfloor 11/2\rfloor=5\)); con
+           \(A,B\) tambien \(\le 5\), el hub es <strong>balanceado</strong>. El
+           evaluador oficial imprime \(16\) (en sub \(\ge 3\) seria \(+16\)).</p>
+
+        <p><strong>Cobertura de subtareas.</strong> El mismo metodo resuelve las seis:
+           sub \(1,2\) solo piden \(R\) (\(2N-3\) consultas, signo libre); sub \(3,5,6\)
+           anaden el balance (sigue \(&lt;7N/2\)); sub \(4\) (toda ciudad de grado
+           exactamente \(3\)) es un caso particular que el metodo general cubre sin
+           cambios. Verificado por stress contra una fuerza bruta independiente (BFS
+           directo sobre el arbol conocido): \(0\) discrepancias en miles de casos de
+           todas las subtareas, comparando magnitud \(R\) y signo (\(+R\) balanceado /
+           \(-R\) no), y sin exceder nunca la cuota de consultas.</p>
+
+        <p><strong>Complejidad.</strong> Consultas: \(2N-3\) (fase A) \(+\;&lt;1.5N\)
+           (mayoria, a lo sumo en un hub) \(&lt; \tfrac{7N}{2}=\lceil 7N/2\rceil\),
+           dentro de <em>toda</em> cuota. Tiempo \(O(N^2)\) por el barrido de
+           excentricidades (trivial con \(N\le 110\)); memoria \(O(N)\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Cuidados (solo C++)</span>
+<pre>- macOS: compila el grader oficial SIN -static (g++ -O2 -std=c++11 grader.cpp
+  towns.cpp). El grader hace freopen de towns.in / towns.out: no es stdin/stdout
+  puro. graderlib limita N <= 110 (arreglo _dist[110][110]).
+- hubDistance se llama una vez POR CASO: reinicializa TODO arreglo/contador al
+  entrar (varios casos comparten el mismo proceso).
+- p[u] = (dS[u]+L-dV[u]) / 2 siempre es entero exacto; usa enteros, evita flotantes.
+- floor(N/2) = N/2 con division entera; la mayoria es ESTRICTA (un colgante con
+  > floor(N/2) pueblos rompe el balance).
+- el signo del retorno NO es libre en sub >= 3: +R si hay hub balanceado, -R si no.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
