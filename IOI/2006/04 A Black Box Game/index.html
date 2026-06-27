@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2006 · Tarea 4 — A Black Box Game</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2006 · Día 2 · Mérida, México</div>
+    <h1>Tarea <span class="num">4</span> — A Black Box Game</h1>
+    <p class="note">El juego de la caja negra · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+    <p class="note">Nota: en el índice de este repositorio la tarea va como
+       <strong>Tarea 4</strong>; el PDF oficial la rotula internamente como
+       <em>Day 2 – Task 3</em> (Día 2, tercera tarea). El día coincide; solo cambia
+       la numeración interna de la tarea.</p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El <em>juego de la caja negra</em> se juega con una caja cuadrada acostada
+       sobre una mesa. Cada uno de sus cuatro lados tiene \(n\) hoyos (en total
+       \(4n\) hoyos) por los que se puede lanzar una bola. Una bola que se lanza
+       siempre termina saliendo por alguno de los \(4n\) hoyos — posiblemente por
+       el mismo hoyo por el que entró.</p>
+
+    <p>El interior de la caja se imagina como una cuadrícula de \(n \times n\). Los
+       hoyos de los lados son los inicios y finales de los renglones y de las
+       columnas. Cada casilla está <strong>vacía</strong> u <strong>ocupada por un
+       deflector</strong>. Un deflector es una pieza que cambia la dirección de la
+       bola en 90 grados. Observa este ejemplo de una caja de \(5 \times 5\):</p>
+
+    <figure>
+      <img alt="Caja de 5x5 con su hoyo de entrada marcado a la izquierda y tres deflectores en su interior, etiquetados como Deflectors."
+           src="data:image/png;base64,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">
+      <figcaption>Una caja de \(5\times 5\). A la izquierda, un hoyo (<em>Hole</em>);
+         adentro, tres deflectores (<em>Deflectors</em>).</figcaption>
+    </figure>
+
+    <p>Una bola lanzada a la caja sigue una línea recta hasta que golpea un deflector
+       o sale de la caja. Cuando la bola golpea un deflector, la bola cambia de
+       dirección y el deflector <strong>se voltea</strong> (por “voltearse” entendemos
+       que rota 90 grados). Los ejemplos de abajo muestran cómo actúa un deflector:</p>
+
+    <figure>
+      <img alt="Tres cuadrículas a, b y c que muestran cómo un deflector desvía la bola y se voltea tras cada golpe."
+           src="data:image/png;base64,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">
+      <figcaption>Acción de un deflector: (a) primer lanzamiento, (b) segundo
+         lanzamiento por el mismo hoyo, (c) estado del deflector tras cada golpe.</figcaption>
+    </figure>
+
+    <ol type="a">
+      <li>Se lanza una bola por un hoyo; golpea un deflector y cambia de dirección.</li>
+      <li>Después del primer lanzamiento, el deflector ya se volteó. Se lanza una
+          nueva bola por el mismo hoyo, golpea el deflector y se desvía en la
+          dirección <strong>opuesta</strong> a la de la primera bola.</li>
+      <li>El deflector se voltea cada vez que es golpeado.</li>
+    </ol>
+
+    <p>Cada vez que un deflector es golpeado, emite un <strong>bip</strong>. El número
+       de veces que la bola fue desviada se puede deducir contando los bips. Se puede
+       demostrar que la bola <strong>siempre</strong> sale de la caja. La caja tiene un
+       botón que la regresa a su estado original y otro botón que voltea
+       <strong>todos</strong> sus deflectores a la vez.</p>
+
+    <h3>La tarea</h3>
+    <p>Se te dará una interfaz a 15 cajas negras mediante una biblioteca de funciones
+       de Pascal o C/C++. Debes determinar el interior de cada una de ellas lo mejor
+       posible y entregar un archivo que describa cada caja. También se te dará una
+       forma de definir tus propias cajas negras para hacer pruebas.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional / de biblioteca</strong>: no lees de la
+       entrada estándar ni escribes a la salida estándar de la forma clásica. En vez
+       de eso, tu programa usa una biblioteca que ofrece estas funciones (se muestran
+       las firmas de C/C++; la biblioteca también existe para Pascal y para C):</p>
+
+    <div class="sig">
+      <span class="tag">Inicializar la biblioteca</span>
+<pre>int Initialize(int box);   // C/C++
+// PASCAL: function Initialize(box: integer): integer;</pre>
+    </div>
+    <p>Debe llamarse <strong>una sola vez</strong> al inicio de tu programa. Regresa
+       \(n\), el número de hoyos por lado. El parámetro <code>box</code> debe ser un
+       entero entre 1 y 15 (la caja que quieres resolver) o 0 si quieres usar una caja
+       creada por ti.</p>
+
+    <div class="sig">
+      <span class="tag">Lanzar una bola</span>
+<pre>int throwBall(int holeIn, int sideIn, int &amp;holeOut, int &amp;sideOut);  // C++
+// C:      int throwBall(int holeIn, int sideIn, int *holeOut, int *sideOut);
+// PASCAL: function throwBall(holeIn, sideIn: integer;
+//                  var holeOut, sideOut: integer): longint;</pre>
+    </div>
+    <p>Lanza una bola a la caja por el hoyo número <code>holeIn</code> del lado
+       <code>sideIn</code>. Los lados se numeran: <strong>1 = Arriba</strong>,
+       <strong>2 = Derecha</strong>, <strong>3 = Abajo</strong> y
+       <strong>4 = Izquierda</strong>. Los hoyos se numeran de izquierda a derecha y de
+       arriba hacia abajo, empezando en el número 1 en cada lado. En
+       <code>holeOut</code> y <code>sideOut</code> recibirás el hoyo y el lado por
+       donde la bola sale de la caja. La función <strong>regresa el número de bips</strong>
+       que la bola causó al golpear deflectores.</p>
+
+    <div class="sig">
+      <span class="tag">Botones de la caja</span>
+<pre>void ResetBox();          // regresa cada deflector a su posición inicial
+void ToggleDeflectors();  // voltea todos los deflectores de la caja
+void Finalize();          // termina la interacción; llámala al final</pre>
+    </div>
+    <p><code>ResetBox</code> regresa cada deflector a su posición inicial.
+       <code>ToggleDeflectors</code> voltea todos los deflectores de la caja.
+       <code>Finalize</code> cierra de forma ordenada la interacción con la caja; debe
+       llamarse al final de tu programa.</p>
+    <p class="note">En todo momento solo puede estar corriendo un programa que use la
+       biblioteca.</p>
+
+    <h3>Cómo enlazar la biblioteca (setup)</h3>
+    <p>En el directorio de la tarea vienen los archivos de la biblioteca según el lenguaje;
+       para usarla agrega el <em>include</em>/<code>uses</code> correspondiente y compila
+       enlazando el objeto:</p>
+    <ul>
+      <li><strong>FreePascal:</strong> archivos <code>pbblib.o</code> y <code>pbblib.ppu</code>;
+          en tu código pon <code>uses pbblib;</code>. El archivo <code>pblackbox.pas</code> es
+          un ejemplo de uso.</li>
+      <li><strong>C:</strong> archivos <code>cbblib.o</code> y <code>cbblib.h</code>; pon
+          <code>#include "cbblib.h"</code> y compila con
+          <code>gcc -o tuprograma cbblib.o tuprograma.c</code>. Ejemplo: <code>cblackbox.c</code>.</li>
+      <li><strong>C++:</strong> archivos <code>cppbblib.o</code> y <code>cppbblib.h</code>; pon
+          <code>#include "cppbblib.h"</code> y compila con
+          <code>g++ -o tuprograma cppbblib.o tuprograma.cpp</code>. Ejemplo: <code>cppblackbox.cpp</code>.</li>
+    </ul>
+
+    <h3>Mensajes de error</h3>
+    <p>Ante cualquier anomalía, la biblioteca escribe un mensaje a la salida de error
+       estándar. Estos son los mensajes posibles y su significado:</p>
+    <div class="limits">
+      <table>
+        <tr><td><code>ERR 1</code> More than one app</td>
+            <td>Solo una aplicación a la vez puede interactuar con las cajas negras;
+                reinicia todo y deja corriendo una sola.</td></tr>
+        <tr><td><code>ERR 2</code> Invalid box</td>
+            <td>El número de caja que diste no está en el rango de 0 a 15.</td></tr>
+        <tr><td><code>ERR 3</code> Invalid deflector</td>
+            <td>El archivo <code>blackbox.in</code> tiene un deflector en una posición inválida.</td></tr>
+        <tr><td><code>ERR 4</code> Invalid symbol</td>
+            <td>El archivo <code>blackbox.in</code> tiene un símbolo inválido.</td></tr>
+        <tr><td><code>ERR 5</code> Invalid size</td>
+            <td>El tamaño de la caja en <code>blackbox.in</code> es inválido.</td></tr>
+        <tr><td><code>ERR 6</code> Invalid input hole</td>
+            <td>El lado o el hoyo de entrada que diste son inválidos.</td></tr>
+        <tr><td><code>ERR 7</code> ALARM</td>
+            <td>Llama al personal técnico.</td></tr>
+      </table>
+    </div>
+
+    <h3>Qué debes entregar</h3>
+    <p>Para cada una de las 15 cajas debes entregar un archivo de texto
+       <code>blackboxK.out</code> con esta forma:</p>
+    <div class="io"><pre>#FILE blackbox K
+.....
+.../.
+.\...
+.../.
+.?.?.</pre></div>
+    <ul>
+      <li><strong>Línea 1:</strong> el encabezado, que debe contener exactamente
+          <code>#FILE blackbox K</code>, donde <code>K</code> (de 1 a 15) corresponde
+          a la caja que estás resolviendo.</li>
+      <li><strong>\(n\) líneas:</strong> cada línea describe un renglón de la caja, del
+          renglón más alto al más bajo. Cada línea debe tener exactamente \(n\)
+          caracteres; cada carácter corresponde a una columna (de izquierda a derecha):
+        <ul>
+          <li><code>.</code> &nbsp;la casilla está vacía;</li>
+          <li><code>/</code> &nbsp;la casilla tiene un deflector con posición inicial <code>/</code>;</li>
+          <li><code>\</code> &nbsp;la casilla tiene un deflector con posición inicial <code>\</code>;</li>
+          <li><code>?</code> &nbsp;no pudiste determinar el contenido inicial de esa casilla.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>Experimentación (define tus propias cajas)</h3>
+    <p>Si le pasas el valor 0 a <code>Initialize</code>, la biblioteca lee el interior
+       de la caja desde el archivo <code>blackbox.in</code>. Su formato es:</p>
+    <div class="io"><pre>5
+3
+2 3 \
+4 2 /
+4 4 /</pre></div>
+    <ul>
+      <li><strong>Línea 1:</strong> \(n\), el número de hoyos por lado.</li>
+      <li><strong>Línea 2:</strong> un entero \(d\) con el número de deflectores de la caja.</li>
+      <li><strong>Siguientes \(d\) líneas:</strong> una por cada deflector. Cada línea trae
+          dos enteros separados por espacio que son la <strong>columna</strong> y el
+          <strong>renglón</strong> del deflector, y luego un carácter (<code>/</code> o
+          <code>\</code>) con la posición original del deflector.</li>
+    </ul>
+    <p class="note">Este <code>blackbox.in</code> de ejemplo describe justo la caja del
+       dibujo de arriba.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tamaño de la caja</td><td><span class="badge">\(1 \le n \le 30\)</span></td></tr>
+        <tr><td>Hoyos por lado / en total</td><td>\(n\) por lado, \(4n\) en total</td></tr>
+        <tr><td>Número de cajas a resolver</td><td><span class="badge">15</span></td></tr>
+        <tr><td>Presupuesto de referencia</td>
+            <td>La tarea no fija un límite clásico de CPU: el costo es el número de
+                lanzamientos. La solución oficial descubre el 100% de cualquier caja en
+                <strong>menos de 8 minutos</strong>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Puntaje por caja, relativo (sin subtareas fijas).</strong> Para cada caja:
+      si tu entrega coloca un carácter <code>.</code>, <code>/</code> o <code>\</code> en
+      una posición <strong>incorrecta</strong>, obtienes <strong>0 puntos</strong> en esa
+      caja (por eso <code>?</code> es más seguro que adivinar). En otro caso, sea \(B_m\)
+      el máximo número de posiciones descubiertas entre todas las entregas
+      <em>correctas</em>, y \(B_y\) el número de posiciones que tú determinaste; tu
+      porcentaje para esa caja es
+      \[\text{puntaje}\% = 100 \cdot \frac{B_y}{B_m}.\]
+      Es decir, el puntaje completo exige descubrir casi el 100% con <strong>cero
+      colocaciones equivocadas</strong>. Hay 15 cajas en total y la solución oficial
+      alcanza \(\sim 100\%\).
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Una interacción de ejemplo con la caja del dibujo de arriba (la que describe el
+       <code>blackbox.in</code> de ejemplo) podría ser:</p>
+    <div class="example">
+      <div class="io"><h4>Llamada a la función</h4><pre>Initialize(0);
+
+throwBall(3, 4, holeOut, sideOut);</pre></div>
+      <div class="io"><h4>Valor que regresa</h4><pre>Regresa 5  (es decir n = 5)
+
+Regresa 1
+holeOut = 2,  sideOut = 3</pre></div>
+    </div>
+    <p class="note">La bola se lanza por el hoyo número 3 (el tercero contando desde
+       arriba) del lado izquierdo (<code>sideIn = 4</code>). La función regresa 1, lo que
+       indica que la bola golpeó 1 deflector. Al regresar, <code>holeOut = 2</code> y
+       <code>sideOut = 3</code> indican que la bola salió por el hoyo 2 (el segundo
+       contando desde la izquierda) del lado de abajo de la caja.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Simulación / física</span>
+      <span class="ptag">Reconstrucción (sondeo activo)</span>
+      <span class="ptag">Constructivo / ad-hoc</span>
+      <span class="ptag">Geometría de reflexión</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes 15 cajas negras de \(n\times n\) (\(n\le 30\)) cuyas casillas están vacías
+       o tienen un espejo <code>/</code> o <code>\</code>. No ves el interior: solo
+       puedes <strong>lanzar bolas</strong> (<code>throwBall</code>), <strong>resetear</strong>
+       (<code>ResetBox</code>) e <strong>invertir todos</strong> los espejos a la vez
+       (<code>ToggleDeflectors</code>). Cada espejo <strong>se voltea cada vez que lo
+       golpean</strong>, y cada lanzamiento solo te dice por dónde salió la bola y cuántos
+       bips hubo. Debes reconstruir el contenido <em>inicial</em> de cada caja
+       <strong>sin un solo error</strong> (un carácter mal coloca la caja entera en 0) y
+       descubrir lo más posible.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n\le 30\) y puntaje <em>relativo</em> por caja: un error te da 0, así que
+                <code>?</code> &gt; adivinar. El cuello de botella no es el tiempo de CPU
+                (cada lanzamiento se simula en \(O(n^2)\)), sino el <strong>número de
+                lanzamientos</strong> y la lógica para gobernar la paridad de los espejos
+                ya conocidos. La caja vale completa solo si descubres \(\sim\)100% con
+                cero colocaciones equivocadas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — Primero, modela la física exacta</summary>
+      <div class="body">
+        <p class="q">¿Ya tienes un simulador interno fiel? ¿Cómo refleja cada espejo a la
+           bola, y qué le pasa al espejo justo después del golpe?</p>
+        <p>Define las cuatro reglas de reflexión. Con la bola moviéndose en dirección
+           Derecha/Izquierda/Arriba/Abajo (R/L/U/D):</p>
+        <ul>
+          <li><code>/</code> intercambia \(R\leftrightarrow U\) y \(L\leftrightarrow D\).</li>
+          <li><code>\</code> intercambia \(R\leftrightarrow D\) y \(L\leftrightarrow U\).</li>
+        </ul>
+        <p>Las entradas por cada lado: Arriba hoyo \(h\Rightarrow\) entra en \((1,h)\)
+           hacia abajo; Abajo \(\Rightarrow (n,h)\) hacia arriba; Izquierda
+           \(\Rightarrow (h,1)\) hacia la derecha; Derecha \(\Rightarrow (h,n)\) hacia la
+           izquierda. Y lo crucial: <strong>el espejo se voltea (toggle) en cada golpe</strong>,
+           y el número de bips = número de desviaciones. Verifica tu simulador contra el
+           ejemplo del enunciado: lanzar al hoyo 3 del lado Izquierdo en la caja \(5\times5\)
+           da 1 bip y salida por el hoyo 2 del lado de Abajo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — No verifiques casilla por casilla: lee un rayo entero</summary>
+      <div class="body">
+        <p class="q">Si lanzas una bola a lo largo de una línea “limpia” (de casillas ya
+           conocidas hasta un tramo desconocido), ¿qué te dice un solo lanzamiento sobre
+           todo ese tramo?</p>
+        <p>Te dice dónde está el <strong>primer</strong> espejo del rayo, y que todo lo que
+           cruzó antes estaba vacío. Si hubo 0 bips, toda la línea estaba vacía. Si hubo
+           1 bip y la bola salió por cierto hoyo \(f\), el primer espejo está en esa
+           columna \(f\) y antes todo era <code>.</code>. Nunca confirmas el “vacío”
+           celda por celda: lo <em>infieres</em> porque la bola cruzó esas casillas sin
+           emitir bip. El conteo de bips más el hoyo de salida fijan ese primer espejo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Legibilidad de frontera + el truco de invertir</summary>
+      <div class="body">
+        <p class="q">Un <code>/</code> al inicio de un rayo sale limpio hacia la frontera y
+           lo lees fácil; pero un <code>\</code> al inicio se mete hacia adentro de la caja
+           y “se pierde”. ¿Cómo lees entonces un <code>\</code>?</p>
+        <p>Manda un rayo, por ejemplo, hacia la derecha por el renglón 1. Si su primer
+           espejo es <code>/</code>, \(R\to U\) y la bola sale por <strong>Arriba</strong>
+           de inmediato: lees su columna y que es <code>/</code>. Si es <code>\</code>,
+           \(R\to D\) y se hunde (ilegible). El truco: <code>ResetBox</code> +
+           <code>ToggleDeflectors</code> convierte ese espejo en <code>/</code>; relanzas y
+           ahora sí sale limpio por Arriba en la columna \(f\) \(\Rightarrow\) el espejo
+           original era <code>\</code>. <strong>Acuérdate de invertir de regreso</strong>
+           la orientación que recuperaste en el mundo invertido. Por simetría, lo mismo
+           aplica en los cuatro lados (el significado de <code>/</code> y <code>\</code> se
+           “voltea” según el lado de entrada — no lo codifiques a mano para un solo lado).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Threading: fija la paridad de UN espejo sin tocar los demás</summary>
+      <div class="body">
+        <p class="q">Para sondear <em>más allá</em> de espejos que ya conoces en un renglón,
+           necesitas mandar un rayo que entre a la primera casilla desconocida. Pero
+           cada golpe voltea un espejo. ¿Cómo entras sin descomponer lo que ya descubriste?</p>
+        <p>Si en un renglón conoces espejos en posiciones \(p_1&lt;p_2&lt;\dots&lt;p_m\),
+           usa esta secuencia de lanzamientos: <code>Izquierda-1</code>, luego
+           <code>Arriba-p1</code>, <code>Arriba-p2</code>, …, <code>Arriba-p(m-1)</code>.
+           Cada lanzamiento golpea <strong>dos</strong> espejos conocidos consecutivos:
+           regresa el anterior y avanza el siguiente. Al final, <strong>solo \(p_m\) queda
+           volteado a <code>\</code></strong> (todos los intermedios se golpearon un número
+           <em>par</em> de veces y vuelven a su estado). Entonces <code>Arriba-pm</code>
+           manda el rayo hacia la derecha, ya hacia la frontera desconocida. Así
+           “gobiernas” paridades usando solo lanzamientos.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (rumbo al 100%)</summary>
+      <div class="body">
+        <p>La columna vertebral son dos piezas, ambas verificadas como correctas:</p>
+        <ol>
+          <li><strong>Primitiva decodificadora.</strong> Mantén tu <em>propia</em>
+              simulación de las casillas ya descubiertas y su orientación actual. Cuando
+              vas a lanzar, simula el rayo internamente sobre lo conocido; en el momento en
+              que entraría a una casilla desconocida \(T\) en dirección \(d\), con un tramo
+              de casillas desconocidas por delante, <strong>enumera cada hipótesis</strong>
+              de cómo se llena ese tramo (vacío hasta cierta posición \(p\) y luego un
+              <code>/</code> o un <code>\</code>, más el caso “todo vacío”), simula cada una y
+              quédate solo con las que reproducen el <code>(holeOut, sideOut, bips)</code>
+              reales. <strong>Comprometes</strong> únicamente el prefijo más largo en el que
+              <em>todas</em> las hipótesis sobrevivientes coinciden. Es demostrablemente
+              seguro: nunca coloca un carácter salvo que esté forzado, así que <strong>jamás
+              produce una colocación equivocada</strong> (nunca caes en el 0 automático).</li>
+          <li><strong>Reset/invertir</strong> (Pista 3) para leer tanto los
+              <code>/</code>-primeros (en el estado normal) como los <code>\</code>-primeros
+              (en el estado invertido), en los cuatro lados por simetría.</li>
+        </ol>
+
+        <p><strong>Cómo se llega al 100% (dirección al óptimo):</strong> sondea como una
+           <em>cebolla</em> desde los cuatro lados hacia adentro: renglón 1, columna 1,
+           renglón \(n\), columna \(n\); luego renglón 2, columna 2, … Cada capa interior
+           tiene 2 incógnitas menos que la anterior, lo que <strong>doma</strong> el costo de
+           arreglo que, atacado desde un solo lado, sería exponencial en el índice del
+           renglón. Antes de sondear una casilla de la frontera, usa <em>threading</em>
+           (Pista 4) para acomodar los espejos exteriores ya conocidos en una
+           <strong>escalera de <code>\</code></strong> que entregue el rayo a la frontera, y
+           una <strong>disposición de <code>/</code></strong> que saque el rayo de regreso
+           de forma <em>legible</em>. Esa construcción explícita threading + escalera es lo
+           que completa el 100%; la primitiva decodificadora y el reset/invertir ya están
+           completos y correctos por sí solos.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>conocido[1..n][1..n] = DESCONOCIDO        // tu modelo interno de la caja
+
+funcion lanzar_y_decodificar(hoyo, lado):
+    (bips, holeOut, sideOut) = throwBall(hoyo, lado)     // observacion real
+    reconstruye el camino del rayo sobre las casillas CONOCIDAS
+    sea T la primera casilla DESCONOCIDA que tocaria, en direccion d
+    sea tramo = casillas desconocidas consecutivas desde T
+
+    sobrevivientes = []
+    para cada hipotesis H de llenar 'tramo':
+        (vacio hasta p, luego '/'  en p)
+        (vacio hasta p, luego '\' en p)    para cada p del tramo
+        (todo vacio)
+        si simular(camino + H) == (bips, holeOut, sideOut):
+            sobrevivientes.append(H)
+
+    // comprometer solo el prefijo donde TODAS coinciden
+    para cada celda c del tramo, en orden:
+        si todas las sobrevivientes asignan el MISMO valor a c:
+            conocido[c] = ese valor          // garantizado correcto
+        si no: detener      // a partir de aqui queda '?'
+
+funcion leer_espejo(...):                    // Pista 3
+    intentar lectura limpia en estado normal -> da los '/'-primeros
+    ResetBox(); ToggleDeflectors()           // estado invertido
+    lectura limpia -> da los '\'-primeros; invertir orientacion de regreso
+
+procedimiento resolver_caja:
+    n = Initialize(k)
+    para capa = 0, 1, ... hasta agotar incognitas:        // CEBOLLA
+        para cada frontera (renglon1, col1, renglonN, colN de la capa):
+            arreglar espejos exteriores via THREADING (Pista 4):
+                escalera de '\' para entregar el rayo a la frontera
+                disposicion de '/' para sacar el regreso legible
+            lanzar_y_decodificar(...) sobre esa frontera
+    para cada celda aun DESCONOCIDA: escribir '?'        // nunca adivinar
+    Finalize()</pre>
+        </div>
+
+        <p><strong>Por qué es correcto:</strong> solo se compromete una casilla cuando
+           <em>toda</em> hipótesis consistente con las observaciones coincide en su valor,
+           así que es imposible colocar un carácter equivocado (cero riesgo del 0
+           automático). El reset/invertir cubre los espejos que “se hunden”, y la cebolla
+           con threading garantiza que la región posterior a cada desvío ya sea conocida,
+           que es lo que hace la lectura interpretable.</p>
+
+        <p><strong>Complejidad:</strong> el costo por caja es el número de lanzamientos;
+           cada lanzamiento se simula en \(O(\text{camino}) = O(n^2)\). Leer un anillo
+           exterior cuesta \(O(n)\) lanzamientos; con la cebolla + threading, arreglar una
+           casilla de la frontera cuesta \(O(\text{ancho de la capa})\) lanzamientos, así que
+           una capa cuesta \(\sim O(n^2)\) y la caja entera entre \(O(n^3)\) y \(O(n^4)\)
+           lanzamientos en una implementación cuidadosa. Con \(n\le 30\), la simulación pura
+           corre en mucho menos de un segundo; el costo visible es la lógica de arreglo, no
+           la simulación (por eso la referencia oficial reporta hasta \(\sim\)8 minutos en las
+           cajas densas de \(n=30\)). Atacar desde un solo lado, en cambio, explota
+           exponencialmente — por eso se explora desde los cuatro lados.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Notas de implementación (C++)</span>
+<pre>- En C++ throwBall recibe holeOut/sideOut por referencia (int&amp;);
+  en C son punteros (int*) y en Pascal son 'var'. Maneja los 3 lados por
+  simetria en una sola rutina; no codifiques el significado de '/' y '\'
+  para un unico lado de entrada.
+- Lleva SIEMPRE tu propia simulacion del estado actual de los espejos: cada
+  golpe los voltea y el estado se desfasa entre lanzamientos. Llama ResetBox
+  antes de cada secuencia planeada para partir de un estado conocido.</pre>
+          <p class="note">Esto son notas de manejo del estado, no una solución en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
