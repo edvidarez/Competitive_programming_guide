@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2016 · Tarea 2 — Roller Coaster Railroad</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2016 · Día 1</div>
+    <h1>Tarea <span class="num">2</span> — Roller Coaster Railroad</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Anna trabaja en un parque de diversiones y está a cargo de construir la vía
+       para una nueva montaña rusa. Ya diseñó \(n\) <strong>secciones especiales</strong>
+       (numeradas de \(0\) a \(n-1\)) que modifican la velocidad del tren. Ahora tiene
+       que unirlas y proponer un diseño final. Para este problema puedes suponer que la
+       longitud del tren es cero.</p>
+
+    <p>Para cada \(i\) entre \(0\) y \(n-1\), la sección especial \(i\) tiene dos
+       propiedades:</p>
+    <ul>
+      <li>al <strong>entrar</strong> a la sección hay un límite de velocidad: la velocidad
+          del tren debe ser menor o igual a \(s_i\) km/h (kilómetros por hora);</li>
+      <li>al <strong>salir</strong> de la sección, la velocidad del tren es exactamente
+          \(t_i\) km/h, sin importar a qué velocidad entró el tren.</li>
+    </ul>
+
+    <p>La montaña rusa terminada es una sola línea de vía que contiene las \(n\) secciones
+       especiales en algún orden. Cada una de las \(n\) secciones debe usarse exactamente
+       una vez. Las secciones consecutivas se conectan con tramos de vía. Anna debe elegir
+       el orden de las \(n\) secciones y luego decidir las longitudes de los tramos. La
+       longitud de un tramo se mide en metros y puede ser cualquier entero no negativo
+       (posiblemente cero).</p>
+
+    <p>Cada metro de vía entre dos secciones especiales <strong>frena</strong> al tren
+       \(1\) km/h. Al inicio del recorrido, el tren entra a la primera sección del orden
+       elegido por Anna a \(1\) km/h.</p>
+
+    <p>El diseño final debe cumplir los siguientes requisitos:</p>
+    <ul>
+      <li>el tren no viola ningún límite de velocidad al entrar a las secciones especiales;</li>
+      <li>la velocidad del tren es positiva en todo momento.</li>
+    </ul>
+
+    <p>En todas las subtareas excepto la subtarea 3, tu tarea es hallar la
+       <strong>longitud total mínima</strong> posible de los tramos de vía entre secciones.
+       En la subtarea 3 solo necesitas verificar si existe un diseño válido de la montaña
+       rusa tal que <strong>cada tramo tenga longitud cero</strong>.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar la siguiente función (método). El evaluador la llama una sola vez
+       con todos los datos y espera el valor que regresa.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int64 plan_roller_coaster(int[] s, int[] t)</pre>
+    </div>
+    <ul>
+      <li><code>s</code>: arreglo de longitud \(n\); velocidades máximas permitidas al entrar.</li>
+      <li><code>t</code>: arreglo de longitud \(n\); velocidades de salida.</li>
+      <li>En todas las subtareas excepto la 3, la función debe regresar la longitud total
+          mínima de todos los tramos. En la subtarea 3 la función debe regresar \(0\) si
+          existe un diseño válido tal que cada tramo tenga longitud cero, y cualquier entero
+          positivo si no existe.</li>
+    </ul>
+    <p class="note">En el lenguaje C la firma es ligeramente distinta:
+       <code>int64 plan_roller_coaster(int n, int[] s, int[] t)</code>, donde
+       <code>n</code> es el número de elementos de <code>s</code> y <code>t</code>
+       (el número de secciones especiales); los demás parámetros son iguales.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Velocidad de entrada</td><td><span class="badge">\(1 \le s_i \le 10^9\)</span></td></tr>
+        <tr><td>Velocidad de salida</td><td><span class="badge">\(1 \le t_i \le 10^9\)</span></td></tr>
+      </table>
+    </div>
+    <p class="note">Los límites de tiempo/memoria corresponden a la versión oficial de IOI 2016.</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">11</td><td>\(2 \le n \le 8\)</td></tr>
+          <tr><td>2</td><td class="pts">23</td><td>\(2 \le n \le 16\)</td></tr>
+          <tr><td>3</td><td class="pts">30</td><td>\(2 \le n \le 200\,000\). En esta subtarea tu programa
+              solo necesita verificar si la respuesta es cero o no. Si la respuesta no es cero,
+              cualquier entero positivo se considera correcto.</td></tr>
+          <tr><td>4</td><td class="pts">36</td><td>\(2 \le n \le 200\,000\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Llamada a la función</h4><pre>plan_roller_coaster(
+  [1, 4, 5, 6],
+  [7, 3, 8, 6]
+)</pre></div>
+      <div class="io"><h4>Valor de retorno</h4><pre>3</pre></div>
+    </div>
+    <p>En este ejemplo hay cuatro secciones especiales. La mejor solución es construirlas en
+       el orden \(0, 3, 1, 2\) y conectarlas con tramos de longitudes \(1, 2, 0\)
+       respectivamente. Así viaja el tren a lo largo de la vía:</p>
+    <ul>
+      <li>Al inicio la velocidad del tren es \(1\) km/h.</li>
+      <li>El tren empieza el recorrido entrando a la sección \(0\).</li>
+      <li>El tren sale de la sección \(0\) a \(7\) km/h.</li>
+      <li>Luego hay un tramo de longitud \(1\) m. Al llegar al final del tramo, su velocidad
+          es \(6\) km/h.</li>
+      <li>El tren entra a la sección \(3\) a \(6\) km/h y sale a la misma velocidad.</li>
+      <li>Después de salir de la sección \(3\), el tren recorre un tramo de \(2\) m de largo.
+          Su velocidad baja a \(4\) km/h.</li>
+      <li>El tren entra a la sección \(1\) a \(4\) km/h y sale a \(3\) km/h.</li>
+      <li>Inmediatamente después de la sección \(1\) el tren entra a la sección \(2\).</li>
+      <li>El tren sale de la sección \(2\). Su velocidad final es \(8\) km/h.</li>
+    </ul>
+    <p>La función debe regresar la longitud total de los tramos entre secciones:
+       \(1 + 2 + 0 = 3\).</p>
+
+    <p class="note">El evaluador de ejemplo lee la entrada con este formato:
+       línea 1, el entero \(n\); línea \(2+i\) (para \(i\) de \(0\) a \(n-1\)), los enteros
+       \(s_i\) y \(t_i\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Circuito euleriano</span>
+      <span class="ptag">Union-Find</span>
+      <span class="ptag">MST (Kruskal)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(n\) secciones; la sección \(i\) se entra a velocidad \(\le s_i\) y se sale a
+       <em>exactamente</em> \(t_i\). Las acomodas en algún orden y entre dos consecutivas
+       pones una vía que solo <strong>frena</strong> (\(1\) km/h por metro, longitud entera
+       \(\ge 0\)). El tren arranca a \(1\) km/h y su velocidad debe ser siempre positiva.
+       Implementa <code>plan_roller_coaster</code>, que devuelve la longitud total mínima de
+       las vías (en la subtarea 3, basta devolver \(0\) si existe un diseño con todas las vías
+       de longitud cero, y un positivo si no).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El costo de poner la sección con salida \(t\) justo antes de otra con límite
+                de entrada \(s'\) es \(\max(0,\, t - s')\) (solo puedes frenar). Subtarea 1
+                (\(n\le 8\)): prueba las \(n!\) permutaciones. Subtarea 2 (\(n\le 16\)): es un
+                TSP, DP sobre máscaras. Subtareas 3 y 4 (\(n\le 2\cdot 10^5\)): necesitas una
+                idea \(O(n\log n)\) que reformule todo en un eje de velocidades.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuánto cuesta poner una sección después de otra?</summary>
+      <div class="body">
+        <p class="q">Si decides que la sección \(i\) va inmediatamente seguida de la sección
+           \(j\), ¿cuánto tienes que frenar entre ellas? Recuerda que sales de \(i\) a
+           velocidad \(t_i\) y que al entrar a \(j\) la velocidad debe ser \(\le s_j\).</p>
+        <p>Como cada metro solo resta \(1\) km/h y las longitudes son enteros \(\ge 0\), si
+           \(t_i > s_j\) necesitas exactamente \(t_i - s_j\) metros; si \(t_i \le s_j\) no
+           necesitas frenar. Es decir, el tramo cuesta \(\max(0,\, t_i - s_j)\). ¿Entonces el
+           problema se reduce a elegir el <em>orden</em> (una permutación de las secciones) que
+           minimice la suma de esos costos? ¿Importa la velocidad de arranque \(1\) km/h y que
+           nunca llegue a \(0\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por las subtareas chicas</summary>
+      <div class="body">
+        <p class="q">Con \(n \le 8\), ¿qué te impide probar TODOS los órdenes posibles? Y con
+           \(n \le 16\), ¿reconoces un problema clásico escondido?</p>
+        <p>Subtarea 1: itera sobre las \(n!\) permutaciones; fijado el orden, suma
+           \(\max(0,\, t_i - s_j)\) entre consecutivas y quédate con el mínimo
+           (\(O(n!\cdot n)\)). Subtarea 2: esto es exactamente un <strong>TSP</strong> (problema
+           del viajante) con "distancia" \(\max(0,\, t_i - s_j)\); resuélvelo con DP sobre
+           máscaras de bits, \(\textit{ans}[\text{mask}][i]\) = costo mínimo usando el
+           subconjunto \(\text{mask}\) terminando (o empezando) en \(i\), en \(O(2^n n^2)\).
+           Pero \(n\) llega a \(2\cdot 10^5\): la DP exponencial no escala. ¿Habrá una
+           estructura que el TSP genérico no ve?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Cambia el dibujo: piensa en un eje de velocidades</summary>
+      <div class="body">
+        <p class="q">¿Y si dibujas cada sección como una <em>flecha</em> sobre una recta cuyas
+           coordenadas son velocidades, que va de \(s_i\) (entrada) a \(t_i\) (salida)? ¿Qué
+           sería entonces "recorrer todas las secciones una vez y volver al inicio"?</p>
+        <p>Agrega una sección ficticia con \(s=\infty\) y \(t=1\) (un número mayor que cualquier
+           \(s_i,t_i\), p.ej. \(2\cdot 10^9\), sirve como \(\infty\)). Esa flecha codifica a la
+           vez el arranque a \(1\) km/h y el cierre del recorrido a velocidad libre. Con ella, un
+           diseño válido equivale a recorrer cada flecha una vez y cerrar el ciclo: un
+           <strong>circuito euleriano</strong> sobre estas aristas. La pregunta clave pasa a ser:
+           sobre cada tramo del eje, ¿cuántas flechas lo cruzan hacia la derecha (aceleran) y
+           cuántas hacia la izquierda (frenan)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — El balance por tramo (resuelve la subtarea 3)</summary>
+      <div class="body">
+        <p class="q">Para cada tramo elemental \([v_k, v_{k+1}]\) entre dos velocidades
+           consecutivas, define \(\text{bal}\) = (flechas que lo cruzan de izquierda a derecha)
+           \(-\) (flechas que lo cruzan de derecha a izquierda). ¿Qué te obliga a hacer cada
+           signo de \(\text{bal}\)?</p>
+
+        <figure>
+          <img alt="Eje de velocidades: tres flechas rojas cruzan el tramo entre x y x+1 de izquierda a derecha (aceleran) y dos flechas verdes lo cruzan de derecha a izquierda (frenan); el balance es 3 menos 2, igual a 1."
+               src="data:image/png;base64,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">
+          <figcaption>Editorial IOI 2016: sobre el tramo \([x, x+1]\) hay tres aristas de
+            izquierda a derecha (rojas, aceleran) y dos de derecha a izquierda (verdes, frenan),
+            así que el balance es \(3 - 2 = 1\).</figcaption>
+        </figure>
+
+        <p>Un circuito euleriano debe cruzar cada tramo el mismo número de veces en ambos
+           sentidos, así que el balance tiene que quedar en cero. Por tanto:</p>
+        <ul>
+          <li>\(\text{bal} > 0\): sobran cruces que aceleran; es <strong>obligatorio</strong>
+              añadir aristas que frenen (cada una es una vía con longitud) — la respuesta no
+              puede ser cero.</li>
+          <li>\(\text{bal} < 0\): sobran cruces que frenan; se compensan con aceleración, que es
+              <strong>gratis</strong> (basta acortar la sección anterior).</li>
+          <li>\(\text{bal} = 0\): el tramo está equilibrado.</li>
+        </ul>
+        <p>Para la subtarea 3 (¿es cero la respuesta?): añade la sección ficticia, revisa que
+           \(\text{bal} = 0\) en todo tramo y que el grafo de aristas-sección sea
+           <strong>conexo</strong> (al pasar de una componente a otra hay que frenar). Si algún
+           balance es positivo o el grafo está desconectado, la respuesta no es cero; en otro
+           caso cada vértice tiene grado de entrada = grado de salida y existe un circuito
+           euleriano, así que vale cero. Todo en \(O(n\log n)\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Trabaja en el eje de velocidades. Cada sección es una arista
+           dirigida de \(s_i\) a \(t_i\); agrega la arista ficticia \(\infty \to 1\) (arranque a
+           \(1\) y final libre). Coloca un evento \(+1\) en cada cola \(s_i\) y \(-1\) en cada
+           cabeza \(t_i\). Comprime las \(2n\) coordenadas y recorre los tramos consecutivos
+           \([v_k, v_{k+1}]\) acumulando el balance \(\text{bal}\):</p>
+        <ul>
+          <li><strong>Pagar los desbalances positivos.</strong> En cada tramo con
+              \(\text{bal} > 0\) hay que añadir \(\text{bal}\) aristas de freno, una por unidad
+              de exceso, cada una recorriendo todo el tramo. Eso aporta
+              \(\text{bal}\cdot(v_{k+1}-v_k)\) a la respuesta. Esas aristas, de paso, conectan
+              gratis ambos extremos del tramo.</li>
+          <li><strong>Los desbalances negativos son gratis.</strong> El exceso es de aceleración,
+              que se logra sin costo; esos tramos también conectan ambos lados sin pagar.</li>
+          <li><strong>Conectividad (MST).</strong> Después de pagar y de unir (con union-find) los
+              extremos de cada sección y de cada tramo con \(\text{bal}\neq 0\), el grafo puede
+              quedar en varias componentes. Para que exista un único circuito hay que unirlas, y
+              eso solo se puede hacer cruzando tramos con \(\text{bal}=0\), pagando su longitud.
+              Es exactamente un <strong>árbol de expansión mínima</strong> (Kruskal) sobre las
+              aristas "tramo entre coordenadas consecutivas" con peso \(v_{k+1}-v_k\).</li>
+        </ul>
+        <p>La respuesta es la suma de (1) los costos de los tramos con balance positivo y
+           (2) los pesos de las aristas del MST que de verdad unen componentes. Esto da el mínimo
+           exacto y, en particular, vale \(0\) exactamente cuando existe un diseño con todas las
+           vías de longitud cero (subtarea 3).</p>
+
+        <p><strong>Por qué es correcto.</strong> El balance de un tramo es invariante de cualquier
+           orden: un circuito euleriano cruza cada tramo igual número de veces en ambos sentidos.
+           Si \(\text{bal} > 0\) es forzoso añadir frenos, y cada metro de freno reduce el exceso
+           en \(1\) por unidad de longitud, lo que da la cota inferior \(\text{bal}\cdot
+           \text{longitud}\), alcanzable porque esas aristas se materializan como vías reales. Si
+           \(\text{bal} < 0\) el exceso de aceleración se consigue gratis acortando secciones.
+           Saldados todos los balances, cada vértice tiene grado de entrada igual al de salida:
+           condición necesaria y suficiente para un circuito euleriano <em>siempre que el grafo
+           sea conexo</em>. Unir componentes separadas obliga a frenar al cambiar de una a otra, y
+           el costo mínimo de unirlas todas es justo el MST sobre los tramos de balance cero.</p>
+
+        <p><strong>Subtarea por subtarea.</strong></p>
+        <ul>
+          <li><strong>Sub 1</strong> (\(n\le 8\), 11 pts): fuerza bruta sobre las \(n!\)
+              permutaciones; fijado el orden, el costo entre \(i\) y \(j\) es
+              \(\max(0,\, t_i - s_j)\). \(O(n!\cdot n)\).</li>
+          <li><strong>Sub 2</strong> (\(n\le 16\), 23 pts): TSP con DP de máscaras,
+              \(\textit{ans}[\text{mask}][i] = \min_{j} \textit{ans}[\text{mask}\setminus\{i\}][j]
+              + \max(0,\, t_i - s_j)\). \(O(2^n n^2)\).</li>
+          <li><strong>Sub 3</strong> (\(n\le 2\cdot 10^5\), 30 pts): solo factibilidad de
+              longitud cero; eje de velocidades + balance cero en todo tramo + grafo conexo.
+              \(O(n\log n)\).</li>
+          <li><strong>Sub 4</strong> (\(n\le 2\cdot 10^5\), 36 pts): la solución completa de
+              arriba; paga \(\sum \max(0,\, \text{bal}\cdot\text{longitud})\) y conecta con
+              Kruskal sobre los tramos de balance cero. Devuelve un \(\textit{int64}\) (la
+              respuesta puede llegar a \(\sim 10^{14}\)). \(O(n\log n)\).</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion plan_roller_coaster(s[0..n-1], t[0..n-1]) -> int64:
+    INF = 2_000_000_000            // mayor que cualquier s_i, t_i (<= 1e9)
+    agregar seccion ficticia: s.append(INF), t.append(1); n += 1
+
+    // 1) Comprimir coordenadas (todas las velocidades s y t)
+    V = ordenar_unicos( todos los s_i y t_i )
+    m = |V|;  idx(x) = posicion de x en V (busqueda binaria)
+
+    deg[0..m-1] = 0
+    DSU sobre m nodos (find/union con compresion)
+
+    para cada seccion i:
+        a = idx(s_i); b = idx(t_i)
+        deg[a] += 1                 // cola (+1)
+        deg[b] -= 1                 // cabeza (-1)
+        union(a, b)                 // la seccion conecta sus dos extremos
+
+    // 2) Recorrer tramos: pagar balances positivos; unir gratis los no-cero
+    ans = 0; bal = 0
+    para k = 0 .. m-1:
+        bal += deg[k]
+        si k+1 < m y bal != 0:
+            si bal > 0: ans += bal * (V[k+1] - V[k])   // anadir frenos: cuesta
+            union(k, k+1)            // bal>0 (pagado) o bal<0 (gratis) conectan
+
+    // 3) Conectar lo que reste: MST (Kruskal) sobre tramos balance-cero
+    aristas = [ (V[k+1]-V[k], k) para k = 0 .. m-2 ]
+    ordenar aristas por peso ascendente
+    para (peso, k) en aristas:
+        si union(k, k+1) tuvo efecto (estaban separados):
+            ans += peso
+
+    devolver ans   // 0 sii existe diseno con todas las vias de longitud 0</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(n\log n)\) en tiempo (dominado por ordenar las
+           \(2n\) coordenadas y el Kruskal sobre los \(O(n)\) tramos; el union-find es casi
+           \(O(1)\) amortizado) y \(O(n)\) en memoria. Con \(n = 2\cdot 10^5\) corre en
+           \(\sim 0.1\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>La respuesta se acumula y se devuelve en long long (int64): puede
+llegar a ~1e14, asi que int de 32 bits desborda. INF = 2e9 cabe en
+int (< 2^31 - 1) y supera cualquier s,t <= 1e9.</pre>
+          <p class="note">Detalle de tipos, no de algoritmo: solo cuida usar enteros de 64 bits
+             para acumular el resultado.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
