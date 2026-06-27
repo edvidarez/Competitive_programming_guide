@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2014 · Tarea 5 — Friend</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2014 · Día 2 · Taipéi, Taiwán</div>
+    <h1>Tarea <span class="num">5</span> — Friend</h1>
+    <p class="note">Friend · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Construimos una <strong>red social</strong> con \(n\) personas numeradas
+       \(0, 1, \dots, n-1\). Algunas parejas de personas serán <em>amigas</em>. La
+       amistad es <strong>mutua</strong>: si la persona \(x\) se hace amiga de la
+       persona \(y\), entonces \(y\) también se hace amiga de \(x\).</p>
+
+    <p>Las personas se agregan a la red en <strong>etapas</strong>, también numeradas
+       de \(0\) a \(n-1\). La persona \(i\) se agrega en la etapa \(i\). En la etapa
+       \(0\) se agrega a la persona \(0\) como única integrante de la red. En cada una
+       de las siguientes \(n-1\) etapas, una nueva persona entra a la red invitada por
+       un <strong>anfitrión</strong> (host), que puede ser cualquier persona que ya
+       esté en la red. En la etapa \(i\) (con \(0 &lt; i &lt; n\)), el anfitrión agrega
+       a la persona entrante \(i\) usando uno de estos tres <strong>protocolos</strong>:</p>
+
+    <ul>
+      <li><strong>IAmYourFriend</strong> (código \(0\)): hace que la persona \(i\) sea
+          amiga <em>únicamente</em> del anfitrión.</li>
+      <li><strong>MyFriendsAreYourFriends</strong> (código \(1\)): hace que la persona
+          \(i\) sea amiga de <em>cada</em> persona que, en ese momento, sea amiga del
+          anfitrión. Ojo: este protocolo <strong>no</strong> hace a \(i\) amiga del
+          anfitrión.</li>
+      <li><strong>WeAreYourFriends</strong> (código \(2\)): hace que la persona \(i\)
+          sea amiga del anfitrión y <em>también</em> de cada persona que, en ese
+          momento, sea amiga del anfitrión.</li>
+    </ul>
+
+    <p>Una vez construida la red, queremos elegir una <strong>muestra</strong> para una
+       encuesta, es decir, un grupo de personas de la red. Como los amigos suelen tener
+       intereses parecidos, la muestra <strong>no debe incluir ninguna pareja de
+       personas que sean amigas entre sí</strong>. Cada persona tiene una
+       <strong>confianza</strong> de encuesta, expresada como un entero positivo, y
+       queremos hallar una muestra con la <strong>confianza total máxima</strong>.</p>
+
+    <h3>Ejemplo (construcción de la red)</h3>
+    <p>La siguiente tabla describe cinco etapas de construcción:</p>
+    <div class="io"><pre>etapa  host  protocolo                  amistades agregadas
+1      0     IAmYourFriend              (1, 0)
+2      0     MyFriendsAreYourFriends    (2, 1)
+3      1     WeAreYourFriends           (3, 1), (3, 0), (3, 2)
+4      2     MyFriendsAreYourFriends    (4, 1), (4, 3)
+5      0     IAmYourFriend              (5, 0)</pre></div>
+
+    <p>Al inicio la red contiene solo a la persona \(0\). El anfitrión de la etapa \(1\)
+       (la persona \(0\)) invita a la nueva persona \(1\) con el protocolo
+       <strong>IAmYourFriend</strong>, así que se hacen amigos. El anfitrión de la etapa
+       \(2\) (otra vez la persona \(0\)) invita a la persona \(2\) con
+       <strong>MyFriendsAreYourFriends</strong>, lo que hace que la persona \(1\) (la
+       única amiga del anfitrión) sea la única amiga de la persona \(2\). El anfitrión
+       de la etapa \(3\) (la persona \(1\)) agrega a la persona \(3\) con
+       <strong>WeAreYourFriends</strong>, lo que hace a la persona \(3\) amiga de la
+       persona \(1\) (el anfitrión) y de las personas \(0\) y \(2\) (los amigos del
+       anfitrión). Las etapas \(4\) y \(5\) también aparecen en la tabla.</p>
+
+    <figure>
+      <img alt="Red final del ejemplo: seis círculos numerados (personas) con su valor de confianza al lado. Persona 5 con confianza 15 unida a 0. Persona 3 con confianza 20 unida a 0, 1, 2 y 4. Persona 4 con confianza 10 unida a 3 y 1. Persona 0 con confianza 13 unida a 1, 3 y 5. Persona 1 con confianza 3 unida a 0, 2, 3 y 4. Persona 2 con confianza 6 unida a 1 y 3."
+           src="data:image/png;base64,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">
+      <figcaption>Red final del ejemplo. El número dentro de cada círculo es la etiqueta
+        de la persona; el número junto al círculo es su confianza. La muestra formada por
+        las personas \(3\) y \(5\) tiene confianza total \(20 + 15 = 35\), que es la
+        máxima posible.</figcaption>
+    </figure>
+
+    <!-- ===== TAREA FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar ni
+       escribes en la salida estándar. Debes entregar exactamente un archivo
+       (<code>friend.c</code>, <code>friend.cpp</code> o <code>friend.pas</code>) que
+       implemente la función <code>findSample</code>; en C/C++ además debes incluir el
+       encabezado <code>"friend.h"</code>. El evaluador (grader) la llama
+       <strong>una sola vez</strong> con todos los datos:</p>
+    <ul>
+      <li><code>n</code> — el número de personas.</li>
+      <li><code>confidence</code> — arreglo de longitud \(n\):
+          <code>confidence[i]</code> es la confianza de la persona \(i\).</li>
+      <li><code>host</code> — arreglo de longitud \(n\): <code>host[i]</code> es el
+          anfitrión de la etapa \(i\).</li>
+      <li><code>protocol</code> — arreglo de longitud \(n\): <code>protocol[i]</code>
+          es el código de protocolo usado en la etapa \(i\) (con \(0 &lt; i &lt; n\)):
+          \(0\) = IAmYourFriend, \(1\) = MyFriendsAreYourFriends, \(2\) = WeAreYourFriends.</li>
+    </ul>
+    <p>Como en la etapa \(0\) no hay anfitrión, <code>host[0]</code> y
+       <code>protocol[0]</code> están <strong>indefinidos</strong> y tu programa
+       <strong>no</strong> debe accederlos. La función debe regresar la máxima confianza
+       total posible de una muestra.</p>
+
+    <div class="sig">
+      <span class="tag">Firma(s) a implementar</span>
+<pre>// C / C++
+int findSample(int n, int confidence[], int host[], int protocol[]);
+
+// Pascal
+function findSample(n: longint; confidence: array of longint;
+                    host: array of longint;
+                    protocol: array of longint): longint;
+
+// Regresa la máxima confianza total de una muestra válida (conjunto sin amigos entre sí).</pre>
+    </div>
+
+    <div class="note-box">
+      <strong>Evaluador de muestra.</strong> El grader incluido lee la entrada con este
+      formato: línea 1 = <code>n</code>; línea 2 = <code>confidence[0] … confidence[n-1]</code>;
+      línea 3 = <code>host[1] protocol[1] host[2] protocol[2] … host[n-1] protocol[n-1]</code>.
+      Construye los arreglos, llama a tu <code>findSample</code> e imprime el entero que
+      regresa.
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de personas \(n\)</td><td><span class="badge">\(2 \le n \le 100\,000\)</span></td></tr>
+        <tr><td>Confianza de cada persona</td><td><span class="badge">\(1 \le \text{confidence}[i] \le 1\,000\,000\)</span> (entero positivo)</td></tr>
+        <tr><td>Anfitrión de cada etapa</td><td><span class="badge">\(0 \le \text{host}[i] &lt; i\)</span> para \(0 &lt; i &lt; n\)</td></tr>
+        <tr><td>Protocolo de cada etapa</td><td><span class="badge">\(\text{protocol}[i] \in \{0, 1, 2\}\)</span></td></tr>
+      </table>
+    </div>
+    <p class="note">Los rangos exactos de \(n\) y de la confianza dependen de la
+       subtarea (ver la tabla siguiente); el límite global de \(n\) lo fija la
+       subtarea 6.</p>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <p>Algunas subtareas usan solo un subconjunto de los protocolos, como se muestra en
+       la tabla.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>\(n\)</th><th>Confianza</th><th>Protocolos usados</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">11</td><td>\(2 \le n \le 10\)</td><td>\(1 \le \text{conf} \le 10^6\)</td><td>Los tres protocolos</td></tr>
+          <tr><td>2</td><td class="pts">8</td><td>\(2 \le n \le 1\,000\)</td><td>\(1 \le \text{conf} \le 10^6\)</td><td>Solo MyFriendsAreYourFriends</td></tr>
+          <tr><td>3</td><td class="pts">8</td><td>\(2 \le n \le 1\,000\)</td><td>\(1 \le \text{conf} \le 10^6\)</td><td>Solo WeAreYourFriends</td></tr>
+          <tr><td>4</td><td class="pts">19</td><td>\(2 \le n \le 1\,000\)</td><td>\(1 \le \text{conf} \le 10^6\)</td><td>Solo IAmYourFriend</td></tr>
+          <tr><td>5</td><td class="pts">23</td><td>\(2 \le n \le 1\,000\)</td><td>Todas las confianzas valen \(1\)</td><td>MyFriendsAreYourFriends e IAmYourFriend</td></tr>
+          <tr><td>6</td><td class="pts">31</td><td>\(2 \le n \le 100\,000\)</td><td>\(1 \le \text{conf} \le 10^4\)</td><td>Los tres protocolos</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>El ejemplo de la red de arriba corresponde a esta llamada:</p>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>n = 6
+confidence = [13, 3, 6, 20, 10, 15]
+host       = [ -, 0, 0,  1,  2,  0]
+protocol   = [ -, 0, 1,  2,  1,  0]
+
+findSample(n, confidence, host, protocol)</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>35</pre></div>
+    </div>
+    <p>La entrada equivalente para el evaluador de muestra es:</p>
+    <div class="io"><pre>6
+13 3 6 20 10 15
+0 0 0 1 1 2 2 1 0 0</pre></div>
+    <p class="note">La mejor muestra es \(\{3, 5\}\): las personas \(3\) y \(5\) no son
+       amigas entre sí, y su confianza suma \(20 + 15 = 35\), el máximo posible. (Las
+       posiciones \(\text{host}[0]\) y \(\text{protocol}[0]\), marcadas con “\(-\)”,
+       están indefinidas y no se usan.)</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Greedy</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una red social construida agregando personas una por una: cada persona
+       \(i\ge 1\) entra conectada a <code>host[i]</code> según un protocolo
+       (<code>0</code> = solo al anfitrión; <code>1</code> = a los amigos del anfitrión
+       pero no a él; <code>2</code> = al anfitrión y a sus amigos). Implementa
+       <code>findSample(...)</code> que regresa la <strong>máxima confianza total de un
+       conjunto independiente ponderado</strong> del grafo de amistades (una muestra sin
+       parejas de amigos). Es funcional: el grader llama tu función una vez y reporta el
+       entero que devuelve.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 10^5\) en \(1\) s exige algo cercano a \(O(n)\): el conjunto
+                independiente máximo (MIS) es NP-difícil en general, así que la
+                estructura de <em>construcción</em> debe ser la clave. Las subtareas
+                aíslan cada protocolo: la 1 (\(n\le 10\)) admite fuerza bruta
+                \(O(2^n)\); las 2, 3 y 4 te dejan ver qué grafo produce cada protocolo
+                por separado; la 5 (todo \(1\)) sugiere emparejamientos; la 6 lo junta
+                todo.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué estás calculando, en lenguaje de grafos?</summary>
+      <div class="body">
+        <p class="q">Si dibujas a las personas como vértices y las amistades como
+           aristas, ¿qué es una “muestra sin parejas de amigos”? ¿Y “la de máxima
+           confianza total”?</p>
+        <p>Es un <strong>conjunto independiente de peso máximo</strong> (MIS ponderado):
+           eliges vértices sin aristas entre ellos maximizando la suma de
+           <code>confidence</code>. En un grafo arbitrario eso es NP-difícil… pero este
+           grafo <strong>no</strong> es arbitrario: se construye agregando personas con
+           reglas muy rígidas. ¿Qué estructura impone esa construcción?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 2 y 3: ¿qué grafo crea cada protocolo solo?</summary>
+      <div class="body">
+        <p class="q">Si <em>solo</em> se usa MyFriendsAreYourFriends, ¿alguien llega a
+           tener un amigo? Y si <em>solo</em> se usa WeAreYourFriends, ¿cómo se ven las
+           amistades tras unas cuantas etapas?</p>
+        <p><strong>Subtarea 2 (solo MyFriends).</strong> La persona \(0\) empieza sin
+           amigos. Cada nueva persona se hace amiga de los amigos <em>actuales</em> del
+           anfitrión… que no existen, porque nadie llega a tener amigos. El grafo queda
+           <strong>sin aristas</strong> ⇒ la muestra óptima es <em>todo el mundo</em>:
+           respuesta \(=\sum_i \text{conf}[i]\).</p>
+        <p><strong>Subtarea 3 (solo WeAre).</strong> Aquí cada persona se hace amiga del
+           anfitrión y de sus amigos. Por inducción el grafo es una
+           <strong>clique</strong> (todos amigos de todos) ⇒ la muestra solo puede tener
+           <em>una</em> persona: respuesta \(=\max_i \text{conf}[i]\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 4 (solo IAmYourFriend): es un árbol</summary>
+      <div class="body">
+        <p class="q">Con solo IAmYourFriend, cada persona nueva se conecta con
+           exactamente una arista al anfitrión. ¿Qué estructura tiene \(n-1\) aristas y
+           es conexa sin ciclos?</p>
+        <p>Un <strong>árbol</strong> (la raíz es la persona \(0\)). El MIS ponderado en
+           un árbol se resuelve con DP clásica: para cada vértice \(x\) lleva dos
+           valores,
+           \[ p(x) = \text{mejor suma de un conjunto independiente que SÍ usa } x, \quad
+              q(x) = \text{mejor suma que NO usa } x. \]
+           Combinando hijos: si tomas \(x\), sus hijos no pueden tomarse; si no lo tomas,
+           cada hijo aporta su mejor opción. ¿Podrías hacer ese mismo DP <strong>sin</strong>
+           construir explícitamente el árbol, aprovechando que <code>host[i] &lt; i</code>?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 5 (IAm + MyFriends, confianzas 1): emparejamiento</summary>
+      <div class="body">
+        <p class="q">Con todas las confianzas iguales a \(1\), maximizar la suma es
+           maximizar el <em>tamaño</em> del conjunto independiente. ¿Conoces un teorema
+           que relacione el conjunto independiente máximo con el emparejamiento máximo en
+           grafos bipartitos?</p>
+        <p>Combinando IAmYourFriend y MyFriendsAreYourFriends el grafo resulta
+           <strong>bipartito</strong>. Por el teorema de König, en un grafo bipartito el
+           tamaño del conjunto independiente máximo es
+           \(\;|V| - (\text{emparejamiento máximo})\). Esa es la idea “oficial” de la
+           subtarea 5 (\(n\) chico ⇒ alcanza un emparejamiento bipartito). Pero fíjate
+           que sigues necesitando una sola idea que <em>unifique</em> los tres
+           protocolos para la subtarea 6… ¿qué tienen en común “colapsar” a la persona
+           nueva hacia su anfitrión en los tres casos?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave: colapsar hacia atrás</summary>
+      <div class="body">
+        <p class="q">Como <code>host[y] &lt; y</code> siempre, si procesas a las
+           personas en orden <strong>inverso</strong> de construcción (\(y = n-1, \dots,
+           1\)) y “absorbes” a \(y\) dentro de su anfitrión \(x = \text{host}[y]\), el
+           anfitrión todavía no ha sido absorbido. ¿Qué relación de vecindad tiene \(y\)
+           respecto a \(x\) en cada protocolo?</p>
+        <p>Cuando \(y\) entró, su vecindad entre las personas anteriores quedó
+           <em>determinada por \(x\)</em>:</p>
+        <ul>
+          <li><strong>IAmYourFriend:</strong> \(y\) es una hoja colgada solo de \(x\).</li>
+          <li><strong>MyFriendsAreYourFriends:</strong> \(y\) tiene los
+              <em>mismos</em> vecinos externos que \(x\), pero <strong>no</strong> hay
+              arista \(x\!-\!y\) (son “gemelos” no adyacentes).</li>
+          <li><strong>WeAreYourFriends:</strong> \(y\) tiene los mismos vecinos externos
+              que \(x\) <strong>y además</strong> la arista \(x\!-\!y\) (“gemelos”
+              adyacentes).</li>
+        </ul>
+        <p>Eso permite <strong>fusionar</strong> \(y\) dentro de \(x\) manteniendo solo
+           los dos números \(p(x)\) y \(q(x)\) del “supernodo”. Cada fusión es \(O(1)\)
+           y al terminar la respuesta sale de \(p(0)\) y \(q(0)\). Solo falta deducir,
+           para cada protocolo, cómo se combinan \((p,q)\) del anfitrión con
+           \((p',q')\) de \(y\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Mantén para cada persona \(x\) dos valores:
+           \(p(x)\) = mejor suma de una muestra que <em>incluye</em> a \(x\), y
+           \(q(x)\) = mejor suma de una muestra que <em>no</em> lo incluye. Al inicio
+           \(p(x) = \text{conf}[x]\) y \(q(x) = 0\). Procesa \(y = n-1, n-2, \dots, 1\)
+           y fusiona \(y\) dentro de \(x = \text{host}[y]\) usando la regla del protocolo.
+           La respuesta es \(\max\bigl(p(0), q(0)\bigr)\).</p>
+
+        <p><strong>Las tres reglas de combinación.</strong> Sean \((p, q)\) los valores
+           del anfitrión \(x\) y \((p', q')\) los de \(y\):</p>
+        <ul>
+          <li><strong>IAmYourFriend</strong> (solo arista \(x\!-\!y\); \(y\) es hoja):
+              \[ p \leftarrow p + q', \qquad
+                 q \leftarrow \max(q + p',\; q + q'). \]
+              Si \(x\) está dentro, \(y\) debe quedar fuera (\(p+q'\)); si \(x\) está
+              fuera, \(y\) puede entrar o no.</li>
+          <li><strong>MyFriendsAreYourFriends</strong> (gemelos <em>sin</em> arista
+              \(x\!-\!y\)):
+              \[ p \leftarrow \max(p + q',\; q + p',\; p + p'), \qquad
+                 q \leftarrow q + q'. \]
+              Como \(x\) y \(y\) no son amigos pero comparten vecinos, pueden estar los
+              <em>dos</em> dentro (\(p+p'\)); por eso aparece esa tercera opción.</li>
+          <li><strong>WeAreYourFriends</strong> (gemelos <em>con</em> arista \(x\!-\!y\)):
+              \[ p \leftarrow \max(p + q',\; q + p'), \qquad
+                 q \leftarrow q + q'. \]
+              Igual que el anterior pero ahora sí hay arista \(x\!-\!y\), así que
+              <em>no</em> se permite el caso “ambos dentro”.</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> En MyFriends y WeAre, la persona \(y\)
+           tiene exactamente la misma vecindad externa que \(x\): es un “gemelo”. Por eso
+           basta con un par \((p, q)\) para el supernodo \(\{x\} \cup (\text{absorbidos})\):
+           \(p\) representa “el representante está dentro de la muestra” y \(q\) “está
+           fuera”. La única diferencia entre los dos protocolos es si existe la arista
+           \(x\!-\!y\) (WeAre la crea, MyFriends no), lo que habilita o prohíbe el caso
+           “ambos dentro”. IAmYourFriend es el caso del árbol: \(y\) cuelga de \(x\) y la
+           combinación es el DP clásico de conjunto independiente en árbol. Procesar en
+           orden inverso garantiza que al fusionar \(y\) su anfitrión \(x\) aún conserva
+           intactos sus \((p, q)\), porque \(\text{host}[y] &lt; y\). Esta única rutina
+           cubre <em>todas</em> las subtareas: con solo MyFriends queda el grafo vacío,
+           con solo WeAre la clique, con solo IAm el árbol, y los casos mixtos salen del
+           mismo barrido.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion findSample(n, confidence, host, protocol):
+    para x = 0 .. n-1:
+        p[x] = confidence[x]        // mejor suma con x DENTRO de la muestra
+        q[x] = 0                    // mejor suma con x FUERA de la muestra
+
+    para y = n-1 bajando hasta 1:
+        x = host[y]
+        pp = p[x];  qq = q[x]       // (p, q) del anfitrion
+        py = p[y];  qy = q[y]       // (p', q') de y
+
+        si protocol[y] == 0:                  // IAmYourFriend  (hoja)
+            nuevoP = pp + qy
+            nuevoQ = max(qq + py, qq + qy)
+        si protocol[y] == 1:                  // MyFriendsAreYourFriends (gemelo SIN arista)
+            nuevoP = max(pp + qy, qq + py, pp + py)
+            nuevoQ = qq + qy
+        si protocol[y] == 2:                  // WeAreYourFriends (gemelo CON arista)
+            nuevoP = max(pp + qy, qq + py)
+            nuevoQ = qq + qy
+
+        p[x] = nuevoP
+        q[x] = nuevoQ
+
+    regresa max(p[0], q[0])</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> una sola pasada inversa con combinación
+           \(O(1)\) por persona ⇒ <strong>\(O(n)\)</strong> en tiempo y \(O(n)\) en
+           memoria (los arreglos \(p[\,]\) y \(q[\,]\)). Para \(n = 10^5\) corre en
+           milisegundos, muy dentro de \(1\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Aunque la firma regresa int, las sumas parciales p[ ] y q[ ] pueden superar
+2^31 durante el barrido (hasta ~1e5 personas con confianza ~1e6). Lleva p[ ] y
+q[ ] como long long y castea el resultado final a int al regresar
+(el optimo cabe en int en los tests oficiales).</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
