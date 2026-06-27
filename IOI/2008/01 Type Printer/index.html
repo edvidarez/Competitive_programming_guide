@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2008 · Tarea 1 — Type Printer</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:var(--code)}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px;text-align:left}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2008 · Día 1 · El Cairo, Egipto</div>
+    <h1>Tarea <span class="num">1</span> — Type Printer</h1>
+    <p class="note">Impresora de tipos móviles · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Necesitas imprimir \(N\) palabras en una <strong>impresora de tipos
+       móviles</strong>. Las impresoras de tipos móviles son esas viejas máquinas
+       en las que hay que colocar pequeñas piezas de metal (cada una con una letra)
+       para armar las palabras; luego se presiona una hoja de papel contra ellas
+       para imprimir la palabra. La impresora que tienes te permite hacer
+       cualquiera de las siguientes operaciones:</p>
+    <ul>
+      <li><strong>Agregar una letra</strong> al final de la palabra que está
+          actualmente en la impresora.</li>
+      <li><strong>Quitar la última letra</strong> del final de la palabra que está
+          actualmente en la impresora. Solo puedes hacer esto si hay al menos una
+          letra en la impresora.</li>
+      <li><strong>Imprimir</strong> la palabra que está actualmente en la
+          impresora.</li>
+    </ul>
+
+    <p>Al inicio, la impresora está <strong>vacía</strong>: no tiene ninguna pieza
+       de metal con letra. Al terminar de imprimir, <strong>se te permite dejar
+       algunas letras en la impresora</strong>. Además, puedes imprimir las
+       palabras <strong>en el orden que quieras</strong>.</p>
+
+    <p>Como cada operación toma tiempo, quieres <strong>minimizar el número total
+       de operaciones</strong>.</p>
+
+    <h3>Tarea</h3>
+    <p>Debes escribir un programa que, dadas las \(N\) palabras que quieres
+       imprimir, encuentre el <strong>número mínimo de operaciones</strong>
+       necesarias para imprimir todas las palabras en cualquier orden, y produzca
+       <strong>una</strong> de esas secuencias de operaciones.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la <strong>entrada estándar</strong> lo siguiente:</p>
+    <ul>
+      <li>La línea 1 contiene el entero \(N\), el número de palabras que necesitas
+          imprimir.</li>
+      <li>Cada una de las siguientes \(N\) líneas contiene una palabra. Cada palabra
+          consta únicamente de letras minúsculas (<code>'a'</code> – <code>'z'</code>)
+          y tiene una longitud entre 1 y 20, inclusive. Todas las palabras son
+          <strong>distintas</strong>.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir a la <strong>salida estándar</strong> lo
+       siguiente:</p>
+    <ul>
+      <li>La línea 1 debe contener un entero \(M\) que representa el número mínimo
+          de operaciones requeridas para imprimir las \(N\) palabras.</li>
+      <li>Cada una de las siguientes \(M\) líneas debe contener
+          <strong>un solo carácter</strong>. Estos caracteres describen la secuencia
+          de operaciones realizadas, así:
+        <ul>
+          <li>Agregar una letra se representa con <strong>la letra misma en
+              minúscula</strong>.</li>
+          <li>Quitar la última letra se representa con el carácter
+              <code>'-'</code> (menos, código ASCII 45).</li>
+          <li>Imprimir la palabra actual se representa con el carácter
+              <code>'P'</code> (letra P mayúscula).</li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="note-box">
+      <strong>Es una tarea con juez especial (<em>special judge</em>):</strong>
+      por lo general hay <em>muchas</em> secuencias de operaciones que alcanzan el
+      mínimo \(M\) (cualquier orden de impresión válido sirve). El evaluador acepta
+      <strong>cualquier secuencia óptima</strong>: basta con que use exactamente
+      \(M\) operaciones, imprima las \(N\) palabras pedidas (una <code>P</code> por
+      palabra) y nunca aplique <code>'-'</code> con la impresora vacía. No se exige
+      que tu salida coincida carácter por carácter con la del ejemplo.
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas con mínimo agregado.</strong> IOI 2008 usó calificación
+      <em>por caso de prueba</em> (no hay grupos de subtareas con regla del mínimo).
+      El enunciado documenta una sola división de puntos: <em>“Para varios tests,
+      que valen en total 40 puntos, \(N\) no excederá 18.”</em> Es decir, 40 de los
+      100 puntos provienen de tests pequeños (\(N \le 18\), totalmente
+      forzables por fuerza bruta / con cualquier método correcto) y los 60 puntos
+      restantes provienen de los tests de tamaño completo, hasta \(N \le 25{,}000\).
+      No hay una estructura de subtareas “todo o nada”: es simplemente un reparto de
+      dificultad 40/60 entre tests individuales.
+    </div>
+
+    <p class="note"><strong>Retroalimentación detallada:</strong> durante el
+       concurso, tus envíos de esta tarea se evaluaban sobre parte de los datos de
+       prueba oficiales, mostrándote un resumen de los resultados.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No aparece en el enunciado del PDF</td></tr>
+        <tr><td>Límite de memoria</td><td>No aparece en el enunciado del PDF</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de palabras</td><td><span class="badge">\(1 \le N \le 25{,}000\)</span></td></tr>
+        <tr><td>Longitud de cada palabra</td><td><span class="badge">entre 1 y 20 letras</span></td></tr>
+        <tr><td>Alfabeto</td><td><span class="badge">minúsculas <code>'a'</code>–<code>'z'</code></span></td></tr>
+        <tr><td>Palabras</td><td><span class="badge">todas distintas</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+print
+the
+poem</pre></div>
+      <div class="io"><h4>Salida</h4><pre>20
+t
+h
+e
+P
+-
+-
+-
+p
+o
+e
+m
+P
+-
+-
+-
+r
+i
+n
+t
+P</pre></div>
+    </div>
+    <p class="note">La primera línea de la salida es \(M = 20\): el número mínimo de
+       operaciones. Las 20 líneas siguientes son las operaciones: las letras
+       minúsculas agregan, <code>'-'</code> quita la última letra y <code>'P'</code>
+       imprime. Aquí se imprime <code>the</code>, luego <code>poem</code> y al final
+       <code>print</code>, dejando esta última palabra (la más larga) dentro de la
+       impresora para no gastar operaciones de borrado al terminar.</p>
+
+    <figure>
+      <svg viewBox="0 0 600 450" role="img"
+           aria-label="Trie de las palabras print, the y poem, con el camino a la palabra más larga resaltado en verde">
+        <!-- Aristas (se dibujan primero) -->
+        <!-- normales -->
+        <line x1="300" y1="36" x2="150" y2="104" stroke="#56608a" stroke-width="2"/>
+        <line x1="150" y1="104" x2="150" y2="172" stroke="#56608a" stroke-width="2"/>
+        <line x1="150" y1="172" x2="150" y2="240" stroke="#56608a" stroke-width="2"/>
+        <line x1="430" y1="104" x2="360" y2="172" stroke="#56608a" stroke-width="2"/>
+        <line x1="360" y1="172" x2="360" y2="240" stroke="#56608a" stroke-width="2"/>
+        <line x1="360" y1="240" x2="360" y2="308" stroke="#56608a" stroke-width="2"/>
+        <!-- camino marcado (raiz -> p -> r -> i -> n -> t) -->
+        <line x1="300" y1="36" x2="430" y2="104" stroke="#34d399" stroke-width="3.5"/>
+        <line x1="430" y1="104" x2="500" y2="172" stroke="#34d399" stroke-width="3.5"/>
+        <line x1="500" y1="172" x2="500" y2="240" stroke="#34d399" stroke-width="3.5"/>
+        <line x1="500" y1="240" x2="500" y2="308" stroke="#34d399" stroke-width="3.5"/>
+        <line x1="500" y1="308" x2="500" y2="376" stroke="#34d399" stroke-width="3.5"/>
+
+        <!-- Anillos de fin de palabra -->
+        <circle cx="150" cy="240" r="14" fill="none" stroke="#5b8cff" stroke-width="2"/>
+        <circle cx="360" cy="308" r="14" fill="none" stroke="#5b8cff" stroke-width="2"/>
+        <circle cx="500" cy="376" r="14" fill="none" stroke="#5b8cff" stroke-width="2"/>
+
+        <!-- Nodos -->
+        <circle cx="300" cy="36"  r="9" fill="#34d399"/>
+        <circle cx="150" cy="104" r="9" fill="#9aa6c4"/>
+        <circle cx="430" cy="104" r="9" fill="#34d399"/>
+        <circle cx="150" cy="172" r="9" fill="#9aa6c4"/>
+        <circle cx="360" cy="172" r="9" fill="#9aa6c4"/>
+        <circle cx="500" cy="172" r="9" fill="#34d399"/>
+        <circle cx="150" cy="240" r="9" fill="#9aa6c4"/>
+        <circle cx="360" cy="240" r="9" fill="#9aa6c4"/>
+        <circle cx="500" cy="240" r="9" fill="#34d399"/>
+        <circle cx="360" cy="308" r="9" fill="#9aa6c4"/>
+        <circle cx="500" cy="308" r="9" fill="#34d399"/>
+        <circle cx="500" cy="376" r="9" fill="#34d399"/>
+
+        <!-- Etiquetas de aristas (las letras del trie) -->
+        <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="16" font-weight="700">
+          <text x="214" y="66"  fill="#cdd6f4" text-anchor="middle">t</text>
+          <text x="386" y="66"  fill="#34d399" text-anchor="middle">p</text>
+          <text x="136" y="143" fill="#cdd6f4" text-anchor="end">h</text>
+          <text x="386" y="143" fill="#cdd6f4" text-anchor="start">o</text>
+          <text x="478" y="143" fill="#34d399" text-anchor="end">r</text>
+          <text x="136" y="211" fill="#cdd6f4" text-anchor="end">e</text>
+          <text x="346" y="211" fill="#cdd6f4" text-anchor="end">e</text>
+          <text x="514" y="211" fill="#34d399" text-anchor="start">i</text>
+          <text x="346" y="279" fill="#cdd6f4" text-anchor="end">m</text>
+          <text x="514" y="279" fill="#34d399" text-anchor="start">n</text>
+          <text x="514" y="347" fill="#34d399" text-anchor="start">t</text>
+        </g>
+
+        <!-- Palabras (hojas / fin de palabra) -->
+        <g font-family="system-ui,sans-serif" font-size="13" fill="#9aa6c4">
+          <text x="300" y="22" text-anchor="middle">raíz (impresora vacía)</text>
+          <text x="124" y="245" text-anchor="end">the</text>
+          <text x="360" y="332" text-anchor="middle">poem</text>
+          <text x="500" y="400" text-anchor="middle" fill="#34d399" font-weight="700">print</text>
+          <text x="500" y="416" text-anchor="middle">(palabra más larga)</text>
+        </g>
+
+        <!-- Leyenda -->
+        <g font-family="system-ui,sans-serif" font-size="12.5" fill="#9aa6c4">
+          <line x1="40" y1="300" x2="72" y2="300" stroke="#34d399" stroke-width="3.5"/>
+          <text x="80" y="304">camino a la palabra más larga (se visita al final)</text>
+          <circle cx="56" cy="338" r="9" fill="#9aa6c4"/>
+          <circle cx="56" cy="338" r="14" fill="none" stroke="#5b8cff" stroke-width="2"/>
+          <text x="80" y="342">fin de palabra → operación P</text>
+        </g>
+      </svg>
+      <figcaption><strong>Figura.</strong> Trie (árbol de prefijos) de
+        \(\{\texttt{print},\ \texttt{the},\ \texttt{poem}\}\). Cada arista lleva una
+        letra: bajar por una arista = agregar esa letra; subir = <code>'-'</code>.
+        Los nodos con anillo azul son fin de palabra (operación <code>P</code>). El
+        camino verde lleva a la palabra más larga, <code>print</code>: se recorre
+        <em>al final</em> del DFS, así el recorrido termina en su hoja y nos
+        ahorramos los 5 <code>'-'</code> del regreso. Hay \(E = 11\) aristas, \(N = 3\)
+        y la más larga mide \(5\), de modo que
+        \(M = 2\cdot 11 + 3 - 5 = 20\).</figcaption>
+    </figure>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Strings</span>
+      <span class="ptag">Trie (árbol de prefijos)</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">DFS</span>
+      <span class="ptag">Greedy</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N \le 25{,}000\) palabras distintas (longitud \(\le 20\)). Una
+       impresora de tipos móviles empieza vacía y admite tres operaciones: agregar
+       una letra al final, quitar la última letra e imprimir la palabra actual.
+       Debes imprimir las \(N\) palabras en cualquier orden usando el
+       <strong>mínimo número de operaciones</strong>, y emitir una secuencia óptima
+       de operaciones (juez especial: cualquier óptima vale).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>La suma de longitudes es \(\le 25{,}000 \times 20 = 500{,}000\), así
+                que un trie tiene a lo más \(\sim 500{,}001\) nodos: cabe de sobra.
+                La salida puede llegar a \(\sim 1\,000\,000\) de líneas (cota
+                \(2E+N\) con \(E \le 500{,}000\); el test más grande da
+                \(M = 900{,}980\)) ⇒ usa salida en buffer. La división
+                de 40 puntos con \(N \le 18\) sugiere que ahí cualquier método
+                razonable basta; los 60 puntos restantes piden la solución lineal.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar la impresora?</summary>
+      <div class="body">
+        <p class="q">El estado de la impresora es siempre un <em>prefijo</em> de
+           alguna palabra. ¿Qué estructura agrupa de forma natural todos los
+           prefijos comunes de un montón de palabras?</p>
+        <p>Construye un <strong>trie</strong> (árbol de prefijos) con las \(N\)
+           palabras. La impresora vacía es la <strong>raíz</strong>; “agregar la
+           letra \(c\)” es bajar por la arista etiquetada \(c\) (un nivel más
+           profundo); “quitar la última letra” es subir al padre; “imprimir” marca
+           que el nodo actual es fin de una palabra. Así, toda secuencia de
+           operaciones es un <em>paseo</em> por el trie que empieza y (casi) termina
+           en la raíz.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por el caso “regresar a la impresora vacía”</summary>
+      <div class="body">
+        <p class="q">Olvida por un momento las \(N\) impresiones (siempre hay
+           exactamente una <code>P</code> por palabra). Si exiges <em>terminar con
+           la impresora vacía</em>, ¿cuántas veces tienes que cruzar cada arista del
+           trie para visitar todos los nodos?</p>
+        <p>Como el trie es un árbol, para entrar al subárbol que cuelga de una arista
+           hay que <strong>bajar</strong> por ella una vez, y para salir hay que
+           <strong>subir</strong> una vez. Cualquier recorrido que visite todos los
+           nodos y regrese a la raíz usa cada arista <strong>exactamente dos
+           veces</strong>: \(2E\) operaciones de agregar/quitar, donde \(E\) = número
+           de aristas del trie. Cualquier DFS logra esa cota, así que \(2E\) es
+           óptimo para la variante “regresar a la impresora vacía”. Sumando las
+           \(N\) impresiones, ese costo sería \(2E + N\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La libertad que da “dejar letras al final”</summary>
+      <div class="body">
+        <p class="q">El enunciado te permite <em>dejar letras en la impresora al
+           terminar</em>. ¿Qué operaciones te ahorra eso, y de cuál palabra
+           conviene ahorrarlas?</p>
+        <p>La única libertad es que <strong>no</strong> hace falta borrar la
+           <em>última</em> palabra que imprimes: puedes detenerte justo después de su
+           <code>P</code> final. Los <code>'-'</code> que te ahorras son exactamente
+           la <strong>profundidad</strong> de esa última palabra, es decir, su
+           longitud. Para ahorrar lo más posible, deja en la impresora la palabra
+           <strong>globalmente más larga</strong>.</p>
+        <p>Conclusión (la fórmula del mínimo):</p>
+        <p>\[ M = 2E + N - L_{\max} \]</p>
+        <p>donde \(E\) = número de aristas del trie, \(N\) = número de palabras (una
+           <code>P</code> cada una) y \(L_{\max}\) = longitud de la palabra más larga
+           (una hoja más profunda del trie).</p>
+        <p class="note">Ojo: debes dejar la <em>única</em> palabra más larga, no una
+           cualquiera; elegir una más corta como última pierde puntos (sale un \(M\)
+           subóptimo).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿Cómo forzar que el recorrido termine en la palabra más larga?</summary>
+      <div class="body">
+        <p class="q">Un DFS normal puede terminar en cualquier hoja. ¿Cómo
+           garantizas que el paseo acabe justo en la hoja de la palabra más larga,
+           para poder recortar ahí los <code>'-'</code> del regreso?</p>
+        <p>Elige una palabra más larga \(W\) y <strong>marca todo su camino
+           raíz→hoja</strong>. Luego, en el DFS, en <em>cada</em> nodo recorre
+           primero los hijos <strong>no marcados</strong> y deja el hijo marcado
+           <strong>al final</strong>. Como el hijo marcado es siempre el último a lo
+           largo del camino de \(W\), el DFS termina exactamente en la hoja de \(W\).
+           La recursión, al desenrollarse, emitiría una corrida final de
+           \(L_{\max}\) signos <code>'-'</code>: basta <strong>borrar esa corrida
+           final</strong> (equivalente: detenerse justo después de la última
+           <code>P</code>).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Modela la impresora como un trie. El costo base de
+           visitar todo el árbol y volver a la raíz es \(2E\) (cada arista, bajada y
+           subida), más \(N\) impresiones. La única optimización posible es no borrar
+           la última palabra impresa; para maximizar el ahorro, esa última palabra
+           debe ser la más larga. De ahí \(M = 2E + N - L_{\max}\). Para
+           <em>construir</em> una secuencia óptima, haz un DFS que visite el camino
+           de la palabra más larga al final y recorta los <code>'-'</code>
+           sobrantes.</p>
+
+        <p><strong>Construcción paso a paso:</strong></p>
+        <ol>
+          <li>Inserta las \(N\) palabras en el trie; recuerda una palabra más larga
+              \(W\) y marca como <code>enCamino</code> todos los nodos del camino
+              raíz→hoja de \(W\).</li>
+          <li>DFS desde la raíz. En cada nodo: si es fin de palabra, emite
+              <code>'P'</code>. Luego recorre los hijos, pero <strong>siempre visita
+              el hijo marcado al último</strong> (primero los no marcados). Para cada
+              hijo: emite su letra (bajar), recurre, emite <code>'-'</code> (subir).</li>
+          <li>Como el hijo marcado va al final en cada nodo del camino de \(W\), el
+              DFS termina en la hoja de \(W\). Quita la <strong>corrida final de
+              <code>'-'</code></strong> (su longitud es justo \(L_{\max}\)). Lo que
+              queda es una secuencia óptima de longitud \(M\).</li>
+        </ol>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N
+T = trie con solo la raíz
+W = ""                         // la palabra más larga vista
+para cada palabra s de las N:
+    insertar s en T            // crea los nodos/aristas que falten
+    marcar el nodo final de s como FIN_DE_PALABRA
+    si longitud(s) > longitud(W): W = s
+
+// marca el camino raíz -> hoja de W
+para cada nodo u en el camino de W: u.enCamino = verdadero
+
+salida = []                    // lista de caracteres de operación
+
+funcion DFS(nodo):
+    si nodo.finDePalabra: salida.append('P')
+    // hijos NO marcados primero; el hijo marcado (si existe) al FINAL
+    para cada hijo c de nodo, con los no-marcados antes que el marcado:
+        salida.append(letra(c))     // bajar = agregar letra
+        DFS(c)
+        salida.append('-')          // subir = quitar letra
+
+DFS(raíz)
+
+// recorta la corrida final de '-' (el regreso desde la hoja de W);
+// equivale a detenerse justo tras la última 'P'
+mientras salida no esté vacía y salida.ultimo == '-':
+    quitar el último de salida
+
+imprimir longitud(salida)      // = M = 2*E + N - L_max
+imprimir cada carácter de salida en su propia línea</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Visitar todos los nodos de un árbol
+           y regresar a la raíz cruza cada arista exactamente dos veces, así que
+           \(2E\) es una cota inferior alcanzada por cualquier DFS; con las \(N\)
+           impresiones obligatorias, \(2E+N\) es óptimo para “terminar vacío”. La
+           única operación evitable es el borrado final de la última palabra, cuyo
+           tamaño máximo es \(L_{\max}\); dejar la más larga al final ahorra
+           exactamente \(L_{\max}\) y no se puede ahorrar más (solo se evita borrar
+           <em>una</em> palabra). Forzar el hijo marcado al final hace que el paseo
+           termine en la hoja de \(W\), de modo que la corrida recortada de
+           <code>'-'</code> mide justo \(L_{\max}\).</p>
+
+        <p><strong>Cómo se sube de los 40 a los 100 puntos.</strong> Con \(N \le 18\)
+           (40 puntos) cualquier implementación correcta del trie + DFS pasa sin
+           preocuparte por constantes. Para los 60 puntos restantes (\(N\) hasta
+           \(25{,}000\)) lo único extra es cuidar la <strong>memoria del trie</strong>
+           (a lo más \(\sim 5\times10^5\) nodos) y el <strong>volumen de salida</strong>
+           (hasta \(\sim 10^6\) líneas, cota \(2E+N\)): construye toda la salida en un
+           buffer y escríbela de una sola vez.</p>
+
+        <p><strong>Complejidad:</strong> \(O(S)\) en tiempo y memoria, con
+           \(S = \) suma de longitudes \(\le 500{,}000\). La salida tiene tamaño
+           \(O(2E + N)\). La profundidad del trie es \(\le 20\), así que la recursión
+           del DFS nunca desborda la pila aunque \(N = 25{,}000\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Con M de hasta ~1,000,000 de líneas, la E/S es el cuello de botella:
+- escribe en un solo std::string (o buffer char[]) y vuélcalo con
+  una sola llamada (fwrite / std::cout &lt;&lt; buffer), o usa
+  ios::sync_with_stdio(false).
+- el trie con hijos en un arreglo fijo [26] por nodo es lo más simple
+  y rápido; la profundidad &lt;= 20 hace innecesaria una pila explícita.</pre>
+          <p class="note">Método equivalente sin trie (también 100 puntos): toma una
+             palabra más larga \(W\); ordena todas las palabras por “longitud del
+             prefijo común con \(W\)” ascendente (clave primaria) y por la palabra en
+             orden ascendente (clave secundaria); emite las transiciones naturales
+             de agregar/imprimir/quitar entre palabras consecutivas, sin borrar la
+             última. Reproduce el mismo orden del DFS con un factor \(\log\) extra por
+             el ordenamiento.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
