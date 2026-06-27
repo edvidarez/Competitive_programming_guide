@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2005 · Tarea 3 — Mountain</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  .note-box{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 14px;margin:14px 0;font-size:15px;color:var(--muted)}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2005 · Día 1 · Nowy Sącz, Polonia</div>
+    <h1>Tarea <span class="num">3</span> — Mountain</h1>
+    <p class="note">Montaña (la montaña rusa simulada) · PDF original (oficial):
+       <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El Parque de Diversiones de la Montaña estrenó una flamante montaña rusa
+       simulada. La vía simulada está formada por \(n\) <em>rieles</em> unidos
+       extremo con extremo, con el inicio del primer riel fijo a una elevación de
+       \(0\). Byteman, el operador, puede <strong>reconfigurar</strong> la vía a su
+       antojo ajustando el cambio de elevación de un tramo de rieles consecutivos.
+       El cambio de elevación de los demás rieles no se ve afectado. Cada vez que se
+       ajustan rieles, el tramo que sigue se sube o se baja lo necesario para que la
+       vía quede conectada, manteniendo siempre el inicio a elevación \(0\). La
+       figura más abajo ilustra dos reconfiguraciones de ejemplo.</p>
+
+    <p>Cada <strong>viaje</strong> (ride) se inicia lanzando el coche con la energía
+       justa para alcanzar una altura \(h\). Es decir, el coche sigue avanzando
+       mientras la elevación de la vía <strong>no exceda</strong> \(h\) y mientras no
+       se llegue al final de la vía.</p>
+
+    <p>Dado el registro de todos los viajes y de todos los cambios de configuración
+       del día, calcula, para cada viaje, el <strong>número de rieles que recorre el
+       coche antes de detenerse</strong>.</p>
+
+    <p>Internamente, el simulador representa la vía como una sucesión de \(n\)
+       cambios de elevación, uno por riel. El \(i\)-ésimo número \(d_i\) es el cambio
+       de elevación (en centímetros) sobre el \(i\)-ésimo riel. Supón que, tras
+       recorrer \(i-1\) rieles, el coche alcanzó una elevación de \(h\) centímetros;
+       entonces, tras recorrer \(i\) rieles, habrá alcanzado una elevación de
+       \(h + d_i\) centímetros.</p>
+
+    <p>Al principio los rieles están horizontales; es decir, \(d_i = 0\) para toda
+       \(i\). Los viajes y las reconfiguraciones se <strong>intercalan</strong> a lo
+       largo del día. Cada reconfiguración se especifica con tres números: \(a\),
+       \(b\) y \(D\). El tramo a ajustar consta de los rieles \(a\) hasta \(b\)
+       (inclusive). El cambio de elevación de cada riel del tramo se fija en \(D\):
+       o sea, \(d_i = D\) para toda \(a \le i \le b\).</p>
+
+    <p>Cada viaje se especifica con un solo número \(h\): la altura máxima que el
+       coche puede alcanzar.</p>
+
+    <div class="note-box">
+      <strong>Es una tarea «online» (reactiva):</strong> la entrada es una secuencia
+      de operaciones <em>intercaladas</em> —reconfiguraciones y viajes— que terminan
+      con un marcador de fin. Debes procesarlas en orden y, por cada viaje, producir
+      su respuesta. Conceptualmente cada viaje se contesta con el estado actual de la
+      vía (las reconfiguraciones previas ya aplicadas, las posteriores aún no).
+    </div>
+
+    <h2>Tarea</h2>
+    <p>Escribe un programa que:</p>
+    <ul>
+      <li>lea de la entrada estándar una secuencia de reconfiguraciones y viajes
+          intercalados,</li>
+      <li>por cada viaje calcule el número de rieles que recorre el coche,</li>
+      <li>escriba los resultados en la salida estándar.</li>
+    </ul>
+
+    <h2>Entrada</h2>
+    <p>La primera línea contiene un entero positivo \(n\): el número de rieles,
+       \(1 \le n \le 1\,000\,000\,000\). Las líneas siguientes contienen
+       reconfiguraciones intercaladas con viajes, seguidas de un marcador de fin.
+       Cada línea es una de estas:</p>
+    <ul>
+      <li><strong>Reconfiguración</strong> — la letra <code>I</code> y los enteros
+          \(a\), \(b\) y \(D\), todos separados por espacios simples
+          (\(1 \le a \le b \le n\), \(-1\,000\,000\,000 \le D \le 1\,000\,000\,000\)).</li>
+      <li><strong>Viaje</strong> — la letra <code>Q</code> y un entero \(h\)
+          (\(0 \le h \le 1\,000\,000\,000\)) separado por un espacio simple.</li>
+      <li>La letra <code>E</code> — el marcador de fin, que indica el final de los
+          datos de entrada.</li>
+    </ul>
+    <p>Puedes suponer que, en todo momento, la elevación de cualquier punto de la vía
+       está en el intervalo \([0,\ 1\,000\,000\,000]\) centímetros. La entrada tiene
+       a lo más \(100\,000\) líneas.</p>
+    <p>En el \(50\%\) de los casos de prueba se cumple \(1 \le n \le 20\,000\) y hay a
+       lo más \(1000\) líneas de entrada.</p>
+
+    <h2>Salida</h2>
+    <p>La \(i\)-ésima línea de la salida debe contener un entero: el número de rieles
+       que recorrió el coche durante el \(i\)-ésimo viaje.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de rieles</td><td><span class="badge">\(1 \le n \le 10^9\)</span></td></tr>
+        <tr><td>Líneas de entrada</td><td><span class="badge">a lo más \(100\,000\)</span></td></tr>
+        <tr><td>Reconfiguración <code>I a b D</code></td><td><span class="badge">\(1 \le a \le b \le n\)</span>, <span class="badge">\(-10^9 \le D \le 10^9\)</span></td></tr>
+        <tr><td>Viaje <code>Q h</code></td><td><span class="badge">\(0 \le h \le 10^9\)</span></td></tr>
+        <tr><td>Garantía</td><td>la elevación de todo punto siempre está en \([0,\ 10^9]\)</td></tr>
+        <tr><td>50% de los casos</td><td>\(n \le 20\,000\) y a lo más \(1000\) líneas</td></tr>
+      </table>
+    </div>
+
+    <h2>Calificación</h2>
+    <div class="note-box">
+      <strong>Sin subtareas acumulativas.</strong> Puntaje por caso de prueba (al
+      estilo IOI 2005): \(25\) casos de prueba, \(\approx 4\) puntos cada uno
+      \(= 100\). No hay subtareas con su propia regla de puntos: la frase del
+      enunciado «en el 50% de los casos \(n \le 20\,000\) y a lo más 1000 líneas»
+      solo describe la <em>distribución</em> de casos fáciles y difíciles, no una
+      subtarea formal.
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Para los datos de entrada de la izquierda, el resultado correcto es el de la
+       derecha:</p>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4
+Q 1
+I 1 4 2
+Q 3
+Q 1
+I 2 2 -1
+Q 3
+E</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4
+1
+0
+3</pre></div>
+    </div>
+
+    <p>Las dos reconfiguraciones del ejemplo cambian el perfil de la vía así (primero
+       <code>I 1 4 2</code>, después <code>I 2 2 -1</code>):</p>
+
+    <figure>
+      <svg viewBox="0 0 560 452" role="img"
+     aria-label="Tres perfiles de la via del ejemplo: inicial plano; tras I 1 4 2 con pendiente +2; tras I 2 2 -1. El eje x es el numero de riel, el eje y la elevacion, y los numeros sobre los segmentos son las pendientes d_i.">
+  <rect x="0" y="0" width="560" height="452" fill="#ffffff"/>
+  <text x="56" y="30" font-size="12.5" fill="#334155" font-family="sans-serif" font-weight="600">Inicial:  d = [0, 0, 0, 0]</text>
+  <line x1="56" y1="40" x2="56" y2="82" stroke="#9aa3b2" stroke-width="1.2"/>
+  <line x1="52" y1="70" x2="56" y2="70" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="74" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">0</text>
+  <line x1="52" y1="60" x2="56" y2="60" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="64" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">1</text>
+  <line x1="52" y1="50" x2="56" y2="50" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="54" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">2</text>
+  <line x1="52" y1="40" x2="56" y2="40" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="44" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">3</text>
+  <polyline points="70,70 180,70 290,70 400,70 510,70" fill="none" stroke="#111111" stroke-width="2.4"/>
+  <circle cx="70" cy="70" r="3.6" fill="#111111"/>
+  <circle cx="180" cy="70" r="3.6" fill="#111111"/>
+  <circle cx="290" cy="70" r="3.6" fill="#111111"/>
+  <circle cx="400" cy="70" r="3.6" fill="#111111"/>
+  <circle cx="510" cy="70" r="3.6" fill="#111111"/>
+  <text x="70" y="62" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">0</text>
+  <text x="180" y="62" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">0</text>
+  <text x="290" y="62" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">0</text>
+  <text x="400" y="62" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">0</text>
+  <text x="510" y="62" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">0</text>
+  <text x="125" y="63" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">0</text>
+  <text x="235" y="63" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">0</text>
+  <text x="345" y="63" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">0</text>
+  <text x="455" y="63" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">0</text>
+  <text x="70" y="88" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">0</text>
+  <text x="180" y="88" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">1</text>
+  <text x="290" y="88" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">2</text>
+  <text x="400" y="88" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">3</text>
+  <text x="510" y="88" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">4</text>
+  <text x="56" y="146" font-size="12.5" fill="#334155" font-family="sans-serif" font-weight="600">Tras I 1 4 2:  d = [2, 2, 2, 2]</text>
+  <line x1="56" y1="155" x2="56" y2="242" stroke="#9aa3b2" stroke-width="1.2"/>
+  <line x1="52" y1="230" x2="56" y2="230" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="234" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">0</text>
+  <line x1="52" y1="212" x2="56" y2="212" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="216" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">2</text>
+  <line x1="52" y1="194" x2="56" y2="194" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="198" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">4</text>
+  <line x1="52" y1="176" x2="56" y2="176" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="180" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">6</text>
+  <line x1="52" y1="158" x2="56" y2="158" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="162" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">8</text>
+  <polyline points="70,230 180,212 290,194 400,176 510,158" fill="none" stroke="#111111" stroke-width="2.4"/>
+  <circle cx="70" cy="230" r="3.6" fill="#111111"/>
+  <circle cx="180" cy="212" r="3.6" fill="#111111"/>
+  <circle cx="290" cy="194" r="3.6" fill="#111111"/>
+  <circle cx="400" cy="176" r="3.6" fill="#111111"/>
+  <circle cx="510" cy="158" r="3.6" fill="#111111"/>
+  <text x="70" y="222" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">0</text>
+  <text x="180" y="204" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">2</text>
+  <text x="290" y="186" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">4</text>
+  <text x="400" y="168" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">6</text>
+  <text x="510" y="150" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">8</text>
+  <text x="125" y="214" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">+2</text>
+  <text x="235" y="196" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">+2</text>
+  <text x="345" y="178" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">+2</text>
+  <text x="455" y="160" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">+2</text>
+  <text x="70" y="248" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">0</text>
+  <text x="180" y="248" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">1</text>
+  <text x="290" y="248" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">2</text>
+  <text x="400" y="248" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">3</text>
+  <text x="510" y="248" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">4</text>
+  <text x="56" y="334" font-size="12.5" fill="#334155" font-family="sans-serif" font-weight="600">Tras I 2 2 -1:  d = [2, -1, 2, 2]</text>
+  <line x1="56" y1="344" x2="56" y2="422" stroke="#9aa3b2" stroke-width="1.2"/>
+  <line x1="52" y1="410" x2="56" y2="410" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="414" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">0</text>
+  <line x1="52" y1="388" x2="56" y2="388" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="392" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">2</text>
+  <line x1="52" y1="366" x2="56" y2="366" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="370" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">4</text>
+  <line x1="52" y1="344" x2="56" y2="344" stroke="#9aa3b2" stroke-width="1.2"/>
+  <text x="48" y="348" font-size="11" fill="#555" font-family="sans-serif" text-anchor="end">6</text>
+  <polyline points="70,410 180,388 290,399 400,377 510,355" fill="none" stroke="#111111" stroke-width="2.4"/>
+  <circle cx="70" cy="410" r="3.6" fill="#111111"/>
+  <circle cx="180" cy="388" r="3.6" fill="#111111"/>
+  <circle cx="290" cy="399" r="3.6" fill="#111111"/>
+  <circle cx="400" cy="377" r="3.6" fill="#111111"/>
+  <circle cx="510" cy="355" r="3.6" fill="#111111"/>
+  <text x="70" y="402" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">0</text>
+  <text x="180" y="380" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">2</text>
+  <text x="290" y="391" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">1</text>
+  <text x="400" y="369" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">3</text>
+  <text x="510" y="347" font-size="12" fill="#111111" font-family="sans-serif" text-anchor="middle" font-weight="bold">5</text>
+  <text x="125" y="392" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">+2</text>
+  <text x="235" y="386" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">−1</text>
+  <text x="345" y="381" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">+2</text>
+  <text x="455" y="359" font-size="11" fill="#2563eb" font-family="sans-serif" text-anchor="middle">+2</text>
+  <text x="70" y="428" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">0</text>
+  <text x="180" y="428" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">1</text>
+  <text x="290" y="428" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">2</text>
+  <text x="400" y="428" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">3</text>
+  <text x="510" y="428" font-size="11" fill="#555" font-family="sans-serif" text-anchor="middle">4</text>
+  <text x="290" y="446" font-size="11.5" fill="#666" font-family="sans-serif" text-anchor="middle">numero de riel</text>
+</svg>
+      <figcaption>Las tres vistas de la vía: <em>antes</em> de tocar nada y <em>después</em>
+        de cada reconfiguración (igual que en el PDF). El eje \(x\) es el número de riel;
+        los números <strong>negros sobre los puntos</strong> son la elevación acumulada
+        \(E_i\), y los números <strong>azules sobre los segmentos</strong> son las
+        pendientes \(d_i\). Arriba todo está plano (\(d=[0,0,0,0]\)); tras
+        <code>I 1 4 2</code> la vía sube parejo (\(E=[0,2,4,6,8]\)); tras
+        <code>I 2 2 -1</code> el segundo riel baja y queda \(E=[0,2,1,3,5]\).</figcaption>
+    </figure>
+
+    <p>Para ver cómo se <strong>detiene</strong> el coche en un viaje, fíjate en ese
+       último perfil con una línea horizontal de altura \(h=3\):</p>
+
+    <figure>
+      <svg viewBox="0 0 560 290" role="img"
+           aria-label="Perfil de elevación de la vía tras la última reconfiguración del ejemplo, con la línea horizontal de altura h=3; el coche recorre 3 rieles y se detiene en el riel 4.">
+        <rect x="0" y="0" width="560" height="290" fill="#ffffff"/>
+        <!-- ejes -->
+        <line x1="50" y1="18" x2="50" y2="240" stroke="#444" stroke-width="1.5"/>
+        <line x1="44" y1="240" x2="548" y2="240" stroke="#444" stroke-width="1.5"/>
+        <!-- linea h=3 -->
+        <line x1="44" y1="130" x2="545" y2="130" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="6 4"/>
+        <text x="551" y="134" font-size="13" fill="#2563eb" font-family="sans-serif">h = 3</text>
+        <!-- perfil recorrido (rieles 1..3) -->
+        <polyline points="50,240 170,166.7 290,203.3 410,130" fill="none" stroke="#1a9d5a" stroke-width="3"/>
+        <!-- riel 4: la elevacion supera h -->
+        <polyline points="410,130 530,56.7" fill="none" stroke="#e0892a" stroke-width="3"/>
+        <!-- puntos (elevaciones E_i) -->
+        <circle cx="50"  cy="240"   r="4" fill="#111"/>
+        <circle cx="170" cy="166.7" r="4" fill="#111"/>
+        <circle cx="290" cy="203.3" r="4" fill="#111"/>
+        <circle cx="410" cy="130"   r="4" fill="#111"/>
+        <circle cx="530" cy="56.7"  r="5" fill="#e0892a"/>
+        <!-- etiquetas de elevacion -->
+        <text x="36"  y="244" font-size="13" fill="#111" font-family="sans-serif" text-anchor="end">0</text>
+        <text x="166" y="156" font-size="13" fill="#111" font-family="sans-serif">2</text>
+        <text x="286" y="196" font-size="13" fill="#111" font-family="sans-serif">1</text>
+        <text x="416" y="123" font-size="13" fill="#111" font-family="sans-serif">3</text>
+        <text x="536" y="50"  font-size="13" fill="#e0892a" font-family="sans-serif" font-weight="bold">5</text>
+        <!-- pendientes d_i sobre los segmentos -->
+        <text x="100" y="198" font-size="12" fill="#1a9d5a" font-family="sans-serif">+2</text>
+        <text x="222" y="178" font-size="12" fill="#1a9d5a" font-family="sans-serif">−1</text>
+        <text x="342" y="160" font-size="12" fill="#1a9d5a" font-family="sans-serif">+2</text>
+        <text x="462" y="86"  font-size="12" fill="#e0892a" font-family="sans-serif">+2</text>
+        <!-- etiquetas del eje x (numero de riel) -->
+        <text x="50"  y="257" font-size="12" fill="#444" font-family="sans-serif" text-anchor="middle">0</text>
+        <text x="170" y="257" font-size="12" fill="#444" font-family="sans-serif" text-anchor="middle">1</text>
+        <text x="290" y="257" font-size="12" fill="#444" font-family="sans-serif" text-anchor="middle">2</text>
+        <text x="410" y="257" font-size="12" fill="#444" font-family="sans-serif" text-anchor="middle">3</text>
+        <text x="530" y="257" font-size="12" fill="#444" font-family="sans-serif" text-anchor="middle">4</text>
+        <text x="280" y="278" font-size="12.5" fill="#666" font-family="sans-serif" text-anchor="middle">número de riel</text>
+        <!-- anotaciones -->
+        <text x="120" y="118" font-size="12.5" fill="#1a9d5a" font-family="sans-serif" font-weight="bold">3 rieles recorridos</text>
+        <text x="470" y="44" font-size="12" fill="#e0892a" font-family="sans-serif" text-anchor="middle">5 &gt; h ⇒ se detiene</text>
+      </svg>
+      <figcaption>Perfil de elevación tras la última reconfiguración del ejemplo
+        (\(d=[2,-1,2,2]\), elevaciones \(E=[0,2,1,3,5]\)). Para el viaje
+        <code>Q 3</code> el coche sube mientras la elevación no pase de \(h=3\):
+        recorre los rieles \(1, 2, 3\) (elevaciones \(2, 1, 3\)) y se detiene al
+        iniciar el riel \(4\), porque ahí la vía sube a \(5 &gt; 3\). Resultado:
+        \(3\). Lo que detiene al coche es el <strong>máximo de la elevación
+        acumulada</strong>, no la pendiente local de un riel suelto.</figcaption>
+    </figure>
+
+    <p class="note">Repaso completo del ejemplo: con \(n=4\) y \(d=[0,0,0,0]\),
+       <code>Q 1</code> recorre los 4 rieles (toda elevación es \(0\le 1\)) ⇒ 4.
+       Tras <code>I 1 4 2</code>, \(E=[2,4,6,8]\): <code>Q 3</code> pasa \(E_1=2\) pero
+       \(E_2=4>3\) ⇒ 1; <code>Q 1</code> ya falla en \(E_1=2>1\) ⇒ 0. Tras
+       <code>I 2 2 -1</code>, \(E=[2,1,3,5]\): <code>Q 3</code> ⇒ 3.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Árbol de segmentos</span>
+      <span class="ptag">Lazy / Asignación en rango</span>
+      <span class="ptag">Compresión de coordenadas</span>
+      <span class="ptag">Online / reactivo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(n \le 10^9\) rieles con pendientes \(d_i\) (al inicio todas \(0\)).
+       Llegan hasta \(10^5\) operaciones intercaladas: <strong>asignar</strong> una
+       pendiente \(D\) a un rango \([a,b]\) (\(d_i \leftarrow D\)) y <strong>consultar</strong>
+       con una altura \(h\) cuántos rieles, contando desde el inicio, recorre el coche
+       antes de que la elevación acumulada \(E_i = d_1+\dots+d_i\) supere \(h\)
+       (tope: \(n\)). Define \(E_0=0\); la respuesta de un viaje es la \(k\) más
+       grande tal que \(E_i \le h\) para toda \(1 \le i \le k\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n\) llega a \(10^9\) ⇒ <strong>prohibido</strong> un arreglo de
+                tamaño \(n\) (revienta tiempo y los 256 MB). Pero solo hay
+                \(\le 10^5\) líneas, así que a lo más \(\sim 2\cdot 10^5\) extremos de
+                rango distintos: ahí vive la solución. Buscas
+                \(O\big((I+Q)\log\big)\) sobre esas coordenadas, no sobre \(n\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué mide de verdad un viaje?</summary>
+      <div class="body">
+        <p class="q">¿El coche se detiene por la <em>pendiente</em> del riel donde
+           va, o por algo acumulado? Si un riel baja (\(D<0\)), ¿puede eso detener al
+           coche?</p>
+        <p>Un riel cuesta abajo nunca detiene al coche: la elevación baja, no supera
+           \(h\). Lo que importa es la <strong>elevación acumulada</strong>
+           \(E_i = d_1+\dots+d_i\). El coche avanza mientras todos los
+           \(E_1,\dots,E_k\) sean \(\le h\) y se detiene en el primer riel cuya
+           elevación de llegada pase \(h\). En otras palabras: la respuesta es la
+           \(k\) más grande tal que el <strong>máximo prefijo</strong> de \(E\) sobre
+           \([1..k]\) no exceda \(h\) (con tope \(n\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cómo sobrevivir a \(n \le 10^9\)?</summary>
+      <div class="body">
+        <p class="q">No puedes guardar un \(d_i\) por riel. Pero, ¿cuántos puntos
+           «de corte» distintos puede tener la vía si solo hay \(\le 10^5\)
+           reconfiguraciones?</p>
+        <p>Lee <strong>toda</strong> la entrada antes de construir (offline): los
+           viajes igual se contestan en su orden, pero ya conoces todos los rangos.
+           Junta los extremos de cada <code>I a b D</code> como \(a\) y \(b+1\)
+           (medio-abierto), más \(1\) y \(n+1\); ordena y quita duplicados. Las
+           coordenadas consecutivas definen <strong>segmentos elementales</strong>
+           (hojas) \([\,\text{coords}[k],\ \text{coords}[k+1]-1\,]\) de ancho
+           \(\text{coords}[k+1]-\text{coords}[k]\).</p>
+        <p>La clave: como toda reconfiguración cae justo en esas fronteras, cada
+           segmento elemental tiene <strong>siempre</strong> una sola pendiente
+           constante. Así, dentro de una hoja las sumas prefijas son lineales y una
+           consulta parcial es <em>una</em> división.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Qué guardar en cada nodo para responder rápido?</summary>
+      <div class="body">
+        <p class="q">Si juntas dos tramos contiguos, ¿qué dos números te bastan para
+           saber «cuánto sube en total» y «cuál es el punto más alto» del tramo
+           combinado, sin recorrerlo riel por riel?</p>
+        <p>En cada nodo del árbol guarda dos valores (todo medido <em>desde el inicio
+           del nodo</em>):</p>
+        <ul>
+          <li>\(S\) = suma de \(d\) sobre el nodo (el cambio de elevación de punta a
+              punta).</li>
+          <li>\(H\) = máxima elevación prefija dentro del nodo, recortada a
+              \(\ge 0\): \(H = \max\big(\{0\}\cup\{\text{sumas prefijas}\}\big)\).</li>
+        </ul>
+        <p>La fusión de dos hijos (izquierdo \(L\), derecho \(R\)) es:
+           \(S = S_L + S_R\) y, lo crucial,
+           \[ H = \max\big(H_L,\ S_L + H_R\big). \]
+           El punto más alto está, o bien en la mitad izquierda, o bien en la derecha
+           pero «levantada» por todo lo que subió la izquierda. Para una hoja de ancho
+           \(w\) y pendiente \(D\): \(S = D\cdot w\) y \(H = \max(0,\ D\cdot w)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La asignación en rango y el descenso de la consulta</summary>
+      <div class="body">
+        <p class="q">Asignar pendiente \(D\) a \([a,b]\) cae exacto en fronteras de
+           hojas. ¿No es eso una asignación «constante» perezosa (lazy) limpísima?
+           Y para contar rieles en un viaje, ¿cómo bajas por el árbol llevando la
+           elevación con la que <em>llegas</em> a cada nodo?</p>
+        <p><strong>Asignación:</strong> <code>I a b D</code> se traduce al rango de
+           hojas \([\,\text{pos}(a),\ \text{pos}(b+1)-1\,]\); un nodo totalmente
+           cubierto se vuelve uniforme con pendiente \(D\) (\(S=D\cdot w\),
+           \(H=\max(0,D\cdot w)\)) y guarda el lazy; al bajar (pushdown) se reaplica
+           la pendiente a cada hijo con <em>su</em> ancho.</p>
+        <p><strong>Consulta \(Q\,h\):</strong> desciende desde la raíz llevando
+           <code>base</code> = elevación al inicio del nodo (raíz: <code>base</code>=0).
+           En un nodo:</p>
+        <ul>
+          <li>si \(\text{base}+H \le h\): el nodo entero es transitable ⇒ suma su
+              ancho (y al seguir, la base aumenta en \(S\));</li>
+          <li>si es hoja (pendiente constante, y aquí forzosamente \(D>0\) con
+              \(\text{base}+D\cdot w>h\)): el número de rieles transitables es
+              \(\big\lfloor (h-\text{base})/D \big\rfloor\) (entre \(0\) y \(w-1\)) y
+              ahí se detiene;</li>
+          <li>si no, baja al hijo izquierdo; si lo cruzó completo, continúa al
+              derecho con \(\text{base}+S_L\); si no, se detuvo dentro.</li>
+        </ul>
+        <p>Como el ancho total del árbol es exactamente \(n\), el resultado queda
+           <strong>acotado a \(n\)</strong> de forma automática.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Un viaje pregunta por el <em>máximo prefijo</em> de
+           la elevación acumulada (Pista 1), no por la pendiente local. Con
+           \(n \le 10^9\) hay que comprimir coordenadas leyendo toda la entrada
+           (Pista 2): cada segmento elemental tiene pendiente constante, así que sus
+           sumas prefijas son lineales. Sobre las \(\le 2I+2\) hojas se monta un árbol
+           de segmentos cuyos nodos guardan \(S\) y \(H\) con la fusión
+           \(H=\max(H_L,\,S_L+H_R)\) (Pista 3). Las reconfiguraciones son una
+           asignación de pendiente constante con lazy, y cada viaje se contesta
+           bajando por el árbol con una <code>base</code> (Pista 4).</p>
+
+        <p><strong>Por qué es correcto.</strong> Por inducción, \(H\) es exactamente
+           la mayor elevación que alcanza el coche dentro del nodo medida desde su
+           inicio (el \(\{0\}\) cubre el punto de partida y los rieles cuesta abajo).
+           Entonces \(\text{base}+H\le h\) equivale a «todo el nodo es transitable».
+           Además, como \(S\) es la última suma prefija, siempre \(H \ge S\): al
+           cruzar completo el hijo izquierdo, su elevación de salida
+           \(\text{base}+S_L \le \text{base}+H_L \le h\), por lo que al entrar al
+           derecho seguimos con \(\text{base}\le h\); ahí, en una hoja, la división
+           \(\lfloor (h-\text{base})/D\rfloor\) tiene \(D>0\) garantizado (si
+           \(D\le 0\) habría caído en la rama «transitable») y da el corte exacto.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (offline + árbol comprimido)</span>
+<pre>leer n
+leer TODAS las operaciones a memoria         // offline
+
+// 1) Comprimir coordenadas (medio-abierto)
+coords = { 1, n+1 }
+para cada reconfig (a, b, D):  agregar a, b+1
+ordenar coords y quitar duplicados           // coords[0..m]
+// hoja k cubre rieles [coords[k], coords[k+1]-1], ancho w_k = coords[k+1]-coords[k]
+
+// 2) Árbol de segmentos sobre las m hojas (todas arrancan con D = 0)
+//    cada nodo guarda: width = num. de rieles, S = suma de d, H = max prefijo (>=0)
+//    HOJA con pendiente D:  S = D*w ;  H = (D>0 ? D*w : 0)
+//    FUSION:                S = S_L + S_R ;  H = max(H_L, S_L + H_R)
+
+funcion asignar(nodo, lo, hi, D):            // d_i <- D en hojas [lo,hi]
+    si rango del nodo  subset de [lo,hi]:
+        marcar nodo uniforme con pendiente D     // S=D*width, H=max(0,D*width), lazy=D
+        regresar
+    pushdown(nodo)                            // reaplica lazy a cada hijo con SU width
+    asignar(izq, lo, hi, D);  asignar(der, lo, hi, D)
+    fusionar(nodo)
+
+funcion contar(nodo, base, h):               // rieles transitables; base = elev. al inicio
+    si base + nodo.H <= h:  regresar nodo.width
+    si nodo es hoja:                          // aqui D>0 y base + D*width > h
+        regresar piso( (h - base) / D )          // en [0, width-1]
+    pushdown(nodo)
+    c = contar(izq, base, h)
+    si c < izq.width:  regresar c             // se atoro dentro del izquierdo
+    regresar izq.width + contar(der, base + izq.S, h)   // cruzo el izq; sigue al der
+
+// 3) Procesar operaciones EN ORDEN de entrada
+por cada operacion:
+    si  I a b D:  asignar(raiz, pos(a), pos(b+1)-1, D)
+    si  Q h:      imprimir  contar(raiz, 0, h)
+    si  E:        terminar</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Cada reconfiguración y cada viaje tocan
+           \(O(\log I)\) nodos ⇒ tiempo \(O\big((I+Q)\log I\big)\) con
+           \(I+Q \le 10^5\). Memoria \(O(I+Q)\) (árbol sobre \(\le 2I+2\)
+           coordenadas), <strong>independiente de \(n\)</strong>. La variante
+           «online» con árbol binario implícito sobre \([1,n]\) corre en
+           \(O\big((I+Q)\log n\big)\) y \(O(I\log n)\) de memoria; la versión
+           comprimida offline es la segura en memoria.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Nota de implementación (C++)</span>
+<pre>Usa enteros de 64 bits (long long) EN TODO: aunque la elevacion real esta
+garantizada en [0, 1e9], los intermedios D*width dentro de S/H/base pueden
+llegar a ~1e18. La division de la hoja siempre es segura (D>0 en esa rama).
+E/S rapida (scanf/printf o sync_with_stdio(false)) por las ~1e5 lineas.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
