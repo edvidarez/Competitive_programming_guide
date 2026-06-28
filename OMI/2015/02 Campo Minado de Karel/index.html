@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2015 · Problema 02 — Campo Minado de Karel</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+  /* Cuadrícula de mundo (reconstrucción de ejemplos) */
+  .grid{margin:14px 0;overflow:auto}
+  .grid table{border-collapse:collapse;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+  .grid td,.grid th{border:1px solid var(--border);width:34px;height:30px;text-align:center;padding:0;color:var(--muted)}
+  .grid th{background:var(--panel2);font-weight:600}
+  .grid td.mina{color:var(--warn);background:#221a0c;font-weight:700}
+  .grid td.muere{background:#3a1320;color:#ff9db1;font-weight:700;outline:2px solid #ff5d7e;outline-offset:-2px}
+  .grid td.fin{background:#0e2a20;color:#7ef0c2;font-weight:700;outline:2px solid var(--accent2);outline-offset:-2px}
+  .legend{font-size:13px;color:var(--muted);margin-top:6px}
+  .legend b.mn{color:var(--warn)} .legend b.mu{color:#ff9db1} .legend b.fn{color:#7ef0c2}
+  .missing{background:var(--panel);border:1px dashed var(--border);border-radius:10px;
+    padding:10px 14px;margin:14px 0;color:var(--muted);font-size:14px}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">20ª OMI · 2015 · Karel</div>
+    <h1>Problema <span class="num">02</span> — Campo Minado de Karel</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2015KAREL2">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Historia</h2>
+    <p>Karel fue seleccionado para el servicio militar en el batallón de ingenieros
+       zapadores. Parte de su entrenamiento es aprender a recorrer campos minados
+       (y salir vivo, por supuesto).</p>
+    <p>El día de hoy, Karel debe recorrer un campo minado. El campo se representa como
+       un mundo rectangular que no tiene paredes internas. Las minas se representan
+       como montones de zumbadores: la cantidad de zumbadores en el montón determina
+       <strong>el segundo en el que explotará la mina</strong>; es decir, un montón de
+       \(5\) zumbadores representa una mina que explotará en el segundo \(5\) a partir
+       de que se inicia el ejercicio. Si al momento en que explota la mina Karel se
+       encuentra <strong>sobre ella, en la casilla de la izquierda o en la casilla de
+       la derecha</strong>, Karel explotará. Cuando una mina explota <strong>no
+       detona</strong> ninguna de las minas a su alrededor.</p>
+    <p>Karel inicia el recorrido en la posición \((1,1)\) en el segundo cero. Siempre
+       debe recorrer el campo fila por fila (en zigzag), tal como se muestra en la
+       figura del enunciado oficial.</p>
+
+    <div class="missing">
+      <strong>Nota de esta transcripción:</strong> el enunciado original incluye
+      varias figuras (el camino en zigzag <code>bombas1.png</code> y las cuadrículas
+      de entrada/salida de los cuatro ejemplos). Esas imágenes no venían incluidas en
+      la copia local de este archivo, así que abajo se describen con fidelidad a
+      partir del texto oficial. En la pestaña <em>Upsolving</em> se reconstruyen
+      ejemplos concretos verificados contra los casos de prueba oficiales.
+    </div>
+
+    <p>Karel avanza \(1\) casilla por segundo, sin importar la dirección en la que se
+       esté moviendo. Por ejemplo, inicia en la casilla \((1,1)\) en el segundo cero;
+       en el segundo uno estará en la columna \(2\) de la fila \(1\) y, para el campo
+       de la figura, en el segundo \(6\) estará en la columna \(6\) de la fila \(2\)
+       (justo después de subir de la fila \(1\) a la fila \(2\)).</p>
+
+    <!-- ===== BLOQUE KAREL: descripción del mundo ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p><strong>El mundo.</strong> Un rectángulo <strong>sin paredes internas</strong>
+         (en los casos oficiales el mundo mide hasta \(100\times100\), pero el campo
+         útil está delimitado por paredes en su borde). Cada celda se identifica por
+         \((x,y)\) con \(x=\) columna y \(y=\) fila; la fila \(1\) es la de abajo.</p>
+      <ul>
+        <li>Karel inicia en \((1,1)\) <strong>orientado al Este</strong>.</li>
+        <li>Karel inicia con <strong>0 zumbadores en la mochila</strong>.</li>
+        <li>Cada <strong>montón de zumbadores</strong> es una mina; el número de
+            zumbadores del montón es el <strong>segundo</strong> en que estalla.</li>
+        <li>El <strong>recorrido</strong> es en zigzag (boustrophedon): fila \(1\) de
+            izquierda a derecha, sube una fila, fila \(2\) de derecha a izquierda,
+            sube, fila \(3\) de izquierda a derecha, y así sucesivamente. Cada
+            movimiento (avanzar o subir de fila) consume <strong>un segundo</strong>.</li>
+      </ul>
+      <p><strong>Se considera resuelto</strong> si Karel se apaga (<code>turnoff</code>)
+         exactamente en la celda donde murió (si una mina lo alcanza) o en la última
+         celda del recorrido (si sobrevive). <strong>No importan</strong> ni la
+         orientación final ni los zumbadores que queden en el mundo: <strong>solo
+         importa la posición final de Karel</strong>.</p>
+    </div>
+
+    <h2>Problema</h2>
+    <p>Escribe un programa de Karel que reciba el mundo que representa el campo minado
+       y que ayude a Karel a saber si sobrevivirá o no al recorrido. Si Karel explota
+       durante el recorrido, tu programa deberá apagarlo en la posición donde estaba
+       cuando murió. Si Karel sobrevive al recorrido, deberá apagarse en la última
+       posición del recorrido.</p>
+
+    <h2>Consideraciones</h2>
+    <ul>
+      <li>Karel inicia en la posición \((1,1)\) del mundo orientado al Este.</li>
+      <li>Karel inicia con <strong>0 zumbadores en la mochila</strong>.</li>
+      <li>No importan la orientación final de Karel ni los zumbadores que queden en el
+          mundo. <strong>Solo importa la posición final de Karel.</strong></li>
+      <li>En este problema se agrupan casos de prueba: para obtener los puntos de un
+          grupo, tu programa deberá resolver de manera correcta <strong>todos los
+          casos del grupo</strong>.</li>
+      <li><strong>IMPORTANTE.</strong> Para un conjunto de casos con valor de
+          \(33\) puntos, tu programa deberá ejecutar la instrucción
+          <code>avanza/move</code> un máximo de \(N+1\) veces (donde \(N\) es la
+          cantidad de segundos que se requiere para hacer el recorrido completo). Es
+          decir, si en alguno de estos casos tu programa ejecuta <code>avanza/move</code>
+          más de \(N\) veces, <strong>obtendrás 0 puntos en ese grupo</strong>.</li>
+      <li>Para el resto de los casos de prueba <strong>no tienes límite</strong> en la
+          cantidad de veces que puedes ejecutar la instrucción <code>avanza/move</code>.</li>
+    </ul>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por <code>stdin</code>: la información viene en el
+       <strong>mundo de Karel</strong>. El evaluador coloca un montón de zumbadores en
+       cada celda que tiene una mina; el número de zumbadores de ese montón es el
+       segundo en que esa mina explota. El campo está delimitado por paredes en su
+       borde exterior. Karel arranca siempre en \((1,1)\), orientado al Este y con la
+       mochila vacía.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por <code>stdout</code>: la respuesta es el <strong>estado final
+       del mundo</strong>, en concreto la <strong>posición final de Karel</strong> al
+       apagarse. Debe ser la celda donde murió (si una mina lo alcanzó) o la última
+       celda del recorrido en zigzag (si sobrevivió).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tipo de problema</td><td>Karel (robot en cuadrícula); no es C++</td></tr>
+        <tr><td>Tamaño del mundo</td><td><span class="badge">hasta \(100\times100\)</span></td></tr>
+        <tr><td>Mina (montón)</td><td>estalla en el segundo \(=\) número de zumbadores del montón</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Grupo estricto (33 pts)</td><td><span class="badge">\(\le N+1\) ejecuciones de <code>avanza</code></span>, con \(N\) = segundos del recorrido completo</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Grupo</th><th>Puntos</th><th>Restricción adicional</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">33</td><td>Tu programa debe ejecutar <code>avanza/move</code> a lo más \(N+1\) veces (movimiento mínimo: no puedes “desviarte” a inspeccionar vecinos).</td></tr>
+          <tr><td>2</td><td class="pts">67</td><td>Sin límite en la cantidad de ejecuciones de <code>avanza/move</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Los casos se agrupan: debes resolver <strong>todos</strong> los
+       casos de un grupo para llevarte sus puntos.</p>
+
+    <h2>Ejemplos</h2>
+    <p>El enunciado oficial presenta cuatro ejemplos mediante cuadrículas (entrada y
+       salida). Como las imágenes no están en esta copia, se transcriben las
+       explicaciones oficiales de cada uno.</p>
+
+    <h3>Ejemplo 1</h3>
+    <p>La primera mina por la que pasa Karel es la que está en la fila \(1\), columna
+       \(4\); esa mina explota en el segundo \(5\). Cuando explota, Karel no está sobre
+       ella ni a su izquierda ni a su derecha. La segunda mina es la de la fila \(2\),
+       columna \(6\); explota en el segundo \(6\), justo cuando Karel pasa sobre ella;
+       por lo tanto Karel explota y debe apagarse en esa posición.</p>
+
+    <h3>Ejemplo 2</h3>
+    <p>El mundo es similar al anterior, pero esta vez la segunda mina explota en el
+       segundo \(5\) y en ese momento Karel no está sobre ella ni a su izquierda ni a
+       su derecha. La tercera mina (fila \(2\), columna \(2\)) explota en el segundo
+       \(9\); en ese momento Karel está a su derecha (columna \(3\)) y por lo tanto
+       explota. <strong>Karel debe apagarse en la posición donde se encontraba al
+       momento de la explosión.</strong></p>
+
+    <h3>Ejemplo 3</h3>
+    <p>Esta vez la tercera mina explota cuando Karel está a su izquierda; por lo tanto
+       Karel debe apagarse a la izquierda de la mina.</p>
+
+    <h3>Ejemplo 4</h3>
+    <p>En este último ejemplo Karel sobrevive al recorrido sin que ninguna mina explote
+       sobre o junto a él y, por lo tanto, debe apagarse en la última posición del
+       recorrido.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Implementación</span>
+      <span class="ptag">Recursión</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Karel camina en zigzag por un campo rectangular (fila \(1\) hacia el Este, sube,
+       fila \(2\) hacia el Oeste, sube, …), un paso por segundo. Cada montón de
+       zumbadores es una mina que estalla en el segundo igual a su número de
+       zumbadores. Karel muere si, en ese segundo exacto, está <strong>sobre la mina o
+       en la celda de su izquierda o de su derecha</strong> (misma fila, a distancia
+       \(\le 1\) en columna). Hay que apagar a Karel en la celda donde muere o, si
+       sobrevive, en la última celda del recorrido.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El grupo de \(33\) puntos exige \(\le N+1\) ejecuciones de
+                <code>avanza</code>. Eso prohíbe la idea fácil de “salirme a ver al
+                vecino y regresar”: hay que decidir el peligro <strong>sin abandonar
+                el camino</strong>, leyendo solo el montón que tienes bajo los pies.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Y si lo ves como una <em>simulación</em>? Karel recorre un camino
+           fijo (el zigzag) a velocidad de una celda por segundo. ¿Qué cantidad crece
+           exactamente \(+1\) en cada paso y es la misma que usa una mina para decidir
+           cuándo estalla?</p>
+        <p>El “segundo actual” es simplemente el número de pasos que Karel lleva dados.
+           Si en el segundo \(t\) Karel está parado en cierta celda, te basta con saber
+           qué minas estallan en ese \(t\) y dónde está Karel para decidir si muere.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La regla de muerte, con precisión</summary>
+      <div class="body">
+        <p class="q">¿Exactamente qué celdas son peligrosas cuando una mina en la celda
+           \(M\) estalla? ¿Y respecto a qué se miden “izquierda” y “derecha”?</p>
+        <p>Una mina en \(M=(x,y)\) con \(z\) zumbadores estalla en el segundo \(z\). En
+           ese segundo mata a Karel si Karel está en \(M\), en \((x-1,y)\) o en
+           \((x+1,y)\) — es decir, <strong>misma fila y columna a distancia \(\le 1\)</strong>.
+           “Izquierda/derecha” son absolutas (Oeste/Este), no relativas al rumbo de
+           Karel. En el Ejemplo 2, la mina de la columna \(2\) mata a Karel cuando él
+           está en la columna \(3\) (“a su derecha”), aunque en esa fila Karel viaje
+           hacia el Oeste.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Caminar el zigzag y saber el segundo, sin variables</summary>
+      <div class="body">
+        <p class="q">Karel no tiene enteros “normales”. ¿Cómo recorres el zigzag
+           detectando los bordes con paredes? ¿Y cómo llevas el contador del segundo
+           \(t\) si no puedes guardar un número?</p>
+        <p>Para el zigzag: avanza mientras el frente esté libre; cuando topes con la
+           pared del borde, gira al Norte, sube una celda (eso también cuenta como un
+           segundo) y gira para quedar en la dirección contraria. Si al querer subir el
+           frente está bloqueado, ya no hay más filas: el recorrido terminó.</p>
+        <p>Para el segundo \(t\): llévalo como el <strong>parámetro de una llamada
+           recursiva</strong> que crece \(+1\) en cada celda. La celda inicial es
+           \(t=0\); cada paso del recorrido entra a la siguiente celda con
+           \(t\!\leftarrow\!t+1\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿El montón bajo mis pies vale exactamente t?</summary>
+      <div class="body">
+        <p class="q">Para comparar un montón con el número \(t\) que llevas en la
+           recursión, ¿qué pasa si recoges los zumbadores de uno en uno mientras
+           decrementas \(t\)? ¿Qué situación significa que el montón valía justo \(t\)?</p>
+        <p>Si vas recogiendo un zumbador y bajando \(t\) en \(1\), entonces “el montón
+           es igual a \(t\)” equivale a quedarte <strong>sin zumbadores justo cuando
+           \(t\) llega a \(0\)</strong>. Acuérdate de <strong>volver a dejar</strong>
+           los zumbadores después de comparar, porque vas a comparar el mismo montón
+           contra varios valores.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave para los 33 puntos</summary>
+      <div class="body">
+        <p class="q">Estás parado en la celda \(C\) en el segundo \(t\). El peligro
+           puede venir de la mina de \(C\), de la de tu izquierda o de la de tu derecha.
+           Pero no puedes ir a ver a los vecinos (gastarías <code>avanza</code> de más).
+           ¿Desde cuándo, mirando <strong>solo el montón bajo tus pies</strong>, puedes
+           cubrir esos tres peligros?</p>
+        <p>Cambia el punto de vista: en lugar de mirar a los vecinos de \(C\), piensa en
+           la <strong>mina que está bajo tus pies</strong>. Esa mina, con \(z\)
+           zumbadores, mata a Karel cuando Karel ocupa su izquierda, su propia celda o
+           su derecha, o sea en los segundos \(t-1\), \(t\) y \(t+1\) (porque las celdas
+           vecinas del camino se visitan justo un segundo antes y un segundo después).
+           Entonces, en cada celda, compara el montón con \(t-1\), \(t\) y \(t+1\):</p>
+        <ul>
+          <li><strong>\(z=t\):</strong> la mina estalla ahora y Karel está sobre ella →
+              apágate <em>aquí</em>.</li>
+          <li><strong>\(z=t+1\):</strong> estallará cuando Karel pise la <em>siguiente</em>
+              celda del camino → avanza una vez y apágate ahí.</li>
+          <li><strong>\(z=t-1\):</strong> estalló cuando Karel estaba en la celda
+              <em>anterior</em> → retrocede una y apágate ahí.</li>
+        </ul>
+        <p class="q">¿Y los cambios de fila? Cuando subes de una fila a otra, la celda
+           anterior (o la siguiente) queda <em>arriba/abajo</em>, no a los lados. ¿Eso
+           rompe la regla?</p>
+        <p>Sí, hay que cuidarlo: el peligro solo es horizontal. Si la celda anterior o la
+           siguiente fue un <strong>cambio de fila</strong> (movimiento vertical),
+           ignora los casos \(t-1\) o \(t+1\) respectivamente. En Karel lo detectas con
+           paredes: el caso \(t+1\) solo aplica si el <strong>frente está libre</strong>
+           (la siguiente celda es horizontal); el caso \(t-1\) solo aplica si
+           <strong>detrás no hay pared</strong> (la celda anterior fue horizontal, no un
+           ascenso).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Una sola estrategia gana los \(100\) puntos (sirve igual para el grupo
+           estricto de \(33\) y para el resto). Karel camina el zigzag exactamente una
+           celda por segundo y, en cada celda, decide su destino mirando <strong>solo el
+           montón que tiene debajo</strong>, comparándolo con \(t-1\), \(t\) y \(t+1\).
+           Así nunca se sale del camino: hace a lo más \(N+1\) avances (el \(+1\) es el
+           único paso extra para reacomodarse sobre la celda exacta de la muerte).</p>
+
+        <p><strong>Por qué es correcto.</strong> A lo largo del recorrido, Karel pisa
+           cada montón exactamente una vez. Una mina solo puede matar a Karel cuando él
+           está en su izquierda, encima o su derecha; esas tres celdas se visitan en
+           segundos consecutivos \(t-1,\,t,\,t+1\) alrededor del instante en que Karel
+           pisa la mina. Por eso comparar el montón bajo los pies contra esos tres
+           valores cubre <em>todas</em> las formas en que esa mina podría matar a Karel,
+           sin necesidad de inspeccionar celdas vecinas. Los movimientos verticales
+           (cambios de fila) se excluyen con las paredes, porque ahí la celda
+           anterior/siguiente no es un vecino horizontal.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel)</span>
+<pre>define gira-derecha:           // = 3 giros a la izquierda
+    repite 3 veces: gira-izquierda
+
+// ¿el montón bajo Karel vale exactamente k?  (se lleva k por recursión)
+// recoge de uno en uno bajando k; "sí" = se vacía justo cuando k = 0.
+// SIEMPRE deja de vuelta los zumbadores que recogiste (restaura el montón).
+funcion montonEsIgualA(k) -> verdadero/falso:
+    si junto-a-zumbador y k > 0:
+        coge-zumbador
+        resultado <- montonEsIgualA(k - 1)
+        deja-zumbador
+        regresa resultado
+    si no:
+        regresa (k = 0  y  no junto-a-zumbador)
+
+// avanza un paso del zigzag; regresa "se acabo" si ya no hay mas filas
+funcion pasoDelZigzag() -> normal / se-acabo:
+    si frente-libre:
+        avanza
+        regresa normal
+    si no:                             // borde de la fila: subir y voltear
+        si mira-al-Este:
+            gira-izquierda             // Este -> Norte
+            si frente-bloqueado:
+                regresa se-acabo       // no hay fila de arriba: fin del recorrido
+            avanza                     // sube una fila al Norte
+            gira-izquierda             // Norte -> Oeste (lista para la siguiente fila)
+        si no:                         // Karel mira al Oeste
+            gira-derecha               // Oeste -> Norte  (= 3 gira-izquierda)
+            si frente-bloqueado:
+                regresa se-acabo       // no hay fila de arriba: fin del recorrido
+            avanza                     // sube una fila al Norte
+            gira-derecha               // Norte -> Este  (= 3 gira-izquierda)
+        regresa normal
+
+programa principal:
+    asegura orientacion Este
+    t <- 0
+    repite por cada celda del recorrido:
+        // Karel esta en la celda C en el segundo t
+        si montonEsIgualA(t):                 // mina de C estalla AHORA, Karel encima
+            apagate aqui (turnoff)
+        si frente-libre y montonEsIgualA(t + 1):  // matara en la SIGUIENTE celda
+            avanza
+            apagate aqui (turnoff)
+        si detras-libre y montonEsIgualA(t - 1):  // mato en la celda ANTERIOR
+            da-media-vuelta; avanza; (vuelve a tu rumbo si quieres)
+            apagate aqui (turnoff)
+        resultado <- pasoDelZigzag()
+        si resultado = se-acabo:
+            apagate aqui (turnoff)            // sobrevivio: ultima celda
+        t <- t + 1</pre>
+        </div>
+
+        <p class="note">Detalles finos de Karel: “detras-libre” se prueba dando media
+           vuelta, mirando el frente y regresando; “frente-libre” distingue si la
+           siguiente celda es horizontal (peligro válido) o un ascenso (a ignorar). Como
+           solo importa la posición final, no hace falta dejar el mundo limpio; pero sí
+           hay que restaurar cada montón <em>entre</em> comparaciones para que las
+           comparaciones con \(t-1,\,t,\,t+1\) lean el mismo montón intacto.</p>
+
+        <p><strong>Complejidad.</strong> En <em>movimientos</em>: \(O(N)\) avances, con
+           \(N=\)(ancho \(\times\) alto) \(-\,1\) segundos del recorrido completo; como
+           máximo \(N+1\) (cumple el grupo estricto). En <em>instrucciones</em> totales:
+           proporcional a la suma de zumbadores que recoge/deja al comparar montones,
+           acotada por el límite de instrucciones del evaluador.</p>
+
+        <h3>Ejemplos concretos (verificados contra los casos oficiales)</h3>
+        <p>Para que veas la mecánica con números reales, aquí van dos campos tomados de
+           los casos de prueba oficiales, con la traza segundo a segundo.</p>
+
+        <p><strong>Campo A — una sola fila de \(15\) columnas.</strong> Minas (columna :
+           segundo de explosión): \(2{:}3,\ 4{:}5,\ 6{:}1,\ 8{:}3,\ 10{:}9,\ 12{:}4,\ 14{:}11\).
+           Karel avanza por la fila \(1\): en el segundo \(t\) está en la columna
+           \(t+1\). Va esquivando todo hasta que en el segundo \(9\) llega a la columna
+           \(10\), donde hay una mina de \(9\) zumbadores que estalla justo encima de
+           él. Muere y se apaga en \((10,1)\).</p>
+        <div class="grid">
+          <table>
+            <tr><th>fila/col</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th></tr>
+            <tr><th>1</th><td></td><td class="mina">3</td><td></td><td class="mina">5</td><td></td><td class="mina">1</td><td></td><td class="mina">3</td><td></td><td class="muere">9</td><td></td><td class="mina">4</td><td></td><td class="mina">11</td><td></td></tr>
+          </table>
+          <div class="legend"><b class="mn">N</b> = mina (segundo en que estalla) ·
+             <b class="mu">borde rojo</b> = celda donde Karel muere.</div>
+        </div>
+
+        <p><strong>Campo B — \(7\) columnas \(\times\) \(4\) filas.</strong> Karel
+           serpentea: fila \(1\) al Este, fila \(2\) al Oeste, fila \(3\) al Este,
+           fila \(4\) al Oeste. Sobrevive las primeras filas (incluyendo subidas en las
+           que las minas de la fila de abajo estallan justo cuando Karel ya subió) y, en
+           el segundo \(21\), al entrar a la fila \(4\) por \((7,4)\), la mina de
+           \((6,4)\) —que estalla en el segundo \(21\)— lo alcanza por la izquierda.
+           Muere y se apaga en \((7,4)\).</p>
+        <div class="grid">
+          <table>
+            <tr><th>fila/col</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+            <tr><th>4</th><td></td><td></td><td></td><td></td><td></td><td class="mina">21</td><td class="muere">·</td></tr>
+            <tr><th>3</th><td></td><td class="mina">18</td><td></td><td></td><td></td><td></td><td class="mina">21</td></tr>
+            <tr><th>2</th><td class="mina">14</td><td></td><td class="mina">9</td><td></td><td></td><td class="mina">3</td><td></td></tr>
+            <tr><th>1</th><td></td><td></td><td></td><td class="mina">1</td><td></td><td></td><td class="mina">7</td></tr>
+          </table>
+          <div class="legend"><b class="mn">N</b> = mina · <b class="mu">borde rojo</b> =
+             celda donde Karel muere (la mina que lo mata es la \(21\) a su izquierda).</div>
+        </div>
+        <p class="note">Detalle interesante del Campo B: en el segundo \(7\), la mina de
+           \((7,1)\) (que vale \(7\)) estalla justo cuando Karel <em>ya subió</em> a
+           \((7,2)\); como \((7,2)\) no es la celda de \((7,1)\), ni su izquierda, ni
+           su derecha, sino la de <em>arriba</em>, Karel se salva. Eso es exactamente lo
+           que captura la excepción de “cambio de fila” en la solución.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

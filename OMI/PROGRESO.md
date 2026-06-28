@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **74 / 190**
+Total de problemas: **190** · Completados: **82 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -218,18 +218,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Lenguaje | Nieves Pizzero | `2014/07 Nieves Pizzero/index.html` |
 | [ ] | 8 | Lenguaje | Freddy el Amante de los Hotcakes | `2014/08 Freddy el Amante de los Hotcakes/index.html` |
 
-## 20ª OMI · 2015 — 0 / 8
+## 20ª OMI · 2015 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Karel-ccionista | `2015/01 Karel-ccionista/index.html` |
-| [ ] | 2 | Karel | Campo Minado de Karel | `2015/02 Campo Minado de Karel/index.html` |
-| [ ] | 3 | Karel | Carrera Campo Traviesa | `2015/03 Carrera Campo Traviesa/index.html` |
-| [ ] | 4 | Karel | Karel Anti-cuadros | `2015/04 Karel Anti-cuadros/index.html` |
-| [ ] | 5 | Lenguaje | Barrancas del Cobre | `2015/05 Barrancas del Cobre/index.html` |
-| [ ] | 6 | Lenguaje | Salsa "La Pikina" | `2015/06 Salsa "La Pikina"/index.html` |
-| [ ] | 7 | Lenguaje | Ferrocarril "El Chepe" | `2015/07 Ferrocarril "El Chepe"/index.html` |
-| [ ] | 8 | Lenguaje | Artesano Rarámuri | `2015/08 Artesano Rarámuri/index.html` |
+| [x] | 1 | Karel | Karel-ccionista | `2015/01 Karel-ccionista/index.html` |
+| [x] | 2 | Karel | Campo Minado de Karel | `2015/02 Campo Minado de Karel/index.html` |
+| [x] | 3 | Karel | Carrera Campo Traviesa | `2015/03 Carrera Campo Traviesa/index.html` |
+| [x] | 4 | Karel | Karel Anti-cuadros | `2015/04 Karel Anti-cuadros/index.html` |
+| [x] | 5 | Lenguaje | Barrancas del Cobre | `2015/05 Barrancas del Cobre/index.html` |
+| [x] | 6 | Lenguaje | Salsa "La Pikina" | `2015/06 Salsa "La Pikina"/index.html` |
+| [x] | 7 | Lenguaje | Ferrocarril "El Chepe" | `2015/07 Ferrocarril "El Chepe"/index.html` |
+| [x] | 8 | Lenguaje | Artesano Rarámuri | `2015/08 Artesano Rarámuri/index.html` |
 
 ## 21ª OMI · 2016 — 8 / 8
 

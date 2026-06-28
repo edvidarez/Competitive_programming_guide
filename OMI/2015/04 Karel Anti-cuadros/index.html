@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2015 · Problema 04 — Karel Anti-cuadros</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">20ª OMI · 2015 · Karel</div>
+    <h1>Problema <span class="num">04</span> — Karel Anti-cuadros</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2015KAREL4">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Historia</h2>
+    <p>Karel está experimentando con su lado artístico. Está decidido a hacer un gran
+       mural, pero Karel tiene una fobia hacia los cuadros y desea que su pintura no
+       contenga ningún cuadro.</p>
+    <p>El mundo de Karel representa un lienzo en blanco. El mundo es un rectángulo sin
+       paredes intermedias y sin zumbadores.</p>
+    <p>Si en cualquier lugar del lienzo es posible encontrar un conjunto de posiciones
+       sin zumbadores que formen un cuadrado, se considera que la pintura tiene un
+       cuadro. Al inicio ninguna posición tiene zumbadores, por lo tanto, al inicio la
+       pintura contiene muchos cuadros.</p>
+    <p>Karel piensa poner zumbadores en algunas posiciones del lienzo para que este no
+       contenga ningún cuadro. Karel quiere poner los menos zumbadores posibles para
+       eliminar todos los cuadros de la pintura. Ayuda a Karel a lograrlo.</p>
+    <p><strong>Es importante que revises el ejemplo para que te quede claro cómo son los
+       cuadros que desea eliminar Karel.</strong></p>
+
+    <h2>Problema</h2>
+    <p>Escribe un programa que dado el lienzo inicial coloque zumbadores dentro del mismo
+       de modo que la pintura no contenga cuadros.</p>
+    <p>Hay muchas formas de lograr el objetivo anterior; la mejor solución es aquella que
+       coloca <strong>el menor número de zumbadores</strong>. Sin embargo, para obtener
+       puntos, no es necesario que tu solución sea la menor posible.</p>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El mundo es un <strong>cuadrado de \(N\times N\)</strong> casillas, sin paredes
+         internas y sin zumbadores al inicio (un lienzo en blanco). En los casos de
+         prueba \(N\) toma valores desde \(2\) hasta \(100\).</p>
+      <ul>
+        <li>Karel inicia en la posición \((1,1)\) orientado al <strong>norte</strong>.</li>
+        <li>Karel inicia con <strong>infinitos zumbadores</strong> en la mochila.</li>
+        <li>El mundo es un cuadrado sin paredes internas. <strong>No importa</strong> la
+            posición ni la orientación final de Karel.</li>
+        <li>Para obtener puntos, tu programa deberá colocar zumbadores de modo que
+            <strong>sea imposible formar cuadros</strong>, buscando siempre colocar la
+            menor cantidad de zumbadores posible.</li>
+      </ul>
+    </div>
+
+    <h2>Consideraciones importantes (puntuación)</h2>
+    <ul>
+      <li><strong>El número de puntos que obtengas en este problema dependerá de la
+          cantidad de zumbadores que coloques.</strong></li>
+      <li>Si al terminar la ejecución la pintura contiene algún cuadro, obtendrás
+          <strong>0 puntos en ese caso</strong>.</li>
+      <li>Si tu programa coloca zumbadores en más del 50% de las posiciones, obtendrás
+          <strong>0 puntos</strong>.</li>
+      <li>Para un conjunto de casos con valor de <strong>21 puntos</strong>, tu programa
+          deberá colocar zumbadores en a lo más el <strong>50%</strong> de las
+          posiciones.</li>
+      <li>Para otro conjunto de casos con valor de <strong>23 puntos</strong>, tu programa
+          deberá colocar zumbadores en a lo más el <strong>35%</strong> de las
+          posiciones.</li>
+      <li>Para otro conjunto de casos con valor de <strong>27 puntos</strong>, tu programa
+          deberá colocar zumbadores en a lo más el <strong>31%</strong> de las
+          posiciones.</li>
+      <li>Para un último conjunto de casos con valor de <strong>29 puntos</strong>, tu
+          programa obtendrá una cantidad de puntos determinada por la siguiente regla:
+        <ul>
+          <li>0% si tu programa coloca zumbadores en más del 31% de las posiciones.</li>
+          <li>100% si tu programa coloca el número mínimo de zumbadores posible.</li>
+          <li>Si tu programa coloca una cantidad de zumbadores que está entre el mínimo
+              posible y el 30%, obtendrá una cantidad de puntos proporcional.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por teclado. La información es el <strong>mundo</strong>: un lienzo
+       cuadrado de \(N\times N\) casillas, vacío (sin zumbadores) y sin paredes internas,
+       con Karel en \((1,1)\) mirando al norte y mochila infinita.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por pantalla. Al terminar la ejecución, el <strong>estado final del
+       mundo</strong> debe ser tal que <strong>no exista ningún cuadro</strong>: ningún
+       cuadrado (alineado a los ejes) puede tener todo su borde formado por casillas sin
+       zumbador. Idealmente se logra con la menor cantidad de zumbadores y nunca con más
+       del 50% de las casillas.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tamaño del mundo</td><td><span class="badge">\(2 \le N \le 100\)</span> (cuadrado \(N\times N\))</td></tr>
+        <tr><td>Posición / orientación inicial</td><td>\((1,1)\), al norte</td></tr>
+        <tr><td>Mochila</td><td>Infinitos zumbadores</td></tr>
+        <tr><td>Máximo de instrucciones a ejecutar</td><td>10 000 000</td></tr>
+        <tr><td>Longitud máxima de la pila</td><td>65 000</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Restricción dura</td><td>0 puntos si queda algún cuadro <em>o</em> si usas más del 50% de las casillas</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Condición sobre la densidad de zumbadores</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">21</td><td>Zumbadores en a lo más el \(50\%\) de las posiciones.</td></tr>
+          <tr><td>2</td><td class="pts">23</td><td>Zumbadores en a lo más el \(35\%\) de las posiciones.</td></tr>
+          <tr><td>3</td><td class="pts">27</td><td>Zumbadores en a lo más el \(31\%\) de las posiciones.</td></tr>
+          <tr><td>4</td><td class="pts">29</td><td>Crédito graduado: \(0\%\) si usas más del \(31\%\); \(100\%\) si colocas el <strong>mínimo</strong> posible; proporcional entre el mínimo y el \(30\%\).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">En todos los casos: si al terminar queda algún cuadro, ese caso vale
+       0. Los conjuntos de prueba comparten los mismos tamaños de mundo
+       (\(N \in \{2,5,7,9,11,13,16,17,19,23,26,29,52,53,100\}\)); lo que cambia entre
+       subtareas es qué tan pocos zumbadores se exigen.</p>
+
+    <h2>Ejemplo</h2>
+    <p>El mundo de entrada es un lienzo de \(5\times 5\) que inicialmente no tiene
+       zumbadores. En total hay 25 posiciones.</p>
+
+    <div class="example">
+      <figure>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 230" width="230" height="230" role="img" aria-label="Lienzo vacío de 5 por 5"><rect x="0" y="0" width="230" height="230" fill="#ffffff"/><rect x="10" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="10" width="210" height="210" fill="none" stroke="#3a4a73" stroke-width="3"/></svg>
+        <figcaption>Entrada: lienzo \(5\times 5\) vacío (25 posiciones).</figcaption>
+      </figure>
+      <figure>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 230" width="230" height="230" role="img" aria-label="Salida válida con 6 zumbadores"><rect x="0" y="0" width="230" height="230" fill="#ffffff"/><rect x="10" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="10" width="210" height="210" fill="none" stroke="#3a4a73" stroke-width="3"/><circle cx="157.0" cy="31.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="157.0" y="35.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="73.0" cy="73.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="73.0" y="77.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="199.0" cy="73.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="199.0" y="77.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="115.0" cy="115.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="115.0" y="119.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="73.0" cy="157.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="73.0" y="161.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="157.0" cy="157.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="157.0" y="161.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text></svg>
+        <figcaption>Salida válida con \(6\) zumbadores (\(24\%\)). Ningún cuadrado queda con el borde totalmente vacío.</figcaption>
+      </figure>
+    </div>
+    <p>Una salida posible (la del enunciado) elimina todos los cuadros, de todas las
+       longitudes, colocando <strong>9 zumbadores</strong> (un \(36\%\) de las 25
+       posiciones). Para este lienzo es posible encontrar arreglos que quitan todos los
+       cuadros colocando únicamente <strong>6 zumbadores</strong>, lo que representa el
+       \(24\%\) de las posiciones originales (es el mínimo para \(N=5\)).</p>
+
+    <h3>Ejemplos de resultados <em>inválidos</em></h3>
+    <ul>
+      <li><strong>Mala salida 1:</strong> todavía puede formarse un <strong>cuadro de
+          \(2\times 2\)</strong> (un bloque de \(2\times 2\) casillas, todas sin zumbador).</li>
+      <li><strong>Mala salida 2:</strong> deja dos cuadros de \(1\times 1\) y uno de
+          <strong>\(4\times 4\)</strong>, y por tanto es inválida.</li>
+    </ul>
+
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 230" width="230" height="230" role="img" aria-label="Ilustración de un cuadro: cuadrado con el borde vacío"><rect x="0" y="0" width="230" height="230" fill="#ffffff"/><rect x="10" y="178" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="136" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="94" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="178" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="94" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="52" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="178" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="136" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="94" width="42" height="42" fill="#ffd9d2" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="94" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="136" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="178" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="136" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="94" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="52" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="178" y="10" width="42" height="42" fill="none" stroke="#b9c0d4" stroke-width="1.5"/><rect x="10" y="10" width="210" height="210" fill="none" stroke="#3a4a73" stroke-width="3"/><circle cx="199.0" cy="31.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="199.0" y="35.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="157.0" cy="157.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="157.0" y="161.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="73.0" cy="31.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="73.0" y="35.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text><circle cx="199.0" cy="115.0" r="12.6" fill="#e8702a" stroke="#7a3a10" stroke-width="2"/><text x="199.0" y="119.0" font-size="13" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">1</text></svg>
+      <figcaption>Ilustración de un <strong>cuadro</strong> (reconstrucción): las casillas
+        rosas son el borde de un cuadrado de \(3\times 3\); todas están sin zumbador, así
+        que ese cuadrado «sí se forma». La casilla central no importa.</figcaption>
+    </figure>
+    <p class="note">Nota: las figuras anteriores son reconstrucciones fieles del ejemplo
+       (las imágenes oficiales no estaban disponibles en la carpeta del problema); las
+       cantidades \(9\), \(6\) y \(24\%\) son las del enunciado. En la versión en línea de
+       Karel (karel.js) hay un enlace para validar tus soluciones; conviene usarlo para no
+       perder tiempo comprobando si quedan cuadros.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En un mundo cuadrado \(N\times N\) vacío, coloca zumbadores para que <strong>ningún
+       cuadrado alineado a los ejes tenga su borde completamente vacío</strong>. El
+       cuadrado más pequeño es el bloque \(2\times 2\), así que como mínimo
+       <strong>cada bloque \(2\times 2\) debe contener al menos un zumbador</strong>. Hay
+       que lograrlo usando la <strong>menor</strong> cantidad de zumbadores (y jamás más
+       del 50% de las casillas).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El puntaje es por <strong>densidad</strong>: \(\le 50\%\) (21 pts),
+                \(\le 35\%\) (23 pts), \(\le 31\%\) (27 pts) y el <strong>mínimo</strong>
+                (29 pts, graduado). Cualquier cuadro que sobreviva da 0 en ese caso. La
+                densidad óptima crece desde \(\approx 22\%\) (N chico) hacia
+                \(\approx 31\%\) (N grande); para \(N=5\) el mínimo es \(6\) (\(24\%\)).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es exactamente un «cuadro»?</summary>
+      <div class="body">
+        <p class="q">¿Ya definiste con precisión cuándo «se forma un cuadrado»? ¿Es que
+           sus 4 esquinas estén vacías, o que <em>todo su borde</em> esté vacío?</p>
+        <p>Mira el ejemplo: con solo 6 zumbadores en \(5\times 5\) quedan cuatro casillas
+           esquina del lienzo todavía vacías (forman las esquinas de un cuadrado), y aun
+           así es válido. Entonces no basta con romper esquinas: un <strong>cuadro</strong>
+           es un cuadrado alineado a los ejes cuyas casillas del <strong>contorno (borde)</strong>
+           están <em>todas</em> sin zumbador. El más chico (\(2\times 2\)) no tiene
+           interior, así que su borde son sus 4 casillas: un bloque \(2\times 2\) vacío.</p>
+        <p>Reformula el objetivo: <strong>todo</strong> cuadrado de lado \(s\ge 1\) debe
+           tener al menos un zumbador en su perímetro.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Primeros puntos: gastar mucho (≤ 50%)</summary>
+      <div class="body">
+        <p class="q">¿Qué patrón sencillo garantiza que jamás haya un borde vacío, sin
+           pasarte del 50%?</p>
+        <p>Un tablero de ajedrez mata <em>todo</em>: en cualquier línea de dos o más
+           casillas consecutivas hay un zumbador, así que ningún borde puede quedar vacío.
+           Eso ya te da la subtarea de 21 puntos.</p>
+        <p><strong>¡Cuidado con la paridad que eliges!</strong> Hay dos clases posibles:
+           <em>(x+y) par</em> e <em>(x+y) impar</em>. Para N par ambas tienen
+           exactamente \(N^2/2 = 50\%\) de celdas (límite válido). Pero para N
+           <strong>impar</strong>, la clase par tiene \(\lceil N^2/2 \rceil\) celdas
+           <strong>estrictamente mayor al 50%</strong> (ej. N=5: 13 de 25 = 52%, N=7:
+           25 de 49 ≈ 51%), y el enunciado da <strong>0 puntos</strong> si se usa más del
+           50%. Como casi todos los casos de prueba tienen N impar (5, 7, 9, 11, 13, 17,
+           19, 23, 29, 53…), usar la clase par da 0 en casi todos los casos.</p>
+        <p>La corrección: usa la clase <strong>impar</strong>, es decir, pinta donde
+           \((x+y)\) es <strong>impar</strong>. Esa clase tiene
+           \(\lfloor N^2/2 \rfloor\) celdas, que es estrictamente <em>menor</em> al 50%
+           para N impar (N=5: 12/25 = 48% ✓, N=7: 24/49 ≈ 49% ✓) e igual al 50% para N
+           par (siempre válido). El patrón sigue siendo un tablero de ajedrez y sigue
+           matando todos los cuadros; sólo cambia cuáles casillas se pintan.</p>
+        <p>En Karel: recorre el mundo en <em>serpentina</em> dejando zumbador sí/no
+           alternando, comenzando con la primera casilla <em>sin</em> zumbador (así
+           la casilla \((1,1)\) con \(x+y=2\) par queda vacía y la \((2,1)\) con
+           \(x+y=3\) impar recibe zumbador).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La idea clave: diagonales</summary>
+      <div class="body">
+        <p class="q">¿Y si piensas en las <em>antidiagonales</em> \(x+y=\text{cte}\)?
+           ¿Cuántas antidiagonales distintas toca el borde de un cuadrado?</p>
+        <p>Recorre el borde de un cuadrado de lado \(s\): el valor \(x+y\) va desde la
+           esquina inferior-izquierda hasta la superior-derecha cambiando de \(1\) en
+           \(1\), cubriendo <strong>\(2s+1\) antidiagonales consecutivas</strong>. Para el
+           cuadrado más pequeño (\(s=1\)) son \(3\) antidiagonales seguidas.</p>
+        <p>Entonces, si colocas zumbadores en todas las casillas con \((x+y)\equiv 0
+           \pmod 3\), cualquier borde (que abarca \(\ge 3\) antidiagonales seguidas)
+           contiene una de ellas y queda «picado». Densidad: \(1/3\approx 33.3\%\). Mata
+           todos los cuadros y te alcanza para la subtarea del \(35\%\) (23 pts). En Karel
+           es fácil: en cada fila deja un zumbador cada 3 casillas y <strong>recorre el
+           inicio una posición por fila</strong> para que las marcas caigan en
+           diagonal.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Bajar del tercio (≤ 31%)</summary>
+      <div class="body">
+        <p class="q">El \(1/3\) se pasa del \(31\%\). ¿Puedes <em>compartir</em> un mismo
+           zumbador entre cuadrados vecinos para ralear el patrón?</p>
+        <p>No hace falta llenar una antidiagonal completa. Con un patrón periódico más
+           fino —por ejemplo, pintar las casillas con \((x+2y)\bmod 7 \in\{1,4\}\)— la
+           densidad baja a \(2/7\approx 28.6\%\) y <strong>sigue rompiendo todo borde</strong>
+           (se puede verificar exhaustivamente). Eso entra cómodo en el \(\le 31\%\)
+           (27 pts) y se lleva buena parte de la subtarea graduada de 29 puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+        <p><strong>Modelo.</strong> Un «cuadro» es un cuadrado alineado a los ejes cuyo
+           contorno está todo vacío. Equivale a pedir: para todo cuadrado de lado
+           \(s\ge 1\), al menos una casilla de su perímetro tiene zumbador. El caso
+           \(s=1\) obliga a que cada bloque \(2\times 2\) tenga un zumbador.</p>
+
+        <p><strong>Por qué la diagonal funciona.</strong> El perímetro de un cuadrado de
+           lado \(s\) toca exactamente las \(2s+1\) antidiagonales consecutivas
+           \(c, c+1, \dots, c+2s\) (con \(c=\) suma de coordenadas de la esquina
+           inferior-izquierda), y en cada una de esas antidiagonales hay una casilla del
+           borde. Si marcamos todas las casillas con \((x+y)\equiv 0\pmod 3\), como entre
+           \(3\) valores consecutivos siempre hay un múltiplo de \(3\), todo perímetro
+           queda picado. Esto da una solución <strong>válida garantizada</strong> al
+           \(1/3\).</p>
+
+        <p><strong>Cómo subir de subtarea:</strong></p>
+        <ul>
+          <li><strong>21 pts (\(\le 50\%\)):</strong> patrón de ajedrez con la clase
+              <strong>impar</strong> (\((x+y)\) impar): \(\lfloor N^2/2\rfloor\) celdas,
+              siempre \(\le 50\%\).</li>
+          <li><strong>23 pts (\(\le 35\%\)):</strong> diagonales \((x+y)\equiv 0\pmod 3\)
+              (\(1/3\)).</li>
+          <li><strong>27 pts (\(\le 31\%\)):</strong> patrón periódico más ralo, p. ej.
+              \((x+2y)\bmod 7\in\{1,4\}\) (\(2/7\approx 28.6\%\)).</li>
+          <li><strong>29 pts (mínimo):</strong> una construcción afinada que
+              <em>reutiliza</em> cada zumbador para varios cuadrados (recorriendo el mundo
+              fila por fila y decidiendo dónde dejar el siguiente zumbador en función de
+              los ya colocados, como hace la solución oficial). La densidad óptima va de
+              \(\approx 22\%\) (N chico) acercándose a \(\approx 31\%\) cuando N crece; para
+              \(N=5\) el mínimo comprobado es \(6\) (\(24\%\)).</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel) — patrón diagonal 1/3</span>
+<pre>// Idea: marcar las casillas con (x+y) mod 3 == 0, recorriendo en serpentina.
+// "marca" en la fila = dejar un zumbador cada 3 casillas; el desfase
+// avanza 1 por fila para que las marcas caigan en diagonal.
+
+define recorre-fila(desfase):        // 0,1 o 2: posición del primer zumbador
+    contador <- 0
+    repetir (N) veces:
+        si (contador == desfase): deja-zumbador
+        contador <- (contador + 1) mod 3
+        si frente-libre: avanza
+
+define resolver:
+    coloca a Karel al inicio de la fila de abajo, mirando al este
+    desfase <- (depende de la fila inicial)   // calza con (x+y) mod 3
+    repetir para cada una de las N filas:
+        recorre-fila(desfase)
+        desfase <- (desfase + 1) mod 3        // desliza la diagonal
+        sube a la siguiente fila y voltea (serpentina)
+    apagate</pre>
+        </div>
+
+        <p class="note">El pseudocódigo describe la construcción del \(1/3\) (válida y
+           sencilla). Para el patrón \(2/7\) se usa la misma serpentina cambiando la regla
+           de marcado; para el mínimo (29 pts) se sustituye la regla fija por una decisión
+           local que mira los zumbadores ya puestos.</p>
+
+        <p><strong>Complejidad:</strong> \(O(N^2)\) instrucciones y casillas visitadas
+           (proporcional al área del mundo); memoria \(O(1)\) más allá del propio mundo.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<!-- OMI 2015 · Lenguaje · Problema 07 — Ferrocarril "El Chepe" (interactivo) -->
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2015 · Problema 07 — Ferrocarril "El Chepe"</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">20ª OMI · 2015 · Lenguaje</div>
+    <h1>Problema <span class="num">07</span> — Ferrocarril "El Chepe"</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2015LENGUAJE3">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Una de las grandes atracciones turísticas de Chihuahua es el legendario
+       ferrocarril "El Chepe", que en esta ocasión se prepara para salir en busca
+       de una nueva aventura. Como presidente de la Comisión de Ordenamiento de
+       Maquinaria Interestatal (COMI) estás a cargo de preparar todo para que el
+       viaje sea un éxito.</p>
+    <p>El Chepe tiene \(N\) vagones, numerados del \(1\) al \(N\). Los vagones
+       están colocados sobre las vías del ferrocarril, pero desconoces su orden.
+       La COMI te ha encargado ordenar los vagones del \(1\) al \(N\) para
+       garantizar la integridad del ferrocarril.</p>
+    <p>Para ordenar los vagones tienes a tu disposición una <strong>máquina de
+       intercambios</strong>. Esta máquina te permite realizar las siguientes
+       operaciones:</p>
+    <ul>
+      <li>Para un <strong>segmento continuo de vagones de tamaño par</strong>, la
+          máquina puede intercambiar la mitad izquierda con la mitad derecha del
+          segmento. Ambas mitades mantienen su orden original.</li>
+      <li>Buscar la posición actual del vagón con número \(v\).</li>
+      <li>Saber cuál es el número del vagón en la posición \(p\).</li>
+    </ul>
+    <p>La COMI ha sido muy estricta al aprobar el presupuesto de tu trabajo, por lo
+       que te ha autorizado una <strong>cantidad muy limitada de operaciones de
+       cada tipo</strong> que puedes realizar para completar el reacomodo.</p>
+
+    <p class="note">El enunciado oficial incluye una figura (<code>train.jpg</code>)
+       que ilustra el intercambio de mitades; no se reprodujo aquí. Su efecto se
+       describe con un ejemplo numérico más abajo: si el segmento
+       \([a,b]\) tiene tamaño par \(2h\), las posiciones \(a..a+h-1\) (mitad
+       izquierda) y \(a+h..b\) (mitad derecha) se intercambian de bloque,
+       conservando cada una su orden interno. Equivale a una rotación del segmento
+       por \(h\) lugares.</p>
+
+    <div class="karel">
+      <span class="tag">Problema interactivo</span>
+      <p>Esta tarea <strong>no usa entrada ni salida estándar</strong>. En vez de
+         eso implementas la función <code>AcomodarFerrocarril</code> y te comunicas
+         con el evaluador llamando a sus funciones
+         (<code>EncontrarVagon</code>, <code>VagonEnPosicion</code> e
+         <code>IntercambiarVagones</code>). El presupuesto de llamadas de cada
+         función es limitado y depende de la subtarea (ver
+         <em>Restricciones</em>).</p>
+    </div>
+
+    <h2>Tu tarea</h2>
+    <p>Dado el número \(N\) de vagones del Chepe, debes ordenarlos haciendo uso de
+       las operaciones que autorizó la COMI. Como el problema es interactivo, no
+       lees entrada ni imprimes salida: implementas la función
+       <code>AcomodarFerrocarril</code> (ver <em>Implementación</em>).</p>
+
+    <h2>Implementación</h2>
+
+    <h3>Funciones del evaluador</h3>
+    <p><strong><code>EncontrarVagon(v)</code></strong> —
+       <code>int EncontrarVagon(int v);</code> (Pascal:
+       <code>function EncontrarVagon(var v: LongInt): LongInt;</code>).
+       Llámala para saber la posición actual del vagón número \(v\). Si el vagón
+       \(v\) existe, devuelve un entero con su posición; si pasas un número de
+       vagón que no existe, devuelve \(0\). Parámetro: <code>v</code> — el número
+       del vagón a encontrar.</p>
+
+    <p><strong><code>VagonEnPosicion(p)</code></strong> —
+       <code>int VagonEnPosicion(int p);</code> (Pascal:
+       <code>function VagonEnPosicion(var p: LongInt): LongInt;</code>).
+       Llámala para conocer el número del vagón que está en la posición \(p\) de
+       la vía. Si \(p &lt; 1\) o \(p &gt; N\), devuelve \(0\). Parámetro:
+       <code>p</code> — la posición a consultar.</p>
+
+    <p><strong><code>IntercambiarVagones(a, b)</code></strong> —
+       <code>int IntercambiarVagones(int a, int b);</code> (Pascal:
+       <code>function IntercambiarVagones(var a, b: LongInt): LongInt;</code>).
+       Llámala para intercambiar las mitades del segmento \([a, b]\). Si \(a\) y
+       \(b\) definen un segmento inválido, la función <strong>no</strong>
+       intercambia nada y devuelve \(0\); si fue posible realizar el intercambio
+       devuelve \(1\). Un segmento es inválido si su tamaño es impar, si \(b &lt; a\),
+       o si algún índice es menor a \(1\) o mayor a \(N\). Parámetros:
+       <code>a</code> — índice de inicio del segmento; <code>b</code> — índice de
+       término inclusivo.</p>
+
+    <h3>Tu procedimiento</h3>
+    <p><strong><code>AcomodarFerrocarril(n)</code></strong> —
+       <code>void AcomodarFerrocarril(int n);</code> (Pascal:
+       <code>procedure AcomodarFerrocarril(var n: LongInt);</code>).
+       Recibe el entero \(N\) y debe usar las operaciones anteriores para acomodar
+       el ferrocarril. Parámetro: \(N\) — el número de vagones del Chepe.</p>
+
+    <h2>Evaluador de prueba</h2>
+    <p>El evaluador de prueba recibe del archivo <code>sample.in</code> un entero
+       \(N\), el número de vagones por acomodar, seguido de una línea con \(N\)
+       enteros entre \(1\) y \(N\) que describen el orden inicial de los vagones.
+       Durante la ejecución imprime algunos mensajes para ayudarte a depurar; al
+       terminar tu función, imprime cuántas veces llamaste a
+       <code>EncontrarVagon</code>, <code>VagonEnPosicion</code> e
+       <code>IntercambiarVagones</code>, y te dice si el ferrocarril quedó
+       ordenado correctamente. (En la sección <em>Experimentación</em> el
+       enunciado ofrece el paquete <code>libinteractive</code> para probar local.)</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tipo de problema</td><td><span class="badge">Interactivo</span> (sin E/S estándar)</td></tr>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (juez omegaUp)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (juez omegaUp)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de vagones</td><td><span class="badge">\(1 \le N \le 40{,}000\)</span> (máximo global; varía por subtarea)</td></tr>
+        <tr><td>Presupuesto de llamadas</td><td>Limitado por subtarea para cada función (ver tabla)</td></tr>
+      </table>
+    </div>
+
+    <h2>Restricciones (Subtareas)</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td><td class="pts">17</td>
+            <td>\(1 \le N \le 200\). Puedes llamar a <code>EncontrarVagon</code>,
+                <code>VagonEnPosicion</code> e <code>IntercambiarVagones</code> a lo
+                más \(40{,}000\) veces <em>cada una</em>.</td>
+          </tr>
+          <tr>
+            <td>2</td><td class="pts">23</td>
+            <td>\(1 \le N \le 2{,}000\). <code>IntercambiarVagones</code> a lo más
+                \(50{,}000\); <code>EncontrarVagon</code> y
+                <code>VagonEnPosicion</code> a lo más \(5{,}000\) cada una.</td>
+          </tr>
+          <tr>
+            <td>3</td><td class="pts">25</td>
+            <td>\(1 \le N \le 20{,}000\). <code>IntercambiarVagones</code> a lo más
+                \(40{,}000\); <code>EncontrarVagon</code> y
+                <code>VagonEnPosicion</code> a lo más \(20{,}000\) cada una.</td>
+          </tr>
+          <tr>
+            <td>4</td><td class="pts">11</td>
+            <td>\(1 \le N \le 24{,}000\). <code>IntercambiarVagones</code> a lo más
+                \(36{,}000\); <code>EncontrarVagon</code> y
+                <code>VagonEnPosicion</code> a lo más \(24{,}000\) cada una.</td>
+          </tr>
+          <tr>
+            <td>5 <span class="note">(no agrupada)</span></td><td class="pts">12</td>
+            <td>\(1 \le N \le 5{,}000\). <code>IntercambiarVagones</code> a lo más
+                \(7{,}500\); <code>VagonEnPosicion</code> a lo más \(5{,}000\).
+                <strong>No</strong> puedes llamar a <code>EncontrarVagon</code>.</td>
+          </tr>
+          <tr>
+            <td>6 <span class="note">(no agrupada)</span></td><td class="pts">12</td>
+            <td>\(1 \le N \le 40{,}000\). <code>IntercambiarVagones</code> a lo más
+                \(60{,}000\); <code>VagonEnPosicion</code> a lo más \(40{,}000\).
+                <strong>No</strong> puedes llamar a <code>EncontrarVagon</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Evaluación: si excedes el límite de llamadas de cualquier
+       función, o si al terminar el ferrocarril no quedó ordenado, recibes \(0\)
+       puntos en ese caso. Obtienes los puntos completos de un caso si lo ordenas
+       correctamente sin exceder los límites de llamadas ni el de tiempo. Las
+       subtareas 5 y 6 son <em>no agrupadas</em> (cada caso se evalúa de forma
+       independiente).</p>
+
+    <h2>Ejemplo</h2>
+    <p>Supón que el Chepe tiene \(5\) vagones acomodados así:
+       \(1,\ 4,\ 5,\ 3,\ 2\). Una forma de ordenarlos con las funciones
+       autorizadas es:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Función llamada</th><th>Valor devuelto</th><th>Explicación</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>AcomodarFerrocarril(5)</code></td><td>—</td>
+            <td>El evaluador llama a tu función e inicia tu procedimiento para acomodar.</td>
+          </tr>
+          <tr>
+            <td><code>BuscarVagon(1)</code></td><td>1</td>
+            <td>El vagón 1 está en la posición 1, así que ya está ordenado.</td>
+          </tr>
+          <tr>
+            <td><code>VagonEnPosicion(2)</code></td><td>4</td>
+            <td>El vagón en la posición 2 es el 4.</td>
+          </tr>
+          <tr>
+            <td><code>IntercambiarVagones(2,5)</code></td><td>1</td>
+            <td>Se intercambian las mitades del segmento \([2,5]\). Los vagones
+                quedan: \(1,\ 3,\ 2,\ 4,\ 5\).</td>
+          </tr>
+          <tr>
+            <td><code>BuscarVagon(6)</code></td><td>0</td>
+            <td>El vagón 6 no existe (el Chepe sólo tiene 5 vagones); devuelve 0.</td>
+          </tr>
+          <tr>
+            <td><code>BuscarVagon(2)</code></td><td>3</td>
+            <td>El vagón 2 está en la posición 3.</td>
+          </tr>
+          <tr>
+            <td><code>IntercambiarVagones(3,2)</code></td><td>0</td>
+            <td>No es posible intercambiar cuando el índice de término es menor al de inicio.</td>
+          </tr>
+          <tr>
+            <td><code>IntercambiarVagones(2,3)</code></td><td>1</td>
+            <td>Tras esta operación los vagones quedan: \(1,\ 2,\ 3,\ 4,\ 5\).
+                Como ya están ordenados, tu función debe terminar.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Nota de transcripción: el enunciado original escribe
+       "<code>BuscarVagon</code>" en este ejemplo; se refiere a la función
+       <code>EncontrarVagon</code> definida en <em>Implementación</em>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Ordenamiento</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes una permutación oculta de \(N\) vagones. Tu única herramienta de
+       reordenamiento es <em>intercambiar las dos mitades de un segmento de tamaño
+       par</em>; además puedes preguntar la posición de un vagón
+       (<code>EncontrarVagon</code>) o el vagón en una posición
+       (<code>VagonEnPosicion</code>). Debes dejarlos en orden \(1,2,\dots,N\)
+       respetando un presupuesto de llamadas por subtarea. Implementas
+       <code>AcomodarFerrocarril</code>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El presupuesto más apretado de intercambios es \(\approx 1.5\,N\)
+                (p. ej. \(7{,}500\) para \(N=5{,}000\)). Las subtareas 5 y 6
+                <strong>prohíben</strong> <code>EncontrarVagon</code>: hay que
+                leer toda la permutación con \(N\) llamadas a
+                <code>VagonEnPosicion</code> y mantener un <em>modelo local</em>
+                para saber dónde está cada vagón sin preguntar.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué hace realmente el intercambio?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste qué le pasa a un segmento de tamaño exactamente
+           \(2\) cuando intercambias sus mitades?</p>
+        <p>Intercambiar las mitades de \([a,b]\) (tamaño \(2h\)) es rotar ese
+           segmento por \(h\): la mitad derecha pasa al frente y la izquierda
+           atrás, cada una conservando su orden. En particular, un segmento de
+           tamaño \(2\) es una <em>transposición de vecinos</em>. ¿Podrías
+           entonces ordenar como una burbuja, con puros intercambios de tamaño
+           \(2\)? ¿Te alcanza el presupuesto si \(N\) es grande?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por la subtarea 1</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 200\) y \(40{,}000\) llamadas permitidas a cada
+           función, ¿una burbuja \(O(N^2)\) cabe en el presupuesto?</p>
+        <p>Sí: \(200^2 = 40{,}000\) intercambios de vecinos en el peor caso, y
+           puedes ubicar cada vagón con <code>EncontrarVagon</code>. Eso te da los
+           \(17\) puntos de la subtarea 1, pero no escala: para
+           \(N=2{,}000\) la burbuja necesitaría \(\sim 4{,}000{,}000\)
+           intercambios.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Mover un vagón lejos en UN solo intercambio</summary>
+      <div class="body">
+        <p class="q">Si el vagón \(i\) debe ir a la posición \(i\) y está a
+           distancia \(d\) (en la posición \(i+d\)), ¿qué segmento par lo lleva a
+           su lugar de un solo golpe?</p>
+        <p>El segmento \([\,i,\ i+2d-1\,]\): su mitad derecha empieza justo en
+           \(i+d\), donde está el vagón \(i\); al intercambiar mitades, ese bloque
+           pasa al frente y el vagón aterriza en la posición \(i\). Con esto puedes
+           hacer un <em>ordenamiento por selección</em>: coloca \(1\), luego \(2\),
+           etc. Esto sólo funciona si el segmento cabe, es decir si \(2d \le L\),
+           donde \(L\) es el tamaño del tramo que falta por ordenar.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿Y si el segmento no cabe? (\(2d &gt; L\))</summary>
+      <div class="body">
+        <p class="q">Cuando el vagón está demasiado a la derecha, el segmento
+           \([i, i+2d-1]\) se sale del rango. ¿Cómo lo acercas primero con un
+           intercambio auxiliar para que el segundo ya quepa?</p>
+        <p>Un intercambio intermedio mueve el vagón hacia la izquierda lo
+           suficiente para que \(2d' \le L\), y luego rematas con el de la Pista 3.
+           Así gastas a lo más \(2\) intercambios por vagón \(\Rightarrow\)
+           \(\approx 2N\). Eso basta para las subtareas 2, 3 y 4 (donde
+           <code>IntercambiarVagones</code> permite entre \(36{,}000\) y
+           \(50{,}000\)), pero <strong>no</strong> para el presupuesto duro de
+           \(1.5N\) de las subtareas 5 y 6.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtareas 5 y 6: prohíben EncontrarVagon</summary>
+      <div class="body">
+        <p class="q">Si no puedes preguntar la posición de un vagón, ¿cómo sabes
+           dónde está en cada momento?</p>
+        <p>Lee <em>toda</em> la permutación al inicio con \(N\) llamadas a
+           <code>VagonEnPosicion</code> y guarda dos arreglos: la configuración y su
+           inverso (posición de cada vagón). Cada vez que llamas a
+           <code>IntercambiarVagones</code>, aplica el <em>mismo</em> intercambio a
+           tu modelo local. Así consultas posiciones en \(O(1)\) sin gastar ni una
+           llamada a <code>EncontrarVagon</code> (cero, como exigen 5 y 6). Para
+           que el modelo sea rápido en tiempo con \(N=40{,}000\) y muchos
+           intercambios, conviene una estructura balanceada (treap/splay con la
+           operación "rotar mitades"), aunque para la cuenta de llamadas un arreglo
+           ya es correcto.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 6 — Bajar a \(1.5N\): selección por DOS extremos</summary>
+      <div class="body">
+        <p class="q">El intercambio también puede mover un vagón hacia la
+           <em>derecha</em> (la mitad izquierda pasa atrás). ¿Y si en cada paso
+           colocas el extremo —izquierdo o derecho— que se pueda resolver en un
+           solo intercambio?</p>
+        <p>Trabaja sobre una ventana \([lo, hi]\). Coloca el vagón \(lo\) si está
+           en la mitad izquierda de la ventana (\(2d_{lo} \le L\)), o el vagón
+           \(hi\) si está en la mitad derecha (\(2d_{hi} \le L\)). Cuando ambos
+           están "cruzados" (cada uno en la mitad contraria), <em>un</em>
+           intercambio de la mayor mitad par de la ventana los descruza a los
+           dos a la vez; el siguiente paso coloca uno de ellos en un intercambio.
+           Resultado: a lo más \(3\) intercambios por cada \(2\) vagones, es decir
+           \(\le 1.5N\). Eso cubre las subtareas 5 y 6.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Una sola estrategia gana los \(100\) puntos en todas las subtareas
+           (incluidas 5 y 6, que prohíben <code>EncontrarVagon</code>):</p>
+        <ol>
+          <li><strong>Lee la permutación una vez</strong> con \(N\) llamadas a
+              <code>VagonEnPosicion</code> y construye un modelo local
+              <code>arr</code> (vagón en cada posición) y su inverso
+              <code>pos</code> (posición de cada vagón). A partir de aquí no vuelves
+              a llamar a <code>EncontrarVagon</code>: todo se consulta en el modelo.</li>
+          <li><strong>Selección por dos extremos</strong> sobre la ventana
+              \([lo,hi]\). El intercambio de mitades de \([a,a+2h-1]\) corre el
+              bloque derecho \(h\) lugares a la izquierda (y el izquierdo \(h\) a la
+              derecha). Por eso:
+            <ul>
+              <li>si el vagón \(lo\) está a distancia \(d_{lo}\) con
+                  \(2d_{lo}\le L\): un intercambio \([lo,\ lo+2d_{lo}-1]\) lo deja
+                  en \(lo\);</li>
+              <li>simétricamente, si el vagón \(hi\) está a distancia \(d_{hi}\) con
+                  \(2d_{hi}\le L\): un intercambio \([hi-2d_{hi}+1,\ hi]\) lo deja
+                  en \(hi\);</li>
+              <li>si <em>ambos</em> están cruzados, un intercambio de la mitad par
+                  más grande de la ventana descruza a los dos; el siguiente paso ya
+                  coloca uno en un solo intercambio.</li>
+            </ul>
+          </li>
+          <li>Cada intercambio se aplica también al modelo local para mantener
+              <code>pos</code> exacto. Terminas cuando la ventana se vacía.</li>
+        </ol>
+        <p><strong>Por qué cabe en el presupuesto:</strong> en los casos "buenos"
+           gastas \(1\) intercambio por vagón; en los "cruzados", \(3\) por cada
+           \(2\) vagones. El total queda \(\le \lceil 1.5N \rceil\) intercambios,
+           \(N\) llamadas a <code>VagonEnPosicion</code> y \(0\) a
+           <code>EncontrarVagon</code>, dentro de todos los límites.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>procedimiento AcomodarFerrocarril(N):
+    para p = 1..N:  arr[p] = VagonEnPosicion(p)
+    para p = 1..N:  pos[arr[p]] = p          # inverso
+
+    lo = 1;  hi = N
+    mientras lo < hi:
+        dlo = pos[lo] - lo
+        si dlo == 0:  lo = lo + 1;  continuar
+        dhi = hi - pos[hi]
+        si dhi == 0:  hi = hi - 1;  continuar
+        L = hi - lo + 1
+
+        si 2*dlo <= L:                       # coloca el vagon lo en 1 swap
+            HacerSwap(lo, lo + 2*dlo - 1);  lo = lo + 1
+        si no, si 2*dhi <= L:                # coloca el vagon hi en 1 swap
+            HacerSwap(hi - 2*dhi + 1, hi);  hi = hi - 1
+        si no:                               # cruzados: descruzar a ambos
+            half = L / 2                     # division entera
+            si pos[lo] <= lo + 2*half - 1:
+                HacerSwap(lo, lo + 2*half - 1)
+            si no:                           # ventana impar con vagon lo en hi
+                HacerSwap(hi - 2*half + 1, hi)
+            # sin encoger la ventana: el siguiente ciclo coloca un extremo
+
+procedimiento HacerSwap(a, b):
+    IntercambiarVagones(a, b)                # operacion real del evaluador
+    aplicar el mismo "rotar mitades" a arr[a..b]
+    actualizar pos[ ] para las posiciones a..b</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> con un arreglo, el modelo local cuesta
+           \(O(N)\) por intercambio (suficiente y correcto para la cuenta de
+           llamadas). Con una estructura balanceada (treap/splay y la operación de
+           rotar mitades) baja a \(O(N\log N)\) en tiempo, \(O(N)\) en memoria.
+           Llamadas: \(N\) a <code>VagonEnPosicion</code>, \(0\) a
+           <code>EncontrarVagon</code> y \(\le \lceil 1.5N \rceil\) a
+           <code>IntercambiarVagones</code>.</p>
+
+        <p class="note">Verificado contra los 30 casos oficiales (subtareas
+           1–6): siempre ordena y respeta todos los presupuestos; el caso más
+           apretado usó \(\approx 1.36N\) intercambios.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
