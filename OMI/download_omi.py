@@ -29,7 +29,7 @@ Uso:
     python3 OMI/download_omi.py --force              # vuelve a bajar aunque ya exista
 """
 from __future__ import annotations
-import argparse, base64, json, os, re, ssl, sys, time, urllib.request, urllib.error
+import argparse, base64, json, os, re, ssl, subprocess, sys, time, urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))          # .../OMI
 INV  = os.path.join(HERE, "omi_inventory.json")
@@ -40,11 +40,41 @@ CTX.check_hostname = False
 CTX.verify_mode = ssl.CERT_NONE   # algunos hosts viejos tienen cadenas TLS rotas
 
 
+def _github_token():
+    """Token para la API de GitHub (5000/h en vez de 60/h): GITHUB_TOKEN o `gh auth token`."""
+    t = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if t:
+        return t.strip()
+    try:
+        out = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, timeout=10)
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip()
+    except Exception:                                 # noqa: BLE001
+        pass
+    return None
+
+
+GH_TOKEN = _github_token()
+
+
 def fetch(url, timeout=40, tries=3):
     last = None
+    # urllib exige URLs ASCII; percent-encodea cualquier no-ASCII (p. ej. raw URLs
+    # del archivo con "día-1" sin codificar que devuelve la API de GitHub).
+    try:
+        url.encode("ascii")
+    except UnicodeEncodeError:
+        import urllib.parse as _up
+        sp = _up.urlsplit(url)
+        url = _up.urlunsplit((sp.scheme, sp.netloc, _up.quote(sp.path),
+                              _up.quote(sp.query, safe="=&?"), sp.fragment))
+    headers = dict(UA)
+    if GH_TOKEN and "api.github.com" in url:
+        headers["Authorization"] = f"Bearer {GH_TOKEN}"
+        headers["Accept"] = "application/vnd.github+json"
     for i in range(tries):
         try:
-            req = urllib.request.Request(url, headers=UA)
+            req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=timeout, context=CTX) as r:
                 return r.read()
         except Exception as e:                       # noqa: BLE001

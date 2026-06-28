@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **38 / 190**
+Total de problemas: **190** · Completados: **44 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -281,16 +281,16 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 5 | Día 2 | La calle de Möbius | `2019/05 La calle de Möbius/index.html` |
 | [ ] | 6 | Día 2 | Áreas Metropolitanas | `2019/06 Áreas Metropolitanas/index.html` |
 
-## 25ª OMI · 2020 — 0 / 6
+## 25ª OMI · 2020 — 6 / 6
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Mapas | `2020/01 Mapas/index.html` |
-| [ ] | 2 | Día 1 | Primo Perdido | `2020/02 Primo Perdido/index.html` |
-| [ ] | 3 | Día 1 | Bits | `2020/03 Bits/index.html` |
-| [ ] | 4 | Día 2 | Cajas | `2020/04 Cajas/index.html` |
-| [ ] | 5 | Día 2 | Ovejas | `2020/05 Ovejas/index.html` |
-| [ ] | 6 | Día 2 | Ciudad Rectángulo | `2020/06 Ciudad Rectángulo/index.html` |
+| [x] | 1 | Día 1 | Mapas | `2020/01 Mapas/index.html` |
+| [x] | 2 | Día 1 | Primo Perdido | `2020/02 Primo Perdido/index.html` |
+| [x] | 3 | Día 1 | Bits | `2020/03 Bits/index.html` |
+| [x] | 4 | Día 2 | Cajas | `2020/04 Cajas/index.html` |
+| [x] | 5 | Día 2 | Ovejas | `2020/05 Ovejas/index.html` |
+| [x] | 6 | Día 2 | Ciudad Rectángulo | `2020/06 Ciudad Rectángulo/index.html` |
 
 ## 26ª OMI · 2021 — 8 / 8
 

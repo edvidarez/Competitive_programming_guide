@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2020 · Problema 05 — Ovejas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">25ª OMI · 2020 · Día 2</div>
+    <h1>Problema <span class="num">05</span> — Ovejas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2020-Ovejas">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Recientemente Karel se hizo pastor y, como buen pastor, debe cuidar de
+       todo su rebaño. Sin embargo, las ovejas son muy traviesas y por ello
+       Karel debe vigilarlas a todas estando lo más cerca posible de cada una de
+       ellas. Karel está caminando constantemente en el campo y quiere que le
+       ayudes a saber, si estuviera parado en cierto punto, a qué distancia está
+       la oveja más cercana a él en ese momento. La distancia entre dos
+       posiciones es el número de pasos que necesita Karel para llegar de una a
+       otra.</p>
+    <p>Karel y las ovejas se encuentran en una matriz. Karel se puede mover en un
+       paso a cualquiera de las 8 casillas adyacentes a la que se encuentra, como
+       un rey de ajedrez.</p>
+    <p>Dadas las posiciones de todas las ovejas, ayuda a Karel a responder \(Q\)
+       preguntas para saber a qué distancia está la oveja más cercana desde la
+       posición \(x_q, y_q\).</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea, 2 enteros \(N\) y \(Q\), separados por un espacio.</p>
+    <ul>
+      <li>\(N\) es el número de ovejas que hay.</li>
+      <li>\(Q\) es el número de veces que Karel te va a preguntar la distancia de
+          la oveja más cercana.</li>
+    </ul>
+    <p>En las siguientes \(N\) líneas, 2 enteros \(x_i\), \(y_i\), que
+       representan las coordenadas de la oveja \(i\).</p>
+    <p>En las siguientes \(Q\) líneas, 2 enteros \(x_q\), \(y_q\), que
+       representan las coordenadas de la posición de Karel al momento de hacer la
+       pregunta \(q\).</p>
+
+    <h2>Salida</h2>
+    <p>Debes escribir \(Q\) líneas con un entero cada una: la distancia de Karel
+       a la oveja más cercana desde \(x_q, y_q\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No indicado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Límite de memoria</td><td>No indicado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de ovejas y consultas</td><td><span class="badge">\(1 \le N, Q \le 10^5\)</span></td></tr>
+        <tr><td>Coordenadas</td><td><span class="badge">\(0 \le x, y \le 1000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">20</td><td>\(1 \le N, Q \le 100\) y \(0 \le x, y \le 100\)</td></tr>
+          <tr><td>2</td><td class="pts">35</td><td>\(1 \le N, Q \le 1000\)</td></tr>
+          <tr><td>3</td><td class="pts">45</td><td>No hay restricciones adicionales</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Consideraciones: todos los casos de cada subtarea están
+       agrupados.</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 2
+1 5
+4 5
+6 10
+5 5
+3 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1
+2</pre></div>
+    </div>
+    <p class="note">Existen tres ovejas en el rebaño. Están en las coordenadas
+       \((1,5)\), \((4,5)\) y \((6,10)\). Si Karel estuviera en la coordenada
+       \((5,5)\), la oveja más cercana sería la que se encuentra en \((4,5)\),
+       pues Karel solo necesita dar un paso para llegar a esta. Si Karel
+       estuviera en la coordenada \((3,3)\), la oveja más cercana también sería
+       la que se encuentra en \((4,5)\), pues solo son necesarios dos pasos para
+       llegar a esta.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">BFS multi-fuente</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Distancia de Chebyshev</span>
+      <span class="ptag">Precálculo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(N\) ovejas con coordenadas enteras en una rejilla acotada
+       (\(0 \le x, y \le 1000\)) y \(Q\) consultas. Para cada consulta \((x_q,
+       y_q)\) debes responder la distancia a la oveja más cercana, donde un paso
+       te lleva a cualquiera de las 8 casillas vecinas (movimiento de rey). La
+       distancia de rey entre dos puntos es \(\max(|\Delta x|, |\Delta y|)\)
+       (distancia de Chebyshev).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, Q \le 10^5\) descarta cualquier cosa que mire todas las
+                ovejas por consulta en el caso grande (\(O(N\cdot Q)=10^{10}\)).
+                Pero las coordenadas están <em>acotadas</em>: \(0 \le x, y \le
+                1000\), o sea a lo más \(1001 \times 1001 \approx 10^6\) casillas
+                distintas. Esa cota chica sobre el espacio, no sobre los datos,
+                es la llave del problema.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué significa "distancia" aquí?</summary>
+      <div class="body">
+        <p class="q">Karel se mueve como rey de ajedrez (8 vecinos). ¿Ya pensaste
+           que esa distancia <em>no</em> es la de Manhattan (\(|\Delta x| +
+           |\Delta y|\)) ni la euclidiana? ¿Cuántos pasos necesita en realidad
+           para ir de \((x_1,y_1)\) a \((x_2,y_2)\)?</p>
+        <p>Fíjate en que, en cada paso, Karel puede cambiar \(x\) y \(y\) a la
+           vez en \(\pm 1\). Piensa por separado cuántos pasos exige cerrar la
+           diferencia en \(x\) y cuántos la diferencia en \(y\): ¿cuál de las dos
+           manda?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (Subtarea 1, 20 pts)</summary>
+      <div class="body">
+        <p class="q">Con \(N, Q \le 100\) y coordenadas \(\le 100\), ¿te alcanza
+           con simular tal cual lo que pide el problema?</p>
+        <p>Una opción directa: por cada consulta, lanza una BFS sobre la rejilla
+           (con los 8 movimientos del rey) desde la posición de Karel y detente
+           al tocar la primera oveja. La rejilla mide a lo más \(101 \times 101
+           \approx 10^4\) casillas, así que cada BFS es \(O(\text{área})\) y
+           tienes \(Q\) consultas. ¿Eso cabe holgado en estos límites?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La fórmula cerrada (Subtarea 2, 35 pts → 55 acumulado)</summary>
+      <div class="body">
+        <p class="q">Retomando la Pista 1: ¿notaste que el número de pasos de
+           rey es exactamente \(\max(|x_1-x_2|, |y_1-y_2|)\)? (Avanzas en
+           diagonal mientras ambas diferencias sean positivas, y luego en recto
+           lo que sobre.)</p>
+        <p>Con esa fórmula ya no necesitas BFS por consulta: por cada consulta
+           recorre las \(N\) ovejas y quédate con el mínimo de
+           \(\max(|x_q-x_i|, |y_q-y_i|)\). Eso es \(O(N\cdot Q)\); con \(N, Q
+           \le 1000\) son \(10^6\) operaciones. ¿Y por qué este enfoque se cae
+           cuando \(N, Q\) llegan a \(10^5\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Dale la vuelta al problema (Subtarea 3, 45 pts)</summary>
+      <div class="body">
+        <p class="q">En el caso grande \(O(N\cdot Q)=10^{10}\) es demasiado.
+           ¿Qué pasa si en vez de responder cada consulta por su cuenta,
+           <em>precalculas</em> la respuesta para TODAS las casillas posibles de
+           una sola vez?</p>
+        <p class="q">Las coordenadas están acotadas a \(0..1000\): solo hay
+           \(\approx 10^6\) casillas. ¿Cómo llenarías toda la rejilla con "la
+           distancia a la oveja más cercana" en una sola pasada, en lugar de
+           repetir trabajo desde cada Karel?</p>
+        <p>Piensa en una BFS que arranque <em>desde todas las ovejas al mismo
+           tiempo</em> (no desde Karel). Si metes todas las ovejas en la cola con
+           distancia 0 y expandes con los 8 movimientos, la primera vez que la
+           ola toca una casilla te da su distancia a la oveja más cercana. Luego
+           cada consulta es una simple lectura en \(O(1)\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> La distancia de rey entre dos casillas es la
+           distancia de Chebyshev \(\max(|\Delta x|, |\Delta y|)\). Como las
+           coordenadas viven en una rejilla chica (\(0..1000\)), conviene
+           precalcular, para cada casilla, la distancia a la oveja más cercana
+           con una <strong>BFS multi-fuente</strong>: todas las ovejas son
+           fuentes con distancia 0 al mismo tiempo. Al usar los 8 vecinos del
+           rey, la onda de la BFS se propaga exactamente como la distancia de
+           Chebyshev, así que cada casilla recibe su valor correcto la primera
+           vez que es alcanzada. Después, cada consulta es una lectura directa de
+           la tabla.</p>
+        <p><strong>Por qué es correcta.</strong> En una BFS sin pesos, la primera
+           vez que se descubre un nodo se hace con la mínima cantidad de aristas.
+           Con varias fuentes a distancia 0, ese mínimo es la distancia a la
+           fuente más cercana. Como una arista = un paso de rey, el valor
+           almacenado es \(\min_i \max(|x-x_i|, |y-y_i|)\), justo lo que pide la
+           consulta. El camino más corto entre dos puntos cabe siempre dentro de
+           su rectángulo envolvente, que está contenido en \([0,1000]^2\), así
+           que acotar la BFS a la rejilla no pierde ninguna ruta óptima.</p>
+        <p><strong>Cómo se sube de subtarea en subtarea.</strong> Subtarea 1: BFS
+           por consulta (o la fórmula) sobre rejilla diminuta. Subtarea 2: la
+           fórmula de Chebyshev \(\max(|\Delta x|, |\Delta y|)\) y mínimo sobre
+           las ovejas, \(O(N\cdot Q)\). Subtarea 3: invertir el problema con una
+           sola BFS multi-fuente y responder en \(O(1)\) por consulta.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, Q
+dist[0..1000][0..1000] = INFINITO          // tabla de distancias
+cola = cola vacía
+
+repetir N veces:
+    leer (x, y)                            // posición de una oveja
+    si dist[x][y] == INFINITO:
+        dist[x][y] = 0
+        encolar (x, y)
+
+// BFS multi-fuente con los 8 movimientos del rey
+mientras la cola no esté vacía:
+    (cx, cy) = desencolar
+    para dx en {-1,0,1}, dy en {-1,0,1}:   // omite (0,0)
+        (nx, ny) = (cx+dx, cy+dy)
+        si (nx, ny) está dentro de [0,1000] y dist[nx][ny] == INFINITO:
+            dist[nx][ny] = dist[cx][cy] + 1
+            encolar (nx, ny)
+
+repetir Q veces:
+    leer (x, y)
+    imprimir dist[x][y]                     // respuesta en O(1)</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> sea \(A = 1001 \times 1001 \approx
+           10^6\) el área. La BFS visita cada casilla una vez con trabajo
+           constante, \(O(A)\); leer ovejas y consultas es \(O(N + Q)\). Total
+           \(O(A + N + Q)\) en tiempo y \(O(A)\) en memoria.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

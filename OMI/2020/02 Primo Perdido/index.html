@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2020 · Problema 02 — Primo Perdido</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Tabla genérica para el ejemplo interactivo */
+  .calltbl{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .calltbl table{width:100%;border-collapse:collapse;font-size:15px}
+  .calltbl th,.calltbl td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .calltbl th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .calltbl tr:last-child td{border-bottom:none}
+  .calltbl td:first-child,.calltbl td:nth-child(2){white-space:nowrap;font-family:ui-monospace,Menlo,Consolas,monospace}
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">25ª OMI · 2020 · Día 1</div>
+    <h1>Problema <span class="num">02</span> — Primo Perdido</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2020-Primo">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <p><span class="badge">Interactivo</span></p>
+
+    <h2>El problema</h2>
+    <p>Tapia organizó una fiesta con todos sus primos. Para ubicarlos fácilmente,
+       Tapia usó todos los números primos no mayores a \(n\) y le asignó uno de
+       ellos a cada uno de sus primos. A la hora de partir el pastel, les pidió que
+       se formaran en orden ascendente, de acuerdo al valor de su primo asignado, y
+       ahí fue cuando se dio cuenta que se le había perdido un primo.</p>
+    <p>Tapia necesita tu ayuda para encontrar el valor de su primo perdido.
+       Escribe una función que determine cuál es el primo perdido.</p>
+
+    <h2>Implementación (protocolo interactivo)</h2>
+    <p>Deberás implementar la función <code>int busca(int n)</code> que regrese un
+       entero: el primo perdido. Todos los primos son menores o iguales a \(n\).</p>
+    <p>Para obtener más información, debes utilizar la función
+       <code>int primo(int posicion)</code> que devolverá el valor del primo que
+       está en la posición <code>posicion</code> de la fila. Recuerda que el primer
+       lugar de la fila es el \(0\).</p>
+    <p>En caso de que preguntes por una posición menor a \(0\) o mayor al número de
+       primos en la fila, la función devolverá \(0\).</p>
+
+    <h2>Evaluación</h2>
+    <p>Definamos \(p\) como la cantidad de primos hasta \(n\).</p>
+    <p>Los puntos que obtengas en cada caso dependerán del número de veces que
+       llames a la función <code>primo(posicion)</code>:</p>
+    <ul>
+      <li>100% por \(\log_{2} p\) o menos llamadas.</li>
+      <li>60% por \(\sqrt{p}\) o menos llamadas.</li>
+      <li>30% por menos de \(p\) llamadas.</li>
+      <li>5% por \(p\) llamadas.</li>
+      <li>0% por más de \(p\) llamadas o por regresar una respuesta incorrecta.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en la fuente (omegaUp)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en la fuente (omegaUp)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Rango de \(n\)</td><td><span class="badge">\(2 \le n \le 10^7\)</span></td></tr>
+        <tr><td>Costo de la solución</td><td>se mide por número de llamadas a <code>primo</code>, no por tiempo de cómputo</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>% de casos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">70%</td><td>\(2 \le n \le 10^5\)</td></tr>
+          <tr><td>2</td><td class="pts">30%</td>
+              <td>\(2 \le n \le 10^7\). El comportamiento del evaluador será
+                  <strong>adaptativo</strong>: en estos casos de prueba el evaluador
+                  no tiene un primo perdido definido inicialmente. Las respuestas
+                  dadas por el evaluador dependen de las llamadas anteriores a
+                  <code>primo(posicion)</code>, pero se te asegura que con las
+                  respuestas a estas llamadas siempre podrás encontrar al primo
+                  perdido.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El puntaje por caso es proporcional al número de llamadas (ver
+       «Evaluación»). Las subtareas fijan el rango de \(n\) y, en la segunda, el
+       carácter adaptativo del evaluador.</p>
+
+    <h2>Ejemplo</h2>
+    <p>La llamada inicial es <code>busca(12)</code>. A partir de ahí, tu función
+       consulta <code>primo(posicion)</code> las veces que necesite:</p>
+    <div class="calltbl">
+      <table>
+        <thead><tr><th>Función llamada</th><th>Valor devuelto</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td>busca(12)</td><td>—</td>
+              <td>Esta será la llamada inicial a tu procedimiento <code>busca</code>.</td></tr>
+          <tr><td>primo(0)</td><td>2</td>
+              <td>En la posición \(0\) de la fila se encuentra el \(2\), tal como se espera.</td></tr>
+          <tr><td>primo(1)</td><td>3</td>
+              <td>En la posición \(1\) de la fila se encuentra el \(3\), tal como se espera.</td></tr>
+          <tr><td>primo(-1)</td><td>0</td>
+              <td>La función devuelve \(0\), pues se preguntó por una posición menor a \(0\).</td></tr>
+          <tr><td>primo(2)</td><td>7</td>
+              <td>En la posición \(2\) de la fila se encuentra el \(7\) donde se esperaba el
+                  \(5\). Con esto ya sabes que el \(5\) es el primo perdido. Aquí tu función
+                  <code>busca(12)</code> debe regresar \(5\) y terminar la ejecución.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Experimentación</h2>
+    <p>El paquete <code>libinteractive</code> (que se descarga junto con el
+       enunciado) trae un evaluador de prueba. Ese evaluador recibe el archivo
+       <code>sample.in</code>, con el siguiente formato:</p>
+    <ul>
+      <li>En la primera línea, tres enteros \(N\), \(K\) y \(P\). \(N\) representa el
+          límite de los valores, \(K\) representa el número de primos de \(1\) a \(N\)
+          y \(P\) es el primo perdido.</li>
+      <li>La siguiente línea contiene \(K - 1\) números: todos los primos entre \(1\)
+          y \(N\), a excepción de \(P\), ordenados en forma ascendente.</li>
+    </ul>
+    <p>Para el caso de ejemplo anterior, <code>sample.in</code> se vería así:</p>
+    <div class="io"><pre>12 5 5
+2 3 7 11</pre></div>
+    <p>Otro posible ejemplo (este lo puedes copiar en el <code>sample.in</code>):</p>
+    <div class="io"><pre>20 8 17
+2 3 5 7 11 13 19</pre></div>
+    <p class="note">Durante la ejecución, el evaluador de prueba imprimirá algunos
+       mensajes para ayudarte a depurar tu solución. Al finalizar la ejecución de tu
+       función, imprimirá la respuesta que dio tu función <code>busca()</code> y el
+       porcentaje de puntos que recibiría el caso.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Criba de Eratóstenes</span>
+      <span class="ptag">Teoría de números</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Existe una fila con todos los primos \(\le n\) ordenados ascendentemente,
+       pero le falta exactamente uno. No ves la fila directamente: solo puedes
+       preguntar <code>primo(pos)</code> por el valor que hay en la posición
+       <code>pos</code> (devuelve \(0\) si <code>pos</code> queda fuera de rango).
+       Hay que regresar el primo perdido usando la menor cantidad de consultas
+       posible. La calificación del caso depende de cuántas veces llamaste a
+       <code>primo</code> (meta: \(\le \log_2 p\), con \(p\) = número de primos
+       \(\le n\)).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Con \(n \le 10^7\), el número de primos es \(p \approx 6.6\times 10^5\).
+                Una criba calcula la lista completa de primos en \(O(n)\). El puntaje
+                NO mide tiempo, sino llamadas: \(p\) llamadas dan apenas 5%, mientras
+                que \(\log_2 p\) llamadas dan el 100%. Eso prácticamente grita
+                «búsqueda binaria».</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Y si pudieras reconstruir por tu cuenta cómo DEBERÍA verse la
+           fila completa (sin que falte nadie)? Si tuvieras la lista correcta de
+           primos \(\le n\), ¿qué información te da comparar el primo que esperas en
+           cada posición contra el que <code>primo(pos)</code> dice que hay ahí?</p>
+        <p>La función <code>primo</code> te enseña la fila <em>con</em> el hueco; tú
+           puedes construir la fila <em>sin</em> hueco. La diferencia entre ambas es,
+           justamente, el primo perdido.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (70%, \(n \le 10^5\))</summary>
+      <div class="body">
+        <p class="q">¿Cómo obtienes todos los primos \(\le n\) de forma rápida? ¿Te
+           suena la criba de Eratóstenes? Una vez que tienes
+           <code>primos[0..p-1]</code>, ¿qué pasa con <code>primo(pos)</code> ANTES
+           del faltante frente a lo que pasa DESPUÉS de él?</p>
+        <p>Antes del hueco, la fila real coincide con tu lista:
+           <code>primo(pos) == primos[pos]</code>. Desde el hueco en adelante, todos
+           los elementos están corridos una posición a la izquierda, así que
+           <code>primo(pos) != primos[pos]</code> (o vale \(0\) si te pasas del
+           final). Recorriendo posición por posición encontrarías el faltante… pero
+           gastarías cerca de \(p\) llamadas (eso te deja en 30% o 5%). ¿Puedes
+           encontrar ese punto de cambio con muchas menos preguntas?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave</summary>
+      <div class="body">
+        <p class="q">La condición «<code>primo(pos) == primos[pos]</code>» es
+           verdadera al principio y falsa a partir de cierto punto:
+           verdadero, verdadero, …, falso, falso. ¿Qué algoritmo encuentra
+           <em>el primer</em> lugar donde una condición monótona cambia de verdadero
+           a falso?</p>
+        <p>Esa monotonía es la puerta a la búsqueda binaria: el primer índice donde
+           <code>primo</code> difiere de tu lista es exactamente la posición del
+           primo perdido. Eso reduce las llamadas de \(\sim p\) a \(\sim \log_2 p\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 2 (30%, \(n \le 10^7\), evaluador adaptativo)</summary>
+      <div class="body">
+        <p class="q">El evaluador adaptativo no fija el faltante de antemano, pero
+           promete ser consistente. ¿Tu búsqueda binaria depende de que el faltante
+           esté decidido desde el inicio?</p>
+        <p>No: cada consulta parte el rango candidato en dos sin importar las
+           respuestas previas, mientras estas sean consistentes con <em>algún</em>
+           faltante válido. La búsqueda binaria sigue siendo correcta y sigue
+           gastando \(\le \lceil\log_2 p\rceil\) llamadas. El verdadero reto extra de
+           esta subtarea es que la criba debe correr en \(O(n)\) tiempo y memoria
+           razonable para \(n = 10^7\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Construye con una criba toda la lista de primos
+           \(\le n\): <code>primos[0..p-1]</code>. La fila real es esa misma lista a
+           la que le quitaron un elemento, de modo que está corrida desde la posición
+           del faltante en adelante. Por eso:</p>
+        <ul>
+          <li>para posiciones <em>antes</em> del faltante,
+              <code>primo(pos) == primos[pos]</code>;</li>
+          <li>para posiciones <em>en o después</em> del faltante,
+              <code>primo(pos) != primos[pos]</code>.</li>
+        </ul>
+        <p>La condición es monótona (cierta y luego falsa), así que con una
+           <strong>búsqueda binaria</strong> hallas el primer índice donde difiere;
+           ese <code>primos[indice]</code> es el primo perdido.</p>
+        <p><strong>Por qué es correcto.</strong> La fila conserva los primeros
+           valores intactos hasta el hueco y desde ahí todo aparece desplazado. El
+           primer desajuste ocurre justo en la posición del primo que se quitó.
+           <em>Caso borde:</em> si el faltante es el último primo, todas las
+           posiciones consultadas coinciden y la binaria lleva el extremo izquierdo
+           hasta \(p-1\) sin necesitar consultar esa última posición (que devolvería
+           \(0\)). Funciona igual contra el evaluador adaptativo, porque cada
+           respuesta consistente acota el rango candidato.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion busca(n):
+    primos <- criba_de_eratostenes(n)   // lista ascendente de primos <= n
+    l <- 0
+    r <- tamano(primos) - 1
+    mientras l < r:
+        med <- (l + r) / 2              // division entera
+        si primo(med) == primos[med]:   // aun coincide -> el hueco esta mas adelante
+            l <- med + 1
+        si no:                          // ya difiere -> el hueco esta en med o antes
+            r <- med
+    regresa primos[l]                   // el primo perdido</pre>
+        </div>
+
+        <p><strong>Conteo de llamadas y complejidad.</strong> La binaria hace
+           \(\lceil \log_2 p \rceil\) consultas a <code>primo</code>, que cae dentro
+           del tramo del 100%. Para \(n = 10^7\) son \(p \approx 664\,579\) primos y
+           bastan \(20\) consultas. La criba domina el costo de cómputo:
+           \(O(n)\) tiempo y \(O(n)\) memoria; las consultas son \(O(\log p)\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Cuidado de C++ (criba para \(n=10^7\))</span>
+<pre>// Al cribar hasta 10^7, el producto i*i se desborda si i se acerca a n
+// y lo calculas en int. Usa long long para el indice del ciclo, o limita
+// el ciclo externo a  i*i <= n  (los multiplos pequenos ya estan tachados).
+// Para la memoria, una criba con bits/vector<bool> mantiene el arreglo
+// de ~10^7 marcas en ~1.2 MB en vez de ~10 MB.</pre>
+          <p class="note">Es solo una precaución de implementación; nunca pongas la
+             solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

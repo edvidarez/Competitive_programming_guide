@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2020 · Problema 03 — Bits</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">25ª OMI · 2020 · Día 1</div>
+    <h1>Problema <span class="num">03</span> — Bits</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2020-Bits">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>A Karel se le ha ocurrido una forma muy sencilla para comparar números:</p>
+    <p>Dados dos enteros no negativos, Karel dice que el número más grande de los
+       dos es aquel que tenga la mayor cantidad de bits encendidos en su
+       representación binaria. Si ambos números tienen la misma cantidad de bits
+       encendidos, entonces dice que son iguales.</p>
+    <p>Desafortunadamente esta estrategia no siempre funciona. Ayuda a Karel a
+       saber cuántas veces va a fallar su método si se comparan dos números de
+       \(N\) bits, en donde un número tiene exactamente \(K_a\) bits encendidos en
+       su representación binaria, y otro tiene exactamente \(K_b\) bits encendidos
+       en su representación binaria.</p>
+    <p>Escribe un programa que reciba tres enteros: \(N\), \(K_a\) y \(K_b\), e
+       imprima la cantidad de pares de números de \(N\) bits con los que el método
+       de Karel falla, dado que uno de los números tiene \(K_a\) bits encendidos y
+       el otro tiene \(K_b\) bits encendidos.</p>
+    <p>En caso de que la respuesta sea muy grande debes imprimir la respuesta
+       módulo \(10^9 + 7\).</p>
+
+    <h2>Entrada</h2>
+    <p>Una línea con 3 enteros separados por un espacio entre ellos: \(N\),
+       \(K_a\) y \(K_b\).</p>
+
+    <h2>Salida</h2>
+    <p>La cantidad de pares de números con los que el método de Karel falla,
+       módulo \(10^9 + 7\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>400 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Cantidad de bits</td><td><span class="badge">\(1 \le N \le 5000\)</span></td></tr>
+        <tr><td>Bits encendidos</td><td><span class="badge">\(0 \le K_a, K_b \le N\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">10</td><td>\(N \le 5\)</td></tr>
+          <tr><td>2</td><td class="pts">15</td><td>\(N \le 16\)</td></tr>
+          <tr><td>3</td><td class="pts">20</td><td>\(N \le 200\) y \(K_a = K_b\)</td></tr>
+          <tr><td>4</td><td class="pts">25</td><td>\(N \le 200\)</td></tr>
+          <tr><td>5</td><td class="pts">30</td><td>Sin restricciones adicionales</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Consideración: todos los casos de cada subtarea están agrupados.</p>
+
+    <h2>Ejemplo</h2>
+    <p class="note">El enunciado oficial provee varios casos de ejemplo, cada uno
+       con su explicación. A continuación se muestran sus entradas y salidas junto
+       con la explicación tal como aparecen en el enunciado.</p>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2 1 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2</pre></div>
+    </div>
+    <p>Los números de longitud dos bits con exactamente un bit prendido son
+       <code>1</code> (<code>01</code> en binario) y <code>2</code>
+       (<code>10</code> en binario).</p>
+    <p>Como \(K_a = K_b\), la respuesta de Karel siempre será «iguales». Los pares
+       posibles son:</p>
+    <ul>
+      <li><code>1</code> y <code>1</code>: sí son iguales.</li>
+      <li><code>1</code> y <code>2</code>: no son iguales.</li>
+      <li><code>2</code> y <code>1</code>: no son iguales.</li>
+      <li><code>2</code> y <code>2</code>: sí son iguales.</li>
+    </ul>
+    <p>El método de Karel falla en 2 ocasiones, por lo que debes imprimir 2.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 3 2</pre></div>
+      <div class="io"><h4>Salida</h4><pre>0</pre></div>
+    </div>
+    <p>Como \(K_a &gt; K_b\), la respuesta de Karel siempre será que el primer
+       número es mayor. Los pares posibles son:</p>
+    <ul>
+      <li><code>7</code> y <code>3</code>: la respuesta de Karel es correcta.</li>
+      <li><code>7</code> y <code>5</code>: la respuesta de Karel es correcta.</li>
+      <li><code>7</code> y <code>6</code>: la respuesta de Karel es correcta.</li>
+    </ul>
+    <p>El método de Karel nunca falla, por lo que debes imprimir 0.</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 1 2</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1</pre></div>
+    </div>
+    <p>En este caso hay 9 pares posibles, en donde el único que falla con el
+       método de Karel es <code>4</code> y <code>3</code>, pues el primer número es
+       mayor, pero Karel responderá que el segundo es mayor, pues tiene más bits
+       encendidos.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Combinatoria</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Bitmask</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(N\), \(K_a\) y \(K_b\). Considera todos los pares ordenados
+       \((a,b)\) de números de \(N\) bits en los que \(a\) tiene exactamente
+       \(K_a\) bits encendidos y \(b\) tiene exactamente \(K_b\). Karel afirma que
+       el mayor es el que tenga más bits encendidos (e «iguales» si empatan).
+       Cuenta cuántos de esos pares hacen que el veredicto de Karel sea
+       incorrecto, módulo \(10^9+7\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 5000\) descarta enumerar los números (no caben ni en 64
+                bits) y pide una solución polinómica, en la práctica \(O(N^2)\).
+                Las subtareas chicas (\(N \le 5\), \(N \le 16\)) admiten fuerza
+                bruta o conteo directo; \(N \le 200\) admite una DP \(O(N^3)\); y
+                el caso \(K_a = K_b\) tiene fórmula cerrada.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuándo se equivoca Karel?</summary>
+      <div class="body">
+        <p class="q">¿Ya tradujiste el veredicto de Karel y la verdad a tres casos
+           según comparar \(K_a\) con \(K_b\)? ¿En qué pares, exactamente, difiere
+           lo que dice Karel de la comparación numérica real?</p>
+        <p>Karel solo mira la cantidad de bits encendidos. Separa por casos:</p>
+        <ul>
+          <li>\(K_a = K_b\): Karel dice «iguales»; <strong>falla</strong> cuando
+              \(a \ne b\).</li>
+          <li>\(K_a &gt; K_b\): Karel dice que el primero es mayor;
+              <strong>falla</strong> cuando \(a &lt; b\).</li>
+          <li>\(K_a &lt; K_b\): Karel dice que el segundo es mayor;
+              <strong>falla</strong> cuando \(a &gt; b\).</li>
+        </ul>
+        <p>¿Notas que los dos últimos casos son el mismo problema con los papeles
+           intercambiados? Basta saber contar «pares donde el número con
+           <em>más</em> bits resulta numéricamente <em>menor</em>».</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — El caso con empate \(K_a = K_b\)</summary>
+      <div class="body">
+        <p class="q">Si ambos tienen la misma cantidad de bits, ¿cuántos pares
+           ordenados hay en total y cuántos de ellos son realmente iguales?</p>
+        <p>Hay \(\binom{N}{K}\) números con \(K\) bits encendidos. Los pares
+           ordenados son \(\binom{N}{K}^2\), y los que de verdad son iguales (con
+           \(a=b\)) son \(\binom{N}{K}\). Karel falla en todos los demás:</p>
+        <p>\[ \binom{N}{K}^2 - \binom{N}{K}. \]</p>
+        <p>Eso resuelve la subtarea de \(K_a=K_b\). Calculando \(\binom{N}{K}\)
+           módulo \(10^9+7\) con factoriales e inversos, sirve hasta \(N=5000\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Empieza por lo chico</summary>
+      <div class="body">
+        <p class="q">Para \(N\le 5\), ¿puedes simplemente recorrer los
+           \(2^N\times 2^N\) pares? Y para \(N\le 16\), ¿cómo evitas el cuadrático
+           sobre la cantidad de números?</p>
+        <ul>
+          <li><strong>\(N\le 5\):</strong> genera todos los números, filtra por su
+              cantidad de bits encendidos (popcount) y cuenta directamente los
+              pares que fallan. Es \(O(2^N\cdot 2^N)\).</li>
+          <li><strong>\(N\le 16\):</strong> generar los \(2^N\) números aún es
+              barato, pero comparar todos los pares ya da TLE. Fija un número con
+              \(K_a\) bits: los que lo hacen fallar son los que tienen \(K_b\) bits
+              y caen del lado equivocado (todos los menores, o todos los mayores,
+              según el caso). Con arreglos de prefijos/sufijos (o dos punteros /
+              búsqueda binaria sobre las listas ordenadas por valor) lo cuentas en
+              \(O(2^N\cdot N)\).</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: el primer bit que difiere</summary>
+      <div class="body">
+        <p class="q">Cuando dos números distintos se comparan, ¿qué bit decide
+           cuál es mayor? Es el más significativo en el que difieren, ¿verdad?
+           ¿Puedes fijar <em>ese</em> bit y contar alrededor de él?</p>
+        <p>Para \(N\le 200\) los números ya no caben en enteros, así que hay que
+           razonar sobre su representación binaria. La clave: de dos números
+           distintos, la comparación la decide únicamente el bit más significativo
+           en el que difieren (ahí el mayor tiene 1 y el menor tiene 0; lo de abajo
+           ya no importa porque \(2^i &gt; 2^{i-1}+\dots+2^0\)).</p>
+        <p>Eso habilita una DP \(dp[i][a][b]\) = cantidad de fallos usando \(i\)
+           bits, donde al primer número le quedan \(a\) unos por colocar y al
+           segundo \(b\). En cada bit decides: encender en ambos, en ninguno, o
+           «romper el empate» justo aquí (lo que fija al ganador y, con
+           combinatoria, cuenta de golpe todo lo que va por debajo). Son \(N^3\)
+           estados con transiciones \(O(1)\): \(O(N^3)\), suficiente para
+           \(N\le 200\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Reducción.</strong> Si \(K_a=K_b=K\), la respuesta es
+           \(\binom{N}{K}^2-\binom{N}{K}\). Si \(K_a\ne K_b\), sea \(p=\max(K_a,K_b)\)
+           (el de <em>más</em> bits) y \(q=\min(K_a,K_b)\) (el de <em>menos</em>).
+           Contamos los pares \((x,y)\) con popcount \(p\) y \(q\)
+           respectivamente y \(x&lt;y\): es decir, el número con más bits resulta
+           numéricamente menor. Esa cantidad es exactamente el número de fallos (el
+           caso \(K_a&lt;K_b\) da lo mismo por simetría, intercambiando papeles).</p>
+
+        <p><strong>Conteo por el bit que rompe el empate.</strong> Fija el bit
+           donde \(x\) y \(y\) difieren por primera vez (de más a menos
+           significativo), con \(x\) teniendo 0 y \(y\) teniendo 1 ahí. Llama
+           \(i\) a la cantidad de posiciones <em>por debajo</em> de ese bit.</p>
+        <ul>
+          <li>Por <em>arriba</em> del bit hay \(N-1-i\) posiciones que \(x\) y
+              \(y\) comparten idénticas; elige cuántos unos comunes \(c\) van ahí:
+              \(\binom{N-1-i}{c}\).</li>
+          <li>Por <em>debajo</em> (las \(i\) posiciones), \(x\) coloca libremente
+              sus \(p-c\) unos restantes y \(y\) sus \(q-1-c\):
+              \(\binom{i}{p-c}\binom{i}{q-1-c}\).</li>
+        </ul>
+        <p>Sumando sobre todos los puntos de quiebre \(i\) y todas las cantidades
+           \(c\) de unos comunes:</p>
+        <p>\[ \sum_{i=0}^{N-1}\ \sum_{c}\ \binom{N-1-i}{c}\binom{i}{p-c}\binom{i}{q-1-c}. \]</p>
+        <p>Cada coeficiente binomial se evalúa en \(O(1)\) precalculando
+           factoriales e inversos factoriales módulo \(10^9+7\) (el inverso por el
+           pequeño teorema de Fermat). El doble bucle es \(O(N^2)\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Resolver(N, Ka, Kb):
+    M = 1e9 + 7
+    precalcular fact[0..N], invfact[0..N]  (mod M)
+    binom(n,k):
+        si k &lt; 0 o k &gt; n: regresa 0
+        regresa fact[n] * invfact[k] * invfact[n-k]   (mod M)
+
+    si Ka == Kb:
+        c = binom(N, Ka)
+        regresa (c*c - c) mod M
+
+    p = max(Ka, Kb)        # el de MÁS bits
+    q = min(Ka, Kb)        # el de MENOS bits
+    ans = 0
+    para i de 0 a N-1:           # i = posiciones bajo el bit que rompe el empate
+        hi = N - 1 - i           # posiciones por encima (compartidas)
+        para c de 0 a hi:        # unos comunes en la parte alta
+            xlo = p - c          # unos de x (más bits) en la parte baja
+            ylo = q - 1 - c      # unos de y (menos bits) en la parte baja
+            si 0 &lt;= xlo &lt;= i  y  0 &lt;= ylo &lt;= i:
+                ans += binom(hi, c) * binom(i, xlo) * binom(i, ylo)   (mod M)
+    regresa ans mod M</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N^2)\) en tiempo y \(O(N)\) en
+           memoria. Para \(N=5000\) corre de sobra dentro del límite.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

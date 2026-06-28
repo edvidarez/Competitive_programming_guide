@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2020 · Problema 04 — Cajas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">25ª OMI · 2020 · Día 2</div>
+    <h1>Problema <span class="num">04</span> — Cajas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2020-Cajas">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Héctor ha iniciado un nuevo negocio, ¡la venta de cajas! (solo cajas, sin
+       nada dentro). Rentó un almacén para guardarlas y las almacenará haciendo
+       <strong>torres de cajas</strong>, es decir, apilando cajas una encima de
+       otra. El almacén le cobrará por cada torre de cajas.</p>
+    <p>Todas las cajas pesan lo mismo, pero no todas las cajas tienen la misma
+       resistencia. Si una caja tiene una resistencia \(x\), entonces le puedes
+       poner \(x\) cajas encima.</p>
+    <p>Como Héctor no ha tenido mucho éxito en su negocio, no tiene mucho dinero.
+       Así que te ha pedido ayuda para que le digas cuál es la <strong>mínima
+       cantidad de torres</strong> que puede hacer para almacenar todas sus
+       cajas.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea, un entero \(N\), el número de cajas que se deben
+       almacenar.</p>
+    <p>En la siguiente línea, \(N\) enteros separados por un espacio que
+       representan la resistencia \(x_i\) de la caja \(i\).</p>
+
+    <h2>Salida</h2>
+    <p>El mínimo número de torres que se pueden hacer.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de cajas</td><td><span class="badge">\(1 \le N \le 100000\)</span></td></tr>
+        <tr><td>Resistencia de cada caja</td><td><span class="badge">\(0 \le x_i \le 100000\)</span></td></tr>
+      </table>
+    </div>
+    <p class="note">Los límites de tiempo y memoria siguen la configuración
+       estándar de omegaUp para esta tarea; las cotas de \(N\) y \(x_i\) provienen
+       del enunciado oficial.</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">27</td><td>No agrupados: \(1 \le N \le 10\), \(0 \le x_i \le 100\)</td></tr>
+          <tr><td>2</td><td class="pts">34</td><td>Agrupados: \(11 \le N \le 100\), \(0 \le x_i \le 100\)</td></tr>
+          <tr><td>3</td><td class="pts">39</td><td>Agrupados: \(101 \le N \le 100000\), \(0 \le x_i \le 100000\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">«No agrupados» significa que cada caso de esa subtarea otorga
+       crédito por separado; «agrupados» significa que hay que pasar todos los
+       casos de la subtarea para obtener sus puntos.</p>
+
+    <h2>Ejemplo 1</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+2 2 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1</pre></div>
+    </div>
+    <p class="note">Es posible guardar las tres cajas en una sola torre. Una
+       posible solución es colocando la caja 1 hasta abajo, luego la 2, y hasta
+       arriba la 3.</p>
+
+    <h2>Ejemplo 2</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4
+0 0 0 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>3</pre></div>
+    </div>
+    <p class="note">Son necesarias tres torres para guardar las cajas en el
+       almacén. Una posible solución es tener una torre para la caja 1, otra para
+       la caja 2, y una última para la caja 4 y la caja 3.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Ordenamiento</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(N\) cajas; la caja \(i\) aguanta \(x_i\) cajas encima de ella.
+       Hay que apilarlas en torres (una caja sobre otra) usando el <strong>menor
+       número de torres posible</strong>, de modo que ninguna caja cargue más
+       cajas de las que aguanta.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>La subtarea 1 con \(N \le 10\) admite <strong>fuerza bruta</strong>
+                (probar acomodos). La subtarea 2 con \(N \le 100\) admite un greedy
+                \(O(N^2)\). La subtarea 3 con \(N \le 10^5\) exige
+                \(O(N\log N)\) o \(O(N)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuándo un conjunto de cajas forma UNA torre válida?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué significa exactamente la resistencia para una
+           torre? Si una torre tiene altura \(h\), ¿cuántas cajas carga la caja de
+           hasta abajo? ¿Y la siguiente?</p>
+        <p>En una torre, la caja del fondo carga \(h-1\) cajas, la de arriba de
+           ella carga \(h-2\), y así hasta la de la cima, que carga \(0\). Si
+           ordenas dentro de la torre la más fuerte abajo y la más débil arriba,
+           ¿no es ese el acomodo que más fácil cumple las resistencias? Una torre
+           es válida si, ordenando sus cajas de mayor a menor resistencia, la caja
+           que queda en la posición con \(d\) cajas encima tiene resistencia
+           \(\ge d\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(N \le 10\)): fuerza bruta</summary>
+      <div class="body">
+        <p class="q">Con solo \(10\) cajas, ¿no puedes probar TODOS los acomodos?
+           ¿Qué pasa si recorres una permutación de las cajas y vas armando torres
+           de forma codiciosa?</p>
+        <p>Una forma sencilla de 27 puntos: prueba cada permutación del arreglo y,
+           recorriéndola, ve llenando torres (empiezas una torre y le vas poniendo
+           cajas mientras la resistencia disponible lo permita; cuando ya no, abres
+           otra). Te quedas con el mínimo de torres sobre todas las permutaciones.
+           Es \(O(N!\cdot N)\), pero con \(N \le 10\) alcanza de sobra.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La idea codiciosa correcta (subtarea 2)</summary>
+      <div class="body">
+        <p class="q">¿Y si en vez de ir de la más fuerte a la más débil, vas de la
+           más DÉBIL a la más fuerte, y cada caja la metes hasta ABAJO de la torre
+           que hoy tenga MENOS cajas?</p>
+        <p>Ordena las cajas de menor a mayor resistencia. Mantén el tamaño actual
+           de cada torre. Para la siguiente caja, mira la torre más pequeña: si su
+           tamaño actual es \(\le\) la resistencia de la caja, métela hasta abajo
+           (esa caja pasará a cargar exactamente ese tamaño, y aún aguanta). Si
+           ni la torre más chica cabe, hay que abrir una torre nueva.</p>
+        <p class="q">¿Por qué es óptimo? Cuando colocas la \((m{+}1)\)-ésima caja
+           (la más fuerte hasta ahora), o cabe sobre alguna torre existente —y no
+           aumentas el conteo— o no cabe en ninguna; pero si la más fuerte de las
+           \(m{+}1\) no cupo con las torres actuales, forzosamente hace falta una
+           torre más. ¿No es ese el argumento de intercambio que justifica el
+           greedy?</p>
+        <p>Implementado con un arreglo de tamaños y buscando linealmente la torre
+           más chica para cada caja, da \(O(N^2)\): suficiente para la subtarea 2.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3: la fórmula que evita simular</summary>
+      <div class="body">
+        <p class="q">Fija el número de torres en \(k\). Si repartes las cajas
+           (ordenadas ascendente) en \(k\) torres de forma equilibrada, ¿cuántas
+           cajas termina cargando la \(i\)-ésima caja (0-indexada)?</p>
+        <p>Con \(k\) torres y repartiendo de manera balanceada, la \(i\)-ésima caja
+           más débil queda con \(\left\lfloor i/k \right\rfloor\) cajas encima.
+           Entonces \(k\) torres son suficientes si y solo si para toda \(i\) se
+           cumple \(x_{(i)} \ge \left\lfloor i/k \right\rfloor\), donde \(x_{(i)}\)
+           es la resistencia ordenada ascendente.</p>
+        <p class="q">¿Notaste que esa condición es monótona en \(k\)? Si funciona
+           con \(k\) torres, funciona con \(k+1\) (porque \(\lfloor i/(k{+}1)\rfloor
+           \le \lfloor i/k\rfloor\)). ¿Entonces puedes hacer búsqueda binaria sobre
+           \(k\)?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El truco es el orden del greedy: coloca las cajas
+           de la <em>más débil a la más fuerte</em> y mete cada caja hasta el fondo
+           de la torre que en ese momento tenga <em>menos</em> cajas; si ni esa
+           torre la soporta, abre una torre nueva. Esto siempre da el mínimo de
+           torres.</p>
+        <p><strong>Por qué es correcto.</strong> Cualquier acomodo se puede
+           reordenar para que dentro de cada torre las cajas vayan de la más fuerte
+           (abajo) a la más débil (arriba). Procesando de la más débil a la más
+           fuerte, al colocar una caja nueva (que es la más fuerte vista hasta
+           ahora) basta ponerla bajo la torre más pequeña: si cabe, no aumentamos el
+           conteo; si la más fuerte de todas las cajas vistas no cabe en ninguna,
+           entonces toda solución necesita al menos una torre más. Por inducción, el
+           greedy nunca usa torres de más.</p>
+
+        <p><strong>Cómo subir de subtarea en subtarea.</strong></p>
+        <ul>
+          <li><strong>Subtarea 1 (27 pts, \(N\le 10\)):</strong> fuerza bruta sobre
+              todas las permutaciones, simulando el llenado de torres.</li>
+          <li><strong>Subtarea 2 (34 pts, \(N\le 100\)):</strong> el greedy de
+              débil-a-fuerte, buscando linealmente la torre más chica para cada
+              caja. \(O(N^2)\).</li>
+          <li><strong>Subtarea 3 (39 pts, \(N\le 10^5\)):</strong> o bien
+              <em>búsqueda binaria</em> sobre el número de torres \(k\) usando la
+              condición \(x_{(i)} \ge \lfloor i/k\rfloor\) (\(O(N\log N)\)), o bien
+              el mismo greedy en \(O(N)\) con <em>counting sort</em> y cubetas que
+              guardan cuántas torres hay de cada tamaño.</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — búsqueda binaria sobre el número de torres</span>
+<pre>funcion factible(k, x):            # x ordenado ascendente, 0-indexado
+    para i de 0 hasta N-1:
+        si x[i] &lt; piso(i / k):
+            regresa Falso
+    regresa Verdadero
+
+funcion Resolver(x):
+    ordenar x de menor a mayor
+    lo &lt;- 1 ;  hi &lt;- N ;  resp &lt;- N
+    mientras lo &lt;= hi:
+        mid &lt;- (lo + hi) / 2
+        si factible(mid, x):
+            resp &lt;- mid ;  hi &lt;- mid - 1   # intenta con menos torres
+        si no:
+            lo &lt;- mid + 1                  # se necesitan mas torres
+    regresa resp</pre>
+        </div>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — greedy lineal con cubetas (alternativa O(N))</span>
+<pre>contar[v] &lt;- cuantas cajas tienen resistencia v   # counting sort
+torres &lt;- 0
+tam[t] &lt;- cuantas torres tienen exactamente t cajas   # todo en 0
+min_tam &lt;- 0                                    # tamaño de la torre mas chica
+
+para v de 0 hasta MAX_RESISTENCIA:
+    repetir contar[v] veces:                    # cajas en orden ascendente
+        si torres == 0 o min_tam &gt; v:           # ninguna torre la soporta
+            torres &lt;- torres + 1
+            tam[1] &lt;- tam[1] + 1
+            min_tam &lt;- 1
+        si no:                                  # va bajo la torre mas chica
+            tam[min_tam] &lt;- tam[min_tam] - 1
+            tam[min_tam + 1] &lt;- tam[min_tam + 1] + 1
+            si tam[min_tam] == 0:
+                min_tam &lt;- min_tam + 1
+regresa torres</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N\log N)\) tiempo y \(O(N)\) memoria
+           con la búsqueda binaria; \(O(N + \max x_i)\) tiempo con el greedy de
+           cubetas. Ambas pasan los \(100\) puntos cómodamente dentro del límite.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

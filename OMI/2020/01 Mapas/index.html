@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2020 · Problema 01 — Mapas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">25ª OMI · 2020 · Día 1</div>
+    <h1>Problema <span class="num">01</span> — Mapas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2020-Mapas">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El <strong>C</strong>entro de <strong>O</strong>rganización de
+       <strong>M</strong>apas <strong>I</strong>ntergalácticos diseñó unos mapas
+       futuristas. Los mapas futuristas son como los mapas de ahora, pero están
+       impresos en una superficie transparente. El COMI tiene un archivo de varios
+       mapas de cada una de las galaxias del universo.</p>
+    <p>Sebastián y Héctor se dieron cuenta de que existen varios mapas repetidos en
+       el archivo, por lo que desean eliminar cualquier repetición del archivo.
+       Para hacer esto, Sebastián toma un mapa, Héctor toma otro y ambos comparan
+       los mapas para determinar si son iguales. Sin embargo, Héctor estaba
+       distraído pensando en los problemas de la IOI 2020 y algunos mapas se los
+       pasaba en una posición diferente a la original. Ahora Héctor y Sebastián
+       necesitan tu ayuda para comparar los dos mapas y saber si son iguales.</p>
+    <p>Un mapa está representado por una matriz cuadrada de <code>X</code>s y
+       <code>O</code>s. Dos mapas son iguales si ambos tienen el mismo carácter en
+       la misma coordenada, para todas las coordenadas.</p>
+    <p>Para validar que dos mapas son iguales, puedes aplicar cualquiera de las
+       siguientes acciones cero o más veces sobre un mapa que quieras comparar con
+       otro:</p>
+    <ul>
+      <li>Rotarlo 90º.</li>
+      <li>Rotarlo 180º.</li>
+      <li>Rotarlo 270º.</li>
+      <li>Invertirlo horizontalmente.</li>
+      <li>Invertirlo verticalmente.</li>
+    </ul>
+    <p class="note">El enunciado oficial incluye aquí la figura
+       <em>«Operaciones posibles en los mapas»</em> (<code>operaciones.png</code>),
+       que ilustra estas cinco transformaciones aplicadas a un mapa de ejemplo. La
+       imagen no viene incluida con esta copia del enunciado, por eso se describe en
+       texto.</p>
+
+    <h2>Problema</h2>
+    <p>Sebastián y Héctor te mostrarán dos mapas y debes ayudarles a decir si son
+       iguales o diferentes. Si los mapas son iguales, deberás escribir
+       <code>IGUALES</code>. Si son diferentes, deberás escribir
+       <code>DIFERENTES</code>.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea \(N\), la longitud del lado de cada mapa.</p>
+    <p>En las siguientes \(N\) líneas una cadena de \(N\) caracteres <code>O</code>
+       ó <code>X</code> que representan el primer mapa.</p>
+    <p>En las siguientes \(N\) líneas una cadena de \(N\) caracteres <code>O</code>
+       ó <code>X</code> que representan el segundo mapa.</p>
+
+    <h2>Salida</h2>
+    <p>Debes escribir <code>IGUALES</code> si los mapas son iguales después de hacer
+       todas las transformaciones necesarias o <code>DIFERENTES</code> en caso
+       contrario.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en la fuente oficial.</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en la fuente oficial.</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del mapa</td><td><span class="badge">\(1 \le N \le 500\)</span></td></tr>
+        <tr><td>Caracteres del mapa</td><td>Cada celda es <code>O</code> ó <code>X</code>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">25</td>
+              <td>\(1 \le N \le 10\). Se asegura que, en caso de que los mapas sean
+                  iguales, no es necesario aplicar ninguna acción.</td></tr>
+          <tr><td>2</td><td class="pts">25</td>
+              <td>\(1 \le N \le 50\). Se asegura que, en caso de que los mapas sean
+                  iguales, no es necesario aplicar ninguna rotación.</td></tr>
+          <tr><td>3</td><td class="pts">25</td>
+              <td>\(1 \le N \le 50\). Se asegura que, en caso de que los mapas sean
+                  iguales, no es necesario aplicar ninguna inversión vertical o
+                  inversión horizontal.</td></tr>
+          <tr><td>4</td><td class="pts">25</td>
+              <td>\(1 \le N \le 500\). Cualquier acción podría ser necesaria para
+                  validar que los mapas son iguales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Consideraciones: todos los casos de cada subtarea están agrupados.</p>
+
+    <h2>Ejemplo</h2>
+    <p class="note">La copia del enunciado en omegaUp adjunta tres ejemplos como
+       archivos (<code>sample</code>, <code>sample_different</code> y
+       <code>sample_same</code>) que no vienen dentro de este markdown. Abajo se
+       muestran tres ejemplos equivalentes —verificados— que ilustran las mismas
+       tres situaciones descritas en el enunciado.</p>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+OOX
+OXX
+OOX
+XXX
+OXO
+OOO</pre></div>
+      <div class="io"><h4>Salida</h4><pre>IGUALES</pre></div>
+    </div>
+    <p class="note">Si el segundo mapa lo giras 90º y además lo inviertes
+       verticalmente, obtienes la misma distribución que el primer mapa.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2
+XX
+OO
+XO
+OX</pre></div>
+      <div class="io"><h4>Salida</h4><pre>DIFERENTES</pre></div>
+    </div>
+    <p class="note">No hay manera de transformar el segundo mapa para que se vea tal
+       como el primero.</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+XOO
+XXO
+OOX
+XOO
+XXO
+OOX</pre></div>
+      <div class="io"><h4>Salida</h4><pre>IGUALES</pre></div>
+    </div>
+    <p class="note">En este caso los mapas ya son iguales, sin necesidad de aplicar
+       ninguna operación.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Matrices</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan dos matrices cuadradas \(A\) y \(B\) de \(N \times N\) formadas por
+       <code>X</code> y <code>O</code>. Determina si \(B\) puede convertirse en
+       \(A\) aplicando, cero o más veces, rotaciones de 90º/180º/270º e inversiones
+       horizontal/vertical. Imprime <code>IGUALES</code> si es posible o
+       <code>DIFERENTES</code> si no.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 500\) hace que una sola matriz tenga hasta \(250{,}000\)
+                celdas: comparar dos matrices cuesta \(O(N^2)\). La clave es que el
+                número de transformaciones <em>distintas</em> es constante (a lo más
+                8), así que probarlas todas sigue siendo \(O(N^2)\) en total. La
+                subtarea 1 (\(N\le 10\), sin acciones) admite comparación directa;
+                las subtareas 2 y 3 aíslan, respectivamente, las inversiones y las
+                rotaciones.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué significa exactamente «iguales»? Si no
+           pudieras tocar el segundo mapa, ¿cómo decidirías si son iguales?</p>
+        <p>Comparar dos mapas sin transformarlos es solo revisar celda por celda.
+           El reto es que tienes permitido transformar uno de los dos mapas. La
+           pregunta natural es: ¿cuántos resultados <em>distintos</em> puedes
+           obtener al combinar todas esas acciones? ¿Son infinitos o un número
+           pequeño?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: la comparación base</summary>
+      <div class="body">
+        <p class="q">¿Notaste que la subtarea 1 te garantiza que, si los mapas son
+           iguales, <em>no se aplicó ninguna acción</em>?</p>
+        <p>Entonces para esos 25 puntos basta comparar \(A\) y \(B\) celda por
+           celda y responder <code>IGUALES</code> o <code>DIFERENTES</code>. Esta
+           comparación directa será el ladrillo que reutilizarás en todo lo demás.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2: solo inversiones</summary>
+      <div class="body">
+        <p class="q">¿Qué pasa si inviertes verticalmente <em>dos</em> veces?
+           ¿Regresas al inicio? ¿Y si combinas una inversión vertical con una
+           horizontal?</p>
+        <p>Invertir dos veces sobre el mismo eje deja el mapa como estaba. Por eso,
+           usando solo inversiones, hay apenas 4 resultados posibles: nada, invertir
+           vertical, invertir horizontal, o ambas. Genera esas 4 versiones de \(B\)
+           y compáralas con \(A\). Eso resuelve la subtarea 2.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3: solo rotaciones</summary>
+      <div class="body">
+        <p class="q">Si rotas 90º cuatro veces, ¿dónde terminas? ¿Cuántas
+           rotaciones realmente distintas existen?</p>
+        <p>Rotar 90º cuatro veces equivale a no rotar: solo hay 4 rotaciones
+           distintas (0º, 90º, 180º, 270º). Implementa una función que rote 90º y,
+           aplicándola repetidamente, genera las 4 rotaciones de \(B\) y compáralas
+           con \(A\). Eso resuelve la subtarea 3.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave: juntarlo todo</summary>
+      <div class="body">
+        <p class="q">Ya tienes 4 inversiones y 4 rotaciones. Si las combinas, ¿son
+           \(4 \times 4 = 16\) cosas nuevas, o muchas se repiten?</p>
+        <p>Combinar rotaciones e inversiones genera el grupo de simetrías de un
+           cuadrado (el grupo diédrico \(D_4\)), que tiene exactamente
+           <strong>8</strong> elementos distintos. Las 16 combinaciones colapsan en
+           esas 8 (por ejemplo, rotar 90º equivale a rotar 270º e invertir vertical
+           y horizontal). Basta generar las 4 rotaciones del mapa y las 4 rotaciones
+           de su reflejo.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>El conjunto de todas las posiciones a las que puedes llevar un mapa
+           cuadrado con rotaciones e inversiones es el <strong>grupo diédrico
+           \(D_4\)</strong>: tiene 8 elementos. Una forma cómoda de listarlos es
+           tomar las <strong>4 rotaciones</strong> del mapa y las
+           <strong>4 rotaciones de su reflejo</strong> (basta reflejar una sola vez,
+           horizontal o verticalmente: cualquiera de las dos, combinada con las
+           rotaciones, produce las mismas 8 figuras).</p>
+        <p>El algoritmo entonces es: genera esas 8 versiones del segundo mapa \(B\)
+           y, para cada una, compárala celda por celda con \(A\). Si alguna coincide
+           exactamente, la respuesta es <code>IGUALES</code>; si ninguna coincide,
+           <code>DIFERENTES</code>. Es correcto porque \(D_4\) contiene <em>todas</em>
+           las transformaciones alcanzables: cualquier secuencia de las 5 acciones
+           cae en uno de esos 8 estados, así que probarlas todas no deja fuera
+           ningún caso posible.</p>
+        <p>Las subtareas son escalones de esta misma idea: la 1 es la comparación
+           directa, la 2 son las 4 inversiones, la 3 son las 4 rotaciones, y la 4
+           las junta en las 8 simetrías.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N
+leer matriz A (N x N)        # primer mapa
+leer matriz B (N x N)        # segundo mapa
+
+funcion rotar90(M):          # giro de 90° en sentido horario
+    crear R de N x N
+    para i en 0..N-1:
+        para j en 0..N-1:
+            R[j][N-1-i] = M[i][j]
+    regresa R
+
+funcion reflejar(M):         # inversion horizontal (voltea las columnas)
+    para cada fila f de M:
+        invierte el orden de las celdas de f
+    regresa M
+
+iguales = falso
+
+cur = B                      # las 4 rotaciones de B
+repetir 4 veces:
+    si cur == A: iguales = verdadero
+    cur = rotar90(cur)
+
+cur = reflejar(B)            # las 4 rotaciones del reflejo de B
+repetir 4 veces:
+    si cur == A: iguales = verdadero
+    cur = rotar90(cur)
+
+si iguales: imprimir "IGUALES"
+si no:      imprimir "DIFERENTES"</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> 8 transformaciones; cada generación y cada
+           comparación cuesta \(O(N^2)\), así que el total es \(O(N^2)\) en tiempo y
+           \(O(N^2)\) en memoria. Con \(N \le 500\) son a lo más unos 2 millones de
+           operaciones, de sobra dentro de los límites.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

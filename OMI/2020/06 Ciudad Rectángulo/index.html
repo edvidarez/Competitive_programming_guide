@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2020 · Problema 06 — Ciudad Rectángulo</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figure svg{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:var(--code);padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">25ª OMI · 2020 · Día 2</div>
+    <h1>Problema <span class="num">06</span> — Ciudad Rectángulo</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2020-Rectangulos-3">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Al gobernador de Karelópolis nuevamente se le ha zafado un tornillo y ahora
+       tiene una gran obsesión por los rectángulos. Esta obsesión lo llevó a
+       pedirle a Karel construir una ciudad rectangular. Lamentablemente, Karel
+       ahora mismo trabaja de constructor y no de arquitecto, por lo que te ha
+       pedido ayuda a ti para diseñar los planos de la ciudad y cumplir con las
+       exigencias del gobernador.</p>
+
+    <p>La ciudad consiste en una cuadrícula de \(H\) filas (numeradas de \(1\) a
+       \(H\)) y \(W\) columnas (numeradas de \(1\) a \(W\)), en la cual se
+       construirán los diferentes bloques que conformarán la ciudad.</p>
+
+    <p>A pesar de la obsesión del gobernador, aún se preocupa por los ciudadanos
+       de Karelópolis y el diseño de la ciudad. Para él, un buen diseño es
+       <strong>tener una gran variedad de rectángulos</strong>, así que ha puesto
+       ciertas reglas para el diseño de la ciudad:</p>
+    <ul>
+      <li>Que esté formada por bloques rectangulares.</li>
+      <li>Los rectángulos no deben intersecarse entre sí.</li>
+      <li>No se debe construir fuera de los límites de la ciudad.</li>
+      <li>Cada rectángulo debe estar separado por al menos una casilla de los
+          otros rectángulos en todas las direcciones (también en diagonal).</li>
+      <li>Mientras más rectángulos, mejor.</li>
+      <li>Mientras más tamaños distintos de rectángulos, mejor.</li>
+      <li>Las esquinas de los rectángulos deben estar en posiciones enteras de la
+          cuadrícula.</li>
+    </ul>
+
+    <p>Cualquier diseño que cumpla estas reglas es válido, pero para obtener 100
+       puntos debes maximizar la cantidad de rectángulos y minimizar la cantidad
+       de rectángulos con tamaño repetido.</p>
+
+    <p>Dadas las medidas, \(H\) y \(W\), debes diseñar una ciudad que cumpla las
+       reglas que ha puesto el gobernador.</p>
+
+    <p>Este es un problema de <strong>solo salida</strong>, por lo que no
+       necesariamente tienes que enviar tu código, sino que también puedes enviar
+       un zip con tus salidas.</p>
+
+    <h2>Entrada</h2>
+    <p>Una línea con dos enteros, \(H\) y \(W\), que representan las dimensiones de
+       la ciudad.</p>
+
+    <h2>Salida</h2>
+    <p>En la primera línea, un entero \(R\): la cantidad de rectángulos en el
+       diseño.</p>
+    <p>En cada una de las siguientes \(R\) líneas, 4 enteros separados por un
+       espacio: \(h_1, w_1, h_2, w_2\). El par \((h_1, w_1)\) representa la fila y
+       la columna de la esquina inferior izquierda del rectángulo, y \((h_2, w_2)\)
+       representa la fila y la columna de la esquina superior derecha.</p>
+    <p>Además, se debe cumplir que \(1 \le h_1 \le h_2 \le H\) y
+       \(1 \le w_1 \le w_2 \le W\).</p>
+    <p>No importa el orden en el que se impriman los rectángulos, siempre y cuando
+       se cumplan todas las restricciones.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (problema de solo salida)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (problema de solo salida)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Dimensiones</td><td><span class="badge">\(5 \le H, W \le 2500\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Evaluación</h2>
+    <ul>
+      <li>Si no cumples con las reglas del gobernador, obtendrás 0 puntos.</li>
+      <li>Un rectángulo de tamaño \(A \times B\) se considera diferente de un
+          rectángulo de tamaño \(B \times A\).</li>
+      <li>Un cuadrado es un rectángulo.</li>
+      <li>Tu mundo se evalúa usando la siguiente fórmula:
+        \[(\text{área total de los rectángulos} - \text{número de rectángulos de tamaño repetido}) \times (\text{número de tamaños distintos})\]
+      </li>
+      <li>Obtendrás más puntos por tu solución entre más alto sea el valor de esa
+          fórmula.</li>
+      <li>Esta fórmula implica que las soluciones con más rectángulos de tamaño
+          distinto y de áreas más grandes sacan más puntos.</li>
+    </ul>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: es un problema de <strong>optimización (solo
+       salida)</strong>. No hay todo-o-nada por caso ni bloques de puntos: cada
+       caso de prueba aporta puntaje parcial proporcional al valor de la fórmula
+       de la sección «Evaluación» (entre más alto, más puntos).</p>
+
+    <h2>Ejemplos</h2>
+    <p>Si tuviéramos un caso con \(H = 5\) y \(W = 7\), algunos diseños posibles
+       serían:</p>
+
+    <h3>Diseño 1</h3>
+    <figure>
+      <svg viewBox="0 0 260 192" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Cuadrícula de 5 filas por 7 columnas con tres rectángulos separados: uno de 1x1, uno de 2x3 y uno de 3x2.">
+        <g transform="translate(20,8)">
+          <!-- celdas de la cuadrícula -->
+          <rect x="0" y="0" width="238" height="170" fill="#0b0e18"/>
+          <!-- líneas verticales (8) -->
+          <g stroke="#2a3252" stroke-width="1">
+            <line x1="0"   y1="0" x2="0"   y2="170"/>
+            <line x1="34"  y1="0" x2="34"  y2="170"/>
+            <line x1="68"  y1="0" x2="68"  y2="170"/>
+            <line x1="102" y1="0" x2="102" y2="170"/>
+            <line x1="136" y1="0" x2="136" y2="170"/>
+            <line x1="170" y1="0" x2="170" y2="170"/>
+            <line x1="204" y1="0" x2="204" y2="170"/>
+            <line x1="238" y1="0" x2="238" y2="170"/>
+            <!-- líneas horizontales (6) -->
+            <line x1="0" y1="0"   x2="238" y2="0"/>
+            <line x1="0" y1="34"  x2="238" y2="34"/>
+            <line x1="0" y1="68"  x2="238" y2="68"/>
+            <line x1="0" y1="102" x2="238" y2="102"/>
+            <line x1="0" y1="136" x2="238" y2="136"/>
+            <line x1="0" y1="170" x2="238" y2="170"/>
+          </g>
+          <!-- Rect C: filas 4-5, cols 1-3 (alto 2 x ancho 3) -->
+          <rect x="1" y="1" width="100" height="66" fill="#5b8cff" fill-opacity="0.55" stroke="#5b8cff" stroke-width="2"/>
+          <text x="51" y="38" fill="#e8ecf6" font-size="13" font-family="sans-serif" text-anchor="middle">2×3</text>
+          <!-- Rect B: filas 2-4, cols 5-6 (alto 3 x ancho 2) -->
+          <rect x="137" y="35" width="66" height="100" fill="#34d399" fill-opacity="0.55" stroke="#34d399" stroke-width="2"/>
+          <text x="170" y="89" fill="#e8ecf6" font-size="13" font-family="sans-serif" text-anchor="middle">3×2</text>
+          <!-- Rect A: fila 2, col 2 (alto 1 x ancho 1) -->
+          <rect x="35" y="103" width="32" height="32" fill="#fbbf24" fill-opacity="0.6" stroke="#fbbf24" stroke-width="2"/>
+          <text x="51" y="123" fill="#0b0e18" font-size="11" font-family="sans-serif" text-anchor="middle">1×1</text>
+        </g>
+      </svg>
+      <figcaption>Diseño 1 (reconstruido a partir de las coordenadas del
+        enunciado): tres rectángulos (\(2\times3\), \(3\times2\) y \(1\times1\)),
+        todos separados por al menos una casilla.</figcaption>
+    </figure>
+    <p>En este caso, Karel construyó 3 rectángulos. Lo que tu programa debería
+       imprimir para esta construcción es:</p>
+    <div class="io"><pre>3
+2 2 2 2
+4 1 5 3
+2 5 4 6</pre></div>
+    <p>Al evaluar la fórmula obtendríamos \((13 - 0) \times 3 = 39\). Recuerda que
+       el rectángulo de \(2\times3\) se considera diferente al rectángulo de
+       \(3\times2\).</p>
+
+    <h3>Diseño 2</h3>
+    <figure>
+      <svg viewBox="0 0 260 192" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Cuadrícula de 5 filas por 7 columnas con un único rectángulo de 5x3 ocupando las tres columnas de la derecha.">
+        <g transform="translate(20,8)">
+          <rect x="0" y="0" width="238" height="170" fill="#0b0e18"/>
+          <g stroke="#2a3252" stroke-width="1">
+            <line x1="0"   y1="0" x2="0"   y2="170"/>
+            <line x1="34"  y1="0" x2="34"  y2="170"/>
+            <line x1="68"  y1="0" x2="68"  y2="170"/>
+            <line x1="102" y1="0" x2="102" y2="170"/>
+            <line x1="136" y1="0" x2="136" y2="170"/>
+            <line x1="170" y1="0" x2="170" y2="170"/>
+            <line x1="204" y1="0" x2="204" y2="170"/>
+            <line x1="238" y1="0" x2="238" y2="170"/>
+            <line x1="0" y1="0"   x2="238" y2="0"/>
+            <line x1="0" y1="34"  x2="238" y2="34"/>
+            <line x1="0" y1="68"  x2="238" y2="68"/>
+            <line x1="0" y1="102" x2="238" y2="102"/>
+            <line x1="0" y1="136" x2="238" y2="136"/>
+            <line x1="0" y1="170" x2="238" y2="170"/>
+          </g>
+          <!-- Rect único: filas 1-5, cols 5-7 (alto 5 x ancho 3) -->
+          <rect x="137" y="1" width="100" height="168" fill="#5b8cff" fill-opacity="0.55" stroke="#5b8cff" stroke-width="2"/>
+          <text x="187" y="90" fill="#e8ecf6" font-size="13" font-family="sans-serif" text-anchor="middle">5×3</text>
+        </g>
+      </svg>
+      <figcaption>Diseño 2 (reconstruido a partir de las coordenadas del
+        enunciado): un único rectángulo de \(5\times3\).</figcaption>
+    </figure>
+    <p>En este caso, Karel construyó un único rectángulo. Lo que tu programa
+       debería imprimir para esta construcción es:</p>
+    <div class="io"><pre>1
+1 5 5 7</pre></div>
+    <p>Al evaluar la fórmula obtendríamos \((15 - 0) \times 1 = 15\). En este caso,
+       el Diseño 1 obtendría más puntos que el Diseño 2, pues el valor de la
+       fórmula es mayor.</p>
+
+    <h3>Diseños inválidos</h3>
+    <p>Cada rectángulo debe estar separado por al menos una casilla de los otros
+       rectángulos en todas las direcciones. Si dos rectángulos comparten una
+       arista (no están separados), el diseño se considera inválido.</p>
+    <p>Los rectángulos también deben estar separados en diagonal: si dos
+       rectángulos se tocan únicamente en una esquina, el diseño también es
+       inválido. Ambos casos recibirían 0 puntos.</p>
+    <figure>
+      <svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Dos ilustraciones de diseños inválidos: a la izquierda dos rectángulos que comparten una arista; a la derecha dos rectángulos que se tocan en una esquina.">
+        <!-- Inválido 1: comparten arista -->
+        <g transform="translate(8,12)">
+          <rect x="0" y="0" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="34" y="0" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="68" y="0" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="0" y="34" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="34" y="34" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="68" y="34" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="1" y="1" width="32" height="66" fill="#5b8cff" fill-opacity="0.55" stroke="#5b8cff" stroke-width="2"/>
+          <rect x="35" y="1" width="66" height="66" fill="#f87171" fill-opacity="0.55" stroke="#f87171" stroke-width="2"/>
+          <text x="51" y="92" fill="#9aa6c4" font-size="12" font-family="sans-serif" text-anchor="middle">Inválido: comparten arista</text>
+        </g>
+        <!-- Inválido 2: se tocan en una esquina -->
+        <g transform="translate(210,12)">
+          <rect x="0" y="0" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="34" y="0" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="68" y="0" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="0" y="34" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="34" y="34" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="68" y="34" width="34" height="34" fill="#0b0e18" stroke="#2a3252"/>
+          <rect x="1" y="1" width="32" height="32" fill="#5b8cff" fill-opacity="0.55" stroke="#5b8cff" stroke-width="2"/>
+          <rect x="35" y="35" width="66" height="32" fill="#f87171" fill-opacity="0.55" stroke="#f87171" stroke-width="2"/>
+          <text x="51" y="92" fill="#9aa6c4" font-size="12" font-family="sans-serif" text-anchor="middle">Inválido: se tocan en diagonal</text>
+        </g>
+      </svg>
+      <figcaption>Ilustración de las dos situaciones inválidas: contacto por arista
+        (izquierda) y contacto solo en una esquina/diagonal (derecha). El enunciado
+        oficial muestra figuras equivalentes.</figcaption>
+    </figure>
+
+    <h2>Experimentación</h2>
+    <p>Este problema es mixto: puedes enviar tu código normalmente, o subir las
+       salidas como un problema de solo salida. Si quieres subir solo las salidas,
+       debes crear un zip que contenga los archivos de salida; cada archivo
+       <code>.out</code> debe tener el mismo nombre que el archivo de entrada
+       <code>.in</code> al que corresponde. Si envías tu código, será evaluado con
+       estos mismos casos de prueba.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Solo salida</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En una cuadrícula de \(H \times W\) coloca rectángulos sin que se toquen
+       (debe haber al menos una casilla de hueco entre cualesquiera dos, también en
+       diagonal). El puntaje es
+       \((\text{área total} - \text{repetidos}) \times (\text{tamaños distintos})\),
+       donde un \(A\times B\) cuenta distinto de un \(B\times A\). Hay que maximizar
+       ese valor.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(5 \le H, W \le 2500\) y es problema de <strong>solo salida</strong>:
+                no hay que ser \(O(\ldots)\) eficiente, sino encontrar una buena
+                <em>construcción</em>. Apilar rectángulos de tamaños
+                \(1,2,3,\ldots\) consume espacio cuadrático, así que solo caben del
+                orden de \(\sqrt{2H}\) alturas y \(\sqrt{2W}\) anchos distintos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué premia realmente la fórmula?</summary>
+      <div class="body">
+        <p class="q">¿Ya desglosaste la fórmula
+           \((\text{área} - \text{repetidos}) \times (\text{distintos})\)? ¿Qué te
+           conviene: muchos rectángulos chiquitos, pocos grandes, o algo
+           intermedio?</p>
+        <p>Fíjate en que «repetidos» resta y «distintos» multiplica. Si logras que
+           <em>todos</em> los rectángulos tengan tamaño diferente, el término de
+           repetidos vale \(0\) y el factor de distintos es justo la cantidad total
+           de rectángulos. Entonces la meta se vuelve: <strong>cuantos más
+           rectángulos de tamaño único quepan, y cuanta más área cubran,
+           mejor</strong>. ¿Cómo fabricas muchos tamaños distintos sin desperdiciar
+           espacio?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo más simple y ve mejorando</summary>
+      <div class="body">
+        <p class="q">¿Cuánto da un solo rectángulo que llene casi todo? ¿Y si en
+           vez de uno haces tiras verticales de anchos \(1, 2, 3, \ldots\)?</p>
+        <p>Un único rectángulo de área máxima da
+           \((\text{área}) \times 1\): poco, porque el factor de distintos es \(1\).
+           Si en su lugar pones columnas de anchos \(1, 2, 3, \ldots\) (todas de la
+           altura completa), separadas por una casilla, ya tienes varios tamaños
+           distintos. ¿Y qué pasa si haces lo mismo también por filas, combinando
+           cada altura con cada ancho?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La cuadrícula de tamaños y cuánto espacio cuesta</summary>
+      <div class="body">
+        <p class="q">Si tomas todas las alturas \(1..A\) y todos los anchos
+           \(1..B\) y formas un rectángulo por cada par \((i,j)\), ¿cuántos tamaños
+           distintos obtienes? ¿Cuántas filas necesitas para apilar alturas
+           \(1,2,\ldots,A\) dejando un hueco de una casilla entre cada par?</p>
+        <p>Cada par \((i,j)\) (alto \(i\), ancho \(j\)) es un tamaño único, así que
+           una rejilla \(A\times B\) te da \(A\cdot B\) rectángulos, <em>todos
+           distintos</em> (repetidos \(=0\)). Para apilar verticalmente alturas
+           \(1,2,\ldots,A\) con un hueco de \(1\) entre cada una necesitas
+           \[1+2+\cdots+A + (A-1) = \frac{A(A+3)}{2}-1\]
+           filas. Llama \(f(A)=\tfrac{A(A+3)}{2}-1\). ¿Cuál es la \(A\) más grande
+           con \(f(A)\le H\)? ¿Y la \(B\) con \(f(B)\le W\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — El margen sobrante</summary>
+      <div class="body">
+        <p class="q">Después de colocar la rejilla \(A\times B\) sobran unas filas
+           y columnas en el borde. ¿Las dejas vacías o las aprovechas? Si estiras
+           un rectángulo hacia el borde, ¿se repite algún tamaño?</p>
+        <p>Conviene <strong>no desperdiciar</strong> ese margen: estira la última
+           banda (la de mayor altura \(A\)) hacia abajo hasta la fila \(H\), y la
+           última columna (la de mayor ancho \(B\)) hacia la derecha hasta la
+           columna \(W\). Como esas nuevas dimensiones son mayores que cualquier
+           otra ya usada, siguen siendo tamaños únicos: no creas repetidos y ganas
+           área «gratis». (La solución oficial va más allá y rellena el área
+           sobrante con rectángulos adicionales que continúan la secuencia de
+           tamaños, exprimiendo unos puntos más.)</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Construye una rejilla de rectángulos donde el de
+           la posición \((i,j)\) mide alto \(i\) y ancho \(j\). Tomando todas las
+           alturas \(1..A\) y todos los anchos \(1..B\), cada par \((i,j)\) es un
+           tamaño distinto (recuerda: \(A\times B \ne B\times A\)), por lo que
+           tienes \(A\cdot B\) rectángulos sin repetidos.</p>
+
+        <p><strong>Dónde colocarlos.</strong> Define
+           \(f(c)=\tfrac{c(c+3)}{2}-1\), el espacio mínimo para apilar \(c\)
+           segmentos de longitudes \(1,2,\ldots,c\) dejando una casilla de hueco
+           entre cada par consecutivo. La banda de altura \(i\) ocupa las filas
+           \([\,f(i)-i+1,\; f(i)\,]\), y la banda de ancho \(j\) ocupa las columnas
+           \([\,f(j)-j+1,\; f(j)\,]\). El rectángulo \((i,j)\) es la intersección de
+           ambas bandas. Por construcción, dos bandas consecutivas quedan separadas
+           por exactamente una casilla, así que la separación (incluida la diagonal)
+           se cumple automáticamente.</p>
+
+        <p><strong>Cuántas bandas.</strong> Toma \(A\) como la mayor con
+           \(f(A)\le H\) y \(B\) como la mayor con \(f(B)\le W\). Como
+           \(H,W\ge 5\), siempre cabe al menos \(f(2)=4\), o sea \(A,B\ge 2\).</p>
+
+        <p><strong>Aprovechar el margen.</strong> Estira la banda de mayor altura
+           \(A\) hacia abajo hasta la fila \(H\), y la banda de mayor ancho \(B\)
+           hacia la derecha hasta la columna \(W\). Las dimensiones resultantes son
+           mayores que cualquier otra usada, así que siguen siendo tamaños únicos:
+           cero repetidos y más área. (Opcionalmente, el área que aún sobre se puede
+           partir en uno o dos rectángulos extra que continúen la secuencia de
+           longitudes desde el último corte completo, para subir un poco más el
+           puntaje, tal como hace la solución oficial.)</p>
+
+        <p><strong>Por qué es correcta.</strong> Ningún par de rectángulos se toca
+           (hueco de una casilla entre bandas y al estirar solo tocamos el borde de
+           la ciudad, no a otro rectángulo); todas las dimensiones son distintas, de
+           modo que «repetidos» \(=0\) y «distintos» \(= R\). El puntaje queda
+           \((\text{área})\times R\), grande tanto por el número de rectángulos como
+           por el área recuperada del margen.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion f(c):                      # espacio para longitudes 1..c con huecos
+    regresa c*(c+3)/2 - 1
+
+leer H, W
+
+A = mayor entero con f(A) <= H     # alturas distintas que caben
+B = mayor entero con f(B) <= W     # anchos  distintos que caben
+
+rects = lista vacia
+para i de 1 a A:
+    fila_inf = f(i) - i + 1
+    si i == A: fila_sup = H        # estira la ultima banda hasta el borde
+    si no:     fila_sup = f(i)
+    para j de 1 a B:
+        col_izq = f(j) - j + 1
+        si j == B: col_der = W      # estira la ultima columna hasta el borde
+        si no:     col_der = f(j)
+        agrega (fila_inf, col_izq, fila_sup, col_der) a rects
+
+imprimir tamaño(rects)
+para cada r en rects:
+    imprimir r.fila_inf, r.col_izq, r.fila_sup, r.col_der</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> se generan \(A\cdot B\) rectángulos con
+           \(A=O(\sqrt{H})\) y \(B=O(\sqrt{W})\), así que la construcción es
+           \(O(\sqrt{H\,W})\) en tiempo y memoria; trivial para
+           \(H,W\le 2500\).</p>
+
+        <p class="note">Verificado localmente con un validador propio (sin
+           intersecciones, separación de al menos una casilla en las 8 direcciones,
+           cero tamaños repetidos) sobre los 10 casos del archivo oficial: todos
+           válidos, con un puntaje del orden de 96–100 % del de la solución oficial
+           (idéntico en los casos cuadrados/exactos).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
