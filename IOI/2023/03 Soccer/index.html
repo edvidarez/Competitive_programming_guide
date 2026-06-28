@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2023 · Tarea 3 — Soccer Stadium</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2023 · Día 1</div>
+    <h1>Tarea <span class="num">3</span> — Soccer Stadium</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Nagyerdő es un bosque de forma cuadrada ubicado en la ciudad de Debrecen, que se
+       puede modelar como una rejilla de \(N \times N\) celdas. Las filas se numeran de
+       \(0\) a \(N-1\) de norte a sur, y las columnas de \(0\) a \(N-1\) de oeste a este.
+       A la celda en la fila \(r\) y la columna \(c\) la llamamos celda \((r, c)\).</p>
+
+    <p>Cada celda del bosque está <strong>vacía</strong> o contiene un <strong>árbol</strong>.
+       Al menos una celda del bosque está vacía.</p>
+
+    <p>DVSC, el famoso club deportivo de la ciudad, planea construir un nuevo estadio de
+       futbol en el bosque. Un <strong>estadio de tamaño \(s\)</strong> (con \(s \ge 1\)) es
+       un conjunto de \(s\) celdas vacías distintas \((r_0, c_0), \ldots, (r_{s-1}, c_{s-1})\).
+       Formalmente, esto quiere decir:</p>
+    <ul>
+      <li>para cada \(i\) de \(0\) a \(s-1\), la celda \((r_i, c_i)\) está vacía;</li>
+      <li>para cada \(i, j\) con \(0 \le i &lt; j &lt; s\), se cumple \(r_i \ne r_j\) o \(c_i \ne c_j\)
+          (todas las celdas son distintas entre sí).</li>
+    </ul>
+
+    <p>El futbol se juega moviendo un balón por las celdas del estadio. Una
+       <strong>patada recta</strong> es cualquiera de estas dos acciones:</p>
+    <ul>
+      <li>Mover el balón de la celda \((r, a)\) a la celda \((r, b)\)
+          (con \(0 \le r, a, b &lt; N\) y \(a \ne b\)), siempre que el estadio contenga
+          <em>todas</em> las celdas entre \((r, a)\) y \((r, b)\) en la fila \(r\). Es decir,
+          si \(a &lt; b\) el estadio debe contener \((r, k)\) para toda \(k\) con \(a \le k \le b\);
+          si \(a &gt; b\), debe contener \((r, k)\) para toda \(k\) con \(b \le k \le a\).</li>
+      <li>Mover el balón de la celda \((a, c)\) a la celda \((b, c)\)
+          (con \(0 \le c, a, b &lt; N\) y \(a \ne b\)), siempre que el estadio contenga
+          <em>todas</em> las celdas entre \((a, c)\) y \((b, c)\) en la columna \(c\)
+          (de forma análoga al caso anterior).</li>
+    </ul>
+
+    <p>Un estadio es <strong>regular</strong> si es posible mover el balón de cualquier celda
+       del estadio a cualquier otra celda del estadio con <strong>a lo sumo 2 patadas rectas</strong>.
+       Nota: cualquier estadio de tamaño \(1\) es regular.</p>
+
+    <p>Por ejemplo, considera un bosque de tamaño \(N = 5\), donde las celdas \((1, 0)\) y
+       \((4, 2)\) contienen árboles y todas las demás están vacías. La figura de abajo muestra
+       tres estadios posibles. Las celdas con árbol están oscurecidas y las celdas que pertenecen
+       al estadio están rayadas.</p>
+
+    <figure>
+      <img alt="Tres estadios en una rejilla 5x5 con árboles en (1,0) y (4,2): el de la izquierda es regular; el del centro y el de la derecha no lo son."
+           src="data:image/png;base64,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">
+      <figcaption>El estadio de la <strong>izquierda es regular</strong>. El del
+        <strong>centro no es regular</strong>: se necesitan al menos \(3\) patadas rectas para
+        mover el balón de la celda \((4, 1)\) a la \((4, 3)\). El de la
+        <strong>derecha tampoco es regular</strong>: es imposible mover el balón de la celda
+        \((3, 0)\) a la \((1, 3)\) usando patadas rectas.</figcaption>
+    </figure>
+
+    <p>El club quiere construir un estadio regular tan grande como sea posible. Tu tarea es
+       encontrar el valor máximo de \(s\) tal que exista un estadio regular de tamaño \(s\)
+       en el bosque.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento. No lees de la entrada estándar ni
+       escribes en la salida estándar: el evaluador llama a tu función y usa su valor de retorno.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int biggest_stadium(int N, int[][] F)</pre>
+    </div>
+    <ul>
+      <li>\(N\): el tamaño del bosque.</li>
+      <li>\(F\): un arreglo de longitud \(N\) que contiene arreglos de longitud \(N\), que
+          describe las celdas del bosque. Para cada \(r\) y \(c\) con \(0 \le r &lt; N\) y
+          \(0 \le c &lt; N\): \(F[r][c] = 0\) significa que la celda \((r, c)\) está vacía, y
+          \(F[r][c] = 1\) significa que contiene un árbol.</li>
+      <li>El procedimiento debe devolver el tamaño máximo de un estadio regular que se pueda
+          construir en el bosque.</li>
+      <li>Este procedimiento se llama exactamente una vez por cada caso de prueba.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3.5 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB (\(2\,147\,483\,648\) bytes)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño de la rejilla</td><td><span class="badge">\(1 \le N \le 2000\)</span></td></tr>
+        <tr><td>Contenido de cada celda</td><td><span class="badge">\(0 \le F[i][j] \le 1\)</span></td></tr>
+        <tr><td>Garantía</td><td>Hay al menos una celda vacía: \(F[i][j] = 0\) para alguna
+            \(0 \le i &lt; N\), \(0 \le j &lt; N\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">6</td><td>Hay a lo sumo una celda que contiene un árbol.</td></tr>
+          <tr><td>2</td><td class="pts">8</td><td>\(N \le 3\)</td></tr>
+          <tr><td>3</td><td class="pts">22</td><td>\(N \le 7\)</td></tr>
+          <tr><td>4</td><td class="pts">18</td><td>\(N \le 30\)</td></tr>
+          <tr><td>5</td><td class="pts">16</td><td>\(N \le 500\)</td></tr>
+          <tr><td>6</td><td class="pts">30</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>Crédito parcial dentro de cada subtarea.</strong> En cada subtarea puedes obtener
+       el \(25\%\) del puntaje de esa subtarea si tu programa decide <em>correctamente</em> si el
+       conjunto formado por <em>todas</em> las celdas vacías es un estadio regular. Más en detalle:</p>
+    <ul>
+      <li>Para cada caso de prueba en el que el conjunto de todas las celdas vacías
+          <strong>sí</strong> es un estadio regular, tu solución obtiene los puntos completos si
+          devuelve la respuesta correcta (que es justamente el número de celdas vacías), y
+          \(0\) puntos en otro caso.</li>
+      <li>Para cada caso de prueba en el que el conjunto de todas las celdas vacías
+          <strong>no</strong> es un estadio regular, tu solución obtiene los puntos completos si
+          devuelve la respuesta correcta; \(0\) puntos si devuelve el número de celdas vacías; y
+          el \(25\%\) de los puntos si devuelve cualquier otro valor.</li>
+    </ul>
+    <p class="note">El puntaje de cada subtarea es el <em>mínimo</em> de los puntos obtenidos en
+       sus casos de prueba.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la siguiente llamada:</p>
+    <div class="io"><pre>biggest_stadium(5, [[0, 0, 0, 0, 0],
+                    [1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0]])</pre></div>
+
+    <figure>
+      <img alt="A la izquierda, el bosque 5x5 con árboles en (1,0) y (4,2). A la derecha, un estadio regular de tamaño 20 que cubre casi todas las celdas vacías."
+           src="data:image/png;base64,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">
+      <figcaption>A la izquierda se muestra el bosque y a la derecha un estadio regular de
+        tamaño \(20\).</figcaption>
+    </figure>
+
+    <p>En este ejemplo, como no existe ningún estadio regular de tamaño \(21\) o mayor, el
+       procedimiento debe devolver \(20\).</p>
+
+    <h3>Evaluador de ejemplo</h3>
+    <p>El evaluador de ejemplo lee la entrada con este formato:</p>
+    <ul>
+      <li>línea \(1\): \(N\);</li>
+      <li>línea \(2 + i\) (para \(0 \le i &lt; N\)): \(F[i][0]\ F[i][1]\ \ldots\ F[i][N-1]\).</li>
+    </ul>
+    <p>Y escribe tu respuesta en una sola línea: el valor de retorno de
+       <code>biggest_stadium</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Geometría en rejilla</span>
+      <span class="ptag">Rectángulos maximales (histograma + pila)</span>
+      <span class="ptag">RMQ</span>
+      <span class="ptag">DP sobre DAG</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una rejilla \(N \times N\) (\(N \le 2000\)) de celdas vacías y con árbol.
+       Un <em>estadio</em> es un conjunto de celdas vacías; es <strong>regular</strong> si entre
+       cualquier par de sus celdas puedes ir con \(\le 2\) <em>patadas rectas</em> (recorrer un
+       tramo contiguo y completo de una fila o de una columna que esté íntegramente dentro del
+       estadio). Implementa <code>biggest_stadium</code> para devolver el tamaño del estadio
+       regular más grande.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 2000\) deja fuera todo lo cuadrático con factor grande: la solución de
+                \(100\) puntos corre en \(O(N^2 \log N)\) y memoria \(O(N^2)\). Las subtareas son
+                puramente por \(N\) (\(\le 3, \le 7, \le 30, \le 500\)), así que escalan fuerzas
+                brutas cada vez más finas. Además, en <em>toda</em> subtarea hay un \(25\%\) extra
+                solo por decidir bien si el conjunto de todas las vacías es regular, lo cual se hace
+                en \(O(N^2)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué forma tiene un estadio regular?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué significa, geométricamente, que dos celdas estén a
+           \(\le 2\) patadas? Una patada recorre un segmento horizontal o vertical completo y
+           vacío. ¿Cómo se ve entonces el camino entre dos celdas?</p>
+        <p>Con dos patadas, ir de \(u\) a \(v\) es trazar una "L": un tramo recto, doblar una vez,
+           y otro tramo recto. El punto de la esquina es una celda \(w\) tal que \(u\) y \(w\)
+           están en la misma fila (o columna) con todo el tramo dentro del estadio, y \(w\) y \(v\)
+           comparten columna (o fila), también todo dentro. ¿Qué condición impone esto a la forma
+           del conjunto? Pista: un rectángulo lleno (sin árboles) siempre es regular. La pregunta
+           es cómo "pegar" piezas sin romper la propiedad de las 2 patadas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — El \(25\%\) gratis: ¿todas las vacías forman un estadio regular?</summary>
+      <div class="body">
+        <p class="q">Antes de buscar el óptimo: ¿sabrías decir, en \(O(N^2)\), si el conjunto de
+           <em>todas</em> las celdas vacías ya es regular? Eso solo te da el \(25\%\) de cada
+           subtarea, y además resuelve buena parte de la subtarea 1.</p>
+        <p>Fija una celda vacía <strong>ancla</strong>. Para que todo el conjunto sea regular basta
+           con que cada celda vacía alcance al ancla en \(\le 2\) patadas (si todas llegan al ancla
+           en 2, dos celdas cualesquiera se conectan en \(\le 4\)... pero para el conjunto
+           <em>completo</em> de vacías esta condición de "alcanzable desde un ancla en 2 patadas"
+           resulta equivalente a ser regular). Para cada celda \(b\), prueba los dos caminos en "L"
+           hacia el ancla: horizontal-luego-vertical y vertical-luego-horizontal, exigiendo que los
+           tramos intermedios estén totalmente vacíos. Si alguna celda falla los dos, no es regular.
+           Si es regular, la respuesta es el número de celdas vacías.</p>
+        <p>¿Y la subtarea 1 (a lo sumo un árbol)? Con \(0\) árboles, todo el cuadrado es un estadio
+           regular y la respuesta es \(N^2\). Con \(1\) árbol, decide con el chequeo anterior: si el
+           conjunto de vacías es regular, la respuesta es \(N^2 - 1\); si no, hay que pensar un poco
+           más (entra ya la idea general).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas chicas (\(N \le 3, 7, 30\)): fuerza bruta guiada</summary>
+      <div class="body">
+        <p class="q">Con \(N\) pequeña puedes permitirte algo lento. ¿Cómo enumeras candidatos a
+           estadio regular sin probar los \(2^{N^2}\) subconjuntos?</p>
+        <p>Idea clave para no explotar: <strong>todo estadio regular máximo está hecho de
+           rectángulos vacíos</strong>. Para \(N \le 7\) puedes enumerar todos los rectángulos
+           vacíos (hay \(O(N^4)\)) y, para cada uno, intentar verificarlo/expandirlo y comprobar la
+           regularidad por fuerza bruta (revisar pares de celdas y el camino en L). Para \(N \le 30\)
+           ya conviene apoyarte en la estructura de la siguiente pista, pero con verificaciones
+           directas \(O(N^2)\) por candidato todavía pasas. Estas subtareas existen para que
+           descubras, jugando, qué forma tiene el óptimo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: teorema de estructura</summary>
+      <div class="body">
+        <p class="q">¿Notaste que un estadio regular óptimo siempre se puede ver como un
+           <em>rectángulo "núcleo"</em> al que le cuelgan piezas más angostas por arriba y por
+           abajo?</p>
+        <p>El teorema de estructura dice: un estadio regular máximo se descompone en un
+           <strong>rectángulo maximal vacío</strong> que actúa de núcleo (la franja más ancha) y,
+           pegadas por el borde superior o el inferior de ese núcleo, piezas más estrechas en
+           sub-rangos de columnas. Cada pieza queda delimitada por los árboles de la fila adyacente
+           y es a su vez otro rectángulo maximal vacío, que puede seguir extendiéndose
+           recursivamente hacia rangos de columnas cada vez más angostos. En una frase:
+           <em>núcleo rectangular + extensiones verticales convexas por bandas de columnas</em>.</p>
+        <p>Eso reduce todo a dos cosas: (1) enumerar <strong>rectángulos maximales vacíos</strong>,
+           y (2) hacer una <strong>DP de área máxima</strong> sobre un grafo dirigido acíclico (DAG)
+           de aristas "rectángulo \(\to\) rectángulo extendido". ¿Cómo enumeras rectángulos
+           maximales rápido, y cómo, dado un rectángulo, calculas cuánto se estira la pieza pegada
+           en un sub-rango de columnas?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Por el teorema de estructura, el estadio regular óptimo es un
+           rectángulo núcleo más extensiones verticales convexas por bandas de columnas. Cada una de
+           esas piezas es un rectángulo maximal vacío, y "pegar" una pieza a otra es una arista de un
+           DAG. El óptimo es entonces un camino de ese DAG, y se halla con una DP de área máxima.</p>
+
+        <p><strong>Pasos.</strong></p>
+        <ol>
+          <li><strong>Extensiones verticales.</strong> Con barridos por columna calcula, para cada
+              celda \((i, j)\): \(\textit{EmptyUp}[i][j]\) = fila del árbol más cercano <em>hacia
+              arriba</em> en la columna \(j\) (\(-1\) si no hay) y \(\textit{EmptyDn}[i][j]\) = árbol
+              más cercano <em>hacia abajo</em> (\(N\) si no hay). El tramo vacío vertical de la
+              columna \(j\) que pasa por la fila \(i\) va de \(\textit{EmptyUp}+1\) a
+              \(\textit{EmptyDn}-1\).</li>
+          <li><strong>Enumerar rectángulos maximales vacíos.</strong> Para cada fila usada como
+              <em>borde inferior</em>, haz un barrido tipo histograma con pila monótona (las alturas
+              son la extensión vacía hacia arriba). Conserva solo los rectángulos cuyo borde inferior
+              topa con un árbol o con el borde de la rejilla (son los candidatos a núcleo/pieza).
+              Guárdalos en una lista \(\textit{Rect}\) y ordénala por número de filas
+              (\(x_r - x_l\)).</li>
+          <li><strong>RMQ por fila.</strong> Construye estructuras de consulta de rango por fila
+              (segment tree o sparse table): \(\textit{UpMax}\) (máximo de \(\textit{EmptyUp}\)) y
+              \(\textit{DnMin}\) (mínimo de \(\textit{EmptyDn}\)). Sirven para, dado un sub-rango de
+              columnas justo afuera de un rectángulo, saber en \(O(\log N)\) cuánto se puede estirar
+              la pieza pegada.</li>
+          <li><strong>Aristas del DAG.</strong> Para cada rectángulo, mira la fila justo encima
+              (\(x_l - 1\)) y justo debajo (\(x_r + 1\)). Los árboles de esa fila parten el rango de
+              columnas del rectángulo en sub-bandas; cada sub-banda de ancho \(\ge 2\) define una
+              pieza extendida cuya extensión vertical sale de las RMQ. Si esa pieza coincide con un
+              rectángulo maximal ya enumerado (lo localizas con búsqueda binaria en
+              \(\textit{Rect}\)), agregas una arista.</li>
+          <li><strong>DP de área máxima.</strong> Recorre los rectángulos en orden de altura
+              creciente para que \(dp\) del origen esté listo antes de relajar el destino. El máximo
+              de \(dp\) es la respuesta.</li>
+        </ol>
+
+        <p><strong>Por qué es correcta.</strong> El teorema de estructura garantiza que el óptimo
+           aparece como algún camino del DAG. La maximalidad de los rectángulos (borde inferior
+           tocando árbol o borde) y la extensión vertical vía RMQ aseguran que ninguna celda añadida
+           choca con un árbol y que cada pieza es máxima en su banda, sin doble conteo: el área extra
+           al pegar es exactamente \(\text{filas\_extra} \times \text{columnas de la banda}\). El
+           caso \(s = 1\) (siempre regular) queda cubierto por los rectángulos \(1 \times 1\). El
+           chequeo "todo vacío es regular" de la Pista 2 captura el crédito parcial del \(25\%\), pero
+           la solución completa lo ignora y resuelve el óptimo directo.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion biggest_stadium(N, F):
+    # 1) extensiones verticales hasta el árbol más cercano (por columna)
+    para cada columna c:
+        de arriba hacia abajo:
+            si F[i][c] es árbol: EmptyUp[i][c] ← i
+            si no:               EmptyUp[i][c] ← EmptyUp[i-1][c]   (o -1 si no hay árbol arriba)
+        de abajo hacia arriba:
+            si F[i][c] es árbol: EmptyDn[i][c] ← i
+            si no:               EmptyDn[i][c] ← EmptyDn[i+1][c]   (o N si no hay árbol abajo)
+    # el tramo vacío vertical por (i,c) va de EmptyUp[i][c]+1 a EmptyDn[i][c]-1
+
+    # 2) enumerar RECTÁNGULOS MAXIMALES vacíos (histograma con pila por cada borde inferior)
+    Rect ← lista vacía
+    para cada fila 'abajo' usada como borde inferior:
+        altura[c] = celdas vacías hacia arriba desde 'abajo' en la columna c
+        con una pila monótona, al cerrar cada altura forma el rectángulo (xl..abajo, yl..yr)
+        consérvalo SOLO si su borde inferior topa con árbol o con el borde (es maximal)
+        agrega ese rectángulo a Rect
+    ordena Rect por número de filas (xr - xl), de menor a mayor
+
+    # 3) RMQ por fila: UpMax = máx de EmptyUp en un rango; DnMin = mín de EmptyDn en un rango
+    construye los árboles de segmentos (o sparse tables) por fila
+
+    # 4) construir las ARISTAS del DAG (pegar piezas por arriba y por abajo)
+    para cada rectángulo R (índice i) con columnas [yl..yr]:
+        para cada lado adyacente que exista (fila xl-1 arriba, fila xr+1 abajo):
+            los árboles de esa fila parten [yl..yr] en sub-bandas
+            para cada sub-banda [a..b] con ancho ≥ 2:
+                xlNuevo ← UpMax.consulta(a,b) + 1
+                xrNuevo ← DnMin.consulta(a,b) - 1        # nueva extensión vertical de la pieza
+                Rp ← rectángulo (xlNuevo..xrNuevo, a..b)
+                si Rp ya existe en Rect (búsqueda binaria):
+                    agrega arista  i → indice(Rp)
+
+    # 5) DP de área máxima sobre el DAG, en orden de ALTURA creciente
+    para i en ese orden:
+        dp[i] ← máx(dp[i], filas(i) · cols(i))
+        para cada 'to' en Siguientes[i]:
+            filasExtra ← filas(to) - filas(i)
+            dp[to] ← máx(dp[to], dp[i] + filasExtra · cols(to))
+    devolver máx(dp)
+
+
+# --- chequeo del crédito parcial (25%): ¿todo el vacío es regular? ---
+funcion todo_vacio_es_regular(N, F):
+    ancla ← primera celda vacía
+    para cada celda vacía b:
+        ok ← (camino en L horizontal→vertical, todo vacío, de b al ancla)
+              O (camino en L vertical→horizontal, todo vacío, de b al ancla)
+        si no ok: devolver falso
+    devolver verdadero      # entonces la respuesta parcial = número de celdas vacías</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Tiempo \(O(N^2 \log N)\): \(O(N^2)\) para
+           \(\textit{EmptyUp}/\textit{EmptyDn}\) y para enumerar los \(O(N^2)\) rectángulos maximales
+           con la pila; el factor \(\log N\) viene de las RMQ y de las búsquedas binarias al construir
+           y consultar aristas. Memoria \(O(N^2)\). Con \(N \le 2000\) entra cómodo en los \(3.5\) s y
+           \(2\) GiB (peor caso medido \(\approx 1.31\) s). El chequeo "todo vacío es regular" es
+           \(O(N^2)\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Cuidado de implementación (C++)</span>
+<pre>Los arreglos de tamaño O(MAXN^2) con MAXN ≈ 3209 ocupan ~0.5 GiB:
+decláralos GLOBALES / estáticos (segmento BSS) o resérvalos en el HEAP.
+Si creas un objeto gigante con esos arreglos como miembros EN LA PILA,
+revienta con segfault (no es culpa del algoritmo, sino de dónde se aloja).
+También conviene subir el límite de pila para la recursión/auxiliares.</pre>
+          <p class="note">Esto no es la solución en código: solo es la nota de dónde colocar la
+             memoria para que \(0.5\) GiB de arreglos quepan en los \(2\) GiB sin desbordar la pila.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
