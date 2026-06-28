@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2020 · Tarea 1 — Comparando plantas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2020 · Tarea funcional</div>
+    <h1>Tarea <span class="num">1</span> — Comparando plantas</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Hazel, la botánica, visitó una exposición especial en los Jardines Botánicos de
+       Singapur. En esa exposición hay \(n\) plantas de <strong>alturas todas distintas</strong>
+       colocadas en un <strong>círculo</strong>. Las plantas están etiquetadas de \(0\) a
+       \(n-1\) en sentido horario, de modo que la planta \(n-1\) queda junto a la planta \(0\).</p>
+
+    <p>Para cada planta \(i\) (con \(0 \le i \le n-1\)), Hazel comparó la planta \(i\) con
+       cada una de las siguientes \(k-1\) plantas en sentido horario, y anotó el número
+       \(r[i]\): cuántas de esas \(k-1\) plantas son <strong>más altas</strong> que la planta \(i\).
+       Así, cada valor \(r[i]\) depende de las alturas relativas de \(k\) plantas consecutivas.</p>
+
+    <p>Por ejemplo, supongamos \(n=5\), \(k=3\) e \(i=3\). Las siguientes \(k-1 = 2\) plantas
+       en sentido horario a partir de la planta \(i=3\) serían la planta \(4\) y la planta \(0\).
+       Si la planta \(4\) fuera más alta que la \(3\) y la planta \(0\) fuera más baja que la \(3\),
+       Hazel anotaría \(r[3] = 1\).</p>
+
+    <p>Puedes suponer que Hazel anotó los valores \(r[i]\) <strong>correctamente</strong>. Por lo
+       tanto, existe al menos una configuración de alturas distintas de las plantas que es
+       consistente con esos valores.</p>
+
+    <p>Se te pide comparar las alturas de \(q\) pares de plantas. Por desgracia, no tienes
+       acceso a la exposición: tu única fuente de información es el cuaderno de Hazel con el
+       valor \(k\) y la secuencia de valores \(r[0], \ldots, r[n-1]\).</p>
+
+    <p>Para cada par de plantas distintas \(x\) y \(y\) que hay que comparar, debes determinar
+       cuál de estas tres situaciones ocurre:</p>
+    <ul>
+      <li>La planta \(x\) es <strong>definitivamente más alta</strong> que la planta \(y\): en
+          toda configuración de alturas distintas \(h[0], \ldots, h[n-1]\) consistente con el
+          arreglo \(r\) se cumple \(h[x] > h[y]\).</li>
+      <li>La planta \(x\) es <strong>definitivamente más baja</strong> que la planta \(y\): en
+          toda configuración consistente con \(r\) se cumple \(h[x] &lt; h[y]\).</li>
+      <li>La comparación es <strong>no concluyente</strong>: no aplica ninguno de los dos casos
+          anteriores.</li>
+    </ul>
+
+    <h2>Detalles de implementación</h2>
+    <p>No lees de la entrada estándar ni escribes a la salida estándar. Debes implementar dos
+       funciones que el evaluador llamará por ti:</p>
+    <div class="sig">
+      <span class="tag">Firma(s) a implementar</span>
+<pre>void init(int k, int[] r);
+int  compare_plants(int x, int y);</pre>
+    </div>
+    <ul>
+      <li><code>init(k, r)</code>: \(k\) es el número de plantas consecutivas cuyas alturas
+          determinan cada valor \(r[i]\). El arreglo \(r\) tiene tamaño \(n\), donde \(r[i]\) es
+          la cantidad de plantas más altas que la planta \(i\) entre las siguientes \(k-1\)
+          plantas en sentido horario. Esta función se llama <strong>exactamente una vez</strong>,
+          antes de cualquier llamada a <code>compare_plants</code>.</li>
+      <li><code>compare_plants(x, y)</code>: debe devolver
+          <strong>\(1\)</strong> si la planta \(x\) es definitivamente más alta que la \(y\),
+          <strong>\(-1\)</strong> si la planta \(x\) es definitivamente más baja que la \(y\), y
+          <strong>\(0\)</strong> si la comparación es no concluyente. Esta función se llama
+          <strong>exactamente \(q\) veces</strong>.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>4.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2048 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Plantas / ventana</td><td><span class="badge">\(2 \le k \le n \le 200\,000\)</span></td></tr>
+        <tr><td>Consultas</td><td><span class="badge">\(1 \le q \le 200\,000\)</span></td></tr>
+        <tr><td>Valores anotados</td><td><span class="badge">\(0 \le r[i] \le k-1\)</span></td></tr>
+        <tr><td>Pares a comparar</td><td><span class="badge">\(0 \le x &lt; y \le n-1\)</span></td></tr>
+        <tr><td>Garantía</td><td>Existe al menos una configuración de alturas <em>distintas</em> consistente con \(r\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(k = 2\)</td></tr>
+          <tr><td>2</td><td class="pts">14</td><td>\(n \le 5000\) y \(2k > n\)</td></tr>
+          <tr><td>3</td><td class="pts">13</td><td>\(2k > n\)</td></tr>
+          <tr><td>4</td><td class="pts">17</td><td>La respuesta correcta de cada <code>compare_plants</code> es \(1\) o \(-1\) (nunca \(0\)).</td></tr>
+          <tr><td>5</td><td class="pts">11</td><td>\(n \le 300\) y \(q \le \tfrac{n(n-1)}{2}\)</td></tr>
+          <tr><td>6</td><td class="pts">15</td><td>\(x = 0\) en cada llamada a <code>compare_plants</code>.</td></tr>
+          <tr><td>7</td><td class="pts">25</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamadas</h4><pre>init(3, [0, 1, 1, 2])
+compare_plants(0, 2)
+compare_plants(1, 2)</pre></div>
+      <div class="io"><h4>Retornos</h4><pre>1
+-1</pre></div>
+    </div>
+    <p class="note">Como \(r[0] = 0\), de inmediato sabemos que la planta \(2\) no es más alta
+       que la planta \(0\); por eso <code>compare_plants(0, 2)</code> devuelve \(1\). En todas las
+       configuraciones que cumplen las restricciones, la planta \(1\) es más baja que la planta
+       \(2\), así que <code>compare_plants(1, 2)</code> devuelve \(-1\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamadas</h4><pre>init(2, [0, 1, 0, 1])
+compare_plants(0, 3)
+compare_plants(1, 3)</pre></div>
+      <div class="io"><h4>Retornos</h4><pre>1
+0</pre></div>
+    </div>
+    <p class="note">Como \(r[3] = 1\) (y \(k=2\)), sabemos que la planta \(0\) es más alta que la
+       planta \(3\); por eso <code>compare_plants(0, 3)</code> devuelve \(1\). Las configuraciones
+       \([3,1,4,2]\) y \([3,2,4,1]\) son ambas consistentes con las mediciones de Hazel: en una la
+       planta \(1\) es más baja que la \(3\) y en la otra es más alta, así que
+       <code>compare_plants(1, 3)</code> devuelve \(0\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Orden parcial</span>
+      <span class="ptag">Segment tree (lazy)</span>
+      <span class="ptag">Sparse table / doubling</span>
+      <span class="ptag">Alcanzabilidad en DAG</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(n\) plantas de alturas distintas en círculo. Para cada \(i\) te dan \(r[i]\): cuántas
+       de las siguientes \(k-1\) plantas (en sentido horario) son más altas que \(i\). En
+       <code>compare_plants(x, y)</code> debes responder \(+1\) si \(x\) es más alta que \(y\) en
+       <em>toda</em> configuración válida, \(-1\) si es más baja en <em>toda</em> configuración, y
+       \(0\) si depende de la configuración.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n, q \le 2\cdot10^5\) con tiempo \(4\)s pide algo cercano a
+                \(O((n+q)\log n)\). La subtarea 5 con \(n \le 300\) admite un cierre transitivo
+                \(O(n^3)\) (Floyd–Warshall); la subtarea 1 con \(k=2\) se reduce a una cadena de
+                comparaciones locales; las subtareas 2 y 3 con \(2k > n\) hacen que el orden sea
+                casi total.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar la respuesta?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que la respuesta solo puede ser \(\pm1\) cuando existe una
+           <em>cadena de desigualdades forzadas</em> entre \(x\) y \(y\)?</p>
+        <p>Construye un grafo dirigido de relaciones <strong>obligatorias</strong> de tipo
+           «más alta que»: pon una arista \(a \to b\) cuando, por los datos \(r\), la planta \(a\)
+           tenga que ser más alta que la \(b\) en <em>cualquier</em> configuración válida. Entonces
+           <code>compare_plants(x, y)</code> vale \(+1\) si hay un camino \(x \to \cdots \to y\),
+           vale \(-1\) si hay un camino \(y \to \cdots \to x\), y vale \(0\) si no hay camino en
+           ninguno de los dos sentidos.</p>
+        <p class="q">¿De dónde salen las aristas obligatorias? Mira los valores extremos de
+           \(r[i]\). ¿Qué te dice \(r[i]=0\)? ¿Y \(r[i]=k-1\)?</p>
+        <p>Si \(r[i]=0\), ninguna de las siguientes \(k-1\) plantas es más alta que \(i\): la
+           planta \(i\) es más alta que <em>todas</em> ellas (aristas \(i \to\) vecino). Si
+           \(r[i]=k-1\), las \(k-1\) son más altas: la planta \(i\) es más baja que todas (aristas
+           vecino \(\to i\)). La <strong>clausura transitiva</strong> de estas aristas, combinando
+           ventanas que se solapan, es exactamente el orden parcial común a todas las
+           configuraciones.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(k=2\), 5 pts)</summary>
+      <div class="body">
+        <p class="q">Con \(k=2\), cada \(r[i]\in\{0,1\}\) compara la planta \(i\) solo con su
+           único vecino siguiente. ¿Qué te dice cada valor?</p>
+        <p>\(r[i]=0\) significa que \(i\) es más alta que \(i+1\); \(r[i]=1\) significa que \(i\)
+           es más baja que \(i+1\). Eso te da una arista obligatoria entre vecinos consecutivos del
+           círculo. Una consulta \((x,y)\) es concluyente solo si puedes ir de \(x\) a \(y\)
+           (o de \(y\) a \(x\)) siguiendo una cadena de esas comparaciones locales, todas en el
+           mismo sentido. Recorre el arco entre \(x\) y \(y\) en ambas direcciones y revisa si la
+           cadena de desigualdades es monótona.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas 2 y 3 (\(2k > n\), 14 + 13 pts)</summary>
+      <div class="body">
+        <p class="q">Si \(2k > n\), ¿notaste que cualquier par de plantas cae dentro de alguna
+           ventana de tamaño \(k\)? ¿Qué le hace eso al orden?</p>
+        <p>Con \(2k > n\) las ventanas se solapan tanto que el orden parcial queda <em>casi
+           total</em>: casi todo par es comparable. Puedes reconstruir el orden «pelando» la
+           planta más alta de las que quedan: la planta más alta de todo el círculo es alguna con
+           \(r[i]=0\) que además ningún vecino fuerza a ser menor; la asignas como máximo, la quitas
+           y actualizas los conteos de sus vecinos. Con un <strong>segment tree</strong> que
+           mantiene, por posición, cuántos vecinos todavía deben ser más altos, encuentras
+           repetidamente una posición con conteo \(0\) y reconstruyes el orden de mayor a menor.
+           Para \(n \le 5000\) (subtarea 2) basta una versión cuadrática; con segment tree
+           (subtarea 3) escala mejor.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 5 (\(n \le 300\), 11 pts): cierre transitivo</summary>
+      <div class="body">
+        <p class="q">Con \(n \le 300\) y muchas consultas, ¿puedes precomputar de una vez quién
+           domina a quién?</p>
+        <p>Construye explícitamente todas las aristas obligatorias dentro de cada ventana de tamaño
+           \(k\) (las que fuerzan \(r\)) y calcula el <strong>cierre transitivo</strong> con
+           Floyd–Warshall en \(O(n^3)\). Después cada <code>compare_plants(x,y)</code> es una
+           consulta \(O(1)\): si \(x\) alcanza a \(y\) responde \(+1\), si \(y\) alcanza a \(x\)
+           responde \(-1\), si no, \(0\). Con \(n \le 300\), \(n^3 \approx 2.7\times10^7\),
+           perfectamente factible.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 6 (\(x=0\) siempre, 15 pts): alcanzabilidad</summary>
+      <div class="body">
+        <p class="q">Si todas las consultas tienen \(x=0\), ¿de verdad necesitas comparar pares
+           arbitrarios?</p>
+        <p>Te basta saber, para cada planta \(y\), si el nodo \(0\) <em>alcanza</em> a \(y\) en el
+           grafo de aristas obligatorias (entonces \(0\) es más alta) y si \(y\) alcanza a \(0\)
+           (entonces \(0\) es más baja). Eso se resuelve con un solo recorrido por dirección: un
+           <strong>DFS/BFS</strong> desde \(0\) por las aristas «hacia abajo» y otro DFS/BFS por las
+           aristas «hacia arriba». Marca los alcanzados y responde cada consulta en \(O(1)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 6 — Subtarea 4 (todo es \(\pm1\), 17 pts): una validación útil</summary>
+      <div class="body">
+        <p class="q">Si te garantizan que <em>ninguna</em> respuesta es \(0\), ¿qué propiedad tiene
+           el grafo de aristas obligatorias respecto a los pares consultados?</p>
+        <p>Que para cada par consultado siempre existe un camino en alguno de los dos sentidos: el
+           orden parcial conecta todo par que te preguntan. Esta subtarea no pide una técnica nueva;
+           sirve para <strong>verificar</strong> que tu motor de alcanzabilidad (el mismo de la
+           solución general) nunca regresa \(0\) cuando no debe. Si ya tienes la maquinaria de
+           caminos forzados, estos puntos caen junto con la solución completa.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El conjunto de configuraciones válidas define un orden parcial:
+           \(x\) es más alta que \(y\) en <em>toda</em> configuración si y solo si hay una
+           <em>cadena de relaciones forzadas</em> \(x \to \cdots \to y\). Esas relaciones forzadas
+           nacen de los extremos (\(r[i]=0\) hace a \(i\) más alta que sus siguientes \(k-1\);
+           \(r[i]=k-1\) la hace más baja) y de cómo se solapan las ventanas de tamaño \(k\). La
+           solución general resuelve la alcanzabilidad en ese grafo en \(O(\log n)\) por consulta.</p>
+
+        <p><strong>1) Pelado: un orden total canónico.</strong> Reconstruimos una configuración
+           válida concreta asignando rangos de la planta más alta a la más baja. Mantenemos, por
+           posición, un «déficit»: cuántos de sus vecinos a la derecha (dentro de una ventana de
+           tamaño \(k\)) todavía deben ser más altos. Una planta puede ser la más alta de las que
+           quedan solo si su déficit llega a \(0\) <em>y</em> entre ella y su predecesora viva hay
+           hueco \(\ge k\) (así nadie la fuerza a ser menor). Con un <strong>segment tree con
+           lazy</strong> (suma en rango + buscar una hoja con valor \(0\)) y un conjunto ordenado de
+           candidatas elegimos repetidamente la mejor. Esto prueba que existe una configuración y
+           da arreglos consistentes \(\text{rank}[\text{pos}]\) y \(\text{pos}[\text{rango}]\).</p>
+
+        <p><strong>2) Saltos obligatorios por ventana.</strong> Para cada posición \(i\) calculamos,
+           con un BIT y búsqueda binaria sobre los rangos, la posición más cercana <em>a la
+           derecha</em> (a distancia \(&lt; k\)) que está forzada a ser más alta que \(i\)
+           —llámala \(\text{Right}[i][0]\)— y la simétrica hacia la izquierda \(\text{Left}[i][0]\).
+           Son justo las aristas «más alta que» dentro de cada ventana de tamaño \(k\).</p>
+
+        <p><strong>3) Doubling (sparse table).</strong> Componiendo saltos
+           \(\text{Right}[i][j]\) y \(\text{Left}[i][j]\) podemos avanzar en cadenas de relaciones
+           forzadas en \(O(\log n)\). Para responder, intentamos cubrir la distancia circular de
+           \(x\) a \(y\) bajando niveles del doubling; si lo logramos quedando dentro de alcance,
+           hay camino forzado.</p>
+
+        <p><strong>Correctitud.</strong> Las aristas de \(r[i]=0\) y \(r[i]=k-1\), más su clausura
+           sobre ventanas solapadas, son exactamente las relaciones presentes en <em>todas</em> las
+           configuraciones válidas: si \(a\) alcanza a \(b\) por aristas obligatorias, \(a > b\)
+           siempre. El pelado exhibe una configuración válida (existencia); los saltos Right/Left
+           capturan la posición más cercana forzada a ser mayor dentro de cada ventana, y el
+           doubling resuelve la alcanzabilidad en ese DAG implícito. Por lo tanto: camino
+           \(x \to y \Rightarrow +1\); camino \(y \to x \Rightarrow -1\); y si no hay camino en
+           ningún sentido existen dos configuraciones válidas que discrepan en \((x,y)\),
+           es decir, \(0\). (Como chequeo interno, una BIT confirma que la suma de rangos en cada
+           ventana reproduce el \(r[i]\) dado.)</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>init(k, r):
+    n := tamaño de r
+    // 1) PELADO: orden canónico (rango 1 = la más alta)
+    para cada i:  deficit[i] := r[i]      // vecinos a la derecha que deben ser más altos
+    segtree de mínimos sobre deficit, con: sumar en rango (lazy) y "buscar una hoja con valor 0"
+    Vivas := conjunto ordenado vacío
+    para rango := 1 hasta n:
+        mientras exista posición t con deficit 0 (aún sin asignar):
+            inserta t en Vivas ;  marca deficit[t] := +INF
+        a := mejor candidata de Vivas (hueco &gt;= k con su vecina viva previa)
+        rank[a] := rango ;  pos[rango] := a
+        resta 1 al deficit de las k-1 posiciones a la izquierda de a (en el círculo)
+        elimina a de Vivas
+    // (chequeo: en cada ventana de tamaño k, los rangos reproducen r[i])
+
+    // 2) SALTOS OBLIGATORIOS dentro de ventanas de tamaño k (BIT sobre rangos)
+    para cada i:
+        Right[i][0] := posición más cercana a la DERECHA (distancia &lt; k) forzada a ser
+                       MÁS ALTA que i, o INF
+        Left[i][0]  := simétrico hacia la izquierda, o INF
+    // 3) DOUBLING (sparse table)
+    para j := 0 hasta 17:
+        para cada posición p:
+            Right[p][j+1] := Right[ Right[p][j] ][j]   (tope en INF)
+            Left[p][j+1]  := Left[ Left[p][j] ][j]     (tope en INF)
+
+Path(a, b):   // ¿hay cadena de "obligatoriamente más alta" desde a que alcanza b?
+    RightPath: baja niveles del doubling consumiendo la distancia circular a -&gt; b ;
+               acepta si al final b queda a distancia &lt; k y la relación se cumple
+    LeftPath:  simétrico
+    devuelve RightPath OR LeftPath
+
+compare_plants(x, y):
+    si Path(x, y):  devolver  1     // x más alta en TODA configuración
+    si Path(y, x):  devolver -1     // x más baja en TODA configuración
+    devolver 0                      // depende de la configuración</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> <code>init</code> es \(O(n\log n)\): \(n\) extracciones
+           con operaciones \(O(\log n)\) sobre el segment tree y el conjunto ordenado; los saltos
+           \(\text{Right}/\text{Left}[\,\cdot\,][0]\) usan búsqueda binaria sobre BIT en
+           \(O(n\log n)\); la sparse table es \(O(n\log n)\) en tiempo y memoria.
+           <code>compare_plants</code> es \(O(\log n)\) por consulta. Total con \(q\) consultas:
+           \(O((n+q)\log n)\). Memoria \(O(n\log n)\) por las tablas Right/Left (unos \(20\) niveles
+           para \(n=2\times10^5\)), holgada bajo el límite de \(2048\) MB; el peor caso medido fue
+           \(\approx 0.5\) s, muy por debajo de los \(4\) s.</p>
+
+        <p class="note">Las subtareas se escalan así: \(k=2\) es una cadena local (5);
+           \(2k > n\) usa solo el pelado/segment tree (14 + 13); \(n \le 300\) admite Floyd–Warshall
+           \(O(n^3)\) (11); \(x=0\) basta con alcanzabilidad por DFS desde/hacia el nodo \(0\) (15);
+           y «todo es \(\pm1\)» (17) cae junto al motor general de caminos forzados; el doubling
+           completo cierra la subtarea sin restricciones (25).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **106 / 142**
+Total de tareas: **142** · Completadas: **107 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -206,11 +206,11 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Vision Program | `2019/05 Vision Program/index.html` |
 | [x] | 6 | Sky Walking | `2019/06 Sky Walking/index.html` |
 
-## IOI 2020 — 0 / 6
+## IOI 2020 — 1 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
-| [ ] | 1 | Plants | `2020/01 Plants/index.html` |
+| [x] | 1 | Plants | `2020/01 Plants/index.html` |
 | [ ] | 2 | Supertrees | `2020/02 Supertrees/index.html` |
 | [ ] | 3 | Tickets | `2020/03 Tickets/index.html` |
 | [ ] | 4 | Biscuits | `2020/04 Biscuits/index.html` |
