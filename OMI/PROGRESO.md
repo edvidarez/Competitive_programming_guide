@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **98 / 190**
+Total de problemas: **190** · Completados: **106 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -179,18 +179,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Lenguaje | La guardia negra | `2011/07 La guardia negra/index.html` |
 | [ ] | 8 | Lenguaje | Coloréalo | `2011/08 Coloréalo/index.html` |
 
-## 17ª OMI · 2012 — 0 / 8
+## 17ª OMI · 2012 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Tiro con arco | `2012/01 Tiro con arco/index.html` |
-| [ ] | 2 | Karel | Patrones | `2012/02 Patrones/index.html` |
-| [ ] | 3 | Karel | Simetría | `2012/03 Simetría/index.html` |
-| [ ] | 4 | Karel | Sombras del desierto | `2012/04 Sombras del desierto/index.html` |
-| [ ] | 5 | Lenguaje | Súper agente | `2012/05 Súper agente/index.html` |
-| [ ] | 6 | Lenguaje | XOR | `2012/06 XOR/index.html` |
-| [ ] | 7 | Lenguaje | Llegando en K movimientos | `2012/07 Llegando en K movimientos/index.html` |
-| [ ] | 8 | Lenguaje | Jardín de Niños | `2012/08 Jardín de Niños/index.html` |
+| [x] | 1 | Karel | Tiro con arco | `2012/01 Tiro con arco/index.html` |
+| [x] | 2 | Karel | Patrones | `2012/02 Patrones/index.html` |
+| [x] | 3 | Karel | Simetría | `2012/03 Simetría/index.html` |
+| [x] | 4 | Karel | Sombras del desierto | `2012/04 Sombras del desierto/index.html` |
+| [x] | 5 | Lenguaje | Súper agente | `2012/05 Súper agente/index.html` |
+| [x] | 6 | Lenguaje | XOR | `2012/06 XOR/index.html` |
+| [x] | 7 | Lenguaje | Llegando en K movimientos | `2012/07 Llegando en K movimientos/index.html` |
+| [x] | 8 | Lenguaje | Jardín de Niños | `2012/08 Jardín de Niños/index.html` |
 
 ## 18ª OMI · 2013 — 8 / 8
 

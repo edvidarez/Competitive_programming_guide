@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2012 · Problema 05 — Súper agente</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">17ª OMI · 2012 · Lenguaje</div>
+    <h1>Problema <span class="num">05</span> — Súper agente</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/L-OMI-Super-Agente">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Descripción</h2>
+    <p>En su última misión, el súper agente Jaime Papel Blanco debe hackear una red
+       mientras se encuentra dentro de un edificio enemigo. El edificio está lleno
+       de guardias y, para poder hackear la red, Jaime Papel Blanco necesita
+       esconderse y pasar desapercibido. Ahora debe encontrar el lugar óptimo para
+       esconderse.</p>
+
+    <p>Jaime Papel Blanco tiene un mapa de la planta del edificio, el cual está
+       representado como una cuadrícula de \(M \times N\) que tiene tres tipos de
+       cuadros:</p>
+    <ul>
+      <li><strong>pared</strong>, por la que nadie puede pasar, representada por
+          <code>#</code>;</li>
+      <li><strong>pasillo</strong>, representado por <code>.</code>;</li>
+      <li><strong>guardia</strong>, representado por <code>G</code>.</li>
+    </ul>
+
+    <p>El edificio no tiene cuartos cerrados, es decir, desde cualquier cuadro se
+       puede llegar a cualquier otro. Jaime Papel Blanco sabe que los guardias solo
+       lo detectan si se encuentran en el mismo cuadro del mapa que él. Los guardias
+       solo pueden moverse hacia arriba, abajo, izquierda o derecha. Para lograr su
+       misión, debe encontrar un cuadro cuya distancia al guardia más cercano sea la
+       máxima posible. Con <em>distancia</em>, el agente Jaime Papel Blanco se
+       refiere al mínimo de cuadros que tendrá que recorrer un guardia para llegar a
+       él.</p>
+
+    <h2>Problema</h2>
+    <p>Escribe un programa que, dado un mapa, encuentre un cuadro óptimo para el
+       escondite de Jaime Papel Blanco; es decir, aquel que maximice la distancia al
+       guardia más cercano, y deberás reportar esa distancia.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado la siguiente información:</p>
+    <ul>
+      <li>En la primera línea, los números \(M\) y \(N\), las dimensiones del
+          mapa.</li>
+      <li>Las siguientes \(M\) líneas contendrán \(N\) caracteres del tipo
+          <code>#</code>, <code>.</code> o <code>G</code>, indicando si en ese cuadro
+          del mapa hay una pared, un pasillo o un guardia, respectivamente.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir en la pantalla un único entero \(D\) seguido de un
+       salto de línea, representando la distancia máxima al guardia más cercano a
+       Jaime Papel Blanco.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (típico en omegaUp: 1 s)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (típico en omegaUp: 64 MiB)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Dimensiones del mapa</td><td><span class="badge">\(1 < N, M \le 2\,000\)</span></td></tr>
+        <tr><td>Número de guardias</td><td><span class="badge">\(1 \le G \le 1\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5 5
+G..#.
+##.G.
+G...#
+....#
+#####</pre></div>
+      <div class="io"><h4>Salida</h4><pre>3</pre></div>
+    </div>
+    <p class="note">La posición que deja al agente Jaime Papel Blanco más lejos del
+       guardia más cercano es la de la tercera columna, cuarta fila. Esa posición
+       está a 3 cuadros de distancia de los guardias más cercanos; cualquier otra
+       posición está a menos de 3 cuadros de distancia de algún guardia.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">BFS</span>
+      <span class="ptag">BFS multifuente</span>
+      <span class="ptag">Grafos en rejilla</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una cuadrícula de \(M \times N\) con paredes (<code>#</code>), pasillos
+       (<code>.</code>) y guardias (<code>G</code>). Para cada cuadro transitable, su
+       distancia es el número mínimo de pasos (arriba/abajo/izquierda/derecha, sin
+       cruzar paredes) hasta el guardia más cercano. Encuentra el cuadro transitable
+       con la mayor distancia posible y reporta esa distancia.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(M, N \le 2\,000\) implican hasta \(4 \times 10^6\) cuadros: necesitas
+                un algoritmo lineal \(O(M \cdot N)\). Hay hasta \(1\,000\) guardias, así
+                que un BFS independiente desde cada uno sería demasiado lento; conviene
+                un solo recorrido que parta de todos los guardias a la vez.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que el mapa es un grafo? ¿Qué pasa si cada cuadro
+           transitable (pasillo o guardia) es un nodo, y conectas con una arista cada
+           par de cuadros vecinos en las 4 direcciones que no sean pared?</p>
+        <p>La frase "mínimo de cuadros que tendrá que recorrer un guardia" es la
+           distancia más corta en ese grafo, donde todas las aristas valen 1. ¿Qué
+           algoritmo da distancias mínimas con aristas de peso uniforme?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La distancia que de verdad importa</summary>
+      <div class="body">
+        <p class="q">Para cada cuadro no necesitas la distancia a <em>un</em>
+           guardia, sino al <em>más cercano</em>. ¿Cómo calcularías, para
+           <em>todos</em> los cuadros a la vez, su distancia al guardia más cercano?</p>
+        <p class="q">¿Harías un BFS desde cada guardia por separado (hasta
+           \(1\,000\) recorridos de \(4\times10^6\) cuadros) o se te ocurre algo que
+           lo haga en un solo barrido?</p>
+        <p>La idea ingenua de un BFS por guardia es correcta pero demasiado lenta con
+           estos límites. Busca cómo fusionar todos esos recorridos en uno.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: BFS multifuente</summary>
+      <div class="body">
+        <p class="q">¿Y si arrancas un único BFS metiendo en la cola <em>todos</em>
+           los guardias al mismo tiempo, cada uno con distancia 0?</p>
+        <p class="q">Como el BFS expande por capas (primero distancia 1, luego 2,
+           etc.), la <em>primera</em> vez que el recorrido toca un cuadro, ¿no es esa
+           justo su distancia al guardia más cercano?</p>
+        <p>Con eso, un solo recorrido en \(O(M\cdot N)\) llena la distancia mínima de
+           cada cuadro. La respuesta es el máximo de esas distancias sobre los cuadros
+           transitables.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>El problema es exactamente un <strong>BFS multifuente</strong> sobre la
+           rejilla:</p>
+        <ol>
+          <li>Lee \(M\), \(N\) y la cuadrícula.</li>
+          <li>Inicializa la distancia de todos los cuadros en infinito.</li>
+          <li>Encola <em>todos</em> los cuadros que tengan un guardia
+              (<code>G</code>) con distancia 0.</li>
+          <li>Ejecuta un BFS estándar: saca un cuadro de la cola y mira sus 4 vecinos;
+              si el vecino no es pared (<code>#</code>) y aún no tiene distancia
+              asignada, le pones <code>distancia(actual) + 1</code> y lo encolas.</li>
+          <li>Como el BFS visita en orden creciente de distancia, la primera (y única)
+              asignación a cada cuadro es su distancia mínima a cualquier guardia. Esto
+              es correcto porque todas las aristas valen 1.</li>
+          <li>La respuesta \(D\) es el máximo de las distancias entre los cuadros
+              transitables (no pared). Los cuadros con guardia tienen distancia 0, así
+              que no afectan el máximo; el ganador siempre será un pasillo (salvo el
+              caso degenerado en que solo haya guardias, donde \(D=0\)).</li>
+        </ol>
+        <p>Como el enunciado garantiza que el edificio "no tiene cuartos cerrados"
+           (todo está conectado) y hay al menos un guardia, el BFS alcanza todos los
+           cuadros transitables, así que ninguno queda en infinito.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer M, N
+leer cuadrícula g[M][N]
+para cada celda (i,j):
+    dist[i][j] = INFINITO
+
+cola Q vacía
+para cada celda (i,j):
+    si g[i][j] == 'G':
+        dist[i][j] = 0
+        Q.encolar((i,j))
+
+mientras Q no esté vacía:
+    (x,y) = Q.desencolar()
+    para cada vecino (nx,ny) en {arriba, abajo, izquierda, derecha}:
+        si (nx,ny) está fuera del mapa: continuar
+        si g[nx][ny] == '#':            continuar   # pared
+        si dist[nx][ny] != INFINITO:    continuar   # ya visitado
+        dist[nx][ny] = dist[x][y] + 1
+        Q.encolar((nx,ny))
+
+D = 0
+para cada celda (i,j):
+    si g[i][j] != '#':
+        D = max(D, dist[i][j])
+
+escribir D</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(M\cdot N)\) en tiempo (cada cuadro se
+           encola y se procesa una sola vez) y \(O(M\cdot N)\) en memoria para la
+           cuadrícula y el arreglo de distancias.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Nota de C++ (opcional)</span>
+<pre>Con M, N = 2000 hay 4,000,000 de cuadros. Un arreglo de
+distancias de int (~16 MB) cabe bien. Para que el BFS sea
+rápido y use poca memoria, conviene aplanar la rejilla a un
+solo arreglo 1-D (índice = i*N + j) y usar un arreglo propio
+como cola FIFO (dos punteros: cabeza y cola), en vez de
+estructuras pesadas.</pre>
+          <p class="note">Es solo una optimización de implementación; el algoritmo es
+             el mismo BFS multifuente.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
