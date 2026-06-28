@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **58 / 190**
+Total de problemas: **190** · Completados: **66 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -244,18 +244,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Lenguaje | Pescador | `2016/07 Pescador/index.html` |
 | [ ] | 8 | Lenguaje | All-Out Attack | `2016/08 All-Out Attack/index.html` |
 
-## 22ª OMI · 2017 — 0 / 8
+## 22ª OMI · 2017 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Mensajería | `2017/01 Mensajería/index.html` |
-| [ ] | 2 | Día 1 | Truco asombroso | `2017/02 Truco asombroso/index.html` |
-| [ ] | 3 | Día 1 | Convención | `2017/03 Convención/index.html` |
-| [ ] | 4 | Día 1 | Atrapando a Karel | `2017/04 Atrapando a Karel/index.html` |
-| [ ] | 5 | Día 2 | Logias | `2017/05 Logias/index.html` |
-| [ ] | 6 | Día 2 | Estadística | `2017/06 Estadística/index.html` |
-| [ ] | 7 | Día 2 | Esperanza | `2017/07 Esperanza/index.html` |
-| [ ] | 8 | Día 2 | Sumas Geométricas | `2017/08 Sumas Geométricas/index.html` |
+| [x] | 1 | Día 1 | Mensajería | `2017/01 Mensajería/index.html` |
+| [x] | 2 | Día 1 | Truco asombroso | `2017/02 Truco asombroso/index.html` |
+| [x] | 3 | Día 1 | Convención | `2017/03 Convención/index.html` |
+| [x] | 4 | Día 1 | Atrapando a Karel | `2017/04 Atrapando a Karel/index.html` |
+| [x] | 5 | Día 2 | Logias | `2017/05 Logias/index.html` |
+| [x] | 6 | Día 2 | Estadística | `2017/06 Estadística/index.html` |
+| [x] | 7 | Día 2 | Esperanza | `2017/07 Esperanza/index.html` |
+| [x] | 8 | Día 2 | Sumas Geométricas | `2017/08 Sumas Geométricas/index.html` |
 
 ## 23ª OMI · 2018 — 8 / 8
 

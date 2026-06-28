@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2017 · Problema 01 — Mensajería</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">22ª OMI · 2017 · Día 1</div>
+    <h1>Problema <span class="num">01</span> — Mensajería</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2017-Mensajeria#problems">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Andrea, la matemágica alfa, administra toda la mensajería ultra secreta de
+       la logia de los matemágicos. Como Andrea es muy buena en su trabajo, quiere
+       minimizar el costo de enviar un mensaje a todos los cuarteles de la logia.</p>
+
+    <p>Andrea sabe que la logia tiene \(N\) cuarteles ultra secretos en el estado de
+       Querétaro y que están numerados de \(0\) a \(N-1\). También sabe que las rutas
+       para enviar los mensajes van de cuartel a cuartel y funcionan de la siguiente
+       manera:</p>
+    <ul>
+      <li>El cuartel \(0\) tiene una ruta de envío con el cuartel \(1\).</li>
+      <li>El cuartel \(1\) tiene una ruta de envío con el cuartel \(2\).</li>
+      <li>Y así sucesivamente hasta el cuartel \(N-1\), que tiene una ruta de
+          mensajería con el cuartel \(0\).</li>
+    </ul>
+
+    <p>Las rutas de envío de un cuartel a otro tienen un costo (\(a_i\)) y funcionan
+       en ambos sentidos; es decir, la ruta del cuartel \(0\) al cuartel \(1\) también
+       funciona del cuartel \(1\) al cuartel \(0\) con el mismo costo.</p>
+
+    <p>Para minimizar los costos, Andrea puede poner centrales de envío en cualquier
+       cuartel y enviar el mensaje desde todas las centrales disponibles al mismo
+       tiempo.</p>
+
+    <p>Poner una central de envío tiene un costo \(K\).</p>
+
+    <p>Sin embargo, la ventaja de poner nuevas centrales de envío en otros cuarteles
+       es que estos cuarteles ahora pueden enviar mensajes a los demás cuarteles sin
+       ningún costo adicional más que el de las rutas usadas.</p>
+
+    <p>Para poder enviar el mensaje, Andrea siempre debe poner al menos la primera
+       central de envío en alguno de los cuarteles.</p>
+
+    <p><strong>Ayuda a Andrea a minimizar el costo total de enviar un mensaje a todos
+       los cuarteles de la logia.</strong></p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea se encuentran los enteros \(N\) y \(K\). En la segunda
+       línea se encuentran \(N\) enteros separados por un espacio. Cada entero
+       \(a_i\) representa el costo de la ruta de mensajería del cuartel \(i\) al
+       cuartel \(i+1\).</p>
+
+    <h2>Salida</h2>
+    <p>La suma que minimice el costo de enviar un mensaje, considerando el costo de
+       poner las nuevas centrales de envío y el costo de todas las rutas usadas para
+       enviar el mensaje a toda la logia.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de cuarteles</td><td><span class="badge">\(2 \le N \le 1{,}000{,}000\)</span></td></tr>
+        <tr><td>Costos de rutas y de central</td><td><span class="badge">\(1 \le a_i,\, K \le 1{,}000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">36</td><td>\(N \le 1{,}000\)</td></tr>
+          <tr><td>2</td><td class="pts">64</td><td>Sin restricción adicional (\(N \le 1{,}000{,}000\))</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El enunciado oficial sólo indica que «para un 36% de los casos,
+       \(N \le 1{,}000\)». Lo expresamos arriba como dos bloques de puntaje
+       (36 + 64 = 100); el 64% restante corre con \(N\) hasta un millón.</p>
+
+    <h2>Ejemplo</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 5
+2 6 3 8</pre></div>
+      <div class="io"><h4>Salida</h4><pre>15</pre></div>
+    </div>
+    <p class="note">Andrea pone una central en el cuartel \(1\) y en el cuartel \(3\),
+       cada una con costo \(K\) (5 para este caso). Luego, para enviar el mensaje al
+       cuartel \(0\) se toma la ruta desde el cuartel \(1\) (con costo 2; recuerda que
+       las rutas son bidireccionales y el costo de enviar de \(0\) a \(1\) es el mismo
+       que de \(1\) a \(0\)), y para el cuartel \(2\) se toma la ruta desde el cuartel
+       \(3\) (con costo 3). Los cuarteles \(1\) y \(3\) reciben el mensaje sin costo
+       por tener una central de envío. La suma total del costo es
+       \(15 = 5 + 5 + 2 + 3\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2 3
+2 5</pre></div>
+      <div class="io"><h4>Salida</h4><pre>5</pre></div>
+    </div>
+    <p class="note">Andrea pone una central en el cuartel \(0\) y desde éste se toma
+       la ruta al cuartel \(1\). El costo de poner una central en el cuartel \(0\) es
+       de 3. De ahí se envía al cuartel \(1\) utilizando la ruta que va de \(0\) a
+       \(1\), la cual tiene un costo 2. La suma del costo total es \(3 + 2 = 5\).</p>
+
+    <p class="note">Nota de transcripción: el enunciado original imprime el desglose
+       del Ejemplo 1 como «\(5 + 5 + 3 + 3\)», que suma 16. Es una errata: el desglose
+       correcto (consistente con los costos 2 y 3 que el propio texto menciona, y con
+       la salida 15) es \(5 + 5 + 2 + 3\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Árbol de expansión mínima (MST)</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N\) cuarteles formando un ciclo: la arista entre el cuartel \(i\) y el
+       \(i+1\) (y la del cuartel \(N-1\) con el \(0\)) cuesta \(a_i\). Colocar una
+       central cuesta \(K\) y debe haber al menos una. Cada cuartel tiene que quedar
+       conectado a alguna central a través de las rutas. Minimiza el costo total =
+       (número de centrales \(\times K\)) + (suma de las rutas usadas).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\) llega a \(10^6\) con \(a_i, K \le 1{,}000\): basta una sola
+                pasada \(O(N)\), y ni siquiera hace falta guardar el arreglo (puedes
+                procesarlo al vuelo). La memoria es de sólo 32 MB. La subtarea con
+                \(N \le 1{,}000\) (36% de los casos) tolera ideas más lentas. La
+                respuesta puede acercarse a \(10^9\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que los cuarteles forman un ciclo
+           \(0\text{–}1\text{–}2\text{–}\dots\text{–}(N{-}1)\text{–}0\)? ¿Y si piensas
+           que colocar centrales sirve para «partir» ese ciclo en pedazos?</p>
+        <p>Una vez elegidas las rutas que usas y los cuarteles que serán centrales,
+           cada grupo de cuarteles que quedan conectados entre sí por rutas usadas
+           necesita exactamente <em>una</em> central para que el mensaje llegue a todo
+           el grupo. ¿Qué representa entonces cada arista del ciclo: una decisión de
+           «usar la ruta» o «no usarla»?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtarea \(N \le 1{,}000\))</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 1{,}000\) (36% de los puntos) puedes explorar sin
+           miedo. Por cada arista \(i\) tienes dos opciones: usarla (pagas \(a_i\)) o
+           «cortarla». ¿Qué provoca un corte?</p>
+        <p>Si cortas una arista, abres el ciclo en ese punto; el pedazo que queda a un
+           lado necesitará su propia central (\(K\)). Cortar \(C\) aristas del ciclo
+           crea \(C\) pedazos, o sea \(C\) centrales, y pagas las \(N-C\) rutas
+           restantes. ¿Ves que el costo total es \(C\cdot K + \sum_{\text{rutas
+           usadas}} a_i\)? ¿Cómo decides arista por arista para minimizarlo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave</summary>
+      <div class="body">
+        <p class="q">Para cada arista \(i\): ¿conviene pagar \(a_i\) (usar la ruta) o
+           pagar \(K\) (cortarla y poner una central de ese lado)? ¿No es siempre lo
+           mejor quedarse con \(\min(a_i, K)\)?</p>
+        <p>Si \(a_i > K\) conviene cortar (pones una central en lugar de pagar la ruta
+           cara); si \(a_i \le K\) conviene usar la ruta. Así, cada arista aporta
+           \(\min(a_i, K)\) al total.</p>
+        <p class="q">Pero, ¿qué pasa si para TODAS las aristas resulta \(a_i &lt; K\)?
+           Entonces nunca te convino cortar… ¿y el ciclo se queda sin ninguna central?
+           El problema exige al menos una. ¿Cuál es el corte más barato que te ves
+           obligada a hacer?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Modelo con árbol de expansión mínima.</strong> Agrega un nodo
+           virtual «central» y conéctalo a cada uno de los \(N\) cuarteles con una
+           arista de costo \(K\) (representa «poner una central aquí»). Junto con las
+           \(N\) aristas del ciclo (costos \(a_i\)), conectar los \(N+1\) nodos al
+           menor costo posible es exactamente un <em>árbol de expansión mínima</em>
+           (MST). Que el nodo «central» quede conectado garantiza que haya al menos una
+           central, y que todo cuartel quede conectado garantiza que el mensaje llega a
+           todos.</p>
+
+        <p><strong>El greedy es Kruskal simplificado.</strong> Procesa cada arista del
+           ciclo: si \(a_i \le K\), la arista del ciclo es tan buena o mejor que un
+           «spoke» de costo \(K\), así que la usas y sumas \(a_i\); si \(a_i > K\),
+           es más barato conectar ese punto con la central virtual, así que cortas y
+           sumas \(K\). En ambos casos sumas \(\min(a_i, K)\).</p>
+
+        <p><strong>El caso especial del ciclo.</strong> Si alguna arista cumple
+           \(a_i \ge K\), al menos un corte ocurrió y ya tienes una central (el nodo
+           «central» quedó conectado). Pero si <em>todas</em> las aristas cumplen
+           \(a_i &lt; K\), sumar \(\min(a_i,K)=\sum a_i\) usaría las \(N\) aristas y
+           formaría un ciclo cerrado sin ninguna central, lo cual es inválido. Estás
+           obligada a forzar exactamente un corte: conviene romper la arista más cara
+           (la de mayor \(a_i\)) y reemplazarla por una central, lo que suma
+           \(K - \max_i a_i\) al total. Cualquier otra arista costaría más.</p>
+
+        <p>Es decir, el total es \(\displaystyle \sum_{i} \min(a_i, K)\) y, sólo cuando
+           \(\max_i a_i &lt; K\), le agregas \(K - \max_i a_i\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, K
+total  = 0
+maxA   = -infinito
+para i de 0 a N-1:
+    leer a_i
+    maxA  = max(maxA, a_i)
+    total = total + min(a_i, K)   // usar la ruta, o cortarla y poner central
+
+si maxA &lt; K:                      // ninguna arista justificó un corte
+    total = total + (K - maxA)    // fuerza 1 central: cambia la ruta más cara
+
+imprimir total</pre>
+        </div>
+
+        <p>Verificación con los ejemplos: para \(4\ 5\) y \(2\ 6\ 3\ 8\),
+           \(\min\) por arista \(=2+5+3+5=15\), y \(\max=8\ge 5\), así que la respuesta
+           es \(15\). Para \(2\ 3\) y \(2\ 5\), \(\min = 2+3 = 5\), \(\max=5\ge 3\),
+           respuesta \(5\). Ambos coinciden con la salida esperada.</p>
+
+        <p><strong>Complejidad:</strong> \(O(N)\) en tiempo y \(O(1)\) en memoria
+           adicional (no necesitas almacenar el arreglo: basta acumular la suma y el
+           máximo mientras lees).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Lectura rápida: ios_base::sync_with_stdio(false); cin.tie(nullptr);
+para leer hasta 10^6 enteros dentro de 1 s.
+No guardes el arreglo (memoria de 32 MB): procesa cada a_i al vuelo.
+La suma llega a ~10^9 (cabe en int de 32 bits, pero usa long long
+por seguridad).</pre>
+          <p class="note">Inclúyelo únicamente si de verdad hace falta. Nunca pongas
+             la solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2017 · Problema 04 — Atrapando a Karel</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">22ª OMI · 2017 · Día 1</div>
+    <h1>Problema <span class="num">04</span> — Atrapando a Karel</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2017-Atrapando-a-Karel">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <p><span class="badge">Problema interactivo</span></p>
+
+    <h2>Historia</h2>
+    <p>Se han escuchado rumores de que Karel está muerto, pero en la logia de los
+       matemágicos están convencidos de que eso no es verdad.</p>
+    <p>La realidad es que Roque el filósofo, uno de los maléficos archienemigos de
+       los matemágicos, lo tiene encerrado en una cuadrícula y solo lo deja salir
+       durante la OMI de primaria y secundaria.</p>
+    <p>Ante esto Karel no se ha rendido y hará todo lo posible por escapar. Roque el
+       filósofo descubrió su plan y decidió abusar de su autoridad intimidándote y
+       exigiéndote que evites que escape y lo castigues encerrándolo en una casilla.</p>
+    <p>La cuadrícula en la que Karel está encerrado tiene \(N\) filas numeradas de
+       1 a \(N\) (de arriba hacia abajo), y \(N\) columnas, también numeradas de
+       1 a \(N\) (de izquierda a derecha).</p>
+    <p>Inicialmente Karel se encuentra en el centro de la cuadrícula. \(N\) siempre
+       será impar, por lo que siempre habrá una única casilla central; además no hay
+       muros inicialmente en la cuadrícula.</p>
+    <p>En cada segundo Karel se puede mover a cualquiera de las 4 casillas adyacentes
+       (o salir de la cuadrícula si se encuentra en una de las casillas que están en
+       el borde de la misma) siempre y cuando no haya un muro obstruyendo su camino
+       (esta vez Karel tiene prisa y no necesita gastar tiempo girando para empezar a
+       caminar, por lo tanto puedes considerar que Karel puede girar sin consumir
+       tiempo).</p>
+    <p>En cada segundo puedes agregar un muro en cualquier lugar de la cuadrícula.
+       Tienes la ventaja de que el primer muro que pongas precede al primer movimiento
+       de Karel (es decir, tú pones un muro, luego Karel se mueve una casilla, pones un
+       segundo muro, Karel se mueve a otra casilla, etc.).</p>
+
+    <h2>Problema</h2>
+    <p>Escribe un programa que atrape a Karel en una casilla (un rectángulo de
+       \(1\times1\)) y evites así ser castigado por Roque el filósofo.</p>
+    <p>Recuerda que estamos en tiempos de austeridad, así que entre menos muros
+       utilices para atrapar a Karel más puntos obtendrás.</p>
+
+    <h2>Entrada y Salida</h2>
+    <p><strong>Este es un problema interactivo</strong>, por lo que no tendrás que leer
+       la entrada ni imprimir la salida, sino implementar en tu código la función
+       <code>atrapando</code> y mandar llamar la función del evaluador
+       <code>ponMuro</code> para completar tu tarea.</p>
+    <p class="note">Para obtener más información sobre los detalles de implementación de
+       este problema debes revisar el texto del problema en la plataforma <em>omegaUp</em>.</p>
+
+    <h2>Implementación</h2>
+
+    <h3>Tu función <code>atrapando()</code></h3>
+    <div class="io"><pre>C/C++    void atrapando(int N);
+Pascal   procedure atrapando(var N: LongInt);</pre></div>
+    <p><strong>Descripción.</strong> El evaluador buscará en tu código esta función y la
+       llamará con el número \(N\) como parámetro. Tu implementación deberá llamar a la
+       función <code>ponMuro</code> para poner un muro en una casilla en específico, y
+       esta misma función te dirá hacia dónde se mueve Karel.</p>
+    <p><strong>Parámetros.</strong> <code>N</code>: un entero indicando el tamaño de la
+       cuadrícula.</p>
+
+    <h3>Función del evaluador <code>ponMuro()</code></h3>
+    <div class="io"><pre>C/C++    int ponMuro(int f, int c, int d);
+Pascal   function ponMuro(var f, c, d: LongInt): LongInt;</pre></div>
+    <p><strong>Descripción.</strong> Esta función coloca un muro al lado de la casilla que
+       se encuentra en fila \(f\) y columna \(c\). El parámetro \(d\) indica, con un número
+       del 1 al 4, en cuál de las 4 aristas (de las que se encuentran alrededor de esa
+       casilla) poner el muro.</p>
+    <p>Luego de poner el muro, Karel se moverá en alguna de las 4 direcciones. La función
+       regresará un entero del 1 al 4 indicando hacia cuál de las 4 direcciones se movió, o
+       regresará <strong>0</strong> en caso de que Karel se encuentre atrapado en la celda.</p>
+
+    <h3>Códigos de dirección</h3>
+    <p>Tanto el parámetro \(d\) de <code>ponMuro</code> (arista donde se pone el muro) como
+       el valor que regresa (dirección en que se movió Karel) usan la misma codificación:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Valor</th><th>Letra</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td class="pts">1</td><td>E</td><td>Este — a la derecha (columna \(+1\))</td></tr>
+          <tr><td class="pts">2</td><td>N</td><td>Norte — hacia arriba (fila \(-1\))</td></tr>
+          <tr><td class="pts">3</td><td>O</td><td>Oeste — a la izquierda (columna \(-1\))</td></tr>
+          <tr><td class="pts">4</td><td>S</td><td>Sur — hacia abajo (fila \(+1\))</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Nota de transcripción: el enunciado oficial ilustra esto con tres
+       imágenes (la cuadrícula, la orientación de los muros «1:E 2:N 3:O 4:S» y las
+       direcciones de movimiento «1:E 2:N 3:O 4:S»). Esas figuras solo comunican la
+       codificación de direcciones que aparece en la tabla de arriba.</p>
+
+    <h2>Rutina de ejemplo</h2>
+    <p>A continuación se muestran las primeras llamadas de una rutina de ejemplo.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Llamada</th><th>Devuelve</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>atrapando(21)</code></td>
+            <td>—</td>
+            <td>Llamada inicial a tu procedimiento <code>atrapando</code>. El mundo mide
+                \(21\times21\) y por lo tanto Karel se encuentra en la casilla \((11,11)\).</td>
+          </tr>
+          <tr>
+            <td><code>ponMuro(11,11,2)</code></td>
+            <td class="pts">1</td>
+            <td>Muro colocado al norte de la casilla \((11,11)\). Karel se mueve al este a
+                la casilla \((11,12)\).</td>
+          </tr>
+          <tr>
+            <td><code>ponMuro(11,12,1)</code></td>
+            <td class="pts">4</td>
+            <td>Muro colocado al este de la casilla \((11,12)\). Karel se mueve al sur a la
+                casilla \((12,12)\).</td>
+          </tr>
+          <tr>
+            <td><code>ponMuro(11,12,4)</code></td>
+            <td class="pts">1</td>
+            <td>Muro colocado al sur de la casilla \((12,12)\). Karel se mueve al este a la
+                casilla \((12,13)\).</td>
+          </tr>
+          <tr>
+            <td><code>ponMuro(12,13,1)</code></td>
+            <td class="pts">4</td>
+            <td>Muro colocado al este de la casilla \((12,13)\). Karel se mueve al sur a la
+                casilla \((13,13)\).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No indicado en la fuente disponible</td></tr>
+        <tr><td>Límite de memoria</td><td>No indicado en la fuente disponible</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño de la cuadrícula</td><td><span class="badge">\(20 < N < 500\)</span>, con \(N\) impar</td></tr>
+        <tr><td>Presupuesto de consultas</td><td><span class="badge">a lo más \(100N\) llamadas a <code>ponMuro</code></span></td></tr>
+      </table>
+    </div>
+
+    <h2>Consideraciones</h2>
+    <ul>
+      <li>Debes encerrar a Karel en una casilla para atraparlo.</li>
+      <li>Siempre hay al menos una forma de atrapar a Karel.</li>
+      <li>Si Karel sale de la cuadrícula obtendrás 0 puntos en ese caso.</li>
+      <li>Si mandas llamar más de \(100N\) veces la función <code>ponMuro</code> obtendrás 0 puntos.</li>
+      <li>Se garantiza que siempre recibirás una \(N\) para la cual será posible atrapar a Karel.</li>
+      <li>Mientras menos muros pongas obtendrás más puntos.</li>
+      <li>\(N\) siempre será un número impar.</li>
+    </ul>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas con restricciones por bloques: el puntaje es
+       <strong>relativo</strong> y depende de <em>cuántos muros</em> uses para atrapar a
+       Karel (entre menos muros, más puntos). Dejar que Karel salga de la cuadrícula, o
+       exceder las \(100N\) llamadas a <code>ponMuro</code>, da 0 puntos en ese caso.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Geometría de cuadrícula</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En una cuadrícula de \(N\times N\) (\(N\) impar) Karel empieza en el centro. Cada
+       segundo tú pones <strong>un</strong> muro en una arista y, después, Karel da
+       <strong>un</strong> paso a una casilla adyacente intentando escapar (movimiento
+       adversario). <strong>Tú juegas primero</strong>. Hay que encerrar a Karel en una
+       casilla \(1\times1\); si llega al borde y sale, pierdes. Entre menos muros uses,
+       más puntos; puedes llamar a <code>ponMuro</code> a lo más \(100N\) veces.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Pones 1 muro por cada paso de Karel y <strong>te mueves primero</strong>:
+                avanzas al mismo «ritmo» que Karel. Eso permite sellar una caja
+                <em>pequeña</em> a su alrededor antes de que escape, así que el número de
+                muros puede ser \(O(1)\), muy por debajo del presupuesto \(100N\).
+                Minimizar muros = maximizar puntos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en esto como una <em>persecución</em> sobre la cuadrícula,
+           donde tú vas «cortando» aristas (poniendo muros) y Karel camina por las aristas
+           que siguen abiertas?</p>
+        <p>Karel solo cruza una arista si no tiene muro. La pregunta clave: ¿qué ventaja te
+           da que <strong>tú pones el muro antes</strong> de que Karel se mueva en cada
+           segundo? ¿Quién «llega primero» a una arista en disputa?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La velocidad: ¿de qué tamaño debe ser tu jaula?</summary>
+      <div class="body">
+        <p class="q">En \(k\) segundos tú colocas \(k\) muros y Karel recorre \(k\) casillas.
+           ¿Y si construyes un <em>anillo cerrado</em> (una caja) alrededor de Karel? ¿Qué tan
+           grande puede ser para que alcances a cerrarlo antes de que él lo cruce?</p>
+        <p>Si la caja tiene «semilado» \(R\) (mide \((2R+1)\times(2R+1)\)), Karel tarda al
+           menos \(R\) pasos en tocar un lado. Como vas a su mismo ritmo y empiezas primero,
+           un \(R\) constante (digamos \(R\approx5\)) basta. ¿Notas que entonces el total de
+           muros no depende de \(N\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Qué hueco tapas cada segundo?</summary>
+      <div class="body">
+        <p class="q">Fija la caja alrededor del centro. En cada segundo, de las aristas del
+           anillo que siguen abiertas, ¿cuál conviene tapar: una al azar, o la <strong>más
+           cercana a Karel</strong>?</p>
+        <p>Si siempre tapas la arista abierta cuyo lado está a menor distancia (Manhattan) de
+           Karel, tapas justo la que él está por cruzar: cuando Karel está <em>sobre</em> la
+           celda del borde con su arista abierta, esa arista está a distancia 0, es la mínima,
+           y la cierras antes de que él dé el paso. ¿Y las <strong>esquinas</strong>, que
+           tienen <em>dos</em> aristas hacia afuera? Si Karel llega a una esquina con sus dos
+           aristas abiertas, solo alcanzas a tapar una y escapa por la otra. ¿Cómo lo evitas?
+           (pista: <em>pre-tapa</em> una arista de cada esquina al inicio).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Ya está encerrado, ¿cómo lo reduces a 1×1 barato?</summary>
+      <div class="body">
+        <p class="q">Una vez sellada la caja, Karel ya no puede salir. ¿Cómo encogerlo a una
+           sola casilla gastando pocos muros?</p>
+        <p>Piensa en <strong>búsqueda binaria espacial</strong>: parte la región a la mitad con
+           una línea completa de muros, fíjate de qué lado quedó Karel (lo sabes porque vienes
+           rastreando su posición con los valores que devuelve <code>ponMuro</code>) y quédate
+           con esa mitad; repite. ¿Por qué es seguro construir la línea divisoria aunque Karel
+           se mueva mientras la pones? (cuando la línea queda completa, Karel está comprometido
+           con un solo lado, y la caja exterior ya impedía cualquier escape).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa</summary>
+      <div class="body">
+        <p>Combina las cuatro ideas. Rastrea la posición de Karel \((kr,kc)\) sumando el
+           desplazamiento que devuelve cada <code>ponMuro</code> (1:E, 2:N, 3:O, 4:S; 0 = ya
+           está atrapado). Karel arranca en el centro \(c_0=\tfrac{N+1}{2}\).</p>
+
+        <ol>
+          <li><strong>Caja.</strong> Define una caja \((2R+1)\times(2R+1)\) centrada en el inicio,
+              con \(R=5\) (margen de sobra: el margen debe ser mayor que el número de rondas de
+              pre-tapado, que son 4).</li>
+          <li><strong>Pre-tapa esquinas.</strong> Cierra una arista exterior de cada esquina
+              (por ejemplo el norte de las dos superiores y el sur de las dos inferiores). Así
+              ninguna esquina queda nunca con dos huecos.</li>
+          <li><strong>Sella el anillo (greedy).</strong> Mientras queden aristas abiertas del
+              anillo, tapa la de menor distancia Manhattan a Karel. Esto cierra siempre el hueco
+              <em>inminente</em>; como cada celda del borde tiene a lo más una arista exterior
+              abierta (gracias al pre-tapado), Karel nunca alcanza a cruzar.</li>
+          <li><strong>Reduce con binaria.</strong> Con la caja ya sellada, mientras la región no
+              sea \(1\times1\): corta la dimensión más larga por la mitad con una línea completa de
+              muros, mira de qué lado quedó Karel y conserva esa mitad.</li>
+          <li><strong>Sella la celda final.</strong> Cierra las aristas que falten alrededor de
+              Karel hasta que <code>ponMuro</code> devuelva 0.</li>
+        </ol>
+
+        <p><strong>Por qué es correcto.</strong> Pones 1 muro por paso de Karel y juegas primero;
+           el greedy de «hueco más cercano» garantiza que la arista que Karel está por cruzar se
+           cierra antes de su movimiento; el pre-tapado de esquinas elimina el único caso con dos
+           salidas simultáneas; y como un margen \(R=5>4\) impide que Karel toque un lado durante
+           las 4 rondas de pre-tapado, el anillo se sella sin fugas. Ya sellado, la binaria reduce
+           el área a la mitad en cada corte hasta dejar \(1\times1\), sin riesgo de escape.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion atrapando(N):
+    c0 = (N+1)/2 ;  (kr,kc) = (c0,c0)              # Karel inicia en el centro
+    R = 5
+    top=c0-R ; bot=c0+R ; izq=c0-R ; der=c0+R      # caja (2R+1) x (2R+1)
+
+    # 1) pre-tapa una arista por esquina
+    PonPared(top,izq,N) ; PonPared(top,der,N)
+    PonPared(bot,izq,S) ; PonPared(bot,der,S)
+
+    # 2) sella el anillo: siempre el hueco mas cercano a Karel
+    mientras queden aristas abiertas del anillo:
+        e = arista abierta que minimiza  |kr - fila(e)| + |kc - col(e)|
+        PonPared(e)                                # PonPared actualiza (kr,kc)
+
+    # 3) reduce con busqueda binaria (la caja ya esta sellada)
+    (t,b,l,r) = (top,bot,izq,der)
+    mientras t&lt;b o l&lt;r:
+        si (r-l) &gt;= (b-t):                         # corta por una columna media
+            m = (l+r)/2
+            para y de t a b:  PonPared(y, m, ESTE)
+            si kc &lt;= m: r = m   sino l = m+1
+        sino:                                      # corta por una fila media
+            m = (t+b)/2
+            para x de l a r:  PonPared(m, x, SUR)
+            si kr &lt;= m: b = m   sino t = m+1
+
+    # 4) sella la ultima celda
+    mientras Karel no este atrapado:
+        pon cualquier arista faltante de (kr,kc)
+
+PonPared(f,c,d):
+    si esa pared ya existe: no hagas nada           # ahorra una llamada
+    sino:
+        r = ponMuro(f,c,d)                          # 1:E 2:N 3:O 4:S, 0 = atrapado
+        actualiza (kr,kc) segun r</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> El número de muros (y de llamadas a
+           <code>ponMuro</code>) es \(O(1)\): aproximadamente \(4(2R+1)\) del anillo más
+           \(O(R)\) de la binaria. En pruebas usa \(\approx 71\text{–}76\) muros para todo
+           \(20<N<500\), muchísimo menos que el tope \(100N\). El cómputo interno por decisión
+           es \(O(R^2)\) en el peor caso, despreciable.</p>
+
+        <p class="note">Para <strong>maximizar puntos</strong> conviene apretar la caja: un \(R\)
+           menor (incluso una caja asimétrica) usa menos muros en el anillo, siempre que el margen
+           siga siendo suficiente para sellarla a tiempo.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

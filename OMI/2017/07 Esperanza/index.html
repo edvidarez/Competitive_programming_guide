@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2017 · Problema 07 — Esperanza</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">22ª OMI · 2017 · Día 2</div>
+    <h1>Problema <span class="num">07</span> — Esperanza</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2017-Esperanza">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h3>Historia</h3>
+    <p>Roque el filósofo, el malvado archienemigo de los matemágicos, está
+       preparando un misil para destruir el cuartel de la logia. Para evitarlo
+       han colocado un rastreador en Roque para encontrar la ubicación secreta
+       del misil.</p>
+
+    <p>Los matemágicos acaban de recibir la señal del rastreador con la ruta que
+       Roque utilizó para llegar hasta él. La ruta está representada por una
+       cadena de caracteres; cada caracter representa un paso a una casilla de la
+       ruta y estos caracteres pueden ser:</p>
+
+    <ul>
+      <li><code>L</code> indicando que Roque se movió una casilla a la izquierda.</li>
+      <li><code>R</code> indicando que Roque se movió una casilla a la derecha.</li>
+      <li><code>U</code> indicando que Roque se movió una casilla hacia arriba.</li>
+      <li><code>D</code> indicando que Roque se movió una casilla hacia abajo.</li>
+    </ul>
+
+    <p>Los matemágicos podrán detener a tiempo el lanzamiento del misil si la
+       ruta que Roque les dio es la más corta hasta él. En caso de que,
+       utilizando solo casillas por las que Roque pasó, exista otra ruta al misil
+       que llegue en menos pasos, no lo podrán detener.</p>
+
+    <p>Por ejemplo, en el primer caso de prueba (<code>ULLUURRR</code>), Roque
+       utilizó la ruta más corta posible y lograrán detener el misil. En el
+       segundo caso (<code>UUULLDDRRR</code>) existe una ruta al misil que utiliza
+       solo casillas por las que Roque pasó, pero llega en menos pasos; por lo
+       tanto, los matemágicos no lograrán detenerlo.</p>
+
+    <p class="note">Nota de archivo: el enunciado oficial acompaña esta sección
+       con dos figuras (una marcada <em>S</em> para el primer ejemplo y otra
+       marcada <em>N</em> para el segundo) que ilustran ambos recorridos sobre la
+       cuadrícula. Esas imágenes no quedaron disponibles en este archivo, así que
+       no se reproducen aquí; el recorrido de cada ejemplo se explica en la
+       sección «Ejemplo».</p>
+
+    <h2>El problema</h2>
+    <p>Tu trabajo es escribir un programa que, dada la cadena de pasos que
+       realizó Roque, escriba la letra <em>S</em> si la ruta era la ruta más
+       corta posible, o <em>N</em> si existía una ruta más corta.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea se encuentra un entero \(N\) que es el número de pasos
+       que Roque utilizó.</p>
+    <p>En la segunda línea se encuentra una cadena de \(N\) caracteres que
+       describe los pasos de la ruta.</p>
+
+    <h2>Salida</h2>
+    <p>Deberás escribir la letra mayúscula <em>S</em> si Roque utilizó la ruta
+       más corta posible, o la letra mayúscula <em>N</em> si existía una ruta más
+       corta distinta a la que Roque tomó.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo (estándar de omegaUp; no se especifica en el archivo)</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB (estándar de omegaUp; no se especifica en el archivo)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de pasos \(N\)</td><td><span class="badge">\(1 \le N \le 10^6\)</span></td></tr>
+        <tr><td>Caracteres válidos</td><td>la cadena solo contiene <code>L</code>, <code>R</code>, <code>U</code>, <code>D</code></td></tr>
+      </table>
+    </div>
+
+    <!-- "Consideraciones": el puntaje es por casos; los porcentajes indican qué
+         fracción de los casos cae en cada rango de tamaño (crédito parcial). -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>% de casos</th><th>Restricción</th></tr></thead>
+        <tbody>
+          <tr><td class="pts">24%</td><td>\(1 \le N \le 1000\)</td></tr>
+          <tr><td class="pts">60%</td><td>\(1 \le N \le 20000\)</td></tr>
+          <tr><td class="pts">100%</td><td>\(1 \le N \le 10^6\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El enunciado describe el puntaje con la sección
+       «Consideraciones»: el crédito es por casos de prueba y los porcentajes
+       indican qué fracción de los casos cumple cada cota de \(N\) (los rangos son
+       acumulativos: el 24% más fácil cumple \(N \le 1000\), el 60% cumple
+       \(N \le 20000\), y todos cumplen \(N \le 10^6\)).</p>
+
+    <h2>Ejemplo</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>8
+ULLUURRR</pre></div>
+      <div class="io"><h4>Salida</h4><pre>S</pre></div>
+    </div>
+    <p class="note">Esta entrada corresponde a la primera figura de la
+       descripción del problema. Roque recorre 8 pasos y, usando solo las
+       casillas por las que pasó, no existe ninguna ruta del inicio al misil con
+       menos de 8 pasos: la ruta fue la más corta posible, así que la respuesta
+       es <em>S</em>.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10
+UUULLDDRRR</pre></div>
+      <div class="io"><h4>Salida</h4><pre>N</pre></div>
+    </div>
+    <p class="note">Esta entrada corresponde a la segunda figura de la
+       descripción del problema. Roque dio 10 pasos, pero su recorrido se cruza
+       consigo mismo: la casilla a la que llega tras el primer paso (un paso
+       <code>U</code> desde el inicio) es vecina de la casilla del misil. Por eso
+       existe una ruta de solo 2 pasos hacia el misil usando únicamente casillas
+       visitadas, y la respuesta es <em>N</em>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">BFS</span>
+      <span class="ptag">Cuadrícula</span>
+      <span class="ptag">Hashing</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una caminata de \(N\) pasos (<code>L/R/U/D</code>) sobre una
+       cuadrícula infinita, que empieza en una casilla de inicio y termina en la
+       casilla del misil. Considera únicamente las casillas por las que pasó la
+       caminata. Debes decidir si existe una ruta del inicio al misil, moviéndose
+       solo entre esas casillas visitadas (vecinas en las 4 direcciones), con
+       <strong>menos</strong> de \(N\) pasos. Si la hay, imprime <em>N</em>; si
+       no, imprime <em>S</em>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 10^6\) pide una solución \(O(N)\) (o \(O(N)\) con un
+                factor de tabla hash). El recorrido visita a lo más \(N+1\)
+                casillas, así que el grafo relevante es pequeño aunque las
+                coordenadas lleguen a \(\pm 10^6\): no cabe una matriz
+                \(2{\cdot}10^6 \times 2{\cdot}10^6\), pero sí un conjunto/tabla
+                hash de las casillas visitadas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">La caminata es una secuencia de movimientos en una
+           cuadrícula. ¿Y si reconstruyes las coordenadas de cada casilla por la
+           que pasó Roque? ¿Qué objeto matemático aparece si conectas las
+           casillas visitadas que son vecinas (arriba/abajo/izquierda/derecha)?</p>
+        <p>Piensa en las casillas visitadas como vértices de un grafo, con una
+           arista entre dos casillas visitadas siempre que sean adyacentes en la
+           cuadrícula. La pregunta del problema es sobre distancias en ese grafo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Qué significa «ruta más corta» aquí?</summary>
+      <div class="body">
+        <p class="q">El inicio es la casilla \((0,0)\) y el misil es la última
+           casilla del recorrido. ¿Qué es exactamente «la ruta más corta usando
+           solo casillas visitadas»? ¿No es justo la distancia más corta entre
+           inicio y misil <em>dentro de ese grafo de casillas visitadas</em>?</p>
+        <p class="q">¿Y cómo se compara esa distancia con \(N\)? ¿Puede ser
+           mayor que \(N\)?</p>
+        <p>La caminata de Roque <em>ya es</em> una ruta válida de \(N\) pasos
+           entre el inicio y el misil, hecha solo de casillas visitadas. Por lo
+           tanto la distancia mínima en el grafo es a lo más \(N\). Nunca puede
+           ser mayor.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La decisión</summary>
+      <div class="body">
+        <p class="q">Si llamas \(d\) a la distancia más corta (en el grafo de
+           casillas visitadas) del inicio al misil, ya sabes que \(d \le N\).
+           ¿Cuándo respondes <em>N</em> y cuándo <em>S</em>?</p>
+        <p>Existe una ruta estrictamente más corta exactamente cuando \(d &lt; N\)
+           (respuesta <em>N</em>). Si \(d = N\), la caminata fue óptima
+           (respuesta <em>S</em>). El recorrido de Roque solo deja de ser óptimo
+           cuando se cruza consigo mismo o serpentea, creando un atajo entre
+           casillas que ya visitó.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea por subtarea y el cuello de botella</summary>
+      <div class="body">
+        <p class="q">Para \(N \le 1000\) o \(N \le 20000\), un BFS sobre las
+           casillas visitadas es trivial. ¿Qué se rompe al llegar a
+           \(N \le 10^6\)?</p>
+        <p>El algoritmo (BFS) es el mismo para todas las subtareas; lo que cambia
+           es la implementación. Las coordenadas pueden ir de \(-10^6\) a
+           \(10^6\), así que <strong>no</strong> puedes indexar una matriz por
+           coordenada. Pero solo hay \(\le N+1\) casillas visitadas, así que
+           guárdalas en una <em>tabla hash</em> (coordenada empacada en un entero
+           de 64 bits \(\to\) índice). Con eso el BFS recorre cada vértice y sus
+           4 vecinos en \(O(N)\) amortizado.</p>
+        <p class="q">¿Cómo empacas \((x,y)\) en una sola llave? ¿Bastará con
+           \((x+\text{desp})\cdot W + (y+\text{desp})\) usando un desplazamiento
+           de \(10^6\) y \(W = 2\cdot10^6+1\) para que quepa en 64 bits?</p>
+      </div>
+    </details>
+
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>El problema se reduce a una búsqueda en anchura (BFS) en un grafo
+           construido a partir del recorrido:</p>
+        <ol>
+          <li><strong>Reconstruye el recorrido.</strong> Parte de \((0,0)\) y
+              aplica cada paso (<code>L</code>: \(x{-}1\), <code>R</code>:
+              \(x{+}1\), <code>U</code>: \(y{+}1\), <code>D</code>: \(y{-}1\)).
+              Obtienes \(N+1\) posiciones; la primera es el inicio y la última es
+              el misil.</li>
+          <li><strong>Junta las casillas visitadas.</strong> Mete todas las
+              posiciones (sin repetir) en una tabla hash que mapea la coordenada
+              empacada a un identificador. Son a lo más \(N+1\) casillas
+              distintas.</li>
+          <li><strong>BFS desde el inicio</strong> moviéndote solo a casillas
+              vecinas (4 direcciones) que estén en el conjunto visitado. Detente
+              al alcanzar el misil; sea \(d\) su distancia.</li>
+          <li><strong>Decide.</strong> Como la propia caminata es una ruta de
+              \(N\) pasos hecha de casillas visitadas, siempre \(d \le N\). Si
+              \(d &lt; N\) hay un atajo \(\Rightarrow\) imprime <em>N</em>; si
+              \(d = N\) la caminata fue óptima \(\Rightarrow\) imprime <em>S</em>.</li>
+        </ol>
+        <p><strong>Por qué es correcto:</strong> «la ruta más corta usando solo
+           casillas por las que pasó Roque» es por definición la distancia mínima
+           entre inicio y misil en el grafo inducido por las casillas visitadas
+           (aristas entre casillas adyacentes). BFS calcula esa distancia exacta
+           en un grafo no ponderado. El único atajo posible aparece cuando el
+           recorrido se cruza o se repliega sobre sí mismo, lo que el BFS detecta
+           al hallar \(d &lt; N\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Esperanza(N, pasos):
+    # 1) reconstruir el recorrido (N+1 posiciones)
+    (x, y) <- (0, 0)
+    posiciones <- [ (0,0) ]
+    para cada c en pasos:
+        segun c: L: x<-x-1 ; R: x<-x+1 ; U: y<-y+1 ; D: y<-y-1
+        agrega (x, y) a posiciones
+    inicio <- (0, 0)
+    misil  <- (x, y)            # ultima posicion
+
+    # 2) conjunto de casillas visitadas (tabla hash)
+    #    llave(x,y) = (x + DESP) * W + (y + DESP),  DESP=10^6, W=2*10^6+1
+    visitadas <- conjunto vacio
+    para cada p en posiciones:
+        visitadas.insertar( llave(p) )
+
+    # 3) BFS desde el inicio sobre las casillas visitadas
+    dist <- mapa vacio
+    dist[inicio] <- 0
+    cola <- [ inicio ]
+    mientras cola no este vacia:
+        u <- sacar frente de cola
+        si u == misil: romper
+        para cada vecino v de u en {arriba, abajo, izq, der}:
+            si llave(v) en visitadas y v no en dist:
+                dist[v] <- dist[u] + 1
+                encolar v
+
+    # 4) decision
+    si dist[misil] == N:  imprimir "S"
+    si no:                imprimir "N"</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N)\) en tiempo (amortizado, por la
+           tabla hash) y \(O(N)\) en memoria. Con \(N = 10^6\) corre de sobra en
+           el límite de tiempo.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>* Empaca (x,y) en un solo entero de 64 bits (long long) como llave de
+  la tabla hash; evita usar pair como clave (es mas lento).
+* Reserva la capacidad del unordered_map (reserve / max_load_factor) o
+  usa una tabla hash abierta; con 10^6 elementos el rehashing duele.
+* Implementa el BFS con un arreglo+indice como cola, no con std::queue,
+  para reducir el sobrecosto por nodo.</pre>
+          <p class="note">Son optimizaciones de implementación; la idea
+             algorítmica es simplemente BFS sobre las casillas visitadas.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
