@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **99 / 142**
+Total de tareas: **142** · Completadas: **100 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -184,7 +184,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Simurgh | `2017/05 Simurgh/index.html` |
 | [x] | 6 | Ancient Books | `2017/06 Ancient Books/index.html` |
 
-## IOI 2018 — 5 / 6
+## IOI 2018 — 6 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
@@ -193,7 +193,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 3 | Werewolf | `2018/03 Werewolf/index.html` |
 | [x] | 4 | Mechanical Doll | `2018/04 Mechanical Doll/index.html` |
 | [x] | 5 | Highway Tolls | `2018/05 Highway Tolls/index.html` |
-| [ ] | 6 | Meetings | `2018/06 Meetings/index.html` |
+| [x] | 6 | Meetings | `2018/06 Meetings/index.html` |
 
 ## IOI 2019 — 0 / 6
 
