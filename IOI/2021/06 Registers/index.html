@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2021 · Tarea 6 — Bit Shift Registers</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2021 · Día 2</div>
+    <h1>Tarea <span class="num">6</span> — Bit Shift Registers</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Christopher, el ingeniero, trabaja en un nuevo tipo de procesador. El procesador tiene
+       acceso a \(m\) celdas de memoria de \(b\) bits cada una (con \(m = 100\) y \(b = 2000\)),
+       llamadas <strong>registros</strong> y numeradas de \(0\) a \(m-1\). Los denotamos
+       \(r[0], r[1], \dots, r[m-1]\). Cada registro es un arreglo de \(b\) bits, numerados del
+       \(0\) (el bit de la derecha) al \(b-1\) (el de la izquierda). El bit \(j\) del registro \(i\)
+       se denota \(r[i][j]\).</p>
+
+    <p>Para cualquier secuencia de bits \(d_0, d_1, \dots, d_{l-1}\), su <strong>valor entero</strong>
+       es \(2^0 d_0 + 2^1 d_1 + \dots + 2^{l-1} d_{l-1}\). El valor entero almacenado en el registro
+       \(i\) es el valor entero de la secuencia de sus bits, es decir
+       \(2^0\, r[i][0] + 2^1\, r[i][1] + \dots + 2^{b-1}\, r[i][b-1]\).</p>
+
+    <p>El procesador tiene <strong>9 tipos de instrucciones</strong> para modificar los bits de los
+       registros. Cada instrucción opera sobre uno o más registros y guarda el resultado en uno de
+       ellos. Usamos \(x := y\) para indicar que el valor de \(x\) se cambia hasta volverse igual a
+       \(y\). Las operaciones son:</p>
+
+    <ul>
+      <li><strong>move(t, y)</strong>: copia el arreglo de bits del registro \(y\) al registro \(t\).
+          Para cada \(j\): \(r[t][j] := r[y][j]\).</li>
+      <li><strong>store(t, v)</strong>: pone el registro \(t\) igual a \(v\), donde \(v\) es un
+          arreglo de \(b\) bits. Para cada \(j\): \(r[t][j] := v[j]\).</li>
+      <li><strong>and(t, x, y)</strong>: AND bit a bit de \(x\) y \(y\); el resultado va en \(t\).
+          \(r[t][j] := 1\) si ambos \(r[x][j]\) y \(r[y][j]\) valen \(1\); si no, \(0\).</li>
+      <li><strong>or(t, x, y)</strong>: OR bit a bit. \(r[t][j] := 1\) si al menos uno de
+          \(r[x][j]\), \(r[y][j]\) vale \(1\); si no, \(0\).</li>
+      <li><strong>xor(t, x, y)</strong>: XOR bit a bit. \(r[t][j] := 1\) si exactamente uno de
+          \(r[x][j]\), \(r[y][j]\) vale \(1\); si no, \(0\).</li>
+      <li><strong>not(t, x)</strong>: NOT bit a bit del registro \(x\).
+          \(r[t][j] := 1 - r[x][j]\).</li>
+      <li><strong>left(t, x, p)</strong>: corre todos los bits de \(x\) a la izquierda \(p\)
+          posiciones. El resultado \(v\) cumple \(v[j] = r[x][j-p]\) si \(j \ge p\), y \(v[j] = 0\)
+          en otro caso; luego \(r[t][j] := v[j]\).</li>
+      <li><strong>right(t, x, p)</strong>: corre todos los bits de \(x\) a la derecha \(p\)
+          posiciones. \(v[j] = r[x][j+p]\) si \(j \le b-1-p\), y \(v[j] = 0\) en otro caso;
+          luego \(r[t][j] := v[j]\).</li>
+      <li><strong>add(t, x, y)</strong>: suma los valores enteros de \(x\) y \(y\) y guarda el
+          resultado en \(t\). La suma se hace módulo \(2^b\): si \(X + Y \lt 2^b\) entonces
+          \(T = X + Y\); de lo contrario \(T = X + Y - 2^b\) (la acarreo más alta se descarta).</li>
+    </ul>
+
+    <h3>La entrada y la salida del programa</h3>
+    <p>Christopher quiere que resuelvas dos tipos de tareas. El tipo lo indica un entero \(s\). En
+       ambos casos debes <strong>producir un programa</strong>, es decir, una secuencia de las
+       instrucciones de arriba.</p>
+    <p>La entrada del programa son \(n\) enteros \(a[0], a[1], \dots, a[n-1]\), cada uno de \(k\)
+       bits (\(a[i] \lt 2^k\)). Antes de ejecutar el programa, todos los números de entrada están
+       guardados <strong>en secuencia dentro del registro 0</strong>: para cada \(i\), el valor
+       entero de los \(k\) bits \(r[0][i\cdot k], r[0][i\cdot k+1], \dots, r[0][(i+1)\cdot k-1]\) es
+       igual a \(a[i]\). Se cumple \(n\cdot k \le b\). El resto de los bits del registro 0 (índices
+       de \(n\cdot k\) a \(b-1\)) y todos los bits de los demás registros empiezan en \(0\).</p>
+    <p>La salida se calcula con el valor final del <strong>registro 0</strong>: es la secuencia de
+       \(n\) enteros \(c[0], c[1], \dots, c[n-1]\), donde \(c[i]\) es el valor entero de los bits
+       \(i\cdot k\) a \((i+1)\cdot k - 1\) del registro 0. Los demás bits del registro 0 (índices
+       desde \(n\cdot k\)) y todos los demás registros pueden quedar con valores arbitrarios.</p>
+    <ul>
+      <li><strong>Tarea \(s = 0\) (mínimo):</strong> \(c[0]\) debe ser el mínimo de
+          \(a[0], \dots, a[n-1]\). Los valores \(c[1], \dots, c[n-1]\) pueden ser cualquier cosa.</li>
+      <li><strong>Tarea \(s = 1\) (ordenar):</strong> para cada \(i\), \(c[i]\) debe ser el
+          \((1+i)\)-ésimo entero más pequeño de la entrada (es decir, \(c[0]\) es el más pequeño,
+          \(c[1]\) el siguiente, etc.: la entrada ordenada de forma no decreciente).</li>
+    </ul>
+    <p>Debes entregar programas con <strong>a lo más \(q\) instrucciones</strong> cada uno.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento, que se llama <strong>exactamente una vez</strong>
+       y debe construir la secuencia de instrucciones que resuelve la tarea. No lees de la entrada
+       estándar ni escribes a la salida estándar: solo construyes el programa.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>void construct_instructions(int s, int n, int k, int q)</pre>
+    </div>
+    <ul>
+      <li><code>s</code>: tipo de tarea (\(0\) = mínimo, \(1\) = ordenar).</li>
+      <li><code>n</code>: cantidad de enteros de la entrada.</li>
+      <li><code>k</code>: número de bits de cada entero.</li>
+      <li><code>q</code>: número máximo de instrucciones permitidas.</li>
+    </ul>
+    <p>Para construir la secuencia, llamas a uno o más de estos procedimientos (cada llamada
+       <strong>agrega</strong> la instrucción correspondiente al final del programa):</p>
+    <div class="sig">
+      <span class="tag">API del evaluador (cada llamada agrega una instrucción)</span>
+<pre>void append_move(int t, int y)
+void append_store(int t, bool[] v)
+void append_and(int t, int x, int y)
+void append_or(int t, int x, int y)
+void append_xor(int t, int x, int y)
+void append_not(int t, int x)
+void append_left(int t, int x, int p)
+void append_right(int t, int x, int p)
+void append_add(int t, int x, int y)</pre>
+    </div>
+    <ul>
+      <li>En toda instrucción, \(t, x, y\) deben estar entre \(0\) y \(m-1\) (no tienen que ser
+          distintos entre sí).</li>
+      <li>En <code>append_left</code> / <code>append_right</code>, \(p\) debe estar entre \(0\) y \(b\).</li>
+      <li>En <code>append_store</code>, el arreglo \(v\) debe tener longitud exactamente \(b\).</li>
+      <li>Existe también <code>append_print(int t)</code> para depurar: imprime los primeros
+          \(n\cdot k\) bits del registro \(t\), se ignora al calificar y <strong>no</strong> cuenta
+          como instrucción.</li>
+    </ul>
+    <p class="note">Posibles mensajes de error al calificar: índice de registro inválido; longitud
+       de \(v\) distinta de \(b\); valor de desplazamiento \(p\) fuera de \([0, b]\); o
+       «demasiadas instrucciones» si intentas agregar más de \(q\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Registros / bits</td><td><span class="badge">\(m = 100\), \(b = 2000\)</span></td></tr>
+        <tr><td>Tipo de tarea</td><td><span class="badge">\(0 \le s \le 1\)</span></td></tr>
+        <tr><td>Cantidad de enteros</td><td><span class="badge">\(2 \le n \le 100\)</span></td></tr>
+        <tr><td>Bits por entero</td><td><span class="badge">\(1 \le k \le 10\)</span></td></tr>
+        <tr><td>Instrucciones máximas</td><td><span class="badge">\(q \le 4000\)</span></td></tr>
+        <tr><td>Valor de cada entero</td><td><span class="badge">\(0 \le a[i] \le 2^k - 1\)</span></td></tr>
+        <tr><td>Empaque en el registro 0</td><td><span class="badge">\(n\cdot k \le b\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>\(s\)</th><th>\(n\)</th><th>\(k\)</th><th>\(q\)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">10</td><td>\(0\) (mínimo)</td><td>\(n = 2\)</td><td>\(k \le 2\)</td><td>\(q = 1000\)</td></tr>
+          <tr><td>2</td><td class="pts">11</td><td>\(0\) (mínimo)</td><td>\(n = 2\)</td><td>\(k \le 2\)</td><td>\(q = 20\)</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>\(0\) (mínimo)</td><td>\(n \le 100\)</td><td>\(k \le 10\)</td><td>\(q = 4000\)</td></tr>
+          <tr><td>4</td><td class="pts">25</td><td>\(0\) (mínimo)</td><td>\(n \le 100\)</td><td>\(k \le 10\)</td><td>\(q = 150\)</td></tr>
+          <tr><td>5</td><td class="pts">13</td><td>\(1\) (ordenar)</td><td>\(n \le 10\)</td><td>\(k \le 10\)</td><td>\(q = 4000\)</td></tr>
+          <tr><td>6</td><td class="pts">29</td><td>\(1\) (ordenar)</td><td>\(n \le 100\)</td><td>\(k \le 10\)</td><td>\(q = 4000\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">En las subtareas 3, 4 y 6, \(n\) y \(k\) son los rangos globales
+       (\(2 \le n \le 100\), \(1 \le k \le 10\)). La subtarea 4 (\(q = 150\)) es la apretada para
+       el mínimo: hay que ser eficiente con el número de instrucciones.</p>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1 (\(s = 0\), \(n = 2\), \(k = 1\), \(q = 1000\))</h3>
+    <p>Hay dos enteros \(a[0]\) y \(a[1]\) de \(1\) bit. Antes de ejecutar, \(r[0][0] = a[0]\) y
+       \(r[0][1] = a[1]\). Necesitamos \(c[0] = r[0][0] = \min(a[0], a[1])\). Hay solo 4 entradas
+       posibles, y en las 4 se cumple \(\min(a[0], a[1]) = a[0] \;\text{AND}\; a[1]\). Una solución:</p>
+    <div class="example">
+      <div class="io"><h4>Llamadas</h4><pre>append_move(1, 0)
+append_right(1, 1, 1)
+append_and(0, 0, 1)</pre></div>
+      <div class="io"><h4>Qué hace</h4><pre>r[1] := copia de r[0]
+r[1] := r[1] &gt;&gt; 1   (r[1][0] = a[1])
+r[0] := r[0] AND r[1]
+       (r[0][0] = a[0] AND a[1] = min)</pre></div>
+    </div>
+
+    <h3>Ejemplo 2 (\(s = 1\), \(n = 2\), \(k = 1\), \(q = 1000\))</h3>
+    <p>Mismas 4 entradas posibles. Aquí \(\min = a[0]\;\text{AND}\;a[1]\) y
+       \(\max = a[0]\;\text{OR}\;a[1]\). Queremos \(c[0] = \min\) y \(c[1] = \max\). Una solución:</p>
+    <div class="example">
+      <div class="io"><h4>Llamadas</h4><pre>append_move(1, 0)
+append_right(1, 1, 1)
+append_and(2, 0, 1)
+append_or(3, 0, 1)
+append_left(3, 3, 1)
+append_or(0, 2, 3)</pre></div>
+      <div class="io"><h4>Qué hace</h4><pre>r[1][0] = a[1]
+r[2] = a[0] AND a[1]  (min, en el bit 0)
+r[3] = a[0] OR  a[1]  (max)
+r[3] := r[3] &lt;&lt; 1     (max al bit 1)
+r[0] = r[2] OR r[3]
+   c[0]=min, c[1]=max  (queda ordenado)</pre></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Bitwise / SIMD</span>
+      <span class="ptag">Aritmética binaria</span>
+      <span class="ptag">Red de ordenamiento</span>
+      <span class="ptag">Torneo (divide y vencerás)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(n\) enteros de \(k\) bits empacados en el registro 0 y un set de 9 instrucciones que
+       operan sobre registros de \(b = 2000\) bits. Debes <strong>construir</strong> una secuencia de
+       a lo más \(q\) instrucciones que deje en el registro 0 el mínimo (\(s = 0\)) o los \(n\)
+       números ordenados (\(s = 1\)). No buscas un algoritmo «en tiempo de ejecución»: el reto es
+       diseñar el programa de bits y que quepa en \(q\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Cada instrucción actúa sobre los \(2000\) bits <strong>a la vez</strong>: es SIMD
+                bit a bit, así que puedes comparar/seleccionar <em>todos</em> los slots en paralelo.
+                Lo que se cuenta es el <strong>número de instrucciones</strong>, no el tiempo. La
+                subtarea 4 (\(q = 150\), \(s = 0\)) exige un mínimo en \(O(\log n)\) instrucciones;
+                la subtarea 6 (\(q = 4000\), \(s = 1\)) deja holgura para un ordenamiento tipo
+                \(O(n)\) pasadas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que una sola instrucción (AND, OR, ADD, shift…) toca los
+           \(2000\) bits de un registro <em>simultáneamente</em>? ¿Qué pasa si colocas un número en
+           cada «slot» de \(k\) bits y aplicas la misma operación a todos?</p>
+        <p>Piensa en el registro como \(n\) celdas (slots) de \(k\) bits, una por número. Como las
+           operaciones son por bit, puedes hacer la <strong>misma comparación o selección sobre todos
+           los slots al mismo tiempo</strong>. Un <code>right</code> por \(d\cdot k\) bits alinea
+           cada número con otro a \(d\) posiciones de distancia, y ahí puedes compararlos en paralelo.
+           Esa es toda la maquinaria: no hay bucles «de verdad», solo instrucciones que afectan a
+           todos los slots.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1 y 2 (\(s=0\), \(n=2\), \(k \le 2\))</summary>
+      <div class="body">
+        <p class="q">Para \(k = 1\) el ejemplo te regala \(\min(a,b) = a\;\text{AND}\;b\). Pero con
+           \(k = 2\) eso ya no funciona, ¿cómo comparas dos números de varios bits? Y con
+           \(q = 20\) (subtarea 2), ¿te alcanza un comparador general?</p>
+        <p>El truco AND solo sirve para \(1\) bit. Para \(k\) general necesitas un
+           <strong>comparador</strong> que decida, en paralelo, cuál de los dos números es menor, y
+           luego un <strong>multiplexor</strong> (AND/OR con una máscara) que elija el menor. Con
+           \(n = 2\) basta una sola comparación: el comparador general entra en \(16\) instrucciones,
+           cómodo dentro de \(q = 20\). Lo bueno es que ese mismo comparador escala a cualquier \(n\)
+           y \(k\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: comparar con una resta</summary>
+      <div class="body">
+        <p class="q">¿Cómo sabes si \(a \le b\) usando solo sumas binarias? ¿Qué te dice el
+           <strong>bit de acarreo</strong> que sale de la posición \(k\) al calcular
+           \(a + \lnot b\)?</p>
+        <p>En complemento a dos, \(\lnot b = -b - 1\), así que dentro de un bloque de \(k\) bits
+           \(a + \lnot b = a + (2^k - 1 - b) = 2^k + (a - b - 1)\). Entonces:</p>
+        <ul>
+          <li>Si \(a \gt b\): \(a - b - 1 \ge 0\), hay acarreo hacia el bit \(k\)  →  ese bit vale \(1\).</li>
+          <li>Si \(a \le b\): \(a - b - 1 \lt 0\), no hay acarreo  →  el bit \(k\) vale \(0\).</li>
+        </ul>
+        <p>Aíslas ese bit de acarreo (con una máscara que tiene un \(1\) en la posición baja de cada
+           bloque) y lo <strong>expandes</strong> a todo el bloque sumándole una máscara de unos: el
+           bloque queda <strong>todo-1 si \(a \le b\)</strong> y <strong>todo-0 si \(a \gt b\)</strong>.
+           Con esa máscara y su complemento, un par AND/OR selecciona el mínimo y el máximo de cada
+           par de slots, todo en paralelo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 4 (\(s=0\), \(q=150\)): el torneo</summary>
+      <div class="body">
+        <p class="q">Comparar el slot 0 contra cada uno de los otros \(n-1\) costaría \(O(n)\)
+           comparaciones, que no caben en \(q = 150\). ¿Y si reduces los candidatos a la mitad en
+           cada ronda, como en un torneo?</p>
+        <p>Haz un <strong>torneo</strong> de \(\lceil \log_2 n \rceil\) rondas. En la ronda \(r\)
+           desplazas el registro a la derecha un <code>shift</code> que empieza en \(k\) y se duplica
+           cada ronda; así cada candidato superviviente se compara, en paralelo, contra el que está a
+           medio grupo de distancia, y el comparador deja el mínimo de cada par. Tras
+           \(\lceil \log_2 n \rceil\) rondas el mínimo global queda en el slot 0. Con
+           \(\approx 12\) instrucciones por ronda y \(n \le 100\) (\(7\) rondas) son \(88\)
+           instrucciones: cabe holgado en \(150\). Ojo: hay que rellenar los slots vacíos
+           (índices \(\ge n\cdot k\)) con unos para que esos ceros «fantasma» no ganen el mínimo.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Tipo: construcción</strong> de un programa de instrucciones de registro que explota
+           el SIMD bit a bit. Tres registros auxiliares fijos se preparan una sola vez con
+           <code>append_store</code>:</p>
+        <ul>
+          <li><strong>reg3</strong>: un \(1\) en cada posición \(i\) con \(i \bmod 2k = 0\)  →  marca
+              el bit de signo/acarreo de cada bloque.</li>
+          <li><strong>reg4</strong>: máscara de slots (\(1\) donde \(\lfloor i/k\rfloor\) es par);
+              sirve para alinear los operandos y para <em>expandir</em> el bit de acarreo a todo el
+              bloque.</li>
+          <li><strong>reg5</strong>: \(1\) en el rango \([\,n\cdot k,\ b\,)\) (relleno alto). Con un
+              OR se rellenan los slots vacíos con unos para que su valor \(0\) nunca gane el mínimo;
+              al final del ordenamiento se quita con NOT + AND.</li>
+        </ul>
+
+        <p><strong>Comparador (corazón de todo).</strong> Con reg1 = «el otro» operando ya alineado y
+           reg0 = operando base, se calcula \(a + \lnot b\). Como \(\lnot b = 2^k - 1 - b\) por bloque,
+           \(a + \lnot b = 2^k + (a - b - 1)\); el acarreo hacia el bit \(k\) vale \(1\) si
+           \(a \gt b\) y \(0\) si \(a \le b\). Se lleva ese bit a la posición baja con un shift de
+           \(k\), se aísla con reg3 y se expande sumándole reg4, dejando una máscara por slot:
+           <strong>todo-1 cuando \(a \le b\)</strong>, <strong>todo-0 cuando \(a \gt b\)</strong>.
+           La máscara y su complemento forman el multiplexor min/max.</p>
+
+        <p><strong>\(s = 0\) (mínimo):</strong> torneo de \(\lceil \log_2 n\rceil\) rondas (shift
+           empieza en \(k\) y se duplica). Cada ronda deja el mínimo de cada par; al final el mínimo
+           global queda en el slot 0.</p>
+        <p><strong>\(s = 1\) (ordenar):</strong> red de ordenamiento tipo <strong>burbuja</strong> con
+           \(n\) pasadas. En cada pasada se compara cada slot con su vecino (alternando shift derecha
+           o izquierda de \(k\) bits según la paridad de la pasada), se arman dos «carriles»
+           (el del mínimo y el del máximo, cada uno enmascarado a sus slots), se reinsertan
+           desplazando de vuelta \(k\) bits y se fusionan con OR. \(n\) pasadas de
+           comparar-e-intercambiar entre vecinos equivalen a un bubblesort, que ordena cualquier
+           permutación. Al final se limpia el relleno alto.</p>
+
+        <p><strong>Correctitud.</strong> El comparador es exacto bit a bit (la derivación del acarreo
+           de arriba). El relleno con unos en \([\,n\cdot k, b\,)\) evita que las celdas vacías
+           contaminen el mínimo. \(s = 0\): cada ronda del torneo reduce a la mitad los posibles
+           ganadores y los acerca al slot 0, así que tras \(\lceil \log_2 n\rceil\) rondas el mínimo
+           global está en el slot 0. \(s = 1\): \(n\) pasadas de bubblesort dejan todo ordenado. El
+           juez oficial es un <em>special judge</em> que simula el programa sobre baterías dirigidas
+           de arrays (aleatorios, ordenados, inversos, todos iguales, \(\max\) y \(\max-1\),
+           \(0\) y MAX, casi ordenados, etc.) y verifica el mínimo / el orden y que el número de
+           instrucciones sea a lo más \(q\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>construir_instrucciones(s, n, k, q):
+  # --- preparacion (comun a s=0 y s=1) ---
+  store reg3 &lt;- 1 en cada posicion i con (i mod 2k) == 0   # bit de signo por bloque
+  store reg4 &lt;- 1 en posiciones i con floor(i/k) par       # mascara de slots / expansion
+  store reg5 &lt;- 1 en el rango [n*k, b)                      # relleno alto
+  reg0 &lt;- reg0 OR reg5                                      # rellena el padding con 1s
+
+  # subrutina conceptual: comparador en paralelo (deja mascara en reg2)
+  comparar():            # reg1 = "otro" operando alineado ; reg0 = operando base
+     reg8 &lt;- NOT reg1
+     reg8 &lt;- reg8 AND reg4 ;  reg0 &lt;- reg0 AND reg4
+     reg2 &lt;- reg0 + reg8       # = a + (~b) = a - b - 1
+     reg2 &lt;- reg2 &gt;&gt; k         # lleva el acarreo a la posicion baja del bloque
+     reg2 &lt;- reg2 AND reg3     # aisla el bit de signo (1 sii a &gt; b ; 0 sii a &lt;= b)
+     reg2 &lt;- reg2 + reg4       # expande: bloque todo-1 si a &lt;= b , todo-0 si a &gt; b
+
+  si s == 0:                     # MINIMO (torneo)
+     rondas &lt;- techo(log2 n) ;  salto &lt;- k
+     repetir rondas veces:
+        reg1 &lt;- reg0 &gt;&gt; salto ;  salto &lt;- salto * 2
+        comparar()
+        reg6 &lt;- reg2 AND reg0              # toma el base donde a &lt;= b
+        reg7 &lt;- NOT reg2 ;  reg7 &lt;- reg1 AND reg7
+        reg0 &lt;- reg6 OR reg7               # min de cada par
+     # el minimo global queda en el slot 0
+  si no:                         # s == 1 , ORDENAR (red burbuja)
+     para iter en 0 .. n-1:
+        si iter par:  reg1 &lt;- reg0 &gt;&gt; k    si no:  reg1 &lt;- reg0 &lt;&lt; k
+        comparar()                          # mascara en reg2 ; reg7 = NOT reg2
+        carril_min &lt;- ((reg2 AND reg0) OR (reg1 AND reg7)) AND reg4
+        carril_max &lt;- ((reg2 AND reg1) OR (reg7 AND reg0)) AND reg4
+        si iter par:  carril_max &lt;- carril_max &lt;&lt; k   si no:  carril_min &lt;- carril_min &gt;&gt; k
+        reg0 &lt;- carril_max OR carril_min     # vecinos ordenados, reinsertados
+     reg5 &lt;- NOT reg5 ;  reg0 &lt;- reg0 AND reg5   # quita el relleno alto</pre>
+        </div>
+
+        <p><strong>Complejidad (número de instrucciones, que es lo que puntúa):</strong></p>
+        <ul>
+          <li>\(s = 0\): \(4 + 12\lceil \log_2 n\rceil\). Para \(n = 100\): \(4 + 12\cdot 7 = 88 \le 150\).
+              Independiente de \(k\). (\(n = 2\): \(16 \le 20\).)</li>
+          <li>\(s = 1\): \(4 + 19n + 2\). Para \(n = 100\): \(1906 \le 4000\). (\(n = 10\): \(196\).)</li>
+          <li>Usa los registros \(0\) a \(10\) de los \(100\) disponibles. No hay recursión ni
+              búsqueda: el número de instrucciones está acotado a priori.</li>
+        </ul>
+        <p class="note">Puntaje pleno \(100/100\): todas las subtareas caben dentro de su \(q\).
+           Para \(s = 1\) una red de Batcher daría \(O(n \log^2 n)\) instrucciones si \(q\) fuera más
+           apretado, pero aquí no hace falta: la burbuja en \(\approx 19n\) entra con holgura.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
