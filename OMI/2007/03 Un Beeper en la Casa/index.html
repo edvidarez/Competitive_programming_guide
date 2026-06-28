@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2007 · Problema 03 — Un Beeper en la Casa</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">12ª OMI · 2007 · Karel</div>
+    <h1>Problema <span class="num">03</span> — Un Beeper en la Casa</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/un_beeper_en_casa">omegaUp</a></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Karel va a heredar la casa de su antepasado Karelomeo. La casa es inmensa y
+       tiene una cantidad muy grande de cuartos. El estilo arquitectónico es
+       preclásico, por lo tanto, <strong>todos los muros están conectados y no hay
+       cuartos islas</strong>.</p>
+    <p>Karelomeo puso sólo una cláusula que se debe cumplir para que Karel herede
+       la casa: <em>«Mi heredero debe de encontrar el beeper que se encuentra
+       escondido en un cuarto de la casa antes de que termine la OMI 07.»</em></p>
+    <p>Karel debe de <strong>encontrar el beeper oculto y apagarse en esa
+       posición</strong>.</p>
+
+    <h3>Consideraciones</h3>
+    <ul>
+      <li>La posición y orientación inicial de Karel son <strong>desconocidas</strong>.
+          Sólo sabes que Karel inicia en algún lugar dentro de la casa.</li>
+      <li>Karel inicia con <strong>0 beepers en la mochila</strong>.</li>
+      <li>Sólo hay <strong>un beeper</strong> en la casa.</li>
+      <li>Los cuartos tienen múltiples puertas, tamaños y formas.</li>
+      <li>Karel debe apagarse en la posición en donde se encuentra el beeper.</li>
+    </ul>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El mundo es una cuadrícula (de hasta \(100 \times 100\)) que representa la
+         casa: un contorno de muros la encierra y muros interiores la dividen en
+         muchos cuartos comunicados por puertas. Como <em>todos los muros están
+         conectados y no hay cuartos islas</em>, el espacio libre es
+         <strong>simplemente conexo y sin ciclos</strong>: la casa forma un
+         <strong>laberinto perfecto</strong>, donde entre cualesquiera dos celdas
+         existe un único camino.</p>
+      <p>Karel arranca en una <strong>celda y orientación desconocidas</strong>, con
+         la <strong>mochila vacía</strong> (0 zumbadores). En alguna celda del piso
+         hay <strong>exactamente un zumbador</strong> (el beeper). Se considera
+         resuelto cuando Karel se <strong>apaga justo sobre la celda del
+         beeper</strong> (la orientación final no importa).</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>La información viene en el <strong>mundo de Karel</strong> (no por la entrada
+       estándar): las dimensiones, los muros que forman la casa, la posición y
+       orientación inicial de Karel y la celda donde está el beeper. Karel no
+       conoce sus coordenadas ni hacia dónde mira; sólo puede usar sus
+       <strong>sensores</strong> (¿hay muro al frente?, ¿hay un zumbador en esta
+       celda?).</p>
+
+    <h2>Salida</h2>
+    <p>El <strong>estado final del mundo</strong>: Karel apagado (<code>apágate</code>)
+       parado sobre la celda donde está el beeper. Sólo importa la posición; la
+       orientación final es irrelevante.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del mundo</td><td><span class="badge">hasta \(100 \times 100\)</span></td></tr>
+        <tr><td>Zumbadores</td><td><span class="badge">exactamente 1 beeper en el piso; 0 en la mochila</span></td></tr>
+        <tr><td>Estructura</td><td><span class="badge">laberinto perfecto (muros conectados, sin islas)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <figure>
+      <img alt="Mundo de entrada: la casa-laberinto con Karel (flecha azul) abajo a la izquierda mirando al norte y el beeper (marca verde) en un cuarto central."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Entrada de ejemplo: Karel (flecha azul) inicia abajo a la izquierda
+         mirando hacia arriba; el beeper (marca verde) está escondido en un cuarto
+         del centro.</figcaption>
+    </figure>
+    <figure>
+      <img alt="Mundo de salida: Karel ahora está parado sobre la celda donde estaba el beeper, apagado ahí."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Salida esperada: Karel termina parado sobre la celda del beeper y se
+         apaga ahí (su orientación final no importa).</figcaption>
+    </figure>
+    <p class="note">En el mundo de ejemplo, Karel recorre la casa hasta dar con el
+       beeper y se apaga sobre esa celda. Como no conoce su posición ni puede dejar
+       marcas, el recorrido debe funcionar arrancando desde cualquier celda y
+       orientación.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Laberinto perfecto (árbol)</span>
+      <span class="ptag">Regla de la mano derecha</span>
+      <span class="ptag">DFS / Backtracking</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Karel está dentro de una casa que es un <strong>laberinto perfecto</strong>
+       (todos los muros conectados, sin islas &rArr; sin ciclos), en una
+       <strong>celda y orientación desconocidas</strong> y con la
+       <strong>mochila vacía</strong>. Hay un único beeper escondido. Hay que
+       llevar a Karel hasta esa celda y apagarlo ahí.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que de verdad importa</td>
+            <td>Karel <strong>no puede marcar</strong> por dónde pasó (arranca con 0
+                zumbadores y sólo existe el beeper, que no debe moverse) y
+                <strong>no conoce sus coordenadas</strong>. Necesitas un recorrido que
+                cubra <em>toda</em> la casa <strong>sin memoria de celdas visitadas</strong>.
+                La pieza clave: «muros conectados + sin islas» &rArr; el espacio libre
+                es un árbol (laberinto perfecto, sin ciclos), y eso es justo lo que
+                hace posible recorrerlo sin marcar.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar la casa?</summary>
+      <div class="body">
+        <p class="q">¿Y si ves cada celda libre como un nodo y cada paso sin muro
+           entre celdas vecinas como una arista? ¿Qué te dice la frase «todos los
+           muros están conectados y no hay cuartos islas» sobre ese grafo?</p>
+        <p>Cuando los muros forman una sola pieza conectada y no encierran huecos, el
+           espacio libre no puede tener ciclos: entre cualquier par de celdas hay un
+           único camino. Es decir, el grafo de la casa es un <strong>árbol</strong>
+           (un <strong>laberinto perfecto</strong>). Tenlo muy presente: casi toda la
+           solución vive de esa propiedad.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Puedes dejar miguitas de pan?</summary>
+      <div class="body">
+        <p class="q">¿Con cuántos zumbadores arranca Karel? ¿Cuántos hay en toda la
+           casa? Entonces, ¿puedes ir marcando las celdas que ya visitaste para no
+           repetirlas?</p>
+        <p>No. Con 0 zumbadores en la mochila y un único beeper (que no debes mover),
+           Karel <strong>no puede marcar</strong> nada, y tampoco sabe en qué
+           coordenada está. Así que un “flood fill” clásico que recuerda celdas
+           visitadas queda descartado. ¿Qué tipo de recorrido cubre <em>todo</em> un
+           laberinto <strong>sin necesidad de recordar</strong> por dónde pasaste?
+           (Aquí es donde el “sin ciclos” de la Pista 1 se vuelve oro.)</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La mano en la pared</summary>
+      <div class="body">
+        <p class="q">¿Has oído la «regla de la mano derecha» para salir de un
+           laberinto? Si Karel mantiene siempre pegada su mano derecha a un muro y
+           avanza, ¿por cuáles celdas acabará pasando en un laberinto <em>sin
+           ciclos</em>?</p>
+        <p>En un laberinto perfecto hay un solo “borde” que rodea todo el árbol de
+           pasillos, y ese borde <strong>pasa por todas las celdas</strong>. Por eso,
+           seguir una sola pared te lleva tarde o temprano por cada rincón. ¿Y si
+           antes de cada paso Karel revisa con su sensor si ya está parado sobre el
+           beeper, y en cuanto lo esté se apaga? ¿Qué pasa si el beeper estuviera
+           justo en la celda inicial?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea (regla de la mano derecha / wall&nbsp;follower).</strong>
+           Como la casa es un laberinto perfecto (sin ciclos), si Karel sigue siempre
+           el muro de su <em>derecha</em>, recorre el único borde del árbol de
+           pasillos, que <strong>visita todas las celdas</strong>. Antes de cada paso
+           comprueba si está sobre un zumbador; en cuanto lo esté, se apaga. Esto
+           funciona <strong>desde cualquier celda y orientación inicial</strong> y
+           <strong>sin marcar</strong> nada (memoria \(O(1)\)).</p>
+        <p>El truco fino es “pegarse a la pared” en cada paso: primero intenta girar a
+           la derecha; si hay muro, gira a la izquierda hasta que el frente quede
+           libre; entonces avanza. Eso da la prioridad <em>derecha &rarr; frente &rarr;
+           izquierda &rarr; atrás</em>, que es exactamente seguir la pared derecha. La
+           condición del ciclo principal revisa el beeper <em>antes</em> de moverse,
+           así que también cubre el caso en que el beeper esté en la celda inicial.</p>
+
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel — regla de la mano derecha</span>
+<pre>define-nueva-instruccion gira-derecha como inicia
+    gira-izquierda
+    gira-izquierda
+    gira-izquierda
+termina
+
+inicia-programa
+    mientras no-junto-a-zumbador hacer inicia
+        gira-derecha                         # intenta pegarte al muro de tu derecha
+        mientras frente-bloqueado hacer inicia   # si hay muro, gira hasta poder pasar
+            gira-izquierda
+        termina
+        avanza                               # un paso siguiendo la pared
+    termina
+    apágate                                  # estás sobre el beeper: termina aquí
+termina-programa</pre>
+        </div>
+
+        <p><strong>¿Por qué es correcto?</strong> En un árbol de pasillos hay un único
+           contorno cerrado; la regla de la mano derecha lo sigue de forma
+           determinista y, al hacerlo, pisa cada celda de la casa. Como el beeper
+           existe y está dentro de la casa, en algún momento Karel queda parado sobre
+           él y se apaga. (Si la casa fuera un cuarto abierto con ciclos, esto no
+           bastaría; por eso la garantía «muros conectados, sin islas» es esencial.)</p>
+
+        <p><strong>Complejidad:</strong> \(O(C)\) pasos, donde \(C\) es el número de
+           celdas de la casa (el contorno recorre cada celda un número acotado de
+           veces), y memoria \(O(1)\) — sin recursión.</p>
+
+        <p><strong>Alternativa: DFS recursivo (backtracking).</strong> También puedes
+           explorar como un árbol: al <em>entrar</em> a una celda nueva, prueba las
+           tres direcciones que no sean “por donde viniste”; al volver de cada rama,
+           regresa a la celda y restaura tu orientación. Como el laberinto es un
+           árbol, nunca vuelves a una celda ya vista (salvo el regreso al padre, que
+           se omite), así que no hace falta marcar. La celda inicial es la única sin
+           “padre”, por eso ahí se prueban las cuatro direcciones.</p>
+
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel — DFS recursivo (alternativa)</span>
+<pre>define-nueva-instruccion da-vuelta-en-u como inicia
+    gira-izquierda
+    gira-izquierda
+termina
+
+# explora: precondición -> Karel ACABA de entrar a esta celda;
+#          "atrás" es la celda de la que vino (su padre).
+define-nueva-instruccion explora como inicia
+    si junto-a-zumbador entonces inicia
+        apágate                              # encontrado: termina
+    termina
+    sino inicia
+        # probar FRENTE, IZQUIERDA y DERECHA; saltar ATRÁS (el padre)
+        si frente-libre entonces inicia
+            avanza   explora   da-vuelta-en-u   avanza   da-vuelta-en-u
+        termina
+        gira-izquierda
+        si frente-libre entonces inicia
+            avanza   explora   da-vuelta-en-u   avanza   da-vuelta-en-u
+        termina
+        gira-izquierda                       # ahora miras hacia ATRÁS: NO pruebes
+        gira-izquierda
+        si frente-libre entonces inicia
+            avanza   explora   da-vuelta-en-u   avanza   da-vuelta-en-u
+        termina
+        gira-izquierda                       # restaura la orientación de entrada
+    termina
+termina
+
+inicia-programa
+    si junto-a-zumbador entonces inicia      # el beeper podría estar en el inicio
+        apágate
+    termina
+    repite 4 veces inicia                    # la celda inicial no tiene padre: prueba las 4
+        si frente-libre entonces inicia
+            avanza   explora   da-vuelta-en-u   avanza   da-vuelta-en-u
+        termina
+        gira-izquierda
+    termina
+    apágate                                  # (garantía: el beeper existe; no se llega aquí)
+termina-programa</pre>
+        </div>
+
+        <p class="note">El DFS recursivo también da 100 puntos, pero su profundidad de
+           recursión puede ser tan grande como el pasillo más largo de la casa
+           (\(O(C)\) en el peor caso); en casas muy grandes la regla de la mano
+           derecha es más segura por usar memoria constante.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

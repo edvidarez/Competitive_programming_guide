@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2007 · Problema 05 — Triminos</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">12ª OMI · 2007 · Lenguaje</div>
+    <h1>Problema <span class="num">05</span> — Triminos</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2007LENGUAJE2">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Un trimino en forma de L es una pieza compuesta por 3 cuadrados, cada uno
+       de dimensiones \(1\times 1\), que forman cualquiera de las siguientes
+       figuras:</p>
+
+    <figure>
+      <img alt="Las cuatro orientaciones de un trimino en forma de L: tres cuadrados de 1x1 que ocupan tres de las cuatro casillas de un bloque de 2x2, en sus cuatro rotaciones."
+           src="data:image/png;base64,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CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow105yw4V06KRZNAzfpsDg0CifCBr5H2Ow109w9YQN8T68cbtJhcWgUToQNfI+w2WumOWEDb9crh5t0WBwahRNhA98jbPaaaU7YAAAAP3nCBgAA+MkTNgAAwE+esAEAAH7yhA0AAPCTJ2wAAICfPGEDAAD85AkbAADgJ0/YAAAAP3nCBgAA+In7/e//D3bNCGgOg4XFAAAAAElFTkSuQmCC">
+      <figcaption>Las cuatro orientaciones (rotaciones) de un trimino en forma de L.</figcaption>
+    </figure>
+
+    <p>Cierto día, paseando por la calle, viste a un par de personas jugando un
+       juego de mesa, del cual no lograste entender las reglas, pero sí notaste
+       algunas cosas:</p>
+    <ul>
+      <li>Se juega en un tablero cuadriculado de \(H\) cuadros de alto por \(B\)
+          cuadros de ancho; las piezas son cuadrados de \(1\times 1\).</li>
+      <li>En su turno, cada jugador coloca 3 piezas en el tablero; las piezas
+          pueden colocarse en cualquier posición, sin importar si ya está ocupada
+          por otra pieza.</li>
+    </ul>
+    <p>Como te gustan mucho los triminos, quieres saber en qué turnos se colocó
+       algún trimino. Además te gustaría saber cuántos cuadros del tablero
+       quedaron libres (sin ninguna pieza) al final del juego.</p>
+
+    <h3>El programa</h3>
+    <p>Deberás escribir un programa que reciba como entrada las dimensiones del
+       tablero y las jugadas que se realizan durante el juego, y que determine en
+       qué jugadas alguien colocó sus piezas en forma de un trimino como los de
+       arriba y cuántos cuadros quedaron libres al final.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer del teclado de la PC los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, los números \(0 < H, B \le 100\), los cuales
+          representan el alto y el ancho del tablero.</li>
+      <li>En la segunda línea, un número \(0 < N \le 100\) que representa la
+          cantidad de movidas que se hicieron durante el juego.</li>
+      <li>Cada una de las siguientes \(N\) líneas representará una movida de un
+          jugador y contendrá 6 números enteros positivos \(a, b, c, d, e\) y
+          \(f\) separados por espacios, donde \(a\) y \(b\) representarán la fila
+          y la columna donde se colocó la primera pieza de ese movimiento,
+          \(c\) y \(d\) la segunda pieza, y \(e\) y \(f\) la tercera pieza. La
+          esquina superior izquierda del tablero está representada por la
+          coordenada \((1,1)\).</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en la pantalla de la computadora \(N+1\)
+       líneas: en cada una de las primeras \(N\) líneas deberá haber un \(1\) si
+       las fichas de esa jugada corresponden a un trimino con forma de L, y un
+       \(0\) en caso contrario. La última línea deberá contener un solo número
+       que representa la cantidad de cuadros libres al final del juego.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Alto y ancho del tablero</td><td><span class="badge">\(0 < H, B \le 100\)</span></td></tr>
+        <tr><td>Número de movidas</td><td><span class="badge">\(0 < N \le 100\)</span></td></tr>
+        <tr><td>Coordenadas</td><td><span class="badge">\(1 \le a,c,e \le H\), \(1 \le b,d,f \le B\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o
+       nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5 6
+4
+2 3 3 3 2 4
+1 1 4 2 2 5
+2 6 2 6 2 6
+5 4 5 5 4 5</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1
+0
+0
+1
+20</pre></div>
+    </div>
+    <p class="note">El tablero mide \(5\times 6\) (30 cuadros). La jugada 1 usa las
+       celdas \((2,3),(3,3),(2,4)\): caben en un bloque de \(2\times 2\) y son tres
+       distintas, así que forman una L \(\Rightarrow 1\). La jugada 2 usa
+       \((1,1),(4,2),(2,5)\): están muy separadas \(\Rightarrow 0\). La jugada 3
+       usa tres veces la misma celda \((2,6)\) \(\Rightarrow 0\). La jugada 4 usa
+       \((5,4),(5,5),(4,5)\): otra L \(\Rightarrow 1\). En total se cubrieron 10
+       cuadros distintos, así que quedan \(30-10 = 20\) libres.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Implementación</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un tablero de \(H\times B\) y \(N\) jugadas; cada jugada son 3 celdas
+       (fila, columna). Por cada jugada hay que decir si esas 3 celdas forman un
+       trimino en L, y al final reportar cuántas celdas del tablero nunca fueron
+       cubiertas por ninguna pieza.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Todo es chiquito: \(H,B,N \le 100\). El tablero tiene a lo más
+                \(100\times 100 = 10\,000\) celdas y hay a lo más 100 jugadas, así
+                que el cómputo es trivial. El verdadero reto es <em>geométrico</em>:
+                ¿qué condición exacta cumplen las 3 celdas de una L? Y al contar
+                libres, ¿cómo evitar contar dos veces una celda que recibe varias
+                piezas?</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que cada jugada son solo 3 pares
+           (fila, columna), y que las dos preguntas del problema son
+           independientes entre sí?</p>
+        <p>Una pregunta es local a cada jugada (¿estas 3 celdas son una L?) y la
+           otra es global (¿qué celdas quedaron sin cubrir al final?). ¿Puedes
+           resolver la primera mientras lees cada jugada, y llevar aparte un
+           registro de las celdas cubiertas para responder la segunda al
+           terminar?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Qué es realmente una L?</summary>
+      <div class="body">
+        <p class="q">Mira las cuatro figuras del enunciado: ¿qué tienen en común
+           las cuatro orientaciones?</p>
+        <p>Las cuatro caben dentro de un bloque de \(2\times 2\) y ocupan
+           exactamente 3 de sus 4 casillas. ¿Y qué casos hay que <em>descartar</em>?
+           ¿Qué pasa si dos de las tres celdas de la jugada son la misma celda?
+           ¿Y si las tres están alineadas (en una sola fila o una sola columna)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La caja envolvente</summary>
+      <div class="body">
+        <p class="q">¿Y si calculas el mínimo y el máximo de las filas, y el
+           mínimo y el máximo de las columnas de las 3 celdas?</p>
+        <p>Eso te da la <em>caja</em> más chica que las contiene. Una L vive en
+           una caja de exactamente \(2\times 2\): es decir,
+           \(\text{filaMax}-\text{filaMin}=1\) y
+           \(\text{colMax}-\text{colMin}=1\). Pero cuidado: esa condición sola no
+           basta. ¿Por qué? Porque dos celdas podrían coincidir y aun así dar una
+           caja \(2\times 2\) (por ejemplo \((1,1),(1,1),(2,2)\)). Por eso
+           necesitas además exigir que las 3 celdas sean <em>distintas</em>.</p>
+        <p>La buena noticia: si las 3 celdas son distintas <strong>y</strong> la
+           caja es \(2\times 2\), entonces forzosamente ocupan 3 de las 4 casillas
+           del bloque \(\Rightarrow\) siempre es una L. No hay que checar nada más.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Contar los cuadros libres</summary>
+      <div class="body">
+        <p class="q">Una celda puede recibir piezas en varias jugadas: ¿cómo
+           cuentas las celdas <em>distintas</em> que terminaron cubiertas sin
+           contar de más?</p>
+        <p>Usa una matriz booleana <code>cubierto[fila][columna]</code>. Empieza
+           con un contador <code>libres = H*B</code> y, cada vez que pongas una
+           pieza en una celda que aún no estaba marcada, márcala y resta 1 a
+           <code>libres</code>. Si la celda ya estaba marcada, no haces nada. Al
+           final, <code>libres</code> es la respuesta.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Procesas las jugadas una por una. Para cada jugada con celdas
+           \((a,b),(c,d),(e,f)\):</p>
+        <ol>
+          <li><strong>¿Es L?</strong> Verifica que las 3 celdas sean distintas y
+              que su caja envolvente mida exactamente \(2\times 2\)
+              (\(\text{filaMax}-\text{filaMin}=1\) y
+              \(\text{colMax}-\text{colMin}=1\)). Si ambas cosas se cumplen,
+              imprime \(1\); si no, imprime \(0\). Como vimos en la Pista 3, 3
+              celdas distintas dentro de una caja \(2\times 2\) siempre son una L,
+              así que con eso basta.</li>
+          <li><strong>Marcar cobertura.</strong> Para cada una de las 3 celdas, si
+              aún no estaba marcada en la matriz <code>cubierto</code>, márcala y
+              decrementa <code>libres</code>.</li>
+        </ol>
+        <p>Al terminar las \(N\) jugadas, imprime <code>libres</code>. Es correcto
+           porque la condición geométrica caracteriza exactamente a la L (las
+           cuatro rotaciones, y nada más), y el contador <code>libres</code> nunca
+           descuenta dos veces la misma celda gracias a la marca.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer H, B
+leer N
+cubierto[1..H][1..B] <- falso
+libres <- H * B
+
+repetir N veces:
+    leer a, b, c, d, e, f          # 3 celdas: (a,b), (c,d), (e,f) = (fila, col)
+
+    distintas <- (a,b) != (c,d) y (a,b) != (e,f) y (c,d) != (e,f)
+    filaMin <- min(a, c, e);   filaMax <- max(a, c, e)
+    colMin  <- min(b, d, f);   colMax  <- max(b, d, f)
+
+    si distintas y (filaMax - filaMin == 1) y (colMax - colMin == 1):
+        imprimir 1
+    si no:
+        imprimir 0
+
+    para cada celda (r, k) en {(a,b), (c,d), (e,f)}:
+        si cubierto[r][k] == falso:
+            cubierto[r][k] <- verdadero
+            libres <- libres - 1
+
+imprimir libres</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> tiempo \(O(N)\) (cada jugada se procesa en
+           \(O(1)\)) más \(O(H\cdot B)\) por inicializar la matriz; memoria
+           \(O(H\cdot B)\). Con \(H,B,N \le 100\) es prácticamente instantáneo.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

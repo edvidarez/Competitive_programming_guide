@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2007 · Problema 06 — Camiones</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">12ª OMI · 2007 · Lenguaje</div>
+    <h1>Problema <span class="num">06</span> — Camiones</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2007LENGUAJE3">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Descripción</h2>
+    <p>Recientemente se inauguró el Parque de los Clonosaurios. Juanito, el gerente del
+       parque, se enfrenta a un dilema difícil de resolver, por lo que ha pedido tu ayuda.</p>
+    <p>El parque se encuentra retirado de la civilización; para llegar a él es necesario
+       tomar un camión. Los camiones del parque funcionan de la siguiente manera:</p>
+    <ul>
+      <li>A cierta hora del día, llamémosle \(H\), llega a la parada el primer camión de ese día.</li>
+      <li>El camión espera \(t\) nanosegundos en la parada y se retira.</li>
+      <li>En el instante en el que el camión se retira, llega un siguiente camión a la parada.</li>
+      <li>El proceso se repite hasta que se retira el último camión del día.</li>
+    </ul>
+    <p>Juanito renta los camiones; si al momento de retirarse el camión no tiene pasajeros,
+       inmediatamente regresa y no es necesario que se pague la corrida. Como buen gerente,
+       Juanito desea cortar los gastos de su parque, por lo que necesita <strong>minimizar el
+       número de camiones que se pagan en el día</strong>.</p>
+    <p>En base a estadísticas, Juanito sabe en qué momento llega gente a la parada. El tiempo
+       \(t\) de nanosegundos que espera cada camión no es negociable; sin embargo, Juanito
+       tiene la opción de recorrer la hora de llegada del primer camión hasta un máximo de
+       \(t\) nanosegundos, de modo que puede decidir que el primer camión llegue en cualquier
+       momento entre \(H\) y \(H+t\).</p>
+
+    <h2>Problema</h2>
+    <p>Dados dos números \(t\) y \(n\), donde \(t\) representa el número de nanosegundos que
+       espera cada camión en la parada y \(n\) el número de personas que se esperan ese día,
+       y una lista de números que representan el nanosegundo del día en el que cada persona
+       llega a la parada, escribe un programa que determine <strong>en qué momentos puede
+       llegar el primer camión</strong> de modo que se minimice el número de camiones en
+       donde subió al menos una persona.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado de la PC los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, los números \(t\) y \(n\) separados por un espacio, con
+          \(1 \le t, n \le 100{,}000\), donde \(t\) representa el tiempo en nanosegundos que
+          espera cada camión y \(n\) el número de personas que se esperan ese día.</li>
+      <li>La segunda línea contiene \(n\) números enteros separados por un espacio que
+          representan el nanosegundo en que cada una de las \(n\) personas llegó a la parada.
+          Esta lista de números <strong>SIEMPRE ESTARÁ ORDENADA DE MANERA CRECIENTE</strong>.</li>
+    </ul>
+
+    <h2>Consideraciones</h2>
+    <ul>
+      <li>No hay dos personas que lleguen en el mismo nanosegundo a la parada.</li>
+      <li>Si una persona llega a la parada antes que el primer camión, la persona se va a su
+          casa y presenta una queja contra el administrador del parque.</li>
+      <li>Si alguien pone una queja contra Juanito, éste será despedido. Por lo que Juanito
+          requiere que <strong>TODAS</strong> las personas de ese día lleguen al parque.</li>
+      <li>El nanosegundo en que llega cada persona a la parada está contado a partir de \(H\);
+          es decir, \(H\) corresponde al nanosegundo \(0\).</li>
+      <li>El nanosegundo de llegada de las personas está representado por un número mayor o
+          igual a \(0\) y menor o igual a \(2{,}000{,}000{,}000\).</li>
+      <li>Si una persona llega a la parada en el nanosegundo en el que se está retirando un
+          camión, no puede subir a ese camión; debe hacerlo en el siguiente. Por ejemplo, si
+          el tiempo de espera de cada camión es de \(10\) ns y el camión llega en el
+          nanosegundo \(0\), entonces a ese camión suben las personas que lleguen entre el
+          nanosegundo \(0\) y el \(9\); una persona que llegue en el nanosegundo \(10\) tiene
+          que subir al siguiente camión.</li>
+      <li>La capacidad de cada camión es suficiente para alojar a todas las personas que
+          llegan en ese día.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en la pantalla de la PC los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, un número entero indicando el número mínimo de camiones que se
+          requieren para llevar a toda la gente.</li>
+      <li>La segunda línea deberá contener una lista de enteros separados por un espacio que
+          representan todos los posibles inicios que obtienen dicho mínimo.</li>
+    </ul>
+    <p>Por ejemplo, si el tiempo de espera de cada camión es de \(10\) ns, esto quiere decir
+       que Juanito puede decidir que el primer camión llegue en cualquier momento entre el
+       nanosegundo \(0\) y el nanosegundo \(10\). En la salida deberán aparecer todos los
+       nanosegundos entre \(0\) y \(10\) en donde el número de camiones utilizados sea igual al
+       mínimo posible.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s (predeterminado de omegaUp; no se especifica en la fuente)</td></tr>
+        <tr><td>Límite de memoria</td><td>64 MB (predeterminado de omegaUp; no se especifica en la fuente)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tiempo de espera y personas</td><td><span class="badge">\(1 \le t, n \le 100{,}000\)</span></td></tr>
+        <tr><td>Nanosegundo de llegada</td><td><span class="badge">\(0 \le a_i \le 2\,000\,000\,000\)</span></td></tr>
+        <tr><td>Llegadas</td><td><span class="badge">ordenadas y distintas</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 5
+4 5 7 8 9</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2
+1</pre></div>
+    </div>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4 3
+7 14 15</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2
+1 2 4</pre></div>
+    </div>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2 10
+3 4 7 8 12 13 14 15 20 21</pre></div>
+      <div class="io"><h4>Salida</h4><pre>7
+1 2</pre></div>
+    </div>
+    <p class="note">En el primer ejemplo \(t=3\): si el primer camión llega en el nanosegundo
+       \(1\), los camiones llegan en \(1, 4, 7, \dots\); las personas \(4\) y \(5\) suben al
+       camión que llega en \(4\), y las personas \(7\), \(8\) y \(9\) al que llega en \(7\):
+       solo \(2\) camiones, y ese mínimo solo se alcanza empezando en \(1\). En el segundo
+       ejemplo, el mínimo \(2\) se logra empezando en \(1\), \(2\) o \(4\). En el tercero, el
+       mínimo \(7\) se logra empezando en \(1\) o \(2\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Aritmética modular</span>
+      <span class="ptag">Conteo / barrido</span>
+      <span class="ptag">Arreglo de diferencias</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(n\) llegadas ordenadas \(a_1 < a_2 < \dots < a_n\) y un periodo \(t\). Si el
+       primer camión llega en el nanosegundo \(s\), los camiones llegan en \(s, s+t, s+2t,
+       \dots\) y la persona que llega en \(a\) sube al camión con índice
+       \(\left\lfloor (a-s)/t \right\rfloor\). Para cada inicio válido \(s\) hay que contar
+       cuántos camiones <em>distintos</em> (no vacíos) se usan, hallar el mínimo y reportar
+       <strong>todos</strong> los \(s\) que lo alcanzan.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(t, n \le 100{,}000\). Probar cada inicio y recontar desde cero es
+                \(O(n\cdot t) = 10^{10}\): demasiado. Se necesita algo lineal,
+                \(O(n + t)\). Las llegadas llegan hasta \(2\times 10^9\) (rozan el
+                límite de un entero de 32 bits con signo): usa enteros de 64 bits.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">Si fijas el inicio \(s\) (el nanosegundo en que llega el primer camión),
+           ¿en qué camión sube cada persona? ¿Puedes escribir ese índice con una sola
+           división entera?</p>
+        <p>Los camiones llegan en \(s, s+t, s+2t, \dots\) y cada uno cubre el intervalo
+           medio abierto \([\,s+kt,\; s+(k{+}1)t\,)\). Por la regla de "quien llega justo
+           cuando se retira el camión sube al siguiente", la persona en \(a\) toma el camión
+           \(\left\lfloor (a-s)/t \right\rfloor\). ¿Y qué significa exactamente "camiones
+           pagados"? Los camiones <em>distintos</em> que tienen al menos una persona.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cuáles inicios son candidatos?</summary>
+      <div class="body">
+        <p class="q">El enunciado dice que el primer camión puede llegar entre \(H=0\) y
+           \(H+t\). ¿Cuántos inicios enteros distintos hay realmente que valga la pena
+           probar?</p>
+        <p>Fíjate en que los inicios \(s\) y \(s+t\) producen <em>la misma</em> partición de
+           las personas en bloques (los cortes caen en los mismos lugares relativos), así que
+           dan el mismo número de camiones. Por eso el rango efectivo de inicios distintos es
+           \(s \in \{1, 2, \dots, t\}\) (los \(t\) valores que reporta el juez). Además, nadie
+           debe quedarse antes del primer camión, así que en rigor \(s \le a_1\); en estas
+           pruebas \(a_1 \ge t\), de modo que todos los \(s\) de \(1\) a \(t\) son válidos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Fuerza bruta (para validar la idea)</summary>
+      <div class="body">
+        <p class="q">¿Y si pruebas cada \(s\) de \(1\) a \(t\) y, para cada uno, recorres a
+           las \(n\) personas calculando sus índices de camión y cuentas los distintos?</p>
+        <p>Eso es \(O(n\cdot t)\): sirve para verificar tu razonamiento y para entradas
+           chicas, pero con \(t,n\) hasta \(10^5\) se va a \(10^{10}\) operaciones. ¿Puedes
+           evitar recontar todo desde cero para cada \(s\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Contar por pares consecutivos</summary>
+      <div class="body">
+        <p class="q">Como las llegadas están ordenadas, los índices de camión también van en
+           orden no decreciente. ¿No será que el número de camiones distintos es
+           simplemente \(1\) más el número de <em>pares vecinos</em> que caen en camiones
+           distintos?</p>
+        <p>Sí: \(\text{camiones}(s) = 1 + \#\{\,i : \text{cam}(a_i) \ne \text{cam}(a_{i-1})\,\}\).
+           Ahora la pregunta clave: para un par con brecha \(d = a_i - a_{i-1}\), ¿para qué
+           valores de \(s\) ese par queda <em>partido</em> (en camiones distintos)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Aritmética modular sobre el eje de \(s\)</summary>
+      <div class="body">
+        <p class="q">Dos personas con brecha \(d\) caben en el mismo camión solo si
+           \(d < t\). En ese caso, ¿qué condición sobre \((a_{i-1}-s) \bmod t\) hace que
+           crucen un borde de bloque?</p>
+        <p>Quedan en el <em>mismo</em> camión si \((a_{i-1}-s)\bmod t < t-d\); por tanto el par
+           se <strong>parte</strong> exactamente cuando \((a_{i-1}-s)\bmod t \in [\,t-d,\;t-1\,]\),
+           lo que equivale a \(s \bmod t \in [\,b+1,\; b+d\,]\) con \(b = a_{i-1}\bmod t\). Es
+           un intervalo (que puede dar la vuelta) de longitud \(d\) en el eje de \(s\). Si
+           \(d \ge t\), el par se parte para <em>todo</em> \(s\). ¿Cómo sumas las
+           contribuciones de los \(n-1\) pares de un golpe sobre todos los \(s\)?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Junta todo en un <strong>arreglo de diferencias</strong> sobre \(s = 1,\dots,t\):</p>
+        <ul>
+          <li>El número de camiones para un inicio \(s\) es
+              \(1 + (\text{pares partidos en } s)\). El "\(1\)" es el camión de la primera
+              persona; cada par vecino que cae en camiones distintos agrega exactamente un
+              camión nuevo (los camiones vacíos intermedios no se pagan).</li>
+          <li>Para cada par con brecha \(d = a_i - a_{i-1}\):
+            <ul>
+              <li>Si \(d \ge t\): está partido para todo \(s\) → suma \(1\) a una
+                  <code>constante</code> global.</li>
+              <li>Si \(d < t\): marca \(+1\) en el intervalo \([\,b+1,\; b+d\,]\) (mod \(t\),
+                  mapeado a \([1,t]\)) del arreglo de diferencias, con \(b = a_{i-1}\bmod t\).
+                  Si el intervalo se sale de \(t\), pártelo en dos: \([\,b+1,\,t\,]\) y
+                  \([\,1,\; b+d-t\,]\).</li>
+            </ul>
+          </li>
+          <li>Barre \(s\) de \(1\) a \(t\) acumulando el arreglo de diferencias. En cada \(s\),
+              \(\text{camiones}(s) = 1 + \text{constante} + \text{acum}\). Guarda el mínimo y
+              <em>todos</em> los \(s\) que lo alcanzan; imprime el mínimo y esa lista.</li>
+        </ul>
+        <p><strong>Por qué es correcto:</strong> los índices de camión son no decrecientes en
+           el orden de llegada, así que el total de camiones no vacíos es \(1\) más la cantidad
+           de saltos entre vecinos. Cada salto depende solo de la brecha local \(d\) y de
+           \((a_{i-1}-s)\bmod t\), y la condición de "partido" se traduce en un intervalo de
+           \(s\) que el arreglo de diferencias acumula en \(O(1)\) por par.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer t, n
+leer a[1..n]
+diff[1..t+1] = 0
+constante = 0
+
+para i de 2 a n:
+    d = a[i] - a[i-1]
+    si d >= t:
+        constante = constante + 1          // siempre en camiones distintos
+    si no:
+        b  = a[i-1] mod t
+        lo = b + 1
+        hi = b + d                          // s en [lo, hi] (mod t) parte el par
+        si hi <= t:
+            diff[lo]   += 1;  diff[hi+1]   -= 1
+        si no:                              // el intervalo da la vuelta
+            diff[lo]   += 1;  diff[t+1]    -= 1   // tramo [lo, t]
+            diff[1]    += 1;  diff[hi-t+1] -= 1   // tramo [1, hi-t]
+
+mejor = +infinito
+inicios = lista vacia
+acum = 0
+para s de 1 a t:
+    acum = acum + diff[s]
+    camiones = 1 + constante + acum         // 1 = camion de la primera persona
+    // (si pudiera haber gente en [0, t), exige aqui ademas s <= a[1])
+    si camiones &lt; mejor:
+        mejor = camiones;  inicios = [s]
+    si no si camiones == mejor:
+        agregar s a inicios
+
+imprimir mejor
+imprimir inicios separados por espacio</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(n + t)\) en tiempo y \(O(t)\) en memoria. Con
+           \(n, t \le 10^5\) corre de sobra dentro del límite (en las pruebas, ~10 ms).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// Las llegadas llegan hasta 2 000 000 000, que roza INT_MAX (2 147 483 647).
+// Lee y guarda las llegadas en enteros de 64 bits (long long) para evitar
+// sorpresas al calcular brechas y residuos.</pre>
+          <p class="note">Es el único detalle dependiente del lenguaje; el algoritmo no
+             cambia.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

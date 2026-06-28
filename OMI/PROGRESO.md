@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **134 / 190**
+Total de problemas: **190** · Completados: **140 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -120,16 +120,16 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 5 | Lenguaje | Sopa de Letras | `2006/05 Sopa de Letras/index.html` |
 | [ ] | 6 | Lenguaje | Secuencias Estables | `2006/06 Secuencias Estables/index.html` |
 
-## 12ª OMI · 2007 — 0 / 6
+## 12ª OMI · 2007 — 6 / 6
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Vigas | `2007/01 Vigas/index.html` |
-| [ ] | 2 | Karel | Costo Mínimo | `2007/02 Costo Mínimo/index.html` |
-| [ ] | 3 | Karel | Un Beeper en la Casa | `2007/03 Un Beeper en la Casa/index.html` |
-| [ ] | 4 | Lenguaje | Tercias | `2007/04 Tercias/index.html` |
-| [ ] | 5 | Lenguaje | Triminos | `2007/05 Triminos/index.html` |
-| [ ] | 6 | Lenguaje | Camiones | `2007/06 Camiones/index.html` |
+| [x] | 1 | Karel | Vigas | `2007/01 Vigas/index.html` |
+| [x] | 2 | Karel | Costo Mínimo | `2007/02 Costo Mínimo/index.html` |
+| [x] | 3 | Karel | Un Beeper en la Casa | `2007/03 Un Beeper en la Casa/index.html` |
+| [x] | 4 | Lenguaje | Tercias | `2007/04 Tercias/index.html` |
+| [x] | 5 | Lenguaje | Triminos | `2007/05 Triminos/index.html` |
+| [x] | 6 | Lenguaje | Camiones | `2007/06 Camiones/index.html` |
 
 ## 13ª OMI · 2008 — 6 / 6
 
