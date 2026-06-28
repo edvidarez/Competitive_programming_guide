@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **121 / 142**
+Total de tareas: **142** · Completadas: **122 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -228,14 +228,14 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Dungeons | `2021/05 Dungeons/index.html` |
 | [x] | 6 | Registers | `2021/06 Registers/index.html` |
 
-## IOI 2022 — 3 / 6
+## IOI 2022 — 4 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Catfish Farm | `2022/01 Catfish Farm/index.html` |
 | [x] | 2 | Prisoner Challenge | `2022/02 Prisoner Challenge/index.html` |
 | [x] | 3 | Radio Towers | `2022/03 Radio Towers/index.html` |
-| [ ] | 4 | Digital Circuit | `2022/04 Digital Circuit/index.html` |
+| [x] | 4 | Digital Circuit | `2022/04 Digital Circuit/index.html` |
 | [ ] | 5 | Rarest Insects | `2022/05 Rarest Insects/index.html` |
 | [ ] | 6 | Thousands Islands | `2022/06 Thousands Islands/index.html` |
 
