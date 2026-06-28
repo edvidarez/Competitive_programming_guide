@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **50 / 190**
+Total de problemas: **190** · Completados: **58 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -257,18 +257,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Día 2 | Esperanza | `2017/07 Esperanza/index.html` |
 | [ ] | 8 | Día 2 | Sumas Geométricas | `2017/08 Sumas Geométricas/index.html` |
 
-## 23ª OMI · 2018 — 0 / 8
+## 23ª OMI · 2018 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Convertidor | `2018/01 Convertidor/index.html` |
-| [ ] | 2 | Día 1 | El tesoro de Moctezuma | `2018/02 El tesoro de Moctezuma/index.html` |
-| [ ] | 3 | Día 1 | Soumaya | `2018/03 Soumaya/index.html` |
-| [ ] | 4 | Día 1 | Papalote | `2018/04 Papalote/index.html` |
-| [ ] | 5 | Día 2 | Paseo de la Reforma | `2018/05 Paseo de la Reforma/index.html` |
-| [ ] | 6 | Día 2 | Metro de la CDMX | `2018/06 Metro de la CDMX/index.html` |
-| [ ] | 7 | Día 2 | Guacamole | `2018/07 Guacamole/index.html` |
-| [ ] | 8 | Día 2 | Mapa de la CDMX | `2018/08 Mapa de la CDMX/index.html` |
+| [x] | 1 | Día 1 | Convertidor | `2018/01 Convertidor/index.html` |
+| [x] | 2 | Día 1 | El tesoro de Moctezuma | `2018/02 El tesoro de Moctezuma/index.html` |
+| [x] | 3 | Día 1 | Soumaya | `2018/03 Soumaya/index.html` |
+| [x] | 4 | Día 1 | Papalote | `2018/04 Papalote/index.html` |
+| [x] | 5 | Día 2 | Paseo de la Reforma | `2018/05 Paseo de la Reforma/index.html` |
+| [x] | 6 | Día 2 | Metro de la CDMX | `2018/06 Metro de la CDMX/index.html` |
+| [x] | 7 | Día 2 | Guacamole | `2018/07 Guacamole/index.html` |
+| [x] | 8 | Día 2 | Mapa de la CDMX | `2018/08 Mapa de la CDMX/index.html` |
 
 ## 24ª OMI · 2019 — 6 / 6
 

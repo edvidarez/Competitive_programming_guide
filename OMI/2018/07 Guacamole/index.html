@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2018 · Problema 07 — Guacamole</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">23ª OMI · 2018 · Día 2</div>
+    <h1>Problema <span class="num">07</span> — Guacamole</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2018-Guacamole">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>En la Feria de Chapultepec se encuentra el juego <strong>Guacamole</strong>, la versión
+       mexicana de <em>Whac-a-mole</em>, y obviamente quieres obtener la mayor cantidad de puntos
+       posible.</p>
+    <p>El juego es una cuadrícula de tamaño \(N \times M\) en la que hay un topo en cada casilla.
+       Los topos están escondidos inicialmente y en cada segundo salen topos de algunas casillas y
+       se esconden topos de otras casillas. Obtienes puntos por cada topo que logras golpear.</p>
+
+    <p>Para jugar tienes que seguir las siguientes reglas:</p>
+    <ul>
+      <li>El topo en la posición \((i,j)\) aparecerá por primera vez en el segundo \(I_{i,j}\) y
+          volverá a aparecer cada \(S_{i,j}\) segundos. Por ejemplo, si \(I_{i,j}=2\) y \(S_{i,j}=3\),
+          aparecerá un topo en la posición \((i,j)\) en los segundos \((2,5,8,11\ldots)\) y durará un
+          segundo afuera antes de volver a esconderse. El segundo que está afuera el topo es el único
+          momento en que puedes ganar puntos por golpearlo; es decir, si el topo sale en el segundo 2,
+          puedes golpearlo en ese segundo, pues para el segundo 3 se habrá escondido de nuevo.</li>
+      <li>Debes elegir en qué casilla pegar en el segundo 1, no importa si hay o no topo afuera.</li>
+      <li>No puedes no golpear. Es decir, en cada segundo debes golpear alguna casilla, sin importar
+          si hay o no un topo afuera.</li>
+      <li>Como no eres tan rápido para moverte por las casillas, si golpeas en la casilla \((i,j)\),
+          tu siguiente golpe (en el siguiente segundo) debe ser en esa misma casilla o en alguna de
+          sus 8 adyacentes. Es decir, si \((i,j)\) es la última casilla que golpeaste, en el siguiente
+          turno puedes golpear las casillas
+          \((i,j)\), \((i-1,j)\), \((i-1,j-1)\), \((i,j-1)\), \((i+1,j)\), \((i+1,j+1)\),
+          \((i,j+1)\), \((i-1,j+1)\) y \((i+1,j-1)\), siempre y cuando estén dentro de la cuadrícula.</li>
+      <li>Si golpeas en la posición \((i,j)\) y hay un topo afuera, se suman \(P_{i,j}\) puntos a tu
+          total. Si no hay un topo afuera, no se suma nada a tu total.</li>
+    </ul>
+
+    <p>Encuentra la mayor puntuación posible que se puede lograr con las reglas anteriores.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea, 3 enteros: \(N\), \(M\) y \(T\), que representan el número de filas, el
+       número de columnas del tablero y los segundos que dura el juego, respectivamente.</p>
+    <p>Sigue la matriz \(I\) de tamaño \(N \times M\) que indica en qué segundo sale cada topo por
+       primera vez.</p>
+    <p>Después, una matriz \(S\) de tamaño \(N \times M\) que indica cuántos segundos tarda cada topo
+       en volver a salir.</p>
+    <p>Por último, una matriz \(P\) de tamaño \(N \times M\) que indica cuántos puntos obtienes si
+       logras golpear al topo en cada casilla.</p>
+
+    <h2>Salida</h2>
+    <p>Un entero que indica el puntaje más alto que se puede obtener en el juego.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>512 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del tablero</td><td><span class="badge">\(1 \le N, M \le 100\)</span></td></tr>
+        <tr><td>Duración del juego</td><td><span class="badge">\(1 \le T \le 500\)</span></td></tr>
+        <tr><td>Aparición y periodo</td><td><span class="badge">\(1 \le S_{i,j},\, I_{i,j} \le T\)</span></td></tr>
+        <tr><td>Puntos por casilla</td><td><span class="badge">\(-10^9 \le P_{i,j} \le 10^9\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td class="pts">30</td>
+            <td>Para todo \(i,j\): \(I_{i,j}=i+j-1\) (con \(1 \le i \le N\), \(1 \le j \le M\)),
+                \(S_{i,j}=T\) y \(0 \le P_{i,j}\).</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="pts">70</td>
+            <td>Sin consideraciones adicionales (caso general).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 3 5
+5 5 1
+4 2 1
+3 4 3
+5 5 2
+5 1 1
+2 5 5
+39 1 8
+11 -100 -2
+11 -1 23</pre></div>
+      <div class="io"><h4>Salida</h4><pre>61</pre></div>
+    </div>
+    <p class="note">Contando las filas y columnas a partir de 1 y siendo la posición \((1,1)\) la
+       esquina superior izquierda, es posible jugar como sigue:</p>
+    <ul class="note">
+      <li>Segundo 1: golpeas en \((1,2)\) con puntaje 1; el topo no ha salido, por lo que obtienes 0 puntos.</li>
+      <li>Segundo 2: golpeas en \((2,1)\), puntaje 11; no hay topo, 0 puntos.</li>
+      <li>Segundo 3: golpeas \((3,1)\), puntaje 11; el topo sí está, agregas 11 puntos.</li>
+      <li>Segundo 4: golpeas \((2,1)\); el topo sí está, agregas 11 puntos.</li>
+      <li>Segundo 5: golpeas \((1,1)\); el topo sí está, agregas 39 puntos.</li>
+      <li>Termina el juego: obtuviste 61 puntos.</li>
+    </ul>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>1 1 5
+1
+2
+1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>3</pre></div>
+    </div>
+    <p class="note">Solo hay una casilla, así que cada segundo estás obligado a golpearla. El topo
+       sale en los segundos 1, 3 y 5 (aparece en \(I=1\) y vuelve cada \(S=2\)), de modo que cobras
+       1 punto en cada uno de esos tres segundos: \(1+1+1=3\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">DP en cuadrícula</span>
+      <span class="ptag">Movimiento de rey</span>
+      <span class="ptag">Optimización</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes una rejilla \(N\times M\). En cada segundo \(t=1,\ldots,T\) debes golpear exactamente una
+       casilla, y del segundo \(t\) al \(t+1\) solo puedes quedarte en la misma casilla o moverte a una
+       de sus 8 vecinas (un <strong>movimiento de rey</strong>). El topo de \((i,j)\) está afuera en el
+       segundo \(t\) si y solo si \(t \ge I_{i,j}\) y \((t-I_{i,j}) \bmod S_{i,j} = 0\); golpearlo en ese
+       instante suma \(P_{i,j}\) (que puede ser negativo). Maximiza la suma de puntos a lo largo de los
+       \(T\) segundos.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N,M\le 100\) da hasta \(10^4\) casillas y \(T\le 500\). Un DP que recorre
+                tiempo \(\times\) casillas \(\times\) 9 vecinos cuesta \(\approx 500\cdot 10^4\cdot 9
+                \approx 4.5\times 10^7\) operaciones: holgadísimo para 2 s. Como \(|P|\le 10^9\) y hay
+                hasta 500 golpes, la respuesta llega a \(\sim 5\times 10^{11}\): usa enteros de 64 bits.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que lo que decides es una secuencia de casillas, una por segundo,
+           donde cada paso es un movimiento de rey?</p>
+        <p>Para saber qué puedes hacer en el segundo siguiente, ¿qué necesitas recordar del pasado?
+           ¿No basta con saber <em>en qué casilla estás ahora</em> y <em>en qué segundo vas</em>?
+           El historial anterior no restringe el futuro más allá de tu posición actual: eso huele a
+           programación dinámica con estado <em>(segundo, casilla)</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cuándo está el topo afuera y cuánto vale golpear?</summary>
+      <div class="body">
+        <p class="q">¿Cómo decides, sin simular paso a paso, si el topo de \((i,j)\) está afuera en el
+           segundo \(t\)?</p>
+        <p>El topo aparece en \(I_{i,j}, I_{i,j}+S_{i,j}, I_{i,j}+2S_{i,j},\ldots\), así que está afuera
+           en \(t\) exactamente cuando \(t \ge I_{i,j}\) y \((t-I_{i,j}) \bmod S_{i,j} = 0\). Define
+           \(\text{valor}(i,j,t)\): vale \(P_{i,j}\) si el topo está afuera y \(0\) si no.</p>
+        <p class="q">¿Notaste que golpear una casilla vacía nunca resta, y que como tú eliges adónde
+           pegar, casi nunca estás obligado a cobrar un \(P\) negativo si hay una vecina libre?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Empieza por la subtarea chica (30 %)</summary>
+      <div class="body">
+        <p class="q">¿Qué te regala la subtarea con \(I_{i,j}=i+j-1\), \(S_{i,j}=T\) y \(P_{i,j}\ge 0\)?</p>
+        <p>Con \(S=T\), cada topo sale una sola vez (en el segundo \(i+j-1\), que es constante sobre
+           cada diagonal) y todos los puntos son no negativos. Esa estructura por diagonales se puede
+           explotar a mano, pero, ¿no te resuelve gratis el mismo DP general que planteas para el
+           100 %? Úsala como banco de pruebas: si tu DP la pasa, vas por buen camino.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La recurrencia</summary>
+      <div class="body">
+        <p class="q">Si \(dp[t][(i,j)]\) es el mejor puntaje de los golpes en los segundos
+           \(1,\ldots,t\) terminando en \((i,j)\) en el segundo \(t\), ¿desde dónde pudiste llegar?</p>
+        <p>Solo desde una casilla a distancia de rey en el segundo \(t-1\). Entonces
+           \[ dp[t][(i,j)] = \text{valor}(i,j,t) + \max_{(i',j')\in\text{vecindad}(i,j)} dp[t-1][(i',j')]. \]
+           La base es \(dp[1][(i,j)] = \text{valor}(i,j,1)\), porque en el segundo 1 puedes empezar
+           donde quieras. La respuesta es \(\max_{(i,j)} dp[T][(i,j)]\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>El juego es elegir un camino de \(T\) casillas \(c_1, c_2, \ldots, c_T\) donde \(c_1\) es
+           libre y cada \(c_{t}\) está a distancia de rey de \(c_{t-1}\). El puntaje del camino es
+           \(\sum_{t=1}^{T} \text{valor}(c_t, t)\). Como la única restricción entre un segundo y el
+           siguiente es la posición, podemos resolverlo con programación dinámica capa por capa sobre
+           el tiempo.</p>
+        <p><strong>Estado:</strong> \(dp[(i,j)]\) = mejor puntaje acumulado hasta el segundo actual
+           terminando en la casilla \((i,j)\). Avanzamos del segundo \(t-1\) al \(t\): para cada casilla
+           tomamos el mejor \(dp\) entre ella y sus 8 vecinas (los 9 orígenes posibles de un movimiento
+           de rey) y le sumamos \(\text{valor}(i,j,t)\).</p>
+        <p><strong>Por qué es correcto:</strong> cualquier camino válido que termina en \((i,j)\) en el
+           segundo \(t\) viene de un camino válido que termina en una vecina (o en la misma casilla) en
+           el segundo \(t-1\); el DP prueba todos esos orígenes y se queda con el máximo, así que nunca
+           pierde el óptimo. La condición de aparición da \(\text{valor}\) en \(O(1)\). Esto ya cubre el
+           caso general (70 %) y, en particular, la subtarea de las diagonales (30 %).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, M, T
+leer matrices I, S, P     // cada una de tamaño N x M
+
+funcion valor(i, j, t):
+    si t >= I[i][j] y (t - I[i][j]) mod S[i][j] == 0:
+        regresa P[i][j]
+    si no:
+        regresa 0
+
+// vecindad de rey: la misma casilla y sus 8 vecinos
+desplaz = { (0,0),(-1,-1),(-1,0),(-1,1),(0,-1),
+            (0,1),(1,-1),(1,0),(1,1) }
+
+// capa t = 1: se puede iniciar en cualquier casilla
+para cada casilla (i,j):
+    dp[i][j] = valor(i, j, 1)
+
+para t = 2 hasta T:
+    para cada casilla (i,j):
+        mejor = -infinito
+        para cada (di,dj) en desplaz:
+            (a,b) = (i+di, j+dj)
+            si (a,b) esta dentro de la rejilla:
+                mejor = max(mejor, dp[a][b])
+        ndp[i][j] = mejor + valor(i, j, t)
+    dp = ndp          // avanza a la siguiente capa
+
+respuesta = maximo de dp[i][j] sobre todas las casillas
+imprimir respuesta</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(T\cdot N\cdot M)\) en tiempo (con factor constante 9 por
+           la vecindad) y \(O(N\cdot M)\) en memoria, usando solo dos capas \(dp\) y \(ndp\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>usa long long (64 bits) para dp y la respuesta:
+  |P| hasta 1e9 por hasta 500 golpes -> ~5e11, no cabe en int.
+inicializa "mejor" con un centinela muy negativo (p. ej. LLONG_MIN/4),
+  NO con 0, porque valor() puede ser negativo y 0 falsearia el maximo.</pre>
+          <p class="note">Inclúyelo únicamente si de verdad hace falta. Nunca pongas la solución
+             completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

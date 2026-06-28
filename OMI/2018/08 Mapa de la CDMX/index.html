@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2018 · Problema 08 — Mapa de la CDMX</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">23ª OMI · 2018 · Día 2</div>
+    <h1>Problema <span class="num">08</span> — Mapa de la CDMX</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2018-Mapa">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>En tu visita a la Ciudad de México marcaste en un mapa los lugares de la
+       ciudad que te gustaría visitar.</p>
+    <p>Tu mapa de la Ciudad de México es una cuadrícula de \(N\times M\) casillas
+       donde las casillas marcadas indican un posible lugar a visitar.</p>
+    <p>Desafortunadamente tienes poco tiempo y sólo puedes visitar \(K\) lugares.
+       Por la magnitud de la ciudad, el mapa es bastante grande y sólo te gustaría
+       llevar un rectángulo (submapa) del mapa que tenga exactamente \(K\) lugares
+       a visitar.</p>
+    <p>Como aún no sabes qué \(K\) lugares te gustaría visitar, quieres saber
+       cuántas posibilidades de submapa rectangular podrías tener.</p>
+    <p>Dado el mapa con los lugares a visitar marcados, tienes que calcular la
+       cantidad de rectángulos distintos del mapa que tengan exactamente \(K\)
+       lugares a visitar.</p>
+
+    <h2>Entrada</h2>
+    <p>Tres enteros: \(N\), \(M\), \(K\); seguidos de \(N\) líneas con \(M\)
+       caracteres cada una. Los caracteres pueden ser <code>0</code> (no es un
+       lugar a visitar) o <code>1</code> (es un lugar que se puede visitar).</p>
+
+    <h2>Salida</h2>
+    <p>Un entero que representa la cantidad de submapas rectangulares que
+       contengan exactamente \(K\) lugares a visitar.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado oficial (juez omegaUp)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado oficial (juez omegaUp)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Lugares a visitar buscados</td><td><span class="badge">\(0 \le K \le 6\)</span></td></tr>
+        <tr><td>Dimensiones del mapa</td><td><span class="badge">\(1 \le N, M \le 1500\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">20</td><td>\(1 \le N, M \le 20\)</td></tr>
+          <tr><td>2</td><td class="pts">80</td><td>Sin restricciones adicionales (\(1 \le N, M \le 1500\))</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 3 2
+101
+000
+101</pre></div>
+      <div class="io"><h4>Salida</h4><pre>8</pre></div>
+    </div>
+    <p class="note">En el ejemplo se pueden obtener 8 rectángulos con exactamente
+       2 lugares para visitar. Por ejemplo, un posible rectángulo con 2 lugares
+       para visitar es la franja superior <code>101</code> (renglón 1). Otro
+       rectángulo distinto con dos lugares para visitar sería el formado por los
+       renglones 1 y 2: <code>101</code> sobre <code>000</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Sumas prefijas 2D</span>
+      <span class="ptag">Two pointers</span>
+      <span class="ptag">Divide y vencerás</span>
+      <span class="ptag">Conteo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una cuadrícula de \(N\times M\) con ceros y unos y un entero
+       \(K\le 6\). Cuenta cuántos subrectángulos (submatrices contiguas, definidas
+       por dos filas y dos columnas) contienen <strong>exactamente</strong> \(K\)
+       unos.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N,M\le 20\) en la subtarea 1 permite recorrer <em>todos</em> los
+                rectángulos (fuerza bruta). Con \(N,M\le 1500\), \(O(N^2M^2)\) es
+                imposible. La clave de la subtarea grande es que \(K\le 6\) es muy
+                pequeño. Además la respuesta crece: para \(K=0\) o \(K=1\) puede
+                superar \(5\times 10^{10}\), así que necesitas enteros de
+                <strong>64 bits</strong>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que un "submapa rectangular" es simplemente una
+           submatriz contigua, fijada por una fila superior, una inferior, una
+           columna izquierda y una derecha? ¿Y que los "lugares a visitar" dentro
+           de él son la cantidad de unos que encierra?</p>
+        <p>El problema es: contar cuántos de esos rectángulos tienen suma de unos
+           igual a \(K\). ¿Cómo consultar en \(O(1)\) cuántos unos hay en
+           cualquier rectángulo, en lugar de sumarlos uno por uno?</p>
+        <p>Piensa en una <strong>suma prefija en 2D</strong>: una tabla
+           \(P[i][j]\) = unos en el rectángulo desde la esquina \((1,1)\) hasta
+           \((i,j)\). Con ella, los unos de cualquier rectángulo salen restando
+           cuatro valores.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtarea 1)</summary>
+      <div class="body">
+        <p class="q">Con \(N,M\le 20\), ¿cuántos rectángulos hay en total? ¿Te
+           alcanza con generarlos todos y verificar cada uno?</p>
+        <p>Las parejas (fila superior, fila inferior) son \(\binom{N+1}{2}\) y las
+           de columnas \(\binom{M+1}{2}\); en total a lo más unos \(44\,100\)
+           rectángulos. Recórrelos todos y, con la suma prefija 2D, checa en
+           \(O(1)\) si cada uno tiene exactamente \(K\) unos.</p>
+        <p>Eso es \(O(N^2M^2)\): trivial para \(N,M\le 20\) (los 20 puntos), pero
+           inviable para \(1500\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Baja de 2D a 1D fijando dos filas</summary>
+      <div class="body">
+        <p class="q">¿Y si fijas solo el par de filas (superior, inferior) y dejas
+           libres las columnas? Entonces cada columna aporta un número: cuántos
+           unos tiene dentro de esa franja horizontal.</p>
+        <p>Así el problema 2D se vuelve 1D: dado un vector \(c[\,]\) de enteros no
+           negativos (los unos por columna en la franja), cuenta cuántos
+           <strong>subarreglos contiguos</strong> suman exactamente \(K\).</p>
+        <p class="q">Como todos los valores son \(\ge 0\), las sumas de ventana son
+           monótonas. ¿Qué técnica cuenta en una sola pasada los subarreglos con
+           suma \(\le S\)?</p>
+        <p>Con <strong>dos punteros</strong>: para cada extremo derecho \(r\),
+           avanzas el izquierdo mientras la suma se pasa de \(S\). Y
+           <em>exactamente</em> \(K\) = (\(\le K\)) \(-\) (\(\le K-1\)). Mantienes
+           el vector \(c[\,]\) de forma incremental al bajar la fila inferior. Esto
+           da \(O(N^2 M)\) (mejor: \(O(N\cdot M\cdot \min(N,M))\) si pones como
+           "filas" la dimensión menor).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Exprime \(K\le 6\) para el 100 garantizado</summary>
+      <div class="body">
+        <p class="q">\(O(N\cdot M\cdot \min(N,M))\) con \(N=M=1500\) son unos
+           \(3\times 10^9\): pasa con un límite holgado, pero está al filo. ¿Cómo
+           aprovechar que \(K\le 6\) (solo 7 valores posibles) para bajar el factor
+           lineal a logarítmico?</p>
+        <p class="q">Piensa en <strong>divide y vencerás</strong> sobre la
+           dimensión más larga. Si partes las columnas por una línea central, todo
+           rectángulo o queda completamente a la izquierda, o a la derecha, o
+           <em>cruza</em> la línea. ¿Puedes contar por separado los que cruzan y
+           luego recursar en cada mitad?</p>
+        <p>Al cruzar, el rectángulo se parte en una mitad izquierda con \(t\) unos
+           y una derecha con \(K-t\) unos, con \(0\le t\le K\): solo
+           <strong>7 repartos</strong>. Fijando la fila superior y bajando la
+           inferior, para cada valor \(t\) puedes mantener punteros
+           <strong>monótonos</strong> que marcan hasta dónde llega cada lado con a
+           lo más \(t\) unos; combinarlos cuenta las parejas (columna izquierda,
+           columna derecha) válidas en tiempo casi constante.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea general.</strong> Hay que contar subrectángulos con
+           exactamente \(K\) unos. La columna vertebral es reducir de 2D a 1D y
+           contar segmentos con suma fija; con \(K\le 6\) se puede llegar al óptimo
+           con divide y vencerás.</p>
+
+        <p><strong>Paso 0 — suma prefija 2D.</strong> Construye \(P[i][j]\) para
+           consultar en \(O(1)\) los unos de cualquier rectángulo.</p>
+
+        <p><strong>Solución que da casi todo (y los 20 fáciles):</strong> fija el
+           par de filas, convierte cada columna en su número de unos dentro de la
+           franja, y cuenta con dos punteros los subarreglos con suma exactamente
+           \(K\). Pon como "filas" la dimensión menor para que el costo sea
+           \(O(N\cdot M\cdot\min(N,M))\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — reducción a 1D + dos punteros</span>
+<pre>leer N, M, K y la grilla g[][]            // valores 0/1
+si N > M: transpón para que filas = dimensión menor
+sean R = #filas, C = #columnas
+respuesta = 0
+
+para sup = 0 .. R-1:
+    col[0..C-1] = 0                       // unos por columna en la franja [sup..inf]
+    para inf = sup .. R-1:
+        para j = 0 .. C-1:               // extiende la franja una fila hacia abajo
+            col[j] += g[inf][j]
+
+        // contar subarreglos de col[] con suma EXACTAMENTE K (valores >= 0):
+        l1 = 0; l2 = 0; s1 = 0; s2 = 0
+        para r = 0 .. C-1:
+            s1 += col[r];  s2 += col[r]
+            mientras l1 <= r y s1 > K:     s1 -= col[l1]; l1 += 1   // ventana con suma <= K
+            mientras l2 <= r y s2 > K-1:   s2 -= col[l2]; l2 += 1   // ventana con suma <= K-1
+            respuesta += (l2 - l1)         // las que quedan suman exactamente K
+
+imprimir respuesta</pre>
+        </div>
+        <p class="note">Cuidado con \(K=0\): la cota <code>l2 &lt;= r</code> evita
+           que el puntero se salga del arreglo (con suma \(\le -1\) ninguna ventana
+           califica). La respuesta puede ser enorme: usa enteros de 64 bits.</p>
+
+        <p><strong>Para el 100 sin depender del límite de tiempo:</strong> divide y
+           vencerás sobre la dimensión larga, aprovechando \(K\le 6\). Cuentas solo
+           los rectángulos que cruzan la línea de corte y recursas en cada mitad.
+           Para cada par (fila superior, fila inferior) mantienes, por cada
+           \(t=0..K\), punteros monótonos que indican hasta dónde llega cada lado
+           con a lo más \(t\) unos; luego sumas, sobre los repartos \(t + (K-t)\),
+           el producto de columnas válidas a cada lado.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — divide y vencerás (óptimo)</span>
+<pre>resolver(filas [a..b], columnas [c..d]):   // cuenta rectángulos contenidos aquí
+    si la dimensión de filas es mayor que la de columnas:
+        intercambia ejes (trabaja sobre la transpuesta de este bloque)
+    si c == d:                              // una sola columna
+        suma 1 por cada par (sup, inf) cuya columna tenga K unos; regresa
+    mid = (c + d) / 2
+
+    // ---- rectángulos que CRUZAN la frontera mid | mid+1 ----
+    para sup = a .. b:
+        para t = 0 .. K:  U[t] = d ; D[t] = c     // punteros monótonos por valor
+        para inf = sup .. b:
+            para t = 0 .. K:
+                mueve U[t] para que [mid+1 .. U[t]] tenga <= t unos (parte derecha)
+                mueve D[t] para que [D[t] .. mid]   tenga <= t unos (parte izquierda)
+            para t = 0 .. K:                        // reparto: t unos a la izq, K-t a la der
+                izq = (columnas con exactamente K-t unos del lado izquierdo)
+                der = (columnas con exactamente t   unos del lado derecho)
+                respuesta += izq * der
+
+    // ---- rectángulos contenidos en una sola mitad ----
+    resolver(filas [a..b], columnas [c .. mid])
+    resolver(filas [a..b], columnas [mid+1 .. d])</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Todo rectángulo está en exactamente
+           una de tres categorías respecto a la línea de corte: cae a la izquierda,
+           a la derecha, o la cruza. Los que cruzan se cuentan una sola vez en este
+           nivel; los demás, en la recursión. Dentro de un nivel, un rectángulo que
+           cruza queda determinado por su par de filas y por cuántos unos pone en
+           cada lado; como \(0\le K\le 6\), solo hay 7 repartos, y los punteros
+           monótonos (no retroceden al crecer la franja) dan el conteo de columnas
+           válidas de cada lado en tiempo amortizado constante.</p>
+
+        <p><strong>Complejidad.</strong> Reducción + dos punteros:
+           \(O(N\cdot M\cdot \min(N,M))\) tiempo y \(O(N\cdot M)\) memoria.
+           Divide y vencerás óptimo: \(O(N\cdot M\cdot K\cdot \log\min(N,M))\)
+           tiempo, lo bastante para \(N,M\le 1500\) con holgura.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// La respuesta puede pasar de 5x10^10: usa  long long  (64 bits).
+// Lee la grilla con scanf("%s", ...) por renglón (mucho más rápido que cin
+// carácter por carácter) y guárdala como bytes 0/1.</pre>
+          <p class="note">Son detalles de implementación, no la solución; nunca
+             entregues el código completo en la página.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
