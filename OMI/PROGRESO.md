@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **90 / 190**
+Total de problemas: **190** · Completados: **98 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -192,18 +192,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Lenguaje | Llegando en K movimientos | `2012/07 Llegando en K movimientos/index.html` |
 | [ ] | 8 | Lenguaje | Jardín de Niños | `2012/08 Jardín de Niños/index.html` |
 
-## 18ª OMI · 2013 — 0 / 8
+## 18ª OMI · 2013 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Fix it Karel | `2013/01 Fix it Karel/index.html` |
-| [ ] | 2 | Karel | Karel Attractio | `2013/02 Karel Attractio/index.html` |
-| [ ] | 3 | Karel | Capitán Karel | `2013/03 Capitán Karel/index.html` |
-| [ ] | 4 | Karel | Mr. Karel-tastic | `2013/04 Mr. Karel-tastic/index.html` |
-| [ ] | 5 | Lenguaje | Acomoda el número | `2013/05 Acomoda el número/index.html` |
-| [ ] | 6 | Lenguaje | Portal | `2013/06 Portal/index.html` |
-| [ ] | 7 | Lenguaje | Tejidos | `2013/07 Tejidos/index.html` |
-| [ ] | 8 | Lenguaje | Secuencias Contiguas | `2013/08 Secuencias Contiguas/index.html` |
+| [x] | 1 | Karel | Fix it Karel | `2013/01 Fix it Karel/index.html` |
+| [x] | 2 | Karel | Karel Attractio | `2013/02 Karel Attractio/index.html` |
+| [x] | 3 | Karel | Capitán Karel | `2013/03 Capitán Karel/index.html` |
+| [x] | 4 | Karel | Mr. Karel-tastic | `2013/04 Mr. Karel-tastic/index.html` |
+| [x] | 5 | Lenguaje | Acomoda el número | `2013/05 Acomoda el número/index.html` |
+| [x] | 6 | Lenguaje | Portal | `2013/06 Portal/index.html` |
+| [x] | 7 | Lenguaje | Tejidos | `2013/07 Tejidos/index.html` |
+| [x] | 8 | Lenguaje | Secuencias Contiguas | `2013/08 Secuencias Contiguas/index.html` |
 
 ## 19ª OMI · 2014 — 8 / 8
 

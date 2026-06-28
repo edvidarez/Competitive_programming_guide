@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2013 · Problema 01 — Fix it Karel</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">18ª OMI · 2013 · Karel</div>
+    <h1>Problema <span class="num">01</span> — Fix it Karel</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/fixitkarel">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El maléfico Chuzpa, eterno enemigo de Karel, se ha dado últimamente a la
+       tarea de destruir monumentos. Karel, por su parte, se dedica a restaurar y
+       reconstruir todo lo que Chuzpa destruye.</p>
+    <p>Chuzpa destruyó una antigua pirámide de Karelotitlán. Originalmente la
+       pirámide estaba erigida sobre un rectángulo de \(m \times n\). Utilizando su
+       rayo vaporizador, Chuzpa vaporizó por completo una columna y una fila de la
+       pirámide, con lo cual ésta quedó en un rectángulo de \((m-1) \times (n-1)\).
+       Al hacerlo, la pirámide se desplomó. Los acomedidos ciudadanos de
+       Karelotitlán rápidamente recogieron los escombros.</p>
+    <p>Al llegar Karel a reconstruir la pirámide, nadie supo decirle cuál era el
+       tamaño original de la misma. Nadie recordaba el valor de \(m\) ni de \(n\).
+       Sin embargo, recordaban el área que limpiaron, es decir, el área que ocupaba
+       el rectángulo de \((m-1) \times (n-1)\).</p>
+    <p>Para evaluar el material que necesitará, Karel quiere saber, con base en el
+       área que ocupa el rectángulo de \((m-1) \times (n-1)\): ¿cuál es el área
+       <strong>mínima</strong> y <strong>máxima</strong> que pudo haber ocupado la
+       pirámide original?</p>
+    <p>Escribe un programa que, sabiendo Karel el área que ocupaba el rectángulo de
+       \((m-1) \times (n-1)\), determine cuál es el área mínima y máxima que pudo
+       haber ocupado el rectángulo de \(m \times n\).</p>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p><strong>El mundo.</strong> Es de \(100 \times 100\) casillas. No tiene
+         paredes internas ni zumbadores salvo los de la casilla \((1,1)\). Karel
+         empieza en la esquina inferior izquierda —la casilla \((1,1)\)— viendo al
+         norte, y lleva <strong>infinitos zumbadores</strong> en la mochila.</p>
+      <p><strong>El dato.</strong> La casilla \((1,1)\) contiene un número de
+         zumbadores igual al área que ocupaba el rectángulo de
+         \((m-1) \times (n-1)\). Esa área es mayor que \(0\) y menor que \(100\).</p>
+      <p><strong>Qué se considera resuelto.</strong> Karel debe dejar en la casilla
+         \((1,1)\) un número de zumbadores igual al área <strong>mínima</strong> que
+         pudo haber ocupado el rectángulo \(m \times n\), y en la casilla
+         \((2,1)\) —la contigua a la derecha— un número de zumbadores igual al área
+         <strong>máxima</strong>. No importan la posición ni la orientación final de
+         Karel, ni los zumbadores que queden en casillas distintas de \((1,1)\) y
+         \((2,1)\).</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por teclado: el dato viene <strong>en el mundo</strong>. La
+       casilla \((1,1)\) contiene exactamente \(A\) zumbadores, donde \(A\) es el
+       área del rectángulo recortado \((m-1) \times (n-1)\), con \(0 < A < 100\).</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por pantalla: el resultado se deja <strong>en el mundo</strong>.
+       Al terminar, la casilla \((1,1)\) debe contener el área mínima posible de
+       \(m \times n\) y la casilla \((2,1)\) el área máxima posible. El resto del
+       mundo (otras casillas, posición y orientación de Karel) no se evalúa.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (aplica el límite estándar de Karel en omegaUp)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (estándar de Karel en omegaUp)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del mundo</td><td><span class="badge">\(100 \times 100\)</span></td></tr>
+        <tr><td>Área recortada</td><td><span class="badge">\(0 < A < 100\)</span> zumbadores en \((1,1)\)</td></tr>
+        <tr><td>Mochila</td><td><span class="badge">Infinitos zumbadores</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada),
+       como es habitual en las ediciones de Karel de la OMI.</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4>
+        <figure style="margin:0">
+          <img alt="Mundo de Karel: el robot en la esquina inferior izquierda (1,1) mirando al norte, con una pila de 4 zumbadores en esa casilla."
+               src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIkAAABvCAIAAABXW3QBAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAQmSURBVHhe7Z0BcuMgEAT99DwtT7ofOHI4EywZGKxdkFC7rlK5KrIS0zsLApTcvnd/bs/PV+Zzlz+5CNeMfNuN5hs2TSklJ+odNu+F1RVsArM01iNn2fzbfHIOi77Rr0pLRQHYKCqNaVNhEz2xuAjfdEZUYrOAiYVt+R42B2KTjjiw6QxmuZw63sDmiGzCkMN4c0Q2obLhG9j0V+C4V2Sedk42oZQx3oyip87TmAv0JwSb/pqrV7Rch1avSTtNAUs219wBG7BHoO+5sbfWhEfzzKMVvjnh3hq+ERO8yTQ2+56wgc2LAn45eMbIjDeMN1qBOGN2+90zvsE3+OaZA5oSPN/k65GuIDXtuJUHNrDRHziTlqynNVlHr5bM047rSNickA3vEejFx6kle9JOwhqE5T0CAxGdQnA+zUlYg7BqTePMrYHYjSFg0yhYx+YSG94j6Ejk71J1NvHtNd5b60yoPk+LDzqwORCb9H1PzkN3BlM6n5a+RBBWM/FNZzz18Yaa1hlJvBxsRilfv67lOnT9arRoUcCSDe8RKJtsOh3YnHD/Rt+eZk9asUtsg2/WCjTJ13Ta3y8yNY2apjnZLwfPGBnf4Bt8w3noXA5Q045bH2ADm3oOaNX90Yq5wHHzCTaw0ZxcrwivLbSoj1ZnjOzlm4Jqt9t9+Vf46DrCprLs+XatM6daAFPGA5ugXtd9zxRM1T26J2Zt2Y8NMFpzqM7G5OxgoY6Vx57W/szUvvIeQfxFqnvOp+XGmCX4o6rWpgYzyd3UF3ffrMaYeHOBemSDe7bYfNkUBv8tG/Cs8Diy2YKJ6j8d8+IbilsnNm/BKGxwz1/Zzz1Ypn+VKHy/8zx0tEUwze9IU1weaBo3Z2zsWNPWDn3Ox+I6QhxyZhTWoE8D2KRTNYMezBuizsbqPYLtUE9NK+fVSDbzZrxNzyz3CCpZwPN/IzJLNuna/pun3GR3oLxTwB7B/3msfia9OoeGjZJVunnwzfXOC1DT9r8p5uWbcn3L+VqpCdeJDJvr1bTrZLef1/ENvtFmjn45eMbIlr5ZLTDz370KGD577r0Vfn6lwH42SwRUdVHAhI0SRP+F00q0tM2skQ3GG1HKWRUUu79qpqgxgE31oGhrb0M/Y1UpHG04WuR452/vuSubVD5bBSPvAKmVQa59iJYeazGMnKbUeDZpmtiySUuELRvvyPFU85a6WYpVE0o/VFUNVa7dJ2ITTBm+zs8m189W3qF9mk8ekS/ExmmW4TTexLud3zfpoP2ZS7Y/tZrp2lbL6iLAJONNCsZ2luE9T5t/vKnm4GdO8n5yOtDzzapEfKZXtfLY+mbgPQ+oabG3sEnBj5xDW5G4Tpx+vrmOplY9hY2VkvZxYGOvqVVE2FgpaR8HNvaaWkWEjZWS9nFgY6+pVUTYWClpH+cHPjQIzrp3FCoAAAAASUVORK5CYII=">
+        </figure>
+      </div>
+      <div class="io"><h4>Salida</h4>
+        <figure style="margin:0">
+          <img alt="Mundo de Karel resultante: 9 zumbadores en la casilla (1,1) y 10 zumbadores en la casilla (2,1), la contigua a la derecha."
+               src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJIAAABwCAIAAAB6lb5QAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7DAQwze8EAAASLSURBVHhe7Z1tkqMwDERz9BxtjrQ3yDKh4nFIMC0hfwCP2h/ZKkcm/dyyDPbu7Sf6ur2u+8r1kK+1CES+RVP7AZtptMlj+JGHBZsksk9cJbQvMtgUbe8+cZXQvshgU7QF2304CRRuPk/Ui4zbFG2HG2pgOzW2fx/X2sohLQD0xEJLqwKq28BmVbZqexu25KSJIm6rCqYc3IBtYpY8N30G2zGw5XkSbB2ZTV0b3Aa2vqjy3s3Y5umNua0vQjO22XMkSbD1VeCQvRvcRiU5DmEDtjk3MreNAM+GLS8mWbd15Ae2juL7u1ax6VtOeJTspyF/syI29lcp74RkUmwBerxJUE/cepFxm6Itb7fZS/I+TkiSw3lCMTLYwKbX+x8t2UyumCy1wW24DbdFFA6K7XAbbsNtuG2RK3xpoV7COWJknpIo1IZLv2AD23NGZN0mDYRXI9+UgdskkX3iKqF9kVVsHN3Q9W3QEmwNRI7vwoaNnVvxBFwRDdjYJ+lSuMqXDNg4ulGFgCso2Fyy9f6SBxsnbnpTs59vSzMcu5I7wrO5La9KwHYMbDkzjiV2ZDZ1bXBbWrTNH3BbR3IGbIvnW2ADW0cFDtm16jZ9lwInbhoMhIrYOHHT/8WNw21gA5uiwHA7PpSb1jNqHo0kqWg73IAAG9jYAtTqnCpuw224DbdNJZZkhKyRrypTehktMklSoUYlyZH7iLM8uA23UZK0mo9xG247l9sK1ePt9pj+FC5pLDwb+WpU3Laq8JqgM7MyuVGwceJmppgz2/Sc7iRrS9VtYPvKrBc5M7bLbm/99JmSLa02EtsbsOWnpGL3SdbYfjLFzCXY2UWZWXvPGbCl/7hh/hC14S7Xd6G1OPQWzT4J7exCYdaY3AmxvWqHP7ftwaYza0kObCVLW5k1I9cf27NC+7t8ifHzW2sO0/Owj1kbckNgS6Lrmm7S3Y/t21D4sm4rPy7ZvE9fA7AZdFvznyFEUNP+2PbUC8XHhjElyfsq4rBuS49LohYA+dwWNBbnp1CR67a1J1ttZrIv6VrcJc7DrUM+3BLpTs12Po8INFx4qOPNbQ5sRz+6saeSHOXFDdhMSRJsugLON8V6VtCTpH7TeibnxI20cZYk+Tb4fONLGb/Xiawuty84t+UDZbQBATbFxsGz5v4BATawnWuf5H5PKCPCl34rum3xjz3x10gF9FpDbBl5c8RaU0CEYWqG2tUVMPEIbKy/UrB2eoXI8XObqPIVxBWlmJpZ1eiPbXObs/7j55ZpP+ecqQpbOkeLnO9ELd9bT2xpAijvl3WIm4bCFHn6bI2w1n6OlpwRGzkfbZtDLewnWaXJf3w4NvG/LHDfc5LYGqEwIMD2NlPU8EQlbLOVlcR+crcpEuiOyTNEjchg+1W4UrFTaW5Ld6sMiNO6La8ddD+VWy7K9Nj0u1ihj1tJ5vXuZu2kS7+o9+pFjsW2qNEuii0fvDpyxW35uiU28jHWbYucU0OCqkuLWB+b1Og/t6XbBVtObtAkGQXpmnG6ue2ackf9arBFKdk0Dtiayh3VGdiilGwa5z8Pm8SFsWvpwAAAAABJRU5ErkJggg==">
+        </figure>
+      </div>
+    </div>
+    <p class="note">El rectángulo de \((m-1) \times (n-1)\) ocupaba un área de \(4\)
+       (los \(4\) zumbadores de la casilla \((1,1)\)). Eso implica que el área
+       <strong>mínima</strong> que pudo haber ocupado el rectángulo original es \(9\)
+       (en ese caso el original sería de \(3 \times 3\)) y el área
+       <strong>máxima</strong> es \(10\) (en ese caso sería de \(5 \times 2\)). Por
+       eso la salida deja \(9\) zumbadores en \((1,1)\) y \(10\) en \((2,1)\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Teoría de números</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(A = (m-1)(n-1)\) como una pila de \(A\) zumbadores en \((1,1)\), con
+       \(0 < A < 100\). Debes dejar el área <strong>mínima</strong> posible de
+       \(m \times n\) en \((1,1)\) y la <strong>máxima</strong> en \((2,1)\),
+       considerando todas las formas de factorizar \(A\) como \((m-1)\cdot(n-1)\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(A < 100\) es chiquito, así que el costo de cómputo no es problema.
+                El reto real no es la matemática (es sencilla) sino
+                <strong>hacer esa aritmética en Karel</strong>, que solo sabe mover
+                el robot, poner/quitar zumbadores y preguntar por el entorno: no
+                tiene números ni sumas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo se relacionan el área recortada y la original?</summary>
+      <div class="body">
+        <p class="q">Si llamas \(a = m-1\) y \(b = n-1\), de modo que \(A = a\cdot b\),
+           ¿cuánto vale el área original \(m \times n\) en términos de \(a\) y \(b\)?</p>
+        <p>Desarrolla \((a+1)(b+1)\). Verás que el área original siempre es
+           \(A\) más algo que solo depende de \(a+b\). Esa es la clave de todo el
+           problema.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — El área máxima</summary>
+      <div class="body">
+        <p class="q">Con el producto \(a\cdot b = A\) <em>fijo</em>, ¿cuándo la suma
+           \(a+b\) es lo <strong>más grande</strong> posible? ¿Qué pasa si una de las
+           dimensiones del recorte fue \(1\)?</p>
+        <p>Para un producto fijo, la suma de dos factores crece cuando los separas lo
+           más posible: uno chico, otro grande. ¿Cuál es el caso extremo y a qué
+           área original lleva?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — El área mínima</summary>
+      <div class="body">
+        <p class="q">Por el mismo razonamiento, ¿cuándo \(a+b\) es lo
+           <strong>más chico</strong> posible? ¿Qué pareja de factores de \(A\)
+           buscas, y qué tienen que ver con \(\sqrt{A}\)?</p>
+        <p>Necesitas el divisor de \(A\) más cercano a su raíz cuadrada. ¿Cómo lo
+           encontrarías probando divisores hacia abajo desde \(\lfloor\sqrt{A}\rfloor\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Pero esto es Karel: ¿cómo se "calcula" con zumbadores?</summary>
+      <div class="body">
+        <p class="q">Karel no tiene variables ni aritmética. Solo cuenta con pilas de
+           zumbadores y casillas de la cuadrícula. ¿Cómo <em>cuentas</em>,
+           <em>copias</em> y <em>duplicas</em> una pila? ¿Cómo pruebas si un ancho
+           \(w\) <strong>divide</strong> a \(A\) <em>acomodando</em> los zumbadores en
+           un rectángulo? ¿Cómo <em>comparas</em> dos cantidades?</p>
+        <ul>
+          <li><strong>Mover/contar:</strong> un bucle <code>mientras junto-a-zumbador</code>
+              que <code>coge-zumbador</code> uno por uno te deja "recorrer" la pila.</li>
+          <li><strong>Duplicar:</strong> por cada zumbador que quitas de una pila,
+              deja <em>dos</em> en otra casilla.</li>
+          <li><strong>Divisibilidad:</strong> reparte los \(A\) zumbadores en
+              renglones de ancho \(w\) (uno por casilla); si el último renglón queda
+              <em>exacto</em> (lleno), entonces \(w \mid A\) y la altura es la
+              cantidad de renglones.</li>
+          <li><strong>Comparar:</strong> quita un zumbador de cada pila a la vez; la
+              que se vacíe primero es la menor.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>La matemática.</strong> Sea \(a=m-1\), \(b=n-1\), enteros
+           \(\ge 1\) con \(a\cdot b = A\). El área original es</p>
+        \[ m\cdot n = (a+1)(b+1) = a\,b + a + b + 1 = A + (a+b) + 1. \]
+        <p>Con \(A\) fijo, el área original solo depende de \(a+b\):</p>
+        <ul>
+          <li><strong>Máxima:</strong> separa los factores al extremo, \(a=1,\ b=A\).
+              Entonces \(a+b = A+1\) y el área es
+              \[ \text{máx} = A + (A+1) + 1 = 2A + 2. \]</li>
+          <li><strong>Mínima:</strong> acerca los factores lo más posible a
+              \(\sqrt{A}\). Tomas el divisor \(d\) de \(A\) más grande que cumpla
+              \(d \le \sqrt{A}\); el otro factor es \(A/d\), y
+              \[ \text{mín} = (d+1)\left(\tfrac{A}{d}+1\right). \]</li>
+        </ul>
+        <p>Comprobación con el ejemplo \(A=4\): máx \(=2\cdot4+2=10\) (recorte
+           \(1\times4\), original \(2\times5\)); el divisor de \(4\) más cercano a
+           \(\sqrt4=2\) es \(2\), así que mín \(=(2{+}1)(2{+}1)=9\) (recorte
+           \(2\times2\), original \(3\times3\)). Casos extremos: si \(A=1\) hay una
+           sola factorización (\(1\times1\)) y mín \(=\) máx \(=4\); si \(A\) es primo
+           (p. ej. \(7\)) también solo existe \(1\times A\), así que mín \(=\) máx
+           \(=2A+2\) (\(=16\)).</p>
+
+        <p><strong>La traducción a Karel.</strong> Como Karel no tiene números,
+           "calculamos" moviendo zumbadores por la cuadrícula. Conviene definir
+           instrucciones (<code>define-nueva-instruccion</code>) como bloques de
+           construcción y armar con ellas el programa principal. El recorrido de una
+           pila se hace con <code>mientras junto-a-zumbador</code>; el conteo fijo,
+           con <code>repite</code>.</p>
+
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel (pseudocódigo de bloques)</span>
+<pre>// Por cada zumbador de la casilla actual, deja DOS en la casilla de enfrente.
+// (sirve para obtener 2*A)
+define duplica-enfrente:
+    mientras junto-a-zumbador:
+        coge-zumbador
+        avanza            // a la casilla destino
+        deja-zumbador
+        deja-zumbador
+        da-media-vuelta; avanza; da-media-vuelta   // regresa a la pila
+
+// Reparte los zumbadores de la pila en renglones de ancho 'w'.
+// Devuelve VERDADERO si el ultimo renglon queda EXACTO  ->  w divide a A.
+// (de paso, el numero de renglones completos es la altura h = A/w)
+define cabe-en-ancho-w (usa una copia-de-A y un molde de ancho 'w'):
+    coloca, yendo al este, un zumbador por casilla;
+    al completar 'w' casillas, sube al inicio del siguiente renglon;
+    cuando se agote la copia-de-A:
+        si acabas de cerrar un renglon completo  -> VERDADERO (y h = #renglones)
+        si quedaste a media fila                 -> FALSO
+
+// Compara dos pilas quitando un zumbador de cada una a la vez:
+// la primera que se vacie indica cual cantidad es menor (sirve para w <= raiz(A)).</pre>
+        </div>
+
+        <div class="pseudo">
+          <span class="tag">Programa principal (pseudocódigo)</span>
+<pre>inicia-programa
+    // Guarda copias de A para no perder el dato al trabajar.
+    copia la pila de (1,1) a unas casillas de trabajo (la necesitaras varias veces)
+
+    // ---------- AREA MAXIMA  =  2*A + 2   ->  va en (2,1), al ESTE ----------
+    con una copia de A:  duplica-enfrente        // obtienes 2*A
+    deja-zumbador; deja-zumbador                 // +2  ->  2*A + 2
+    mueve esa pila a la casilla (2,1)
+
+    // ---------- AREA MINIMA  =  (d+1)*(A/d + 1) ----------
+    halla  s = piso(raiz(A))                     // llenando el mayor cuadrado posible
+    para w = s, s-1, s-2, ... (hasta 1):
+        si cabe-en-ancho-w(copia de A) entonces  // w | A, con altura h = A/w
+            arma una pila de (w+1)*(h+1) zumbadores   // = area minima
+            terminar el ciclo
+    mueve esa pila a la casilla (1,1)
+termina-programa</pre>
+        </div>
+
+        <p>Para construir \((w+1)\cdot(h+1)\) zumbadores en Karel: toma el rectángulo
+           de \(w \times h\) que ya armaste al probar la divisibilidad, agrégale un
+           renglón y una columna extra (más la esquina), o de plano rellena un
+           rectángulo de \((w+1)\) por \((h+1)\) casillas con un zumbador en cada una
+           y luego junta todo en una sola casilla. El \(2A+2\) del máximo y el
+           cuadrado para \(\lfloor\sqrt{A}\rfloor\) se obtienen con los mismos bloques
+           de mover/contar.</p>
+
+        <p><strong>Complejidad.</strong> Como \(A < 100\), todo cabe en una esquina
+           del mundo \(100\times100\). El número de pasos de Karel es del orden de
+           \(O(A\sqrt{A})\) (a lo más \(\sqrt{A}\) pruebas de divisibilidad, cada una
+           recorriendo \(\le A\) zumbadores), es decir unos pocos miles de
+           instrucciones: muy por debajo de cualquier límite.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
