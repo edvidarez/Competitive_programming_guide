@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **103 / 142**
+Total de tareas: **142** · Completadas: **104 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -195,14 +195,14 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Highway Tolls | `2018/05 Highway Tolls/index.html` |
 | [x] | 6 | Meetings | `2018/06 Meetings/index.html` |
 
-## IOI 2019 — 3 / 6
+## IOI 2019 — 4 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
 | [x] | 1 | Arranging Shoes | `2019/01 Arranging Shoes/index.html` |
 | [x] | 2 | Split the Attractions | `2019/02 Split the Attractions/index.html` |
 | [x] | 3 | Rectangles | `2019/03 Rectangles/index.html` |
-| [ ] | 4 | Broken Line | `2019/04 Broken Line/index.html` |
+| [x] | 4 | Broken Line | `2019/04 Broken Line/index.html` |
 | [ ] | 5 | Vision Program | `2019/05 Vision Program/index.html` |
 | [ ] | 6 | Sky Walking | `2019/06 Sky Walking/index.html` |
 
