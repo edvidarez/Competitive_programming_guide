@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2020 · Tarea 4 — Packing Biscuits</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2020 · Día 2</div>
+    <h1>Tarea <span class="num">4</span> — Packing Biscuits</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La tía Khong está organizando una competencia con \(x\) participantes y quiere
+       regalarle a cada uno una <strong>bolsa de galletas</strong>. Hay \(k\) tipos
+       distintos de galletas, numerados de \(0\) a \(k-1\). Cada galleta del tipo \(i\)
+       (con \(0 \le i \le k-1\)) tiene un <strong>valor de sabor</strong> igual a \(2^i\).
+       En su despensa, la tía Khong tiene \(a[i]\) galletas del tipo \(i\) (posiblemente cero).</p>
+
+    <p>Cada bolsa contendrá cero o más galletas de cada tipo. El número total de galletas
+       del tipo \(i\) usadas en <em>todas</em> las bolsas no puede exceder \(a[i]\).
+       La suma de los valores de sabor de las galletas dentro de una bolsa se llama
+       el <strong>sabor total</strong> de esa bolsa.</p>
+
+    <p>Ayuda a la tía Khong a averiguar <strong>cuántos valores distintos de \(y\)</strong>
+       existen, tales que sea posible empacar \(x\) bolsas de galletas, cada una con
+       sabor total exactamente igual a \(y\).</p>
+
+    <!-- ===== TAREA FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento (no lees de la entrada estándar:
+       el evaluador llama a tu función):</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int64 count_tastiness(int64 x, int64[] a)</pre>
+    </div>
+    <ul>
+      <li>\(x\): el número de bolsas de galletas a empacar.</li>
+      <li>\(a\): un arreglo de longitud \(k\). Para \(0 \le i \le k-1\), \(a[i]\) es el
+          número de galletas del tipo \(i\) que hay en la despensa.</li>
+      <li>El procedimiento debe regresar el número de valores distintos de \(y\) tales que
+          la tía pueda empacar \(x\) bolsas, cada una con sabor total igual a \(y\).</li>
+      <li>El procedimiento se llama un total de \(q\) veces (ver Límites y Subtareas para los
+          valores permitidos de \(q\)). Cada llamada es un escenario independiente.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2048 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tipos de galleta</td><td><span class="badge">\(1 \le k \le 60\)</span></td></tr>
+        <tr><td>Llamadas por caso</td><td><span class="badge">\(1 \le q \le 1000\)</span></td></tr>
+        <tr><td>Número de bolsas</td><td><span class="badge">\(1 \le x \le 10^{18}\)</span></td></tr>
+        <tr><td>Galletas por tipo</td><td><span class="badge">\(0 \le a[i] \le 10^{18}\)</span></td></tr>
+        <tr><td>Sabor total en la despensa</td>
+            <td><span class="badge">\(\sum_{i} a[i]\cdot 2^i \le 10^{18}\)</span> por cada llamada</td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">9</td><td>\(q \le 10\), y en cada llamada la suma de sabores de la despensa no excede \(100\,000\).</td></tr>
+          <tr><td>2</td><td class="pts">12</td><td>\(x = 1\), \(q \le 10\).</td></tr>
+          <tr><td>3</td><td class="pts">21</td><td>\(x \le 10\,000\), \(q \le 10\).</td></tr>
+          <tr><td>4</td><td class="pts">35</td><td>El valor de retorno correcto de cada llamada no excede \(200\,000\).</td></tr>
+          <tr><td>5</td><td class="pts">23</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>count_tastiness(3, [5, 2, 1])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>5</pre></div>
+    </div>
+    <p>La tía quiere empacar \(3\) bolsas, y hay \(3\) tipos de galletas en la despensa:</p>
+    <ul>
+      <li>\(5\) galletas del tipo \(0\), cada una con sabor \(1\),</li>
+      <li>\(2\) galletas del tipo \(1\), cada una con sabor \(2\),</li>
+      <li>\(1\) galleta del tipo \(2\), con sabor \(4\).</li>
+    </ul>
+    <p>Los valores posibles de \(y\) son \([0, 1, 2, 3, 4]\). Por ejemplo, para empacar
+       \(3\) bolsas de sabor total \(3\), la tía puede usar:</p>
+    <ul>
+      <li>una bolsa con tres galletas del tipo \(0\), y</li>
+      <li>dos bolsas, cada una con una galleta del tipo \(0\) y una del tipo \(1\).</li>
+    </ul>
+    <p>Como hay \(5\) valores posibles de \(y\), el procedimiento debe regresar \(5\).</p>
+
+    <figure>
+      <img alt="Tabla con las cinco formas de empacar tres bolsas en el Ejemplo 1, una por cada valor de y de 0 a 4; cada recuadro es una bolsa y los números dentro son los sabores de las galletas."
+           src="data:image/png;base64,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">
+      <figcaption>Figura: las cinco maneras de empacar \(3\) bolsas en el Ejemplo 1, una por
+        cada valor de \(y\) (de \(0\) a \(4\)). Cada recuadro es una bolsa; los números dentro
+        son los sabores (potencias de \(2\)) de las galletas que contiene.</figcaption>
+    </figure>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>count_tastiness(2, [2, 1, 2])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>6</pre></div>
+    </div>
+    <p>La tía quiere empacar \(2\) bolsas, y hay \(3\) tipos de galletas en la despensa:
+       \(2\) galletas del tipo \(0\) (sabor \(1\)), \(1\) del tipo \(1\) (sabor \(2\)) y
+       \(2\) del tipo \(2\) (sabor \(4\)). Los valores posibles de \(y\) son
+       \([0, 1, 2, 4, 5, 6]\). Como hay \(6\) valores posibles, el procedimiento regresa \(6\).</p>
+
+    <h2>Evaluador de ejemplo</h2>
+    <p>El evaluador de ejemplo lee la entrada con este formato. La primera línea contiene un
+       entero \(q\). Después siguen \(q\) pares de líneas, y cada par describe un escenario:</p>
+    <ul>
+      <li>línea \(1\): \(\;k\;\;x\)</li>
+      <li>línea \(2\): \(\;a[0]\;\;a[1]\;\;\ldots\;\;a[k-1]\)</li>
+    </ul>
+    <p>La salida del evaluador de ejemplo tiene una línea por escenario (\(1 \le i \le q\)):
+       el valor de retorno de <code>count_tastiness</code> para el \(i\)-ésimo escenario.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Bits / potencias de 2</span>
+      <span class="ptag">Divide y vencerás</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(x\) (número de bolsas) y un arreglo \(a[0..k-1]\), donde \(a[i]\) es cuántas
+       galletas de sabor \(2^i\) hay disponibles. Debes contar cuántos valores distintos de
+       \(y\) (el sabor total por bolsa) permiten empacar \(x\) bolsas <strong>idénticas</strong>
+       —cada una con sabor total exactamente \(y\)— sin gastar de ningún tipo más galletas de
+       las que hay en total. Se devuelve esa cuenta como entero de 64 bits.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(k \le 60\) significa que \(y\) y el sabor total caben en \(\sim 60\) bits.
+                \(x, a[i]\) y la suma de sabores llegan a \(10^{18}\): cuidado con el
+                <em>overflow</em> (\(x\cdot y\) no cabe siempre en 64 bits; trabaja con
+                <strong>cocientes</strong>). La subtarea 1 (suma de sabores \(\le 10^5\))
+                permite fuerza bruta sobre los candidatos de \(y\). La subtarea 2 es
+                \(x=1\) (una sola bolsa). La 4 acota la <em>respuesta</em> a \(\le 2\cdot10^5\),
+                lo que sugiere enumerar valores factibles. Con \(q \le 1000\), una solución
+                \(O(k^2)\) por llamada es de sobra rápida.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en escribir \(y\) en binario? Si cada una de las \(x\) bolsas
+           debe sumar exactamente \(y\), ¿cuánto sabor total se reparte entre todas las bolsas?</p>
+        <p>El sabor total que sale de la despensa es \(x\cdot y\). Como cada galleta vale una
+           potencia de \(2\), empacar \(x\) bolsas de sabor \(y\) equivale a poder escribir
+           \(x\cdot y = \sum_i c_i\, 2^i\) con \(0 \le c_i \le a[i]\) (usar \(c_i\) galletas del
+           tipo \(i\)). La pregunta de fondo es: ¿para qué valores de \(y\) ese total
+           \(x\cdot y\) es <em>representable</em> con las galletas disponibles?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: suma chica, fuerza bruta</summary>
+      <div class="body">
+        <p class="q">Si la suma de sabores de la despensa no pasa de \(100\,000\), ¿cuál es el
+           mayor \(y\) posible? ¿Cuántos candidatos de \(y\) hay realmente?</p>
+        <p>El sabor total disponible es \(S=\sum_i a[i]\,2^i\). Como cada bolsa usa \(y\) y hay
+           \(x\) bolsas, debe cumplirse \(x\cdot y \le S\), así que \(y\) va de \(0\) a
+           \(\lfloor S/x\rfloor\). Con \(S \le 10^5\) hay a lo más \(\sim 10^5\) candidatos.
+           Recorre cada candidato \(y\) y verifica si es factible: ¿puedes ir de los tipos
+           grandes a los chicos repartiendo galletas, o llevar un acarreo de bits bajos a altos?
+           Cada verificación cuesta \(O(k)\), y son pocas llamadas (\(q \le 10\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2: el caso \(x = 1\)</summary>
+      <div class="body">
+        <p class="q">Con una sola bolsa, ¿qué valores de \(y\) son alcanzables? Si \(y\) es
+           cualquier suma \(\sum_i c_i\, 2^i\) con \(0 \le c_i \le a[i]\), ¿cuántas sumas
+           distintas hay?</p>
+        <p>Procesa los bits de menor a mayor llevando un <strong>acarreo</strong>: cuántas
+           "unidades de \(2^{i+1}\)" puedes formar juntando galletas chicas que sobraron. En
+           cada bit decides el bit \(i\) de \(y\) y propagas el resto hacia arriba. Este caso
+           te entrena para la idea general: el conjunto de \(y\) alcanzables se describe muy
+           bien yendo bit por bit, sin enumerar uno por uno.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 3 y 4: caracterizar la factibilidad</summary>
+      <div class="body">
+        <p class="q">¿Por qué basta con que \(x\cdot y\) sea <em>representable</em> globalmente,
+           sin preocuparte de cómo se divide ese total entre las \(x\) bolsas?</p>
+        <p>Clave: \(y\) es factible <strong>si y solo si</strong> \(x\cdot y = \sum_i c_i\,2^i\)
+           con \(0 \le c_i \le a[i]\). La representabilidad global es suficiente porque, con
+           potencias de \(2\), siempre puedes redistribuir entre las \(x\) bolsas (cambiando una
+           galleta grande por dos chicas, etc.). Entonces el problema se vuelve: contar cuántos
+           \(y\) en \([0,\lfloor S/x\rfloor]\) cumplen esa condición. Para \(x \le 10\,000\) o
+           para respuesta \(\le 2\cdot10^5\), una DP por bits con estado = acarreo (acotado)
+           ya alcanza. La pregunta final: ¿cómo cuentas todos los \(y\) sin enumerarlos?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave: presupuesto por prefijo</summary>
+      <div class="body">
+        <p class="q">¿Y si para cada bit defines un "presupuesto" de sabor que arrastras desde
+           los tipos inferiores? En el bit \(i\), disponible \(=\) carry \(+\, a[i]\cdot 2^i\);
+           ¿cuándo puede valer \(1\) el bit \(i\) de \(y\)?</p>
+        <p>El bit \(i\) de \(y\) puede ser \(1\) solo si \(x\cdot 2^i \le\) disponible (necesitas
+           reservar \(x\cdot 2^i\) de sabor para poner ese bit en las \(x\) bolsas). Decides
+           \(0/1\) en cada bit, verificas la condición y propagas el sobrante como carry al bit
+           siguiente. Equivalentemente, usando sumas de prefijo \(S[i]=\sum_{j\le i} a[j]\,2^j\)
+           (el sabor que se puede formar con solo los tipos \(0..i\)), el número de bolsas de
+           sabor que cabe en ese prefijo es \(\lfloor S[i]/x\rfloor\). Eso te deja contar por
+           rangos en vez de uno por uno.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> \(y\) es factible si y solo si \(x\cdot y\) admite
+           representación \(\sum_i c_i\,2^i\) con \(0 \le c_i \le a[i]\). Queremos contar
+           cuántos \(y\) en el rango \([0,\,\lfloor S/x\rfloor]\) (con \(S=\sum_i a[i]\,2^i\))
+           cumplen esto. Extiende el arreglo con ceros hasta \(60\) tipos y precalcula las
+           sumas de prefijo \(S[i]=\sum_{j\le i} a[j]\,2^j\): es el sabor máximo que puedes
+           formar usando solo los tipos \(0..i\).</p>
+
+        <p>Define \(F(n)=\) cantidad de \(y\) factibles con \(0 \le y &lt; n\). Sea \(2^p\) la
+           mayor potencia de dos \(\le n-1\). Partimos el rango en dos mitades:</p>
+        <ul>
+          <li><strong>Mitad baja</strong> \([0,\,2^p)\): se cuenta recursivamente con
+              \(F(2^p)\), que vuelve a aplicar el presupuesto del prefijo correspondiente
+              (no es automáticamente toda factible). Aporta \(F(2^p)\).</li>
+          <li><strong>Mitad alta</strong> \([2^p,\,n)\): aquí el bit \(p\) está encendido y el
+              número de bolsas posibles queda limitado por el presupuesto del prefijo:
+              \(\lfloor S[p]/x\rfloor\). Por eso el tope es \(\min(n,\;1+\lfloor S[p]/x\rfloor)\),
+              y la mitad alta aporta \(F(\text{tope}-2^p)\).</li>
+        </ul>
+        <p>La respuesta final es \(F\!\left(1+\lfloor S/x\rfloor\right)\), o de forma equivalente
+           \(F(1+S[k-1])\) trabajando con cocientes. La recursión se memoiza por \(n\)
+           (hay \(O(k)\) valores distintos de \(n\) que aparecen).</p>
+
+        <p><strong>Correctitud.</strong> La factibilidad por representabilidad global es
+           necesaria y suficiente: con potencias de \(2\), si \(x\cdot y\) se puede formar con
+           las galletas, siempre se puede repartir en \(x\) bolsas idénticas intercambiando
+           galletas chicas por grandes. La recursión explota que el sabor disponible es
+           monótono en el prefijo: la mitad baja \([0,2^p)\) se resuelve como subproblema
+           \(F(2^p)\) con su propio presupuesto de prefijo, mientras que la mitad alta está
+           acotada por \(\lfloor S[p]/x\rfloor\). El caso base \(n=1\) cuenta solo \(y=0\) (siempre
+           factible). Verificado contra las 58 salidas oficiales (incluye los ejemplos:
+           \(\texttt{count\_tastiness}(3,[5,2,1])=5\) y
+           \(\texttt{count\_tastiness}(2,[2,1,2])=6\)).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion count_tastiness(x, a):
+    K &lt;- 60                         # extiende a[] con ceros hasta 60 tipos
+    S[-1] &lt;- 0
+    para i = 0 .. K-1:
+        S[i] &lt;- S[i-1] + a[i] * 2^i  # sabor formable usando tipos 0..i
+    memo &lt;- vacio
+    devolver F(x, S, 1 + S[K-1])     # cuenta y en el rango [0, S/x]
+
+funcion F(x, S, n):                  # cuenta los y factibles con 0 &lt;= y &lt; n
+    si n &lt;= 0: devolver 0
+    si n == 1: devolver 1            # solo y = 0
+    si n esta en memo: devolver memo[n]
+    p &lt;- posicion del bit mas alto de (n - 1)   # 2^p &lt;= n-1 &lt; 2^(p+1)
+    baja &lt;- F(x, S, 2^p)                          # mitad [0, 2^p): subproblema recursivo
+    tope &lt;- minimo(n, 1 + S[p] / x)               # presupuesto del prefijo p (division entera)
+    alta &lt;- F(x, S, tope - 2^p)                   # mitad alta [2^p, n), acotada
+    memo[n] &lt;- baja + alta
+    devolver memo[n]
+
+# --- Vision equivalente por acarreo (bits de menor a mayor) ---
+# carry &lt;- 0
+# para i = 0 .. 60:
+#     disponible &lt;- carry + a[i] * 2^i
+#     el bit i de y puede ser 1 solo si  x * 2^i &lt;= disponible
+#     ramifica las opciones 0/1 factibles y propaga el sobrante como carry al bit i+1
+# la respuesta es el numero de valores y distintos alcanzados</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> \(O(k^2)\) por llamada con la versión iterativa de
+           sumas de prefijo (\(k \le 60\), \(\sim 3600\) operaciones), o \(O(k\log)\) con
+           memoización. Con \(q \le 1000\), el total es \(\sim q\cdot k^2 \approx 3.6\times10^6\)
+           operaciones: trivial bajo el límite de \(1.0\) s (el peor caso medido fue
+           \(0.031\) s). Memoria \(O(k)\) por llamada. Todo en enteros de 64 bits.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Como x, a[i] y S llegan a 10^18, el producto x * 2^i (o x * y) puede
+desbordar int64. Dos formas de evitarlo en C++:
+  - comparar con cocientes:  en vez de  x * 2^i &lt;= disponible,
+    usa  2^i &lt;= disponible / x  (con divisiones enteras y cuidado en los topes), o
+  - hacer la comparacion en __int128 (entero de 128 bits de g++/clang)
+    solo para ese producto puntual.</pre>
+          <p class="note">Es solo para blindar la aritmética; el algoritmo no cambia. Nunca
+             pongas la solución completa en código real.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
