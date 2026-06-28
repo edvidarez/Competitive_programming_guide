@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2010 · Problema 07 — Espias</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">15ª OMI · 2010 · Lenguaje</div>
+    <h1>Problema <span class="num">07</span> — Espias</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/L-OMI2010-Espias">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Como nos lo ha mostrado Hollywood una y otra vez, en el mundo existe toda una
+       red de espías dedicados a conseguir información valiosa para sus empresas o
+       gobiernos.</p>
+    <p>Acabas de ser contratado por una nueva agencia de inteligencia y tu tarea es
+       conseguir información. Para lograrlo se te permite utilizar un dispositivo
+       lector de mentes en la mente de uno y sólo uno de los espías que tu agencia
+       tiene localizados.</p>
+
+    <p>Los espías funcionan de la siguiente manera:</p>
+    <ul>
+      <li>Cada espía se encarga de espiar a uno y sólo uno de los otros espías.</li>
+      <li>Si el espía \(A\) espía al \(B\) se considera que tiene acceso a toda la
+          información en la mente de \(B\); de esta forma, si \(B\) espía a \(C\)
+          automáticamente la mente de \(A\) contiene, además de su información, la
+          información de las mentes de \(B\) y \(C\).</li>
+    </ul>
+
+    <p>Tu agencia sabe quién espía a quién. Tu tarea es decidir en qué espía utilizar
+       el lector de mentes, de modo que el número de mentes leídas sea el máximo
+       posible.</p>
+
+    <p>Escribe un programa que dado el número \(E\) de espías y la lista de quién
+       espía a quién determine cuál es la cantidad máxima de mentes que puedes leer.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado la siguiente información:</p>
+    <ul>
+      <li>En la primer línea el número \(E\) que indica la cantidad de espías de los
+          que se tiene información.</li>
+      <li>En las siguientes \(E\) líneas habrá un único entero que indica el espía
+          espiado por el espía que corresponde a esa línea. Por ejemplo, la primera
+          de estas líneas tendrá un número que indica a quién espía el espía 1, la
+          segunda uno que indica a quién espía el espía 2, etc.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir a la pantalla un único número que indica el número
+       máximo de mentes que puedes leer utilizando el lector de mentes sólo una vez.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado oficial</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado oficial</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Cantidad de espías</td><td><span class="badge">\(2 < E \le 10^6\)</span></td></tr>
+      </table>
+    </div>
+    <p>Puedes estar seguro de que:</p>
+    <ol>
+      <li>Ningún espía se espía a sí mismo.</li>
+      <li>Ningún espía espía a un espía que no esté en el grupo, es decir, nunca
+          espiará a un espía cuyo número sea mayor a \(E\) ni menor a 1.</li>
+    </ol>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada por
+       caso). Aun así, una solución de fuerza bruta \(O(E^2)\) obtiene crédito
+       parcial al resolver únicamente los casos con \(E\) pequeña.</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>7
+4
+3
+2
+5
+6
+1
+3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4</pre></div>
+    </div>
+    <p class="note">Por ejemplo, si se utiliza el lector de mentes en el espía 5,
+       automáticamente se tiene la información de las mentes de los espías 5, 6, 1 y 4,
+       ya que 5 espía a 6, 6 a 1, 1 a 4 y 4 a 5.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Grafo funcional</span>
+      <span class="ptag">Detección de ciclos</span>
+      <span class="ptag">Programación dinámica</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Cada uno de los \(E\) espías apunta a exactamente otro espía (un grafo donde
+       cada nodo tiene exactamente una arista de salida). Al elegir un espía inicial,
+       lees su mente y la de todos los que alcanzas siguiendo la cadena «quién espía
+       a quién». Hay que encontrar la <strong>cantidad máxima de mentes distintas</strong>
+       que puedes leer empezando desde un solo espía.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(E\) llega a \(10^6\): una fuerza bruta \(O(E^2)\) solo alcanza para
+                los casos chicos. Para el \(100\) necesitas una pasada lineal
+                \(O(E)\) que explote la estructura del grafo (cada nodo con un único
+                sucesor).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en ver a cada espía como un nodo y a «\(i\) espía a
+           \(f(i)\)» como una flecha \(i \to f(i)\)? ¿Qué propiedad especial tiene
+           este grafo si <em>cada</em> espía espía a exactamente uno?</p>
+        <p>Cada nodo tiene <strong>exactamente una</strong> arista de salida. Eso es
+           un «grafo funcional». Leer desde el espía \(s\) equivale a contar cuántos
+           nodos distintos visitas siguiendo las flechas \(s \to f(s) \to f(f(s)) \to
+           \cdots\) hasta que repites uno.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico</summary>
+      <div class="body">
+        <p class="q">Si \(E\) fuera pequeña, ¿podrías simplemente simular el recorrido
+           desde cada espía y contar las mentes distintas que tocas?</p>
+        <p>Para cada espía inicial \(s\), avanza marcando visitados hasta toparte con
+           uno ya marcado; el total de marcados es cuántas mentes leíste desde \(s\).
+           Tomas el máximo sobre todos los \(s\). Eso es \(O(E^2)\): suficiente para
+           los casos con \(E\) pequeña, pero se cae con \(E = 10^6\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave</summary>
+      <div class="body">
+        <p class="q">Siguiendo las flechas desde cualquier espía, tarde o temprano
+           repites un nodo. ¿En qué <em>tipo</em> de nodo caes siempre? ¿No será que
+           todo recorrido termina dando vueltas en un <strong>ciclo</strong>?</p>
+        <p>En un grafo funcional, desde cualquier nodo el camino entra <em>sí o sí</em>
+           a un ciclo (forma de la letra «rho»: una colita que desemboca en un anillo).
+           Por eso, la cantidad de mentes leídas desde \(s\) es exactamente
+           <em>(longitud de la colita desde \(s\) hasta el ciclo)</em> \(+\)
+           <em>(longitud del ciclo)</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — De recalcular a reutilizar</summary>
+      <div class="body">
+        <p class="q">Llama \(R(u)\) al número de mentes que lees empezando en \(u\).
+           Si \(u\) <em>no</em> está en un ciclo, ¿cómo se relaciona \(R(u)\) con
+           \(R(f(u))\)? ¿Y si \(u\) sí está en el ciclo?</p>
+        <p>Si \(u\) está en un ciclo de longitud \(L\), entonces \(R(u) = L\) (das
+           justo una vuelta). Si \(u\) <em>no</em> está en el ciclo, entonces
+           \(f(u)\) está «más cerca» del ciclo y \(u\) es nuevo respecto a lo que
+           alcanzas desde \(f(u)\), así que \(R(u) = R(f(u)) + 1\). La respuesta es el
+           máximo \(R(u)\) sobre todos los espías. Falta solo procesar los nodos en el
+           orden correcto para no recalcular.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Modela \(i \to f(i)\) (un grafo funcional). El objetivo es
+           \(\max_u R(u)\), donde \(R(u)\) es la cantidad de nodos distintos
+           alcanzables desde \(u\). Pasos:</p>
+        <ol>
+          <li><strong>Encuentra los nodos de ciclo.</strong> Calcula el grado de
+              entrada de cada nodo. Pela repetidamente todo nodo con grado de entrada
+              \(0\) (una hoja): al quitarlo, baja en \(1\) el grado de entrada de
+              \(f(u)\); si llega a \(0\), también se pela. Los nodos que <em>nunca</em>
+              se pelan son exactamente los que viven en algún ciclo. Guarda el orden
+              en que pelaste los nodos «de rama».</li>
+          <li><strong>Mide cada ciclo.</strong> Recorre cada ciclo aún sin procesar
+              para obtener su longitud \(L\) y asigna \(R(u) = L\) a cada nodo del
+              ciclo.</li>
+          <li><strong>Propaga hacia las ramas.</strong> Procesa los nodos de rama en
+              el <em>orden inverso</em> al de pelado (primero los pegados al ciclo).
+              Así, cuando toca \(u\), su sucesor \(f(u)\) ya tiene \(R\) calculado y
+              haces \(R(u) = R(f(u)) + 1\).</li>
+          <li><strong>Respuesta.</strong> Imprime el máximo \(R(u)\) sobre todos los
+              espías.</li>
+        </ol>
+        <p><strong>Por qué es correcta:</strong> todo recorrido en un grafo funcional
+           termina en un ciclo; los nodos fuera del ciclo forman árboles que «cuelgan»
+           de los nodos del ciclo. Para un nodo de ciclo el conteo es justo \(L\);
+           para un nodo de rama, el conjunto alcanzable es él mismo más todo lo
+           alcanzable desde su sucesor (sin solaparse, porque el sucesor está más
+           abajo en el árbol), de ahí \(R(u) = R(f(u)) + 1\). El máximo se da en el
+           nodo más profundo del árbol más alto: \(L + \text{(profundidad máxima)}\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer E
+para i = 1..E: leer f[i]; gradoEntrada[f[i]] += 1
+
+# 1) pelar hojas para hallar nodos de ciclo
+pila = { i : gradoEntrada[i] == 0 }
+ordenPelado = []
+esRama = arreglo de falso
+mientras pila no vacía:
+    u = sacar(pila)
+    esRama[u] = verdadero
+    ordenPelado.agregar(u)
+    gradoEntrada[f[u]] -= 1
+    si gradoEntrada[f[u]] == 0: meter(pila, f[u])
+
+# 2) cada ciclo: R = longitud del ciclo
+hecho = arreglo de falso
+para i = 1..E:
+    si no esRama[i] y no hecho[i]:
+        L = 0; x = i
+        repetir: L += 1; x = f[x]   hasta x == i
+        x = i
+        repetir: R[x] = L; hecho[x] = verdadero; x = f[x]   hasta x == i
+
+# 3) ramas en orden inverso de pelado
+para k = tam(ordenPelado)-1 .. 0:
+    u = ordenPelado[k]
+    R[u] = R[f[u]] + 1
+
+# 4) respuesta
+imprimir max(R[1..E])</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(E)\) en tiempo y \(O(E)\) en memoria.
+           Con \(E = 10^6\) corre de sobra (en pruebas locales, el caso más grande
+           termina en ~0.05 s).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Con E hasta 10^6 y archivos de varios MB, conviene
+lectura rápida (fread por bloques o getchar sin lock)
+en lugar de cin/scanf por número, y evitar recursión:
+la "colita" puede tener ~10^6 nodos y un DFS recursivo
+desbordaría la pila. Haz la propagación de R de forma
+ITERATIVA (orden inverso de pelado), no recursiva.</pre>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

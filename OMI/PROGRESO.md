@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **114 / 190**
+Total de problemas: **190** · Completados: **122 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -153,18 +153,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 5 | Lenguaje | Espirales | `2009/05 Espirales/index.html` |
 | [ ] | 6 | Lenguaje | Caja fuerte | `2009/06 Caja fuerte/index.html` |
 
-## 15ª OMI · 2010 — 0 / 8
+## 15ª OMI · 2010 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Rombo | `2010/01 Rombo/index.html` |
-| [ ] | 2 | Karel | Almohada | `2010/02 Almohada/index.html` |
-| [ ] | 3 | Karel | Recuerda de dónde saliste | `2010/03 Recuerda de dónde saliste/index.html` |
-| [ ] | 4 | Karel | Rebelde | `2010/04 Rebelde/index.html` |
-| [ ] | 5 | Lenguaje | Vueltas | `2010/05 Vueltas/index.html` |
-| [ ] | 6 | Lenguaje | Saltos | `2010/06 Saltos/index.html` |
-| [ ] | 7 | Lenguaje | Espias | `2010/07 Espias/index.html` |
-| [ ] | 8 | Lenguaje | Antenas | `2010/08 Antenas/index.html` |
+| [x] | 1 | Karel | Rombo | `2010/01 Rombo/index.html` |
+| [x] | 2 | Karel | Almohada | `2010/02 Almohada/index.html` |
+| [x] | 3 | Karel | Recuerda de dónde saliste | `2010/03 Recuerda de dónde saliste/index.html` |
+| [x] | 4 | Karel | Rebelde | `2010/04 Rebelde/index.html` |
+| [x] | 5 | Lenguaje | Vueltas | `2010/05 Vueltas/index.html` |
+| [x] | 6 | Lenguaje | Saltos | `2010/06 Saltos/index.html` |
+| [x] | 7 | Lenguaje | Espias | `2010/07 Espias/index.html` |
+| [x] | 8 | Lenguaje | Antenas | `2010/08 Antenas/index.html` |
 
 ## 16ª OMI · 2011 — 8 / 8
 

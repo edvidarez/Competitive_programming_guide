@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2010 · Problema 05 — Vueltas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">15ª OMI · 2010 · Lenguaje</div>
+    <h1>Problema <span class="num">05</span> — Vueltas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/L-OMI2010-Vueltas">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h3>Descripción</h3>
+    <p>Se tiene un tablero de \(M\) filas por \(N\) columnas donde \(M\) y \(N\) son
+       números impares mayores a uno. Sobre este tablero se desean realizar dos
+       tipos de operaciones: <strong>Vueltas verticales</strong> y
+       <strong>Vueltas horizontales</strong>.</p>
+
+    <p>Una Vuelta se refiere a un giro del tablero que utiliza como eje de giro la
+       fila central en el caso de las vueltas verticales y la columna central en el
+       caso de las vueltas horizontales. Por ejemplo, si sobre un tablero se realiza
+       una vuelta vertical entonces la fila que está hasta arriba ahora estará hasta
+       abajo y viceversa; lo mismo con la segunda de arriba hacia abajo, que quedará
+       ahora como segunda de abajo hacia arriba, etc.</p>
+
+    <h3>Problema</h3>
+    <p>Escribe un programa que reciba como entrada el tablero y la secuencia de
+       vueltas a realizar sobre él, y escriba como salida la configuración final del
+       tablero después de haber aplicado \(K\) vueltas.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea los números \(M\) y \(N\) que indican el tamaño del
+          tablero.</li>
+      <li>En las siguientes \(M\) líneas habrá \(N\) números enteros separados por un
+          espacio en cada una, que indican el contenido del tablero en esa fila.</li>
+      <li>En la línea siguiente a la última del tablero, el número \(K\) que indica la
+          cantidad de vueltas a aplicar.</li>
+      <li>En las siguientes \(K\) líneas habrá un carácter <code>'V'</code> o
+          <code>'H'</code> (mayúsculas) que indica una vuelta Vertical o una vuelta
+          Horizontal. Las vueltas al tablero se aplican en el orden en el que
+          aparecen en la entrada.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir a la pantalla los siguientes datos: \(M\) líneas con
+       \(N\) enteros separados por un espacio cada uno que indiquen el estado final
+       del tablero después de haber aplicado las \(K\) vueltas en el orden que se
+       especifica en la entrada.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>64 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del tablero</td><td><span class="badge">\(1 &lt; M, N &lt; 10^3\) (impares)</span></td></tr>
+        <tr><td>Número de vueltas</td><td><span class="badge">\(1 \le K \le 5 \cdot 10^4\)</span></td></tr>
+        <tr><td>Valores de las celdas</td><td><span class="badge">\(1 \le a[i][j] &lt; 1245\)</span></td></tr>
+      </table>
+    </div>
+    <p class="note">El límite de memoria de 64 MB lo confirma el análisis oficial del
+       problema. El límite de tiempo no aparece en la fuente; se indica el valor
+       estándar de la plataforma.</p>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).
+       En esta edición, alrededor de la mitad de los casos tenían pocas vueltas, de
+       modo que simular vuelta por vuelta otorgaba una solución parcial de 50 puntos;
+       resolver el caso general valía 100 puntos.</p>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 5
+10 11 12 13 14
+15 16 17 18 19
+20 21 22 23 24
+1
+V</pre></div>
+      <div class="io"><h4>Salida</h4><pre>20 21 22 23 24
+15 16 17 18 19
+10 11 12 13 14</pre></div>
+    </div>
+    <p class="note">Una sola vuelta vertical (<code>V</code>): la fila de hasta arriba
+       pasa a hasta abajo y viceversa; la fila central queda igual.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 5
+10 11 12 13 14
+15 16 17 18 19
+20 21 22 23 24
+1
+H</pre></div>
+      <div class="io"><h4>Salida</h4><pre>14 13 12 11 10
+19 18 17 16 15
+24 23 22 21 20</pre></div>
+    </div>
+    <p class="note">Una sola vuelta horizontal (<code>H</code>): cada fila se invierte
+       de izquierda a derecha; la columna central queda igual.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Paridad</span>
+      <span class="ptag">Matrices</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una matriz de \(M \times N\) y una secuencia de \(K\) operaciones. Cada
+       operación voltea toda la matriz: <code>V</code> invierte el orden de las
+       <em>filas</em> (giro sobre la fila central) y <code>H</code> invierte el orden
+       de las <em>columnas</em> (giro sobre la columna central). Hay que imprimir la
+       matriz final tras aplicar las \(K\) operaciones.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El tablero cabe en memoria: \(M, N &lt; 10^3\) son a lo sumo
+                \(\sim 10^6\) enteros (\(\approx 4\) MB). Pero \(K\) llega a
+                \(5 \cdot 10^4\): mover \(10^6\) celdas por cada una daría
+                \(\sim 5 \cdot 10^{10}\) operaciones, demasiado. La clave está en
+                no mover nada hasta el final.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué le hace cada vuelta a la matriz?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué cambia exactamente una vuelta? Cuando volteas
+           verticalmente (<code>V</code>), ¿se mueve algún número de columna, o solo
+           cambia el orden de las filas? ¿Y con la horizontal (<code>H</code>)?</p>
+        <p>Conviene verlo así: una <code>V</code> deja a cada número en su misma
+           columna y solo manda la fila \(i\) a la posición \(M-1-i\). Una
+           <code>H</code> deja a cada número en su misma fila y manda la columna \(j\)
+           a la posición \(N-1-j\). Son dos efectos <em>independientes</em>: uno toca
+           el orden de las filas y el otro el de las columnas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La solución que sale sola (50 puntos)</summary>
+      <div class="body">
+        <p class="q">¿Y si simplemente guardas el tablero y aplicas cada vuelta tal
+           cual, una por una? ¿Cuántas operaciones harías en el peor caso?</p>
+        <p>Simular es directo: por cada <code>V</code> reviertes el orden de las
+           \(M\) filas, por cada <code>H</code> reviertes las \(N\) columnas de cada
+           fila. El problema es el costo: cada vuelta toca hasta \(M \cdot N \approx
+           10^6\) celdas y hay hasta \(K = 5\cdot 10^4\) vueltas, así que
+           \(\sim 5\cdot 10^{10}\) operaciones. Eso pasa solo en los casos con pocas
+           vueltas (medio puntaje). ¿Cómo evitar repetir trabajo inútil?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Dos vueltas iguales seguidas?</summary>
+      <div class="body">
+        <p class="q">¿Qué pasa si das dos vueltas verticales seguidas? ¿Y dos
+           horizontales? ¿Regresas al inicio?</p>
+        <p>Voltear dos veces en el mismo sentido te devuelve exactamente al estado
+           original. Entonces lo único que importa de cada sentido es la
+           <strong>paridad</strong> del número de vueltas: par equivale a no haber
+           volteado; impar equivale a una sola vuelta.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿Importa el orden?</summary>
+      <div class="body">
+        <p class="q">Si tienes <code>V H V</code>, ¿da lo mismo reordenarlas como
+           <code>V V H</code>? ¿Una vertical y una horizontal interfieren entre sí?</p>
+        <p>No interfieren: la vertical solo afecta la fila final de cada número y la
+           horizontal solo su columna final. Como tocan coordenadas distintas, las
+           operaciones <em>conmutan</em>: puedes reordenarlas como quieras. Junto con
+           la Pista 3, esto significa que toda la secuencia se reduce a dos bits:
+           ¿cuántas <code>V</code> hubo (par/impar) y cuántas <code>H</code>
+           (par/impar)?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> No hay que voltear el tablero ni una sola vez.
+           Recorre las \(K\) operaciones llevando dos banderas de paridad: una para
+           las vueltas verticales y otra para las horizontales. Cada <code>V</code>
+           alterna la bandera de filas; cada <code>H</code> alterna la de columnas.
+           Esto es válido porque dos vueltas del mismo tipo se cancelan (Pista 3) y
+           porque las verticales y horizontales conmutan (Pista 4): el resultado solo
+           depende de la paridad de cada tipo.</p>
+        <p><strong>Salida.</strong> Al final, imprime el tablero recorriéndolo en el
+           orden correcto, sin mover datos en memoria. Si la paridad de
+           <code>V</code> es impar, recorre las filas al revés (la fila \(i\) se lee
+           desde \(M-1-i\)); si la paridad de <code>H</code> es impar, recorre las
+           columnas al revés. Así obtienes el estado final en una sola pasada.</p>
+        <p><strong>Por qué es correcta.</strong> Aplicar la secuencia completa es lo
+           mismo que aplicar a lo sumo una vuelta vertical y a lo sumo una horizontal;
+           leer el arreglo con los índices invertidos según esas paridades produce
+           exactamente esa configuración.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Resolver():
+    leer M, N
+    leer la matriz a[0..M-1][0..N-1]
+    leer K
+
+    volteoFilas    <- falso   // ¿hay que invertir el orden de las filas?
+    volteoColumnas <- falso   // ¿hay que invertir el orden de las columnas?
+
+    repetir K veces:
+        leer c                       // 'V' o 'H'
+        si c = 'V': volteoFilas    <- no volteoFilas
+        si c = 'H': volteoColumnas <- no volteoColumnas
+
+    // imprimir en el orden adecuado, sin reacomodar la matriz
+    para ii de 0 a M-1:
+        i <- (M-1-ii) si volteoFilas    si no ii
+        para jj de 0 a N-1:
+            j <- (N-1-jj) si volteoColumnas si no jj
+            imprimir a[i][j] y un espacio
+        imprimir salto de linea</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(M\cdot N + K)\) en tiempo (lectura,
+           conteo de paridades y una sola pasada de impresión) y \(O(M\cdot N)\) en
+           memoria para guardar el tablero. Muy por debajo del límite de 64 MB.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>La salida puede tener ~10^6 numeros. Acumula todo en un
+buffer/string y escribelo de una vez (o usa '\n', nunca endl,
+y sync_with_stdio(false)) para que la impresion no sea el
+cuello de botella.</pre>
+          <p class="note">Es solo una optimización de E/S; el algoritmo es idéntico
+             en cualquier lenguaje.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

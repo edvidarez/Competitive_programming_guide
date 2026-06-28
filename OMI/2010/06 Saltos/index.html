@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2010 · Problema 06 — Saltos</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">15ª OMI · 2010 · Lenguaje</div>
+    <h1>Problema <span class="num">06</span> — Saltos</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/L--OMI2010-Saltos">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Un viejo rey maya le planteó este problema a uno de sus consejeros
+       matemáticos: <em>Tengo un tablero cuadriculado de \(M\) filas por \(N\)
+       columnas. Si pongo una ficha en una casilla y, a partir de ese momento,
+       realizo repetidamente la siguiente operación, a la cual llamaremos
+       <strong>salto</strong>:</em></p>
+    <ul>
+      <li>Muevo la ficha \(A\) filas hacia <strong>arriba</strong> y \(D\)
+          columnas hacia la <strong>derecha</strong>, continuando por la parte
+          inferior o izquierda del tablero en caso de que el movimiento ocasione
+          que la ficha salga del mismo.</li>
+    </ul>
+    <p><strong>¿Cuál es el mínimo número de saltos que tengo que dar con la ficha
+       antes de que vuelva a caer en alguna casilla por la que ya haya pasado
+       anteriormente?</strong></p>
+    <p>El rey prometió al consejero grandes dádivas si era capaz de contestar
+       correctamente. Ayúdale a conseguirlo.</p>
+
+    <h3>El programa</h3>
+    <p>Escribe un programa que, conociendo el valor de las variables \(M\), \(N\),
+       \(A\) y \(D\), así como la fila \(F\) y la columna \(C\) donde se coloca
+       inicialmente la ficha, calcule cuál es el mínimo número de saltos necesario
+       para que la ficha caiga en una casilla por la que ya haya pasado
+       previamente.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado la siguiente información:</p>
+    <ul>
+      <li>En la primera línea, los enteros \(M\) y \(N\) separados por un espacio,
+          que indican el número de filas y de columnas del tablero.</li>
+      <li>En la segunda línea, los enteros \(A\) y \(D\) que indican la cantidad
+          de posiciones a moverse hacia arriba y hacia la derecha,
+          respectivamente, en cada salto.</li>
+      <li>En la tercera línea, los enteros \(F\) y \(C\) que indican la fila y la
+          columna donde se coloca inicialmente la ficha. Las filas se numeran a
+          partir de uno comenzando por la superior, y las columnas se numeran a
+          partir de uno comenzando desde la izquierda.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir a la pantalla un único número entero que
+       representa la cantidad mínima de saltos requerida para volver a pasar por
+       alguna casilla previamente visitada del tablero.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en la fuente</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en la fuente</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del tablero</td><td><span class="badge">\(1 < M, N \le 10^7\)</span></td></tr>
+        <tr><td>Salto vertical</td><td><span class="badge">\(1 \le A < M\)</span></td></tr>
+        <tr><td>Salto horizontal</td><td><span class="badge">\(1 \le D < N\)</span></td></tr>
+        <tr><td>Fila inicial</td><td><span class="badge">\(1 \le F \le M\)</span></td></tr>
+        <tr><td>Columna inicial</td><td><span class="badge">\(1 \le C \le N\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">30</td><td>\(N, M \le 2 \cdot 10^3\)</td></tr>
+          <tr><td>2</td><td class="pts">70</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5 5
+2 2
+2 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>5</pre></div>
+    </div>
+    <p class="note">En la imagen de abajo se muestra que se inicia en la casilla
+       \((2, 3)\); luego se hace el primer salto (flecha azul) para llegar a la
+       casilla \((5, 5)\); después el segundo salto (flecha verde) lleva a la
+       casilla \((3, 2)\); luego el tercer salto (flecha roja) a la casilla
+       \((1, 4)\); luego el cuarto salto (flecha naranja) a la casilla \((4, 1)\);
+       y finalmente el quinto salto (flecha morada) regresa nuevamente a la
+       casilla \((2, 3)\).</p>
+
+    <figure>
+      <img alt="Tablero 5x5 con la trayectoria de la ficha: cinco flechas de colores que parten de la casilla (2,3), recorren (5,5), (3,2), (1,4), (4,1) y regresan a (2,3)."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 1: trayectoria del caso de ejemplo. Tras 5 saltos la
+         ficha vuelve a la casilla inicial \((2,3)\).</figcaption>
+    </figure>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Teoría de números</span>
+      <span class="ptag">Aritmética modular</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes un tablero <em>toroidal</em> de \(M\) filas por \(N\) columnas. Desde
+       la casilla \((F, C)\), cada salto mueve la ficha \(A\) filas hacia arriba y
+       \(D\) columnas hacia la derecha, dando la vuelta por el otro lado cuando se
+       sale. Hay que decir cuántos saltos, como mínimo, hacen que la ficha caiga
+       en una casilla que ya había visitado.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Con \(M, N \le 2\cdot 10^3\) (subtarea 1) puedes simular: a lo más
+                \(M\cdot N \le 4\cdot 10^6\) casillas. Con \(M, N \le 10^7\) la
+                simulación es imposible y necesitas una fórmula cerrada. La
+                respuesta puede superar \(2^{31}\) (en los casos llega a
+                \(\approx 5.3\cdot 10^9\)): usa enteros de 64 bits.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar el tablero?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que "dar la vuelta por el otro lado" convierte al
+           tablero en un toro? ¿Puedes describir la posición de la ficha solo con
+           aritmética módulo \(M\) (filas) y módulo \(N\) (columnas)?</p>
+        <p>Numera filas y columnas desde \(0\). Si la ficha está en la fila \(r\),
+           tras un salto está en \((r - A) \bmod M\); si está en la columna \(c\),
+           pasa a \((c + D) \bmod N\). Las dos coordenadas evolucionan por
+           separado y sin interferir.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtarea 1)</summary>
+      <div class="body">
+        <p class="q">Con \(M, N \le 2\cdot 10^3\), ¿qué pasa si simplemente
+           simulas salto por salto, marcando las casillas que ya visitaste, hasta
+           que repitas una? ¿Cuántos saltos como máximo necesitarías antes de que
+           forzosamente haya una repetición?</p>
+        <p>El tablero tiene \(M\cdot N \le 4\cdot 10^6\) casillas distintas, así
+           que a lo sumo en esa cantidad de saltos la ficha tiene que repetir.
+           Marcar visitadas en una matriz y contar saltos te da los 30 puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: el salto es reversible</summary>
+      <div class="body">
+        <p class="q">¿Cuál casilla crees que será la PRIMERA en repetirse? ¿Podría
+           ser una casilla intermedia, o forzosamente será la de inicio? Piensa:
+           dada una casilla, ¿cuántas casillas distintas pueden saltar hacia
+           ella?</p>
+        <p>Como el salto suma una cantidad fija módulo \(M\) y módulo \(N\), es una
+           <strong>biyección</strong>: cada casilla tiene exactamente un único
+           origen. Por eso la órbita de la ficha es un <em>ciclo puro</em> (sin
+           "cola"): la primera casilla repetida es justamente la inicial. La
+           respuesta es la <strong>longitud del ciclo</strong>, y por lo tanto NO
+           depende de \(F\) ni de \(C\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Separa las dos dimensiones</summary>
+      <div class="body">
+        <p class="q">¿Después de cuántos saltos la <em>fila</em> vuelve a su valor
+           inicial, ignorando la columna? ¿Y la <em>columna</em> ignorando la
+           fila? ¿Cómo combinas ambos periodos para que las dos coincidan a la
+           vez?</p>
+        <p>La fila regresa cuando \(k\cdot A \equiv 0 \pmod{M}\); el menor \(k>0\)
+           es \(M/\gcd(M,A)\). La columna regresa cuando \(k\cdot D \equiv 0
+           \pmod{N}\); el menor es \(N/\gcd(N,D)\). La ficha vuelve al inicio
+           cuando ambos periodos se cumplen simultáneamente: el mínimo común
+           múltiplo de los dos.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Coloca el origen en \(0\): la fila inicial es \(F-1\) y la columna
+           inicial es \(C-1\). Tras \(k\) saltos la ficha está en
+           \[\big((F-1 - kA)\bmod M,\; (C-1 + kD)\bmod N\big).\]</p>
+        <p>Como cada salto es una traslación fija en el toro, el mapeo es
+           biyectivo, así que la órbita es un ciclo puro y la primera repetición
+           es el regreso a la casilla inicial. Eso ocurre en el menor \(k>0\) tal
+           que, al mismo tiempo:</p>
+        <ul>
+          <li>\(kA \equiv 0 \pmod{M}\) — la fila vuelve a \(F-1\); el menor tal
+              \(k\) es \(p_V = M/\gcd(M,A)\).</li>
+          <li>\(kD \equiv 0 \pmod{N}\) — la columna vuelve a \(C-1\); el menor tal
+              \(k\) es \(p_H = N/\gcd(N,D)\).</li>
+        </ul>
+        <p>El menor \(k\) que cumple ambas a la vez es
+           \[\text{respuesta} = \operatorname{lcm}(p_V,\, p_H)
+             = \frac{p_V}{\gcd(p_V,p_H)}\cdot p_H.\]</p>
+        <p>Comprobación con el ejemplo \(M=N=5\), \(A=D=2\):
+           \(p_V = 5/\gcd(5,2) = 5\), \(p_H = 5/\gcd(5,2) = 5\),
+           \(\operatorname{lcm}(5,5) = 5\). Coincide con la salida esperada.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer M, N
+leer A, D
+leer F, C            # F y C no se usan: la respuesta es la longitud del ciclo
+
+pV = M / gcd(M, A)   # periodo de las filas
+pH = N / gcd(N, D)   # periodo de las columnas
+
+g  = gcd(pV, pH)
+respuesta = (pV / g) * pH    # lcm(pV, pH); divide ANTES de multiplicar
+
+imprimir respuesta</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(\log(\max(M,N)))\) por los algoritmos
+           de Euclides; memoria \(O(1)\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa long long (entero de 64 bits): la respuesta puede pasar de 2^31
+(hasta ~10^14 en el peor caso). En el lcm divide primero por el gcd
+y luego multiplica, para no desbordar el producto intermedio.</pre>
+          <p class="note">Solo es una nota de implementación; nunca pongas la
+             solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
