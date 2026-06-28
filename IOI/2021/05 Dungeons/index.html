@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2021 · Tarea 5 — Dungeons Game</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2021 · Día 2</div>
+    <h1>Tarea <span class="num">5</span> — Dungeons Game</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Robert está diseñando un nuevo videojuego. El juego tiene un héroe, \(n\)
+       oponentes y \(n+1\) mazmorras. Los oponentes están numerados de \(0\) a
+       \(n-1\) y las mazmorras de \(0\) a \(n\). El oponente \(i\)
+       (\(0 \le i \le n-1\)) vive en la mazmorra \(i\) y tiene fuerza \(s[i]\).
+       En la mazmorra \(n\) no hay ningún oponente.</p>
+
+    <p>El héroe comienza entrando a la mazmorra \(x\) con fuerza \(z\). Cada vez
+       que el héroe entra a una mazmorra \(i\) (\(0 \le i \le n-1\)), se enfrenta
+       al oponente \(i\) y ocurre una de dos cosas:</p>
+    <ul>
+      <li>Si la fuerza del héroe es <strong>mayor o igual</strong> que la fuerza
+          del oponente \(s[i]\), el héroe <strong>gana</strong>. Su fuerza
+          aumenta en \(s[i]\) (con \(s[i] \ge 1\)) y a continuación entra a la
+          mazmorra \(w[i]\) (donde \(w[i] \gt i\)).</li>
+      <li>En otro caso, el héroe <strong>pierde</strong>. Su fuerza aumenta en
+          \(p[i]\) (con \(p[i] \ge 1\)) y a continuación entra a la mazmorra
+          \(l[i]\).</li>
+    </ul>
+
+    <p>Nota que \(p[i]\) puede ser menor, igual o mayor que \(s[i]\). Igualmente,
+       \(l[i]\) puede ser menor, igual o mayor que \(i\). Sin importar el
+       resultado del enfrentamiento, el oponente permanece en la mazmorra \(i\) y
+       conserva su fuerza \(s[i]\).</p>
+
+    <p>El juego termina cuando el héroe entra a la mazmorra \(n\). Se puede
+       demostrar que el juego termina tras un número finito de enfrentamientos,
+       sin importar la mazmorra inicial ni la fuerza inicial del héroe.</p>
+
+    <p>Robert te pidió probar su juego corriendo \(q\) simulaciones. Para cada
+       simulación, Robert define una mazmorra inicial \(x\) y una fuerza inicial
+       \(z\). Tu tarea es averiguar, para cada simulación, cuál es la fuerza del
+       héroe cuando el juego termina.</p>
+
+    <!-- FIGURA CLAVE del PDF (diagrama de mazmorras del ejemplo). -->
+    <figure>
+      <img alt="Diagrama de cuatro mazmorras (0, 1, 2, 3). Cada cuadro 0,1,2
+        muestra s[i] y p[i]. Las flechas magenta señalan a dónde va el héroe al
+        ganar (con la condición y la ganancia de fuerza) y las flechas negras a
+        dónde va al perder."
+           src="data:image/png;base64,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">
+      <figcaption>El diagrama ilustra la llamada del ejemplo. Cada cuadro es una
+        mazmorra; en las mazmorras \(0\), \(1\) y \(2\) se anotan \(s[i]\) y
+        \(p[i]\). Las flechas <strong>magenta</strong> indican a dónde se mueve el
+        héroe tras <strong>ganar</strong> y las flechas <strong>negras</strong> a
+        dónde se mueve tras <strong>perder</strong>.</figcaption>
+    </figure>
+
+    <!-- ===== TAREA FUNCIONAL ===== -->
+    <h2>Detalles de implementación</h2>
+    <p>No lees de la entrada estándar ni escribes a la salida estándar:
+       implementas dos funciones que el evaluador llama.</p>
+    <div class="sig">
+      <span class="tag">Firmas a implementar</span>
+<pre>void  init(int n, int[] s, int[] p, int[] w, int[] l);
+int64 simulate(int x, int z);</pre>
+    </div>
+    <ul>
+      <li><code>init</code> — recibe \(n\) (número de oponentes) y los arreglos
+          \(s\), \(p\), \(w\), \(l\) de longitud \(n\). Para cada
+          \(0 \le i \le n-1\): \(s[i]\) es la fuerza del oponente \(i\) (y la
+          fuerza que gana el héroe al vencerlo); \(p[i]\) es la fuerza que gana el
+          héroe al perder; \(w[i]\) es la mazmorra a la que pasa el héroe tras
+          ganar; \(l[i]\) es la mazmorra a la que pasa tras perder. Se llama
+          <strong>exactamente una vez</strong>, antes de cualquier llamada a
+          <code>simulate</code>.</li>
+      <li><code>simulate</code> — recibe la mazmorra inicial \(x\) y la fuerza
+          inicial \(z\); debe regresar la fuerza del héroe cuando el juego
+          termina, suponiendo que el héroe empieza entrando a la mazmorra \(x\)
+          con fuerza \(z\). Se llama <strong>exactamente \(q\) veces</strong>. El
+          valor de retorno es de 64 bits (<code>int64</code>).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>4.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de oponentes</td><td><span class="badge">\(1 \le n \le 400\,000\)</span></td></tr>
+        <tr><td>Número de simulaciones</td><td><span class="badge">\(1 \le q \le 50\,000\)</span></td></tr>
+        <tr><td>Fuerzas</td><td><span class="badge">\(1 \le s[i],\, p[i] \le 10^7\)</span></td></tr>
+        <tr><td>Destinos</td><td><span class="badge">\(0 \le l[i],\, w[i] \le n\)</span> y <span class="badge">\(w[i] \gt i\)</span></td></tr>
+        <tr><td>Consulta</td><td><span class="badge">\(0 \le x \le n-1\)</span> y <span class="badge">\(1 \le z \le 10^7\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (tabla exacta del PDF). -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">11</td><td>\(n \le 50\,000\), \(q \le 100\), \(s[i], p[i] \le 10\,000\) (para todo \(0 \le i \le n-1\)).</td></tr>
+          <tr><td>2</td><td class="pts">26</td><td>\(s[i] = p[i]\) (para todo \(0 \le i \le n-1\)): ganar o perder dan la misma ganancia de fuerza.</td></tr>
+          <tr><td>3</td><td class="pts">13</td><td>\(n \le 50\,000\) y todos los oponentes tienen la misma fuerza, es decir \(s[i] = s[j]\) para todo \(0 \le i, j \le n-1\).</td></tr>
+          <tr><td>4</td><td class="pts">12</td><td>\(n \le 50\,000\) y hay a lo más \(5\) valores distintos entre todos los \(s[i]\).</td></tr>
+          <tr><td>5</td><td class="pts">27</td><td>\(n \le 50\,000\) (sin restricción sobre los \(s[i]\)).</td></tr>
+          <tr><td>6</td><td class="pts">11</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la siguiente llamada:</p>
+    <div class="io"><pre>init(3, [2, 6, 9], [3, 1, 2], [2, 2, 3], [1, 0, 1])</pre></div>
+    <p>Es la configuración que muestra el diagrama de arriba. Supón que el
+       evaluador llama a <code>simulate(0, 1)</code>. El juego transcurre así:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Mazmorra</th><th>Fuerza antes del enfrentamiento</th><th>Resultado</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>1</td><td>Pierde</td></tr>
+          <tr><td>1</td><td>4</td><td>Pierde</td></tr>
+          <tr><td>0</td><td>5</td><td>Gana</td></tr>
+          <tr><td>2</td><td>7</td><td>Pierde</td></tr>
+          <tr><td>1</td><td>9</td><td>Gana</td></tr>
+          <tr><td>2</td><td>15</td><td>Gana</td></tr>
+          <tr><td>3</td><td>24</td><td>Termina el juego</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Por lo tanto, la función debe regresar \(24\).</p>
+
+    <p>Ahora supón que el evaluador llama a <code>simulate(2, 3)</code>. El juego
+       transcurre así:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Mazmorra</th><th>Fuerza antes del enfrentamiento</th><th>Resultado</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>3</td><td>Pierde</td></tr>
+          <tr><td>1</td><td>5</td><td>Pierde</td></tr>
+          <tr><td>0</td><td>6</td><td>Gana</td></tr>
+          <tr><td>2</td><td>8</td><td>Pierde</td></tr>
+          <tr><td>1</td><td>10</td><td>Gana</td></tr>
+          <tr><td>2</td><td>16</td><td>Gana</td></tr>
+          <tr><td>3</td><td>25</td><td>Termina el juego</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Por lo tanto, la función debe regresar \(25\).</p>
+
+    <h3>Evaluador de ejemplo</h3>
+    <p>El evaluador de ejemplo lee la entrada con este formato:</p>
+    <ul>
+      <li>línea \(1\): \(n\) \(q\)</li>
+      <li>línea \(2\): \(s[0]\) \(s[1]\) \(\dots\) \(s[n-1]\)</li>
+      <li>línea \(3\): \(p[0]\) \(p[1]\) \(\dots\) \(p[n-1]\)</li>
+      <li>línea \(4\): \(w[0]\) \(w[1]\) \(\dots\) \(w[n-1]\)</li>
+      <li>línea \(5\): \(l[0]\) \(l[1]\) \(\dots\) \(l[n-1]\)</li>
+      <li>línea \(6+i\) (\(0 \le i \le q-1\)): \(x\) \(z\) para la \(i\)-ésima llamada a <code>simulate</code>.</li>
+    </ul>
+    <p>El evaluador imprime tus respuestas con este formato:</p>
+    <ul>
+      <li>línea \(1+i\) (\(0 \le i \le q-1\)): el valor de retorno de la \(i\)-ésima llamada a <code>simulate</code>.</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Saltos binarios</span>
+      <span class="ptag">Grafos funcionales</span>
+      <span class="ptag">Procesamiento por fases</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(n\) mazmorras; en la mazmorra \(i\), si tu fuerza \(z \ge s[i]\)
+       ganas (\(z \mathrel{+}= s[i]\), pasas a \(w[i] \gt i\)) y si no, pierdes
+       (\(z \mathrel{+}= p[i]\), pasas a \(l[i]\)); el juego termina al llegar a
+       \(n\). Implementa <code>init</code> (preproceso) y \(q\) consultas
+       <code>simulate(x, z)</code> que devuelven la fuerza final. La fuerza solo
+       crece, así que el juego siempre termina, pero <em>un solo</em> recorrido
+       puede tener muchísimos pasos.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n\) hasta \(4\times10^5\) y \(q\) hasta \(5\times10^4\): no
+                puedes simular paso a paso cada consulta. Pero \(s[i] \le 10^7
+                \lt 2^{24}\): hay <strong>pocos órdenes de magnitud</strong> de
+                fuerza. Esa es la grieta por donde entra la solución de
+                \(O(\log^2)\) por consulta.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que cada mazmorra es un nodo con <em>dos</em>
+           aristas de salida (ganar \(\to w[i]\), perder \(\to l[i]\)), y que cuál
+           tomas depende solo de tu fuerza actual frente a \(s[i]\)?</p>
+        <p>El obstáculo es que la arista elegida cambia conforme crece \(z\). Pero
+           fíjate en lo que <em>nunca</em> cambia: la fuerza <strong>solo
+           aumenta</strong> (sumas \(s[i] \ge 1\) o \(p[i] \ge 1\)), y al ganar
+           avanzas a \(w[i] \gt i\) (estrictamente hacia adelante). ¿Por qué esto
+           garantiza que el juego termina? ¿Y cómo lo aprovecharías para
+           <em>saltar</em> en vez de pisar mazmorra por mazmorra?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: la fuerza bruta honesta</summary>
+      <div class="body">
+        <p class="q">Con \(n \le 50\,000\), \(q \le 100\) y \(s[i], p[i] \le
+           10^4\), ¿qué te impide simular literalmente cada consulta paso a paso?</p>
+        <p>Casi nada: con tan pocas consultas y valores chicos, seguir
+           \(z \ge s[x]?\) y mover \(x\) hasta llegar a \(n\) cabe en el tiempo.
+           Te da \(11\) puntos y, sobre todo, te da el <em>simulador de
+           referencia</em> con el que validarás todo lo demás. ¿Cómo acotas
+           cuántos pasos da un recorrido? (Pista: la fuerza crece al menos \(1\)
+           por paso y los avances \(w[i] \gt i\) limitan los ciclos.)</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2: cuando ganar y perder dan lo mismo</summary>
+      <div class="body">
+        <p class="q">Si \(s[i] = p[i]\), la <em>ganancia</em> de fuerza en la
+           mazmorra \(i\) es la misma ganes o pierdas. ¿Qué se simplifica?</p>
+        <p>La fuerza que llevas en cada mazmorra deja de depender de los
+           resultados: solo depende de <em>qué</em> mazmorras visitaste. Eso
+           sugiere precomputar saltos: desde un nodo, ¿cuánta fuerza acumulas y a
+           dónde llegas al avanzar \(2^k\) pasos, junto con la
+           <strong>fuerza mínima inicial</strong> necesaria para que ese bloque de
+           pasos siga la misma trayectoria? ¿Te suena a <em>saltos binarios</em>
+           (binary lifting) con una cota de validez?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3: un solo umbral, dos regímenes</summary>
+      <div class="body">
+        <p class="q">Si todos los oponentes tienen la misma fuerza \(S\), solo hay
+           <em>un</em> umbral. ¿Cuántos "regímenes" de comportamiento existen?</p>
+        <p>Exactamente dos. Mientras \(z \lt S\) <strong>pierdes siempre</strong>
+           (sigues \(l[i]\)); en cuanto \(z \ge S\) <strong>ganas siempre</strong>
+           y, como \(w[i] \gt i\), llegas a \(n\) en a lo más \(n\) pasos. Dentro
+           de cada régimen el grafo es <em>funcional</em> (cada nodo tiene un único
+           destino), así que puedes hacer saltos binarios sobre el grafo "pierdo
+           siempre" para acelerar la fase inicial hasta que \(z\) alcance \(S\).
+           Guarda esa palabra: <strong>fase</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtareas 4 y 5: de pocos umbrales a muchos</summary>
+      <div class="body">
+        <p class="q">Con a lo más \(5\) valores distintos de \(s[i]\), ordénalos:
+           tu fuerza cae en una de \(\le 6\) <em>franjas</em>. Dentro de una
+           franja, ¿el resultado (ganar/perder) en cada mazmorra ya está
+           determinado?</p>
+        <p>Sí: si tu franja está por encima del umbral del nodo, ganas seguro; si
+           está por debajo, pierdes seguro. Fijada la franja, el grafo vuelve a ser
+           funcional y puedes hacer saltos binarios <em>por franja</em>; entre
+           franja y franja cruzas a lo más unas pocas veces. El problema de la
+           Subtarea 5 (\(s[i]\) arbitrarios, \(n \le 50\,000\)) es que ahora puede
+           haber hasta \(n\) umbrales distintos: demasiadas franjas.</p>
+        <p class="q">¿Cómo agrupas las fuerzas para que solo haya \(O(\log)\)
+           franjas en vez de \(n\)? Pista fuerte: la fuerza cruza de un orden de
+           magnitud al siguiente <em>pocas</em> veces.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea: fases por potencias de dos (saltos binarios por
+           niveles).</strong> Como \(s[i] \le 10^7 \lt 2^{24}\), define la
+           <em>fase</em> de un valor como
+           \(\operatorname{fase}(v) = \min(\lfloor \log_2 v \rfloor,\, 24)\); hay
+           \(\text{NFASES} \approx 25\) fases. La observación clave es el
+           <strong>invariante de fase</strong>:</p>
+        <ul>
+          <li>Si \(\operatorname{fase}(z) \gt \operatorname{fase}(s[i])\),
+              entonces \(z \ge 2^{\operatorname{fase}(z)} \ge
+              2^{\operatorname{fase}(s[i])+1} \gt s[i]\): el héroe
+              <strong>gana siempre</strong>.</li>
+          <li>Si \(\operatorname{fase}(z) \lt \operatorname{fase}(s[i])\),
+              entonces \(z \lt 2^{\operatorname{fase}(z)+1} \le
+              2^{\operatorname{fase}(s[i])} \le s[i]\): el héroe
+              <strong>pierde siempre</strong>.</li>
+          <li>Solo cuando \(\operatorname{fase}(z) = \operatorname{fase}(s[i])\)
+              (un <strong>empate</strong> de fase) el resultado depende de comparar
+              \(z\) con \(s[i]\) de verdad.</li>
+        </ul>
+        <p>Por eso, <em>fijada la fase</em>, el destino de cada mazmorra
+           (ganar \(\to w[i]\) o perder \(\to l[i]\)) queda totalmente determinado:
+           el grafo se vuelve <strong>funcional</strong> y la trayectoria es
+           determinista hasta toparse con un nodo de empate o con la mazmorra
+           \(n\). Eso permite comprimir cadenas y duplicarlas con saltos binarios.</p>
+
+        <h3>Dos niveles de tablas (en <code>init</code>)</h3>
+        <ul>
+          <li><strong>Nivel 1 (por fase).</strong> Para cada fase \(f\) y cada
+              mazmorra \(x\) se comprime la cadena determinista (siguiendo
+              ganar/perder dictado por \(f\)) hasta el primer nodo de empate o
+              hasta \(n\). Se guarda \(\textit{sze1}\) (fuerza total acumulada en
+              la cadena, saturada a \(+\infty\)), \(\textit{loc1}\) (nodo donde
+              termina) y \(\textit{mx1}\) (la <em>cota máxima</em> de fuerza
+              inicial con la que toda la cadena se recorre sin que \(z\) salte a la
+              fase siguiente, es decir el mínimo a lo largo de la cadena de los
+              umbrales que mantienen \(z \lt 2^{\,f+1}\)). Se calcula con un DFS
+              iterativo sobre el grafo funcional, propagando hacia atrás.</li>
+          <li><strong>Nivel 2 (saltos binarios).</strong> La tabla base
+              \(\textit{loc2}[0]\) es el salto de nivel 1 evaluado en la fase
+              propia de cada nodo, \(\operatorname{fase}(s[x])\). Luego se duplican
+              trayectorias \(\textit{loc2}[k]\) componiendo \(\textit{loc2}[k-1]\)
+              consigo mismo (\(\approx 25\) niveles), acumulando \(\textit{sze2}\)
+              y propagando la cota \(\textit{mx2}\), para avanzar \(2^k\) saltos
+              comprimidos de golpe mientras la fuerza siga acotada.</li>
+        </ul>
+
+        <h3>La consulta <code>simulate(x, z)</code></h3>
+        <p>Calcula \(f = \operatorname{fase}(z)\). Mientras \(x \lt n\): si la
+           cadena entera de nivel 1 cabe sin cambiar de fase
+           (\(z \lt \textit{mx1}[f][x]\)) tómala; luego, con la tabla de nivel 2,
+           haz <em>fast-forward</em> tomando los mayores \(2^k\) posibles mientras
+           \(z \lt \textit{mx2}[k][\cdot]\). Cuando ya no puedas saltar, si estás
+           en un nodo de empate da <strong>un paso real</strong> (compara \(z\) con
+           \(s[x]\), actualiza \(z\) y \(x\)) y sube la fase a
+           \(\operatorname{fase}(z)\); si no, simplemente incrementa la fase en
+           \(1\) (tu fuerza ya domina la fase actual).</p>
+
+        <h3>¿Por qué es correcto?</h3>
+        <p>Por el invariante de fase, fijada la fase los movimientos son
+           deterministas salvo en empates, donde se hace la comparación exacta
+           real. Las tablas de nivel 1 comprimen exactamente esas cadenas
+           deterministas, y \(\textit{mx1}\) garantiza que el salto completo solo
+           se aplica cuando la fuerza no abandona la fase (si la abandonara, no se
+           salta y se procede paso a paso o se sube de fase). El salto binario de
+           nivel 2 compone estos saltos respetando las cotas \(\textit{mx2}\), por
+           lo que nunca rebasa el punto donde el comportamiento cambia.
+           <strong>Terminación:</strong> cada vez que no se puede saltar, o se da
+           un paso real (que aumenta \(z\), eventualmente subiendo de fase) o se
+           incrementa la fase; como hay a lo más \(\approx 25\) fases y dentro de
+           cada una el avance es por saltos binarios decrecientes, el bucle termina
+           en \(O(\log^2)\). Verificado además contra el simulador de referencia.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>FASE(v): regresa min( piso(log2(v)), NFASES-1 )   // NFASES = 25, pues s[i] &lt;= 1e7 &lt; 2^24
+GANA(i, f):   FASE(s[i]) &lt; f       // con la fase f el heroe gana seguro
+EMPATE(i, f): FASE(s[i]) == f      // el resultado depende de comparar z con s[i]
+DEST_NODO(i, f):   si GANA -> w[i] ; si no -> l[i]
+DEST_FUERZA(i, f): si GANA -> s[i] ; si no -> p[i]
+
+init(n, s, p, w, l):
+  para cada fase f en 0 .. NFASES-1:
+     marca todos los nodos como no visitados
+     para cada nodo x no visitado:
+        recorre (DFS iterativo) la cadena determinista siguiendo DEST_NODO(., f)
+           hasta llegar a n, a un nodo de EMPATE, o a un nodo ya resuelto
+        propaga hacia atras por la cadena; para cada nodo x guarda:
+           sze1[f][x] = ganancia acumulada hasta el final de la cadena (saturada a +inf)
+           loc1[f][x] = nodo donde termina la cadena (n o un nodo de empate)
+           mx1[f][x]  = cota maxima de fuerza inicial que mantiene TODA la
+                        cadena dentro de la fase f (sin cruzar a 2^(f+1))
+  // tabla base de nivel 2: el salto de nivel 1 evaluado en la fase propia del nodo
+  para cada nodo x: copia (sze2[0][x], mx2[0][x], loc2[0][x]) de (sze1, mx1, loc1)
+                    evaluados en la fase FASE(s[x])
+  fija el nodo n como sumidero: ganancia 0, cota +inf, destino n
+  // saltos binarios: duplica trayectorias
+  para k = 1 .. NIVELES-1:
+     para cada nodo x:
+        y = loc2[k-1][x]
+        sze2[k][x] = saturar( sze2[k-1][x] + sze2[k-1][y] )
+        mx2[k][x]  = min( mx2[k-1][x], mx2[k-1][y] - sze2[k-1][x] )
+        loc2[k][x] = loc2[k-1][y]
+
+simulate(x, z):
+  f = FASE(z)
+  mientras x &lt; n:
+     si z &lt; mx1[f][x] y sze1[f][x] != inf:        // toda la cadena cabe en la fase
+        z += sze1[f][x] ;  x = loc1[f][x]          // salto de nivel 1
+        si x == n: regresa z
+        para k = NIVELES-1 bajando hasta 0:         // fast-forward binario
+           si z &lt; mx2[k][x] y sze2[k][x] != inf:
+              z += sze2[k][x] ;  x = loc2[k][x]
+        si x == n: regresa z
+     si FASE(s[x]) == f:          // estoy en un nodo de empate: un paso real
+        si z &gt;= s[x]:  z += s[x]; x = w[x]
+        en otro caso:  z += p[x]; x = l[x]
+        f = max(f, FASE(z))
+     en otro caso:
+        f = f + 1                 // mi fuerza ya domina esta fase, subo una
+  regresa z</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(\text{init}\) en
+           \(O(n \log S)\) tiempo y memoria (con \(S = \max s[i]\); las tablas
+           ocupan \(\approx 25\,(n{+}1)\) enteros de 64 bits por arreglo en cada
+           nivel). Cada <code>simulate</code> en \(O(\log^2 S)\) (número de fases
+           por número de duplicaciones, \(\approx 25 \times 25\)). En total
+           \(O(n \log S + q \log^2 S)\). <strong>Memoria:</strong> varias tablas de
+           \(\approx 25\,(n{+}1)\) <code>int64</code> caben en los 2 GB, pero es el
+           cuello del problema; satura las sumas a
+           \(\textit{inf} = 2^{60}\) para no desbordar (la fuerza final real cabe
+           holgada en \(64\) bits).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// FASE(v) en O(1) con builtins de GCC/Clang:
+//   FASE(v) = min(31 - __builtin_clz(v), 24)        (v &gt;= 1)
+// Usa long long (int64) para z y para las sumas de las tablas,
+// con saturacion a inf = 2^60 para evitar overflow al acumular.</pre>
+          <p class="note">Solo es un detalle de implementación; la solución
+             completa va en pseudocódigo, no en código real.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
