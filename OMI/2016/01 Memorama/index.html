@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2016 · Problema 01 — Memorama</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">21ª OMI · 2016 · Karel</div>
+    <h1>Problema <span class="num">01</span> — Memorama</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2016-Memorama">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <h3>Historia</h3>
+    <p>Karel encontró su memorama de animales bebés regado por todo su cuarto y, para
+       jugar con sus amigos, necesita saber si está completo.</p>
+    <p>Las cartas del memorama están representadas por <strong>montones de zumbadores</strong>:
+       la cantidad de zumbadores en cada montón representa la carta; es decir, dos
+       montones de (por ejemplo) \(3\) zumbadores hacen una pareja.</p>
+    <p>Karel quiere saber si el memorama está completo.</p>
+
+    <h3>Tarea</h3>
+    <p>Escribe un programa que ayude a Karel a saber si su memorama está completo. El
+       memorama está <strong>completo</strong> si todas las cartas tienen pareja.</p>
+    <ul>
+      <li>Si el memorama está completo, Karel debe apagarse orientado al <strong>norte</strong>.</li>
+      <li>Si el memorama <strong>NO</strong> está completo, Karel debe apagarse orientado al <strong>sur</strong>.</li>
+    </ul>
+
+    <h3>Consideraciones</h3>
+    <ul>
+      <li>Karel no tiene zumbadores en la mochila.</li>
+      <li>Karel inicia en la casilla \((1,1)\) con orientación desconocida.</li>
+      <li>Nunca hay más de \(2\) cartas con el mismo número de zumbadores.</li>
+      <li>La cantidad de zumbadores en la carta con número más alto es menor a las
+          dimensiones del mundo.</li>
+      <li>El memorama está incompleto si hay al menos una carta sin pareja.</li>
+      <li>Para obtener los puntos del problema, Karel puede apagarse en cualquier
+          casilla del mundo, pero debe quedar viendo al norte si el memorama está
+          completo o viendo al sur si está incompleto. No importan los zumbadores que
+          queden en el mundo.</li>
+    </ul>
+
+    <!-- ===== BLOQUE KAREL: descripción del mundo ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p><strong>El mundo.</strong> Es una cuadrícula rectangular (en los casos
+         oficiales, \(100 \times 100\)). Cada <em>carta</em> del memorama es un
+         <strong>montón de zumbadores</strong> colocado en alguna casilla; el número de
+         zumbadores del montón es el «número» de esa carta. Los montones pueden estar
+         repartidos por cualquier parte del mundo, así que Karel tendrá que recorrerlo
+         para encontrarlos.</p>
+      <p><strong>Karel.</strong> Empieza en la casilla \((1,1)\) con
+         <strong>orientación desconocida</strong> (puede ver al norte, sur, este u
+         oeste) y con la <strong>mochila vacía</strong> (\(0\) zumbadores).</p>
+      <p><strong>Objetivo.</strong> Determinar si todas las cartas tienen pareja y
+         <strong>apagarse</strong> mirando al <strong>norte</strong> (completo) o al
+         <strong>sur</strong> (incompleto). La casilla final y los zumbadores que queden
+         en el mundo no importan: solo cuenta la orientación al apagarse.</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por teclado: toda la información viene en el <strong>mundo</strong>
+       de Karel. Cada montón de zumbadores es una carta, y su tamaño (cantidad de
+       zumbadores) es su número. Karel arranca en \((1,1)\), orientación desconocida,
+       mochila vacía.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por pantalla: el resultado es la <strong>orientación de Karel al
+       apagarse</strong>. Debe quedar viendo al <strong>norte</strong> si el memorama
+       está completo, o al <strong>sur</strong> si está incompleto.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Mundo</td><td>Cuadrícula rectangular; en los casos oficiales \(100 \times 100\)</td></tr>
+        <tr><td>Inicio de Karel</td><td>Casilla \((1,1)\), orientación desconocida, mochila vacía</td></tr>
+        <tr><td>Cartas (montones)</td><td>Cada valor aparece a lo más \(2\) veces</td></tr>
+        <tr><td>Valor máximo de una carta</td><td>Menor que la dimensión del mundo (en los casos, \(\le 90\))</td></tr>
+        <tr><td>Instrucciones máximas</td><td>\(10{,}000{,}000\) por ejecución</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+    <p class="note">El <code>meta.json</code> no registra límite de tiempo ni de memoria
+       (es una tarea de Karel: el límite efectivo es el número de instrucciones).</p>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada). Los
+       casos vienen agrupados (grupos \(g0,\dots,g9\), cada uno con una variante
+       «completa» y otra «incompleta»), pero no hay crédito parcial por subtarea.</p>
+
+    <h2>Ejemplos</h2>
+    <p>El enunciado oficial ilustra dos mundos. Como no se reciben datos por teclado, la
+       «entrada» es el mundo y la «salida» es la orientación final de Karel.</p>
+
+    <div class="example">
+      <div class="io"><h4>Ejemplo 1 — Mundo</h4><pre>Todas las cartas
+forman parejas
+(cada número aparece
+exactamente dos veces).</pre></div>
+      <div class="io"><h4>Ejemplo 1 — Karel al apagarse</h4><pre>NORTE
+(memorama completo)</pre></div>
+    </div>
+    <p class="note">En este caso, el memorama está completo. Karel debe apagarse
+       orientado al norte.</p>
+
+    <div class="example">
+      <div class="io"><h4>Ejemplo 2 — Mundo</h4><pre>Hay una carta con el
+número 2 que está sola
+(el resto sí tiene
+pareja).</pre></div>
+      <div class="io"><h4>Ejemplo 2 — Karel al apagarse</h4><pre>SUR
+(memorama incompleto)</pre></div>
+    </div>
+    <p class="note">En este caso, el memorama está incompleto porque solamente hay una
+       carta con el número \(2\). Karel debe apagarse orientado al sur.</p>
+
+    <p class="note">Nota: las figuras del enunciado oficial (que dibujan ambos mundos
+       con sus montones) no pudieron incrustarse porque los archivos de imagen
+       archivados están dañados; arriba se transcribe fielmente su contenido y sus pies
+       de figura.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Conteo / Paridad</span>
+      <span class="ptag">Recursión</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Cada carta es un montón de zumbadores y su «número» es cuántos zumbadores tiene.
+       El memorama está <strong>completo</strong> si todas las cartas tienen pareja.
+       Karel debe recorrer el mundo, decidir si está completo y apagarse mirando al
+       <strong>norte</strong> (completo) o al <strong>sur</strong> (incompleto).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Ningún valor aparece más de \(2\) veces \(\Rightarrow\) «completo»
+                equivale a «<strong>ningún valor aparece una sola vez</strong>» (todos
+                vienen en pares). Además, el valor máximo es menor que el ancho del
+                mundo: por eso puedes usar la <strong>columna \(=\) valor</strong> como
+                casillero (histograma) sin salirte del mundo. La mochila empieza vacía y
+                la orientación inicial es desconocida, así que conviene
+                <strong>fijar una esquina conocida</strong> antes de empezar.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué significa exactamente «completo»?</summary>
+      <div class="body">
+        <p class="q">¿Ya tradujiste la historia a una condición precisa sobre los
+           montones? ¿Cuándo dos cartas son pareja?</p>
+        <p>Dos cartas son pareja cuando tienen el <strong>mismo número de
+           zumbadores</strong>. El memorama está completo cuando <em>cada</em> número
+           que aparece, aparece <strong>exactamente dos veces</strong>. ¿Te das cuenta
+           de que el «dibujo» de dónde están las cartas no importa para la respuesta?
+           Solo importa la <strong>multiplicidad</strong> de cada valor.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La reducción clave (aprovecha el límite)</summary>
+      <div class="body">
+        <p class="q">El enunciado promete que «nunca hay más de \(2\) cartas con el
+           mismo número». ¿Qué te regala esa promesa?</p>
+        <p>Si un valor puede salir \(0\), \(1\) o \(2\) veces (nunca \(3\) o más),
+           entonces el memorama está completo <strong>si y solo si ningún valor aparece
+           exactamente una vez</strong>. En otras palabras: completo \(\iff\) todo valor
+           presente aparece un número <strong>par</strong> de veces. Basta con
+           <strong>detectar una sola carta impar</strong> (sin pareja) para responder
+           «sur».</p>
+        <p class="note">Comprobación: en los 20 casos oficiales esta regla acierta
+           siempre — si hay algún valor que sale una sola vez, la respuesta es
+           <code>SUR</code>; si todos salen en pares, es <code>NORTE</code>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cómo «cuenta» un robot que no guarda números?</summary>
+      <div class="body">
+        <p class="q">Karel no tiene variables. ¿Cómo mides el tamaño de un montón? ¿Y
+           cómo recuerdas ese número para compararlo con otro montón?</p>
+        <p>El truco clásico de Karel: convierte una <strong>cantidad</strong> en una
+           <strong>posición o en la profundidad de una recursión</strong>. Para medir un
+           montón, recoge sus zumbadores <em>uno por uno</em> mientras una instrucción
+           recursiva se llama a sí misma con <code>sucede(n)</code>; cuando la casilla
+           queda vacía, el parámetro \(n\) <em>es</em> el tamaño del montón. Ese \(n\) lo
+           puedes <strong>llevar como parámetro</strong> a otras instrucciones (por
+           ejemplo, para buscar otra carta de tamaño exactamente \(n\)), o usarlo como
+           <strong>distancia</strong> para marcar la columna \(n\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Recorrer todo el mundo y orientarte sin saber para dónde miras</summary>
+      <div class="body">
+        <p class="q">Tu orientación inicial es desconocida. ¿Cómo llegas a un estado
+           conocido? ¿Y cómo visitas todas las casillas cuando el mundo puede tener
+           <em>paredes interiores</em>?</p>
+        <p>Primero <strong>fija la orientación en \((1,1)\)</strong>: el enunciado
+           garantiza que Karel siempre arranca en \((1,1)\), así que el problema es solo
+           de <em>orientación</em>, no de posición. Gira hasta ver al oeste — ya estás
+           pegado a la pared oeste —, luego gira al sur — ya estás pegado a la pared sur
+           —, luego gira al este. Ahora estás en \((1,1)\) mirando al este sin necesidad
+           de avanzar.</p>
+        <p><strong>Paredes interiores: la barrera en L.</strong> Los casos oficiales
+           incluyen paredes interiores dispuestas en forma de L: una pared
+           <em>vertical</em> que bloquea el paso al este más allá de la columna \(N\),
+           y una pared <em>horizontal</em> que bloquea el paso al norte más allá de la
+           fila \(N\) (donde \(N\) es el valor de la carta más grande en ese caso).
+           Estas dos paredes crean un sub-mundo de \(N \times N\) casillas. Una
+           serpentina simple que asuma que cada fila está libre hasta el borde real del
+           mundo <strong>no funciona con estas paredes</strong>: Karel encontraría la
+           pared interior antes de llegar al borde y, sin la lógica adecuada, quedaría
+           bloqueado.</p>
+        <p>La solución oficial define la primitiva <strong><code>super-avanza</code></strong>
+           para manejar cualquier pared (interior o de borde) de forma transparente:</p>
+        <ul>
+          <li>Si el <strong>frente está libre</strong>: avanza normalmente.</li>
+          <li>Si el frente está <strong>bloqueado</strong>: gira al norte.
+            <ul>
+              <li>Si el norte está libre: avanza un paso al norte, gira al oeste,
+                  avanza hasta topar con la pared (vuelves a la columna 1), gira al
+                  este (<code>media-vuelta</code>). Karel inicia la siguiente fila
+                  siempre desde la columna 1 mirando al este.</li>
+              <li>Si el norte <em>también</em> está bloqueado: no se avanza. Karel
+                  queda mirando al norte — esa es la <strong>señal de fin del
+                  recorrido</strong>. Esto ocurre exactamente en el rincón \((N,N)\)
+                  de la barrera L (o en la esquina noreste real del mundo si no hay
+                  pared interior).</li>
+            </ul>
+          </li>
+        </ul>
+        <p>La función de recorrido llama a <code>super-avanza</code> en cada paso y
+           verifica la orientación resultante: si Karel mira al norte, el barrido
+           terminó; si no, procesa la casilla siguiente.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Dos caminos a la respuesta</summary>
+      <div class="body">
+        <p class="q">Con «medir un montón» y «barrer el mundo» resueltos, ¿cómo decides
+           si todo viene en pares?</p>
+        <ul>
+          <li><strong>Emparejamiento directo:</strong> toma la primera carta, mide su
+              tamaño \(n\), y busca en el resto del mundo otra carta de exactamente \(n\).
+              Si la encuentras, recógela (pareja eliminada) y continúa; si recorres todo
+              el mundo sin hallarla, esa carta es impar \(\Rightarrow\) sur. Si logras
+              eliminar todas en parejas \(\Rightarrow\) norte.</li>
+          <li><strong>Histograma por columnas</strong> (aprovecha «valor \(&lt;\) ancho»):
+              por cada carta de valor \(c\), deja <em>un</em> zumbador en la
+              <strong>columna \(c\)</strong> de una fila de conteo. Dos cartas iguales
+              apilan \(2\) zumbadores en la misma columna. Al final, recorre la fila de
+              conteo quitando de a dos: si en alguna columna queda exactamente uno, hay
+              una carta impar \(\Rightarrow\) sur; si todas las columnas tienen cantidad
+              par \(\Rightarrow\) norte.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El problema se reduce a un hecho de paridad: como
+           ningún valor sale más de dos veces, el memorama está completo \(\iff\)
+           <em>ningún valor aparece exactamente una vez</em>. Karel no puede guardar
+           números, así que codifica cada conteo como una <strong>posición</strong>
+           (distancia recorrida) o como la <strong>profundidad de una recursión</strong>.
+           Abajo se da el plan en primitivas de Karel.</p>
+
+        <h3>Preparación común</h3>
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel — utilidades</span>
+<pre>define-nueva-instruccion media-vuelta como
+    repetir 2 veces gira-izquierda;
+
+// Lleva a Karel a la casilla (1,1) mirando al ESTE,
+// venga de la orientacion que venga.
+define-nueva-instruccion ir-a-esquina como inicio
+    mientras no-orientado-al-oeste hacer gira-izquierda;
+    mientras frente-libre hacer avanza;     // pega a la pared oeste (columna 1)
+    gira-izquierda;                          // ahora mira al sur
+    mientras frente-libre hacer avanza;     // pega a la pared sur (fila 1)
+    gira-izquierda;                          // ahora mira al este, ya en (1,1)
+fin;
+
+// Avanza un paso de forma robusta a paredes interiores (y de borde).
+// Si frente libre: avanza. Si frente bloqueado: gira al norte;
+//   si norte libre: avanza norte, gira al oeste, avanza hasta la pared (columna 1),
+//                   gira al este (media-vuelta) — lista la fila siguiente.
+//   si norte tambien bloqueado: no hace nada; Karel queda mirando al norte
+//                   (senal de fin de recorrido: se alcanzo el rincon (N,N)).
+define-nueva-instruccion super-avanza como inicio
+    si frente-libre entonces avanza
+    sino inicio
+        gira-izquierda;
+        si frente-libre entonces inicio
+            avanza;
+            gira-izquierda;
+            mientras frente-libre hacer avanza;
+            media-vuelta;
+        fin;
+    fin;
+fin;
+
+// Mide y recoge por COMPLETO el monton de la casilla actual.
+// Al terminar, el parametro n vale el tamano del monton.
+define-nueva-instruccion mide-y-recoge(n) como inicio
+    si junto-a-zumbador entonces inicio
+        coge-zumbador;
+        mide-y-recoge(sucede(n));   // sucede(n) = n + 1
+    fin;
+    // (caso base: la casilla quedo vacia y n = tamano)
+fin;</pre>
+        </div>
+
+        <h3>Camino A — Histograma por columnas (idea oficial, el más rápido)</h3>
+        <p>Aprovecha que el valor máximo es <strong>menor que el ancho</strong>: la
+           columna \(c\) siempre existe, así que puedes usar «columna \(=\) valor» como
+           casillero. Por cada carta de valor \(c\) que encuentres, recógela y deja
+           <strong>un</strong> zumbador en la columna \(c\) de una fila de conteo. Como
+           cada valor sale a lo más dos veces, en cada columna se acumulan \(0\), \(1\) o
+           \(2\) zumbadores. Al final, recorrer esa fila y buscar una columna con
+           <strong>exactamente uno</strong> equivale a buscar una carta impar.</p>
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel — plan A (histograma)</span>
+<pre>// Sobre un monton de valor c: recogelo y marca la columna c.
+// Se aprovecha el caso base de la recursion para actuar con c ya conocido.
+define-nueva-instruccion tabula(c) como inicio
+    si junto-a-zumbador entonces inicio
+        coge-zumbador;
+        tabula(sucede(c));
+    fin
+    sino inicio
+        // aqui c = tamano del monton ya recogido
+        si no si-es-cero(c) entonces inicio
+            ir-a-esquina;                       // (1,1) mirando al este
+            repetir precede(c) veces avanza;    // precede(c) = c-1  ->  columna c
+            deja-zumbador;                       // acumula 1 en la columna c
+        fin;
+    fin;
+fin;
+
+// Recorre la fila de conteo; si una columna tiene 1, es impar -> SUR.
+define-nueva-instruccion revisa-impar como inicio
+    mientras junto-a-zumbador hacer inicio
+        coge-zumbador;                           // quita el 1.o
+        si no-junto-a-zumbador entonces inicio   // no habia 2.o -> impar
+            repetir 3 veces gira-izquierda;      // orienta al SUR
+            apagate;                             // memorama INCOMPLETO
+        fin;
+        coge-zumbador;                           // quita el 2.o (par, ok)
+    fin;
+    si frente-libre entonces inicio
+        avanza;
+        revisa-impar;                            // siguiente columna
+    fin;
+fin;
+
+// Recorre el mundo casilla a casilla con super-avanza;
+// en cada casilla procesa la carta (si la hay) con tabula(0).
+// Termina cuando super-avanza deja a Karel mirando al norte.
+// NOTA: la solucion oficial (Memorama.TXT) combina recorrido y tabulacion
+// en una unica instruccion recursiva 'aprende(cantidad)' que usa super-avanza
+// y difiere las marcas al histograma a la fase de retorno de la recursion.
+define-nueva-instruccion barre-y-tabula como inicio
+    tabula(0);
+    super-avanza;
+    si no-orientado-al-norte entonces
+        barre-y-tabula;
+fin;
+
+inicia-ejecucion
+    ir-a-esquina;
+    barre-y-tabula;          // recorre con super-avanza; tabula cada carta
+    ir-a-esquina;            // colocate al inicio de la fila de conteo
+    revisa-impar;            // si halla impar: ya se apago al SUR
+    gira-izquierda;          // ninguna impar -> orienta al NORTE
+    apagate;                 // memorama COMPLETO
+termina-ejecucion</pre>
+        </div>
+        <p class="note">Sutileza de implementación: la fila de conteo debe quedar libre
+           de montones originales mientras se llena. La forma robusta es recoger cada
+           carta <em>antes</em> de marcarla y dejar las marcas en una fila que el barrido
+           no vuelva a tocar. Si esa coordinación se complica, el Camino B evita por
+           completo el problema.</p>
+
+        <h3>Camino B — Emparejamiento directo (más fácil de justificar)</h3>
+        <p>No necesita una fila libre: por cada carta, mídela y busca su pareja en el
+           resto del mundo; si aparece, elimínala; si no, es impar.</p>
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel — plan B (emparejar)</span>
+<pre>// Estando sobre un monton, ¿tiene exactamente n zumbadores?
+//   - quita hasta n contandolos;
+//   - si se acaban antes de n  -> era menor  (devuelve "no", restaura);
+//   - si tras quitar n aun queda -> era mayor (devuelve "no", restaura);
+//   - si tras quitar n queda vacio -> es pareja (queda eliminado).
+// (La restauracion vuelve a dejar lo recogido cuando no coincide.)
+
+// Recorre el mundo en serpentina buscando un monton de tamano n.
+define-nueva-instruccion busca-pareja(n) como inicio
+    si junto-a-zumbador entonces
+        si monton-de-tamano(n) entonces
+            regresa;          // pareja hallada y eliminada
+    si frente-libre entonces inicio
+        avanza;
+        busca-pareja(n);
+    fin
+    sino si hay-fila-arriba entonces inicio
+        sube-a-siguiente-fila;     // serpentina (Pista 4)
+        busca-pareja(n);
+    fin
+    sino inicio                    // recorrio todo y no la hallo: IMPAR
+        repetir 3 veces gira-izquierda;   // orienta al SUR
+        apagate;                          // INCOMPLETO
+    fin;
+fin;
+
+inicia-ejecucion
+    repetir-mientras-queden-cartas inicio
+        ir-a-esquina;
+        avanza-hasta-la-primera-carta;    // primer monton del barrido
+        mide-y-recoge(0);                 // n = su tamano
+        ir-a-esquina;
+        busca-pareja(n);                  // si no hay, ya se apago al SUR
+    fin;
+    // se emparejaron todas
+    ir-a-esquina; gira-izquierda;         // orienta al NORTE
+    apagate;                              // COMPLETO
+termina-ejecucion</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Ambos caminos implementan la misma
+           reducción verificada: el memorama está completo exactamente cuando cada valor
+           aparece un número par de veces. El Camino A lo comprueba acumulando una marca
+           por carta en la columna de su valor y buscando una columna con paridad impar;
+           el Camino B lo comprueba eliminando parejas y declarando «impar» a la primera
+           carta que se quede sin compañera. Si nunca aparece una carta impar, Karel se
+           apaga al norte.</p>
+
+        <p><strong>Complejidad.</strong> Camino A: \(O(Z + W)\), donde \(Z\) es el total
+           de zumbadores (cada uno se recoge una vez) y \(W = \text{ancho} \times
+           \text{alto}\) es el tamaño del mundo (un barrido más el de la fila de conteo).
+           Camino B: \(O(K \cdot W + Z)\), con \(K\) el número de cartas (un barrido del
+           mundo por carta). Para los casos oficiales (\(W = 100\times100\), decenas de
+           cartas, valores \(\le 90\)) ambos quedan muy por debajo del límite de
+           \(10{,}000{,}000\) instrucciones.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

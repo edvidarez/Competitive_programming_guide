@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2016 · Problema 07 — Pescador</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">21ª OMI · 2016 · Lenguaje</div>
+    <h1>Problema <span class="num">07</span> — Pescador</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2016-Pescador">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <p><span class="badge">Interactivo</span></p>
+
+    <h2>Historia</h2>
+    <p>En la ciudad de Alvarado, Veracruz vive un pescador que tiene una pequeña
+       lanchita, una red de pesca de 1 m<sup>2</sup> y, novedosamente, una app
+       llamada <em>iFish</em> para salir a pescar en un mar rectangular de
+       \(w \times h\) m<sup>2</sup>, el cual puedes ver como un plano cartesiano.</p>
+    <p><em>iFish</em> es muy poderosa: le puede decir al pescador cuántos bancos de
+       peces hay en un área rectangular del mar. Sin embargo, como usa la versión
+       gratuita, la app tiene dos restricciones: puede hacer un número de preguntas
+       limitado y, cuando no pregunta, no puede saber exactamente <em>dónde</em>
+       están los peces en esa área del mar, sólo <em>cuántos</em> hay.</p>
+    <p>En <em>iFish</em>, el pescador especifica 2 puntos con las coordenadas de las
+       esquinas opuestas de un rectángulo. La app responde diciendo el número de
+       bancos de peces en el área.</p>
+    <p>El pescador quiere aprovechar al máximo la versión gratuita. Para ello te ha
+       pedido que lo ayudes a diseñar un plan para capturar <strong>a todos</strong>
+       los peces del mar usando la menor cantidad de veces su red.</p>
+    <p>Recuerda que el pescador puede preguntar cuántos bancos de peces hay en
+       <strong>cualquier tamaño</strong> de área dentro del mar; sin embargo, su red
+       mide 1 m<sup>2</sup>, por lo tanto sólo puede usar su red en un cuadro con
+       área de 1 m<sup>2</sup>.</p>
+
+    <h2>El problema</h2>
+    <p>Escribe un programa que, dados \(w\) y \(h\) (el ancho y alto del área del
+       mar), \(n\) (el número total de bancos de peces en todo el mar) y \(k\) (el
+       número máximo de consultas que permite la versión gratuita de la app), ayude
+       al pescador a capturar los \(n\) bancos de peces tirando su red la menor
+       cantidad posible de veces.</p>
+
+    <h2>Entrada y salida</h2>
+    <p><strong>Este problema es interactivo</strong>, por lo que no tendrás que leer
+       la entrada ni imprimir la salida, sino implementar en tu código la función
+       <code>Pescar</code> y mandar a llamar las funciones del evaluador
+       <code>UsarApp</code> y <code>TirarRed</code> para completar tu tarea.</p>
+    <p>Internamente, el evaluador llevará el registro de cuántos bancos de peces
+       quedan en el mar. Tu programa no necesitará imprimir ni devolver nada, sólo
+       asegurarse de que hayas capturado, mediante la función <code>TirarRed</code>,
+       todos los bancos de peces del mar.</p>
+
+    <h2>Implementación</h2>
+
+    <h3>Tu procedimiento <code>Pescar()</code></h3>
+    <div class="io"><pre>C/C++    void Pescar(int w, int h, int n, int k);
+Pascal   procedure Pescar(var w, h, n, k: LongInt);</pre></div>
+    <p>El evaluador buscará en tu código esta función y la llamará con los
+       parámetros \(w\), \(h\), \(n\) y \(k\). Tu implementación deberá utilizar las
+       funciones <code>UsarApp</code> y <code>TirarRed</code> para atrapar a todos
+       los peces. En cada caso de prueba <strong>sólo se llamará a esta función una
+       vez</strong>.</p>
+    <ul>
+      <li><code>w</code>: el ancho del área que abarca el mar.</li>
+      <li><code>h</code>: la altura del área que abarca el mar.</li>
+      <li><code>n</code>: el número de bancos de peces que hay en el mar.</li>
+      <li><code>k</code>: el número de consultas que puedes hacer con la app.</li>
+    </ul>
+
+    <h3>Función del evaluador <code>UsarApp()</code></h3>
+    <div class="io"><pre>C/C++    int UsarApp(int x1, int y1, int x2, int y2);
+Pascal   function UsarApp(var x1, y1, x2, y2: LongInt): LongInt;</pre></div>
+    <p>Esta es la función que deberás llamar cuando quieras consultar cuántos bancos
+       de peces hay en cierta área. Recibe como parámetros dos puntos que describen
+       esquinas opuestas del área rectangular que deseas consultar.</p>
+    <p>Si las coordenadas se encuentran fuera del área de cobertura o el rectángulo
+       de consulta tiene área igual a cero, la función devolverá <code>-1</code>. En
+       caso contrario, devolverá el número de bancos de peces que se encuentran
+       dentro del rectángulo consultado.</p>
+    <p>Las coordenadas con las que debes preguntar siempre serán enteras. Los bancos
+       de peces <strong>NO</strong> se moverán de su lugar.</p>
+    <ul>
+      <li><code>x1</code>, <code>y1</code>: coordenadas \(x\) y \(y\) de una esquina del rectángulo.</li>
+      <li><code>x2</code>, <code>y2</code>: coordenadas \(x\) y \(y\) de la esquina opuesta.</li>
+    </ul>
+
+    <h3>Función del evaluador <code>TirarRed()</code></h3>
+    <div class="io"><pre>C/C++    int TirarRed(int x1, int y1, int x2, int y2);
+Pascal   function TirarRed(var x1, y1, x2, y2: LongInt): LongInt;</pre></div>
+    <p>Esta es la función que deberás llamar cuando quieras capturar a los peces que
+       se encuentren en cierta área. Recibe como parámetros dos puntos que describen
+       las esquinas opuestas del área rectangular.</p>
+    <p>Esta función tiene una restricción adicional: la red del pescador mide
+       1 m<sup>2</sup>, por lo tanto las coordenadas que proporciones <strong>no
+       podrán formar un rectángulo de área mayor a 1 m<sup>2</sup></strong>.</p>
+    <p>Si las coordenadas se encuentran fuera del área de cobertura, o el rectángulo
+       tiene área igual a cero o mayor a 1 m<sup>2</sup>, la función devolverá
+       <code>-1</code>. En caso contrario, capturará a todos los peces que se
+       encuentren dentro del área del rectángulo indicado.</p>
+    <p class="note"><strong>Nota:</strong> una vez que captures un banco de peces,
+       éste ya no volverá a contar en las siguientes consultas de
+       <code>UsarApp</code>.</p>
+
+    <h2>Rutina de ejemplo</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Función llamada</th><th>Valor devuelto</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td><code>Pescar(5, 5, 6, 25)</code></td><td>—</td>
+              <td>Llamada inicial a tu procedimiento <code>Pescar</code>.</td></tr>
+          <tr><td><code>UsarApp(0, 0, 5, 5)</code></td><td>6</td>
+              <td>El pescador consulta cuántos bancos hay en todo el mar. Verifica que, en efecto, existen 6 bancos.</td></tr>
+          <tr><td><code>UsarApp(1, 3, 4, 3)</code></td><td>-1</td>
+              <td>Consulta sobre un área de 0 (una línea). La app responde <code>-1</code> porque es imposible responder.</td></tr>
+          <tr><td><code>TirarRed(1, 3, 2, 2)</code></td><td>0</td>
+              <td>Tira la red en un cuadrado de 1 m<sup>2</sup> y no atrapa ningún banco.</td></tr>
+          <tr><td><code>TirarRed(2, 4, 4, 5)</code></td><td>-1</td>
+              <td>No puede extender la red más de 1 m<sup>2</sup>, por ello devuelve <code>-1</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Experimentación</h2>
+    <p>El evaluador de prueba recibe el archivo <code>sample.in</code> con los
+       valores \(w\), \(h\), \(n\) y \(k\) en la primera línea. En las siguientes
+       \(n\) líneas se encontrarán las coordenadas \(x\) y \(y\) de cada uno de los
+       bancos de peces que se encuentran en el mar (las coordenadas de los bancos
+       deben ser <strong>NO</strong> enteras). Para el caso de ejemplo anterior,
+       <code>sample.in</code> se vería así:</p>
+    <div class="example">
+      <div class="io"><h4>sample.in</h4><pre>5 5 6 25
+0.2 0.8
+2.1 2.5
+4.7 0.9
+2.3 4.6
+1.5 4.2
+1.9 3.4</pre></div>
+      <div class="io"><h4>Interpretación</h4><pre>mar de 5 x 5
+6 bancos de peces
+puedes tirar la red 25 veces
+
+a partir de la línea 2:
+  (x, y) de cada banco</pre></div>
+    </div>
+    <p class="note">Al finalizar tu función, el evaluador de prueba imprime cuántas
+       veces llamaste a <code>UsarApp</code> y a <code>TirarRed</code>, y te dice si
+       lograste capturar todos los bancos. El evaluador de prueba y el evaluador
+       final son distintos: el de prueba sólo ayuda a depurar y su tiempo de
+       ejecución no afecta el tiempo total de tu solución.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (el tiempo del evaluador no cuenta).</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado.</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Consultas a la app</td><td><span class="badge">a lo más \(k\) llamadas a <code>UsarApp</code> por caso</span></td></tr>
+        <tr><td>Uso de la red</td><td><span class="badge">a lo más \(100\,000\) llamadas a <code>TirarRed</code> por caso</span></td></tr>
+        <tr><td>Coordenadas de consulta</td><td>Enteras, dentro de \(0 \le x \le w\) y \(0 \le y \le h\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Evaluación</h2>
+    <p>Si durante la ejecución de tu programa excedes el límite de consultas que
+       puedes hacer a la app, o tiras la red más de \(100\,000\) veces, recibirás
+       0 puntos. Si al finalizar tu solución no lograste atrapar a todos los peces,
+       tu puntaje será de 0 puntos.</p>
+    <p>Por otro lado, si logras capturar a todos los peces y no excedes el límite de
+       llamadas para ninguna función del evaluador, recibirás un puntaje de al menos
+       <strong>20%</strong> de los puntos. El <strong>80%</strong> restante se
+       otorga en función del número de veces que llamaste a <code>TirarRed</code>:
+       entre menos veces uses esta función, mayor será tu puntaje. Cada caso se
+       puntúa de manera independiente.</p>
+    <p>Los 20 casos de prueba, con los parámetros de la llamada
+       \(\text{Pescar}(w, h, n, k)\):</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Caso</th><th>\(w\)</th><th>\(h\)</th><th>\(n\)</th><th>\(k\)</th></tr></thead>
+        <tbody>
+          <tr><td>01</td><td>10</td><td>10</td><td>20</td><td>100</td></tr>
+          <tr><td>02</td><td>18</td><td>12</td><td>50</td><td>200</td></tr>
+          <tr><td>03</td><td>20</td><td>24</td><td>75</td><td>360</td></tr>
+          <tr><td>04</td><td>36</td><td>44</td><td>200</td><td>900</td></tr>
+          <tr><td>05</td><td>60</td><td>80</td><td>330</td><td>2400</td></tr>
+          <tr><td>06</td><td>100</td><td>150</td><td>365</td><td>5000</td></tr>
+          <tr><td>07</td><td>130</td><td>120</td><td>240</td><td>3900</td></tr>
+          <tr><td>08</td><td>350</td><td>350</td><td>2450</td><td>14000</td></tr>
+          <tr><td>09</td><td>450</td><td>600</td><td>1150</td><td>8000</td></tr>
+          <tr><td>10</td><td>800</td><td>600</td><td>1800</td><td>15000</td></tr>
+          <tr><td>11</td><td>800</td><td>800</td><td>2400</td><td>12000</td></tr>
+          <tr><td>12</td><td>800</td><td>1000</td><td>800</td><td>10000</td></tr>
+          <tr><td>13</td><td>3000</td><td>2000</td><td>400</td><td>8000</td></tr>
+          <tr><td>14</td><td>5000</td><td>5000</td><td>850</td><td>10000</td></tr>
+          <tr><td>15</td><td>7000</td><td>9000</td><td>1200</td><td>17000</td></tr>
+          <tr><td>16</td><td>10000</td><td>10000</td><td>1250</td><td>17700</td></tr>
+          <tr><td>17 *</td><td>200</td><td>360</td><td>1050</td><td>720</td></tr>
+          <tr><td>18 *</td><td>250</td><td>220</td><td>800</td><td>650</td></tr>
+          <tr><td>19 *</td><td>280</td><td>320</td><td>1950</td><td>890</td></tr>
+          <tr><td>20 *</td><td>280</td><td>400</td><td>800</td><td>700</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">* Para los últimos 4 casos se asegura que existe un rectángulo
+       de coordenadas enteras en el mar, con un área de \(n\) m<sup>2</sup>, que
+       contiene a los \(n\) bancos de peces.</p>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: cada uno de los 20 casos se puntúa de forma
+       independiente con crédito parcial (≥20% por atrapar todo dentro de los
+       límites, y el 80% restante escalado según qué tan pocas veces tiraste la red).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Divide y vencerás</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Cola de prioridad</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>El mar es una cuadrícula de \(w \times h\) celdas con \(n\) bancos de peces en
+       celdas enteras (puede haber varios en una misma celda). Puedes preguntar
+       (hasta \(k\) veces) cuántos bancos hay en cualquier rectángulo con
+       <code>UsarApp</code>, y atrapar todo lo que haya en un cuadro de \(1\times1\)
+       con <code>TirarRed</code>. Hay que atrapar todos los bancos minimizando el
+       número de redes, sin pasarte de \(k\) consultas ni de \(100\,000\) redes.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>En la mayoría de los casos \(k\) es holgado, pero en los casos
+                17–20 \(k &lt; n\): <em>no</em> puedes preguntar por cada banco. Además,
+                en mares enormes y dispersos (14–16) hay que evitar barrer océano
+                vacío para no rebasar las \(100\,000\) redes. El puntaje premia usar
+                <code>TirarRed</code> lo menos posible.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en ver el mar como una cuadrícula de celdas de
+           \(1\times1\)? ¿En qué celda "vive" cada banco y qué celda atrapa
+           exactamente una red?</p>
+        <p>Como las coordenadas son enteras, cada banco cae en una sola celda
+           \([i,i+1)\times[j,j+1)\), y una red cubre justo una celda. Entonces el
+           problema se vuelve: descubrir <em>qué celdas</em> tienen bancos usando
+           sólo <em>conteos</em> de rectángulos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (fuerza bruta)</summary>
+      <div class="body">
+        <p class="q">Si \(k\) fuera enorme (o el mar muy chico), ¿podrías preguntar
+           celda por celda y tirar la red sólo donde el conteo sea \(&gt;0\)?</p>
+        <p>Eso gasta \(w\cdot h\) consultas y \(n\) redes. Captura todo, pero con
+           mares grandes truena el límite de consultas. Te da los casos chicos y te
+           muestra que la red sólo debe usarse en celdas con peces; el reto es
+           <em>localizar</em> esas celdas barato.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Divide el mar y poda lo vacío</summary>
+      <div class="body">
+        <p class="q">¿Y si preguntas el conteo de <em>una mitad</em> de un
+           rectángulo? Si esa mitad tiene 0 bancos, ¿hace falta volver a tocarla? Y
+           si ya conoces el total del rectángulo, ¿necesitas preguntar la otra
+           mitad?</p>
+        <p>Parte el rectángulo por su lado más largo. Con <strong>una</strong>
+           consulta sabes el conteo \(p\) de una mitad, y la otra es
+           \(\text{total}-p\) <em>gratis</em>. Recurre sólo en las mitades con
+           conteo \(&gt;0\) (descarta las vacías) hasta llegar a celdas \(1\times1\),
+           donde tiras la red. Así, con \(k\) holgado, aíslas cada celda ocupada y
+           usas casi exactamente (#celdas ocupadas) redes.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Cuando \(k\) no alcanza, ¿en qué orden gastas las consultas?</summary>
+      <div class="body">
+        <p class="q">Si te quedas sin consultas con un rectángulo aún grande
+           pendiente, tendrás que <em>barrerlo</em> celda por celda con la red. ¿Qué
+           pasa si ese rectángulo es un océano enorme casi vacío? ¿Y si en cambio
+           procesas siempre la región de <strong>mayor área</strong> primero?</p>
+        <p>Si gastas las consultas en profundidad sobre los primeros bancos, al
+           agotar \(k\) te quedan regiones gigantes que, al barrerse, disparan las
+           redes (millones de celdas vacías). Si en cambio siempre subdivides la
+           región de mayor área (una cola de prioridad por área), repartes las
+           consultas para podar el océano vacío de forma pareja; cuando se acaban,
+           <em>todas</em> las regiones pendientes son pequeñas y el barrido final
+           cuesta poquísimas redes. (En los casos 14–16 esto baja el barrido de
+           más de un millón de redes a unas \(\sim 1\,400\).)</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Trata el mar como cuadrícula de celdas
+           \(1\times1\) con contención medio-abierta: un banco en \((x,y)\) pertenece
+           a la celda \([\lfloor x\rfloor,\lfloor x\rfloor+1)\times[\lfloor
+           y\rfloor,\lfloor y\rfloor+1)\). Mantén una <strong>cola de prioridad de
+           rectángulos pendientes ordenada por área (mayor primero)</strong>, cada
+           uno con su conteo conocido de bancos. El rectángulo inicial es todo el
+           mar con conteo \(n\).</p>
+        <p>En cada paso saca el rectángulo de mayor área:</p>
+        <ul>
+          <li>Si su conteo es 0, ignóralo (no quedan peces ahí).</li>
+          <li>Si ya es \(1\times1\), tira la red ahí: atrapa de golpe todos los
+              bancos apilados en esa celda. (Esto es inevitable: cada celda ocupada
+              necesita su propia red.)</li>
+          <li>Si todavía tienes consultas, parte el lado más largo a la mitad,
+              pregunta con <code>UsarApp</code> el conteo \(p\) de una mitad y deduce
+              la otra como \(\text{conteo}-p\) (sin gastar consulta). Mete a la cola
+              sólo las mitades con conteo \(&gt;0\).</li>
+          <li>Si ya no tienes consultas, barre ese rectángulo celda por celda con la
+              red, deteniéndote en cuanto hayas atrapado su conteo conocido.</li>
+        </ul>
+        <p><strong>Por qué es correcto.</strong> Cada banco cae en exactamente una
+           celda; sólo se descartan regiones con conteo 0 (sin peces); el conteo
+           "gratis" \(\text{total}-p\) es exacto porque las dos mitades parten el
+           rectángulo. Toda celda con peces termina recibiendo una red, así que se
+           atrapan todos. Por construcción nunca haces más de \(k\) consultas (una
+           por partición).</p>
+        <p><strong>Por qué minimiza las redes.</strong> Con \(k\) suficiente aíslas
+           cada celda ocupada y usas exactamente (#celdas ocupadas) redes, que es lo
+           mínimo. Cuando \(k\) no alcanza, procesar primero la región de mayor área
+           maximiza el océano vacío podado por consulta, de modo que las regiones que
+           quedan al final son pequeñas y el barrido gasta muy pocas redes.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Pescar(w, h, n, k):
+    PQ <- cola de prioridad por AREA (mayor primero)
+    PQ.mete( rectangulo(0, 0, w, h) con conteo = n )
+    consultas <- k
+
+    mientras PQ no este vacia:
+        R <- PQ.saca_de_mayor_area()
+        si R.conteo == 0:
+            continuar
+        si R es 1x1:
+            TirarRed(R)                 // atrapa todos los bancos de la celda
+            continuar
+        si consultas == 0:              // barrido final, sin preguntar
+            c <- R.conteo
+            para cada celda (i, j) dentro de R, mientras c > 0:
+                c <- c - TirarRed(i, j, i+1, j+1)
+            continuar
+
+        consultas <- consultas - 1
+        parte R por su lado mas largo en mitades A y B
+        p <- UsarApp(A)                 // 1 consulta
+        A.conteo <- p
+        B.conteo <- R.conteo - p        // gratis
+        si A.conteo > 0: PQ.mete(A)
+        si B.conteo > 0: PQ.mete(B)</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Cada consulta hace a lo más un
+           <code>UsarApp</code>; el número de rectángulos manejados es
+           \(O(k + m)\), con \(m\) = celdas ocupadas. Con la cola de prioridad, el
+           costo es \(O((k+m)\log(k+m))\). Llamadas a <code>UsarApp</code>:
+           \(\le k\); a <code>TirarRed</code>: \(m\) en el caso holgado (y siempre
+           muy por debajo de \(100\,000\)).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

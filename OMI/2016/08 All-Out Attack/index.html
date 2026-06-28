@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2016 · Problema 08 — All-Out Attack</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">21ª OMI · 2016 · Lenguaje</div>
+    <h1>Problema <span class="num">08</span> — All-Out Attack</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2016-All-Out">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Historia</h2>
+    <p>Practicar para la OMI es muy estresante, así que te pones a jugar un juego
+       de video para relajarte. En dicho juego tienes un equipo de 4 personajes.
+       Cada personaje cuenta con un número entero de puntos de energía que pueden
+       usar para hacer ataques. En este juego realizar cualquier ataque cuesta
+       \(K\) puntos de energía.</p>
+    <p>Como en los mejores juegos de este tipo, cada personaje puede atacar sólo
+       con cierto tipo de ataques. En este juego existen 7 tipos: Normal, Fuego,
+       Hielo, Aire, Electricidad, Luz y Oscuridad. Cada personaje puede realizar
+       ataques de un subconjunto de estos tipos. Por ejemplo, un personaje de tu
+       equipo podría solamente realizar ataques de tipo Normal y de Fuego,
+       mientras otro personaje podría realizar ataques de tipo Aire y
+       Electricidad, y así para los demás miembros.</p>
+    <p>El siguiente nivel que jugarás tiene \(N\) enemigos, numerados del \(1\)
+       al \(N\); cada enemigo es vulnerable a <strong>sólo un tipo de
+       ataque</strong>. Para terminar el calabozo debes vencer a todos y cada uno
+       de los enemigos. Lleno de determinación, has decidido terminar este juego
+       de una vez por todas.</p>
+
+    <h2>Problema</h2>
+    <p>Dada la descripción de los tipos de ataque que pueden realizar los
+       personajes de tu equipo, los puntos de energía que tiene cada uno, la
+       cantidad de enemigos en el siguiente nivel y las vulnerabilidades de cada
+       uno, determina la estrategia para finalizar el nivel. <strong>Se asegura
+       que siempre habrá una forma de finalizar el calabozo.</strong></p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado la siguiente información.</p>
+    <ul>
+      <li>Una línea con los números \(N\) y \(K\): la cantidad de enemigos y el
+          costo en energía de realizar un ataque.</li>
+      <li>En las siguientes 4 líneas recibirás una cadena de caracteres \(P_i\) y
+          un entero \(E_i\). Cada línea representa a un personaje de tu equipo; la
+          cadena \(P_i\) puede contener cualquier subconjunto de los caracteres
+          <code>N</code>, <code>F</code>, <code>H</code>, <code>A</code>,
+          <code>E</code>, <code>L</code>, <code>O</code>, que representan los
+          tipos de ataque que puede realizar el \(i\)-ésimo personaje de tu
+          equipo. El entero \(E_i\) representa la cantidad de energía del personaje
+          al iniciar el nivel.</li>
+      <li>Finalmente habrá \(N\) líneas, cada una con un único carácter \(V_j\)
+          que puede ser <code>N</code>, <code>F</code>, <code>H</code>,
+          <code>A</code>, <code>E</code>, <code>L</code> u <code>O</code> y que
+          representa la vulnerabilidad del enemigo \(j\)-ésimo.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Para cada uno de los miembros de tu equipo (en el mismo orden en el que se
+       presentan en la entrada) debes imprimir dos líneas.</p>
+    <p>En la primera de estas líneas, para el miembro \(i\), debes imprimir un
+       entero \(M_i\) representando la cantidad de enemigos que el \(i\)-ésimo
+       personaje debe vencer. En la siguiente línea, imprime \(M_i\) enteros; cada
+       entero representa el índice de uno de los monstruos que ese personaje debe
+       vencer.</p>
+    <p>Para obtener puntos en este problema es necesario que imprimas una
+       estrategia válida para vencer a los \(N\) enemigos sin rebasar los puntos
+       de energía de cada personaje ni sus restricciones en el tipo de ataques
+       que pueden realizar. En caso de haber múltiples soluciones, cualquiera de
+       ellas será considerada correcta.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos (parcial)</span></td></tr>
+        <tr><td>Costo de un ataque</td><td><span class="badge">\(1 \le K \le 10\)</span></td></tr>
+        <tr><td>Energía inicial del personaje \(i\)</td><td><span class="badge">\(1 \le E_i \le 5\,000\,000\)</span></td></tr>
+        <tr><td>Número de enemigos</td><td><span class="badge">\(1 \le N \le 50\,000\)</span></td></tr>
+        <tr><td>Miembros del equipo</td><td><span class="badge">exactamente \(4\)</span></td></tr>
+        <tr><td>Tipos de ataque</td><td><span class="badge">\(7\): N, F, H, A, E, L, O</span></td></tr>
+      </table>
+    </div>
+    <p class="note">El validador del juez es personalizado (<em>special judge</em>):
+       acepta cualquier estrategia válida, no una salida única.</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">23</td><td>\(N \le 10\)</td></tr>
+          <tr><td>2</td><td class="pts">26</td><td>\(N \le 50\)</td></tr>
+          <tr><td>3</td><td class="pts">22</td><td>\(N \le 100\)</td></tr>
+          <tr><td>4</td><td class="pts">29</td><td>Sin restricciones adicionales (\(N \le 50\,000\))</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El enunciado oficial enumera explícitamente los tres primeros
+       grupos (23, 26 y 22 puntos, para \(N \le 10\), \(N \le 50\) y \(N \le 100\)
+       respectivamente). El cuarto grupo, con los 29 puntos restantes, corresponde
+       al caso general sin restricciones adicionales; los casos de prueba lo
+       confirman (\(N\) llega hasta \(\sim 50\,000\)).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5 1
+NAE 3
+A 1
+EH 2
+A 3
+N
+E
+A
+E
+A</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1
+1
+0
+
+2
+4 2
+2
+3 5</pre></div>
+    </div>
+    <p class="note">El miembro 1 del equipo ataca al enemigo 1 con un ataque
+       Normal. El miembro 2 de tu equipo no ataca a ningún enemigo (su línea de
+       índices queda vacía). El miembro 3 del equipo vence a los enemigos 2 y 4
+       con un ataque Eléctrico. Finalmente, el miembro 4 ataca a los enemigos 3 y
+       5 con ataques de Aire. Como el costo de cada ataque es \(K=1\), cada
+       personaje gasta un punto de energía por enemigo. Recuerda: cualquier otra
+       asignación válida también es correcta.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Flujo máximo</span>
+      <span class="ptag">Emparejamiento bipartito</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes 4 personajes; el personaje \(i\) puede vencer a lo más
+       \(C_i=\lfloor E_i/K \rfloor\) enemigos y sólo de los tipos de ataque que
+       domina. Cada uno de los \(N\) enemigos tiene exactamente un tipo de
+       vulnerabilidad. Asigna cada enemigo a un personaje que pueda atacar su tipo,
+       sin que ningún personaje exceda su límite \(C_i\). Imprime, por personaje,
+       cuántos enemigos vence y cuáles. Se garantiza que existe solución; cualquier
+       asignación válida puntúa (special judge).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Sólo hay <strong>4 personajes</strong> y <strong>7 tipos</strong>:
+                la estructura es diminuta. Lo único «grande» es \(N \le 50\,000\)
+                (la lista de enemigos) y \(E_i\) (que sólo sirve para calcular el
+                cupo \(C_i=\lfloor E_i/K\rfloor\)). Las subtareas con \(N\) chica
+                (\(\le 10,\ \le 50,\ \le 100\)) permiten enfoques de fuerza bruta o
+                backtracking antes de la idea general.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué te dan y qué decides?</summary>
+      <div class="body">
+        <p class="q">El tipo de ataque (N, F, H, …) tiene nombre, pero ¿de verdad
+           importa <em>cuál</em> sea? ¿No basta con saber qué personajes pueden
+           atacar a cada enemigo?</p>
+        <p>Cada enemigo necesita ser asignado a un personaje. La energía de un
+           personaje no se gasta «por tipo», sino por ataque: \(K\) puntos cada
+           uno. ¿Cuántos ataques puede dar como máximo el personaje \(i\) antes de
+           quedarse sin energía?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — El cupo de cada personaje</summary>
+      <div class="body">
+        <p class="q">Si el personaje \(i\) arranca con \(E_i\) de energía y cada
+           ataque cuesta \(K\), ¿no es su número máximo de ataques exactamente
+           \(C_i=\lfloor E_i/K\rfloor\)?</p>
+        <p>Con eso, el problema se vuelve: reparte los \(N\) enemigos entre 4
+           personajes de modo que (a) cada enemigo vaya con alguien que sí puede
+           atacar su tipo y (b) nadie reciba más de su cupo \(C_i\). ¿A qué te
+           recuerda repartir objetos respetando «quién puede con qué» y un cupo por
+           contenedor?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas pequeñas (\(N\le 100\))</summary>
+      <div class="body">
+        <p class="q">Con \(N\le 10\) (23 pts), ¿podrías probar TODAS las formas de
+           asignar cada enemigo a uno de sus personajes válidos? ¿Cuántas
+           combinaciones hay a lo más?</p>
+        <p>Un backtracking que prueba para cada enemigo a cuál personaje válido
+           dárselo, respetando cupos, resuelve \(N\) chica. Para \(N\le 50\) y
+           \(N\le 100\) (26 + 22 pts) ese backtracking con poda, o incluso una
+           asignación voraz «con reintento», suele alcanzar. Pero \(N\) hasta
+           \(50\,000\) tira la fuerza bruta: necesitas algo estructural.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: reparto con cupos</summary>
+      <div class="body">
+        <p class="q">¿Y si agrupas a los enemigos por tipo? Hay a lo más 7 grupos.
+           ¿Notaste que dentro de un grupo todos los enemigos son
+           intercambiables (a cualquiera de ellos lo puede atacar exactamente el
+           mismo conjunto de personajes)?</p>
+        <p>Entonces no decides enemigo por enemigo: decides <em>cuántos</em>
+           enemigos del tipo \(t\) le toca vencer a cada personaje que domina ese
+           tipo. Eso es un problema de <strong>repartir cantidades</strong> entre
+           personajes con cupo \(C_i\). ¿Qué herramienta clásica modela «cuánto
+           mandar de A a B respetando capacidades»?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Modélalo como flujo máximo</summary>
+      <div class="body">
+        <p class="q">¿Puedes construir una red con una <em>fuente</em>, los 4
+           personajes, los 7 tipos y un <em>sumidero</em>, de modo que el flujo
+           máximo sea \(N\) si y sólo si existe una estrategia válida?</p>
+        <ul>
+          <li>Fuente \(\to\) personaje \(i\), con capacidad \(C_i=\lfloor
+              E_i/K\rfloor\) (su cupo de ataques).</li>
+          <li>Personaje \(i \to\) tipo \(t\), capacidad «grande» (basta el número
+              de enemigos de ese tipo) <em>si</em> \(i\) puede atacar el tipo \(t\).</li>
+          <li>Tipo \(t \to\) sumidero, con capacidad \(\mathrm{cnt}_t\) (cantidad de
+              enemigos vulnerables al tipo \(t\)).</li>
+        </ul>
+        <p>El flujo en la arista personaje \(i \to\) tipo \(t\) te dice cuántos
+           enemigos del tipo \(t\) debe vencer el personaje \(i\). Como el problema
+           garantiza solución, el flujo máximo dará exactamente \(N\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Convierte la energía en cupos: el personaje \(i\) puede dar a lo más
+           \(C_i=\lfloor E_i/K\rfloor\) ataques. Agrupa a los enemigos por tipo de
+           vulnerabilidad (a lo más 7 grupos), guardando los índices originales de
+           cada grupo. Construye una red de flujo diminuta:</p>
+        <ul>
+          <li><strong>Fuente</strong> \(\to\) cada personaje, capacidad \(C_i\).</li>
+          <li>Cada personaje \(\to\) cada tipo que domina, capacidad grande (basta
+              \(\mathrm{cnt}_t\)).</li>
+          <li>Cada tipo \(\to\) <strong>sumidero</strong>, capacidad
+              \(\mathrm{cnt}_t\) (número de enemigos de ese tipo).</li>
+        </ul>
+        <p>Calcula el flujo máximo de la fuente al sumidero. Si vale \(N\), hay
+           solución (siempre la hay por enunciado). El flujo sobre la arista
+           personaje \(i \to\) tipo \(t\) es la cantidad \(a_{i,t}\) de enemigos
+           del tipo \(t\) que vencerá el personaje \(i\). Para reconstruir la
+           respuesta, recorre cada tipo \(t\) y reparte sus índices: dale los
+           primeros \(a_{1,t}\) al personaje 1, los siguientes \(a_{2,t}\) al 2, y
+           así. Al final, por cada personaje imprime \(M_i\) (total de enemigos
+           que le tocaron) y luego sus índices.</p>
+        <p><strong>¿Por qué es correcto?</strong> Una estrategia válida es
+           exactamente un flujo entero que satura el sumidero (todos los enemigos
+           cubiertos), respeta el cupo de cada personaje (capacidad de la fuente) y
+           sólo usa aristas personaje–tipo permitidas (las habilidades). El teorema
+           de flujo máximo / corte mínimo con capacidades enteras garantiza un flujo
+           entero óptimo, que es justo lo que se reparte.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, K
+para i en 1..4:
+    leer cadena P_i, energia E_i
+    puede[i] = conjunto de tipos en P_i      # subconjunto de {N,F,H,A,E,L,O}
+    cupo[i]  = E_i div K                       # ataques maximos
+
+para cada tipo t: enemigos[t] = lista vacia
+para j en 1..N:
+    leer V_j
+    enemigos[ tipo(V_j) ].agregar(j)          # indices por tipo
+
+# --- red de flujo ---
+# nodos: S, personajes 1..4, tipos 1..7, T
+para i en 1..4:            agregar arista S -> personaje_i  cap = cupo[i]
+para i en 1..4, t en 1..7 con t en puede[i]:
+                           agregar arista personaje_i -> tipo_t  cap = |enemigos[t]|
+para t en 1..7:            agregar arista tipo_t -> T  cap = |enemigos[t]|
+
+f = flujo_maximo(S, T)                          # Dinic / Ford-Fulkerson
+si f != N: imprimir -1 y terminar               # no ocurre: hay solucion garantizada
+
+# --- reconstruccion ---
+para i en 1..4: asignados[i] = lista vacia
+para cada tipo t:
+    pos = 0
+    para i en 1..4 con t en puede[i]:
+        usados = flujo en la arista personaje_i -> tipo_t
+        repetir usados veces:
+            asignados[i].agregar( enemigos[t][pos] ); pos = pos + 1
+
+para i en 1..4:
+    imprimir |asignados[i]|
+    imprimir los indices de asignados[i] separados por espacio
+    # (deja la linea vacia si el personaje no vence a nadie)</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> la red tiene \(4+7+2=13\) nodos y a lo más
+           \(\sim 40\) aristas, así que el flujo (p. ej. Dinic) corre en tiempo
+           insignificante. El costo real es leer y agrupar a los enemigos:
+           \(O(N)\) tiempo y \(O(N)\) memoria. Muy holgado para \(N \le 50\,000\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Notas de implementación (C++)</span>
+<pre>- E_i llega a 5,000,000: cupo[i] = E_i / K cabe de sobra en int de 32 bits,
+  pero usar long long en las capacidades evita cualquier susto.
+- No hace falta una libreria pesada: con 13 nodos, hasta un
+  Ford-Fulkerson con BFS sobra. Dinic es comodo y rapido.
+- Alternativa sin flujo: como solo hay 4 personajes, un emparejamiento
+  voraz "con reintento" (aumentar por enemigo, estilo Kuhn) tambien
+  obtiene 100; es lo que hace una de las soluciones de referencia.</pre>
+          <p class="note">Es solo una guía de implementación; nunca pongas la
+             solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

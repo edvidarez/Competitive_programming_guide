@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2016 · Problema 02 — Karel y Warel</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">21ª OMI · 2016 · Karel</div>
+    <h1>Problema <span class="num">02</span> — Karel y Warel</h1>
+    <p class="note">Enunciado y práctica en línea:
+       <a class="pdf" href="https://dmoj.olimpiadadeinformatica.org.mx/problem/omips2016d1p3">DMOJ · omips2016d1p3</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Historia</h2>
+    <p>Karel y Warel, enemigos eternos e igual de poderosos, han decidido ponerle
+       fin a su épica pelea.</p>
+    <p>Karel y Warel mantendrán un duelo en la primera fila del mundo. Por suerte,
+       Karel se ha enterado de la estrategia que usará Warel durante el duelo y
+       ahora quiere saber si podrá derrotarlo.</p>
+    <p>El resultado de la lucha entre Karel y Warel depende de la energía que cada
+       uno tenga; sin embargo, la energía de Warel disminuye conforme se mueve en
+       el mundo. El duelo inicia en la casilla \((1, 1)\) del mundo y se recorre una
+       casilla a la derecha cada turno. Cada que Warel se mueve una casilla a la
+       derecha, su energía disminuye en \(1\). Al llegar a la nueva casilla puede
+       haber un módulo de recarga, que estará representado por un montón de
+       zumbadores; en caso de que lo haya, Warel lo usa y su energía aumenta en una
+       cantidad igual al número de zumbadores del montón. Si en algún momento la
+       energía de Warel disminuye a \(0\) y no hay ningún módulo de recarga, Warel
+       no puede continuar el duelo.</p>
+    <p>Karel logró encontrar un mapa que dice dónde habrá módulos de recarga y
+       cuánta energía tendrán. Usando este mapa, Karel desea saber si Warel tendrá
+       energía suficiente para recorrer todo el mundo y, si la tiene, saber cuál
+       será la cantidad máxima de energía que tendrá durante la duración del
+       duelo.</p>
+    <p>Warel inicia el duelo con energía \(0\).</p>
+
+    <figure>
+      <img alt="Ilustración: Karel (robot azul con parche) camina hacia Warel, un vehículo erizado de púas."
+           src="data:image/jpeg;base64,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gCIiAIiIAqtIDgSA4DkdiqIoJTw8okoq+BrQDG5ngLrKK+nPzkf5SodVWB20GdqHH7uKxo/l+GiY9+p/2n+kqorKcn9aB4ghQwFzYalbcGHyv1k+zb37rHKhSitWbltxi/uJctOmn8n9ckox7Xi7HBw7QbrDPL8jfMq+np44GkRg3O5OpKrKIwCXgLUeM6HpqTqOCdRJS68bGmiq6xJy7KigsERYaqpipITLMbNHZuUBe97m3yxlwHYteSdr2lr4muHY7VRs3EPKCnPi8/kFqTY5VyAgNib/AJbn6rLCUF8UTQuaFzPWlV5e7Cf7/U3pKGlebiBrP4CRdZIqeKL9WwNPbbVQ8eJ1DD1nNeOwhbkOKxOFpQ5h8LhbVOpS6tDzt5ZcTa99ua7n9v2JBFZFLHKLxva7wKLYWuxw5RcXiSwzIiIpKhERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAWampX1B00YDq4q6jpunJc42Y3fvUj0rImhkTRYbALWrV+X3Y7nd4Vwh3GKtXSH1/YvggigHUaL83HdVfMxnO57AtZ8jnbnyVi0W29WewpwhTjywWEZXVDjtosRJO5JRFBYIiIArXsbI0te0OadwRurlhq6htLTvmeHEN5N3Ugia7AmEOkpHZeeRx09eSgSCCQeS3q3FqirBbcRxndjTuO9aCFQiIgKsc5huxxae0IssNNNN+rjce8iyK8Yzxpk1Kta1UsVJRz34OkREXUPnoREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERABcbKud/33eqoijCZaM5R+F4Lukf993qnSSffd6q1FHLHsL9PV/yfmy7pJPvu9SnSSffd6lWonLHsH6it/m/Nl3SSffd6lOkk++71KtROWPYP1Fb/ADfmy7pJPvu9SqF7yCC4kHldUROWPYP1Fb/N+bMPusB1MUf8qp7pB+xj/lWdE5Y9hP6it/m/NmEU0LTcRMB8FkDANgB4BXIpSS2KSqTl8TbCIikoEREAREQBERAEREAREQBERAEREARURAVRFRCcFVRVRBgIiIAiIgCIiAIiIMBEVEIKoqIhJVERBgIiIQEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBFRVQlBERCQiIgCIiAIiIAiIgCIiAIiIAiIgCoqohARFRALoiqgKKqIgCIiAIiIQEREAREQBEVC4N3IGl9UBVFiZPC94YyRrnOZnABvdu11lUEtNbhEWE1MDallMZWCZ7S9sZOpaNyB2ahAk3sZkVMw7VVSQEREARUBB2VUAVFVEAREQFFVEQkIiISEREAREQBERAEREAREQBERAEREAREQBERAEREARFQIQVREQgIiIArJI2yMc14u1wykHmDur0QLQ8qkxWfhfHqWjlzPZh73xD/ALlM8hzfMfkF6fS1EVVBHPA8PikaHMcDuDzXn3tXw3SkxWJp6p6Cbw3afxCxezPG3RzOwmd5MUwL6fXZ3Nvnv5d61Iz6OryPZ7Hprq1jeWEbun8UV73nr66+DPTFzXEjhRYtgeIkENbUmmkI7JGkD62XSDZcvx6WVfDGICmla6ejfHI4A6sIcDr2aarYn8LOLYLNxGL2ej+en3KcVYvU0+FVVTh7yybDquPpo/vs00PcQ4eim8HxWlxeiZV0b80btDfcO0uD36ri6OrGNV2IU5Nhi2FMlA+7IwFp+oPotb2e43HBi8uHvAjirmtljHJs2XrN87H0WKNT3u5nTq8PX6aSS96GH8mllfJp+R6YqHZAo3iKuOHYJX1Y+KKFxb/FsPqVnbwsnDpwc5qC3ehh4cxoYwyseGNYIaqSFlj8TW21UyvOfZNDnkxKo62VmRjQToCdXeegXoM0jYYnyPJysaXG3YBdUpSco5Zu8Rt4ULqVKGyx9DKi08KxGnxWhiraR5dDKLtuLHwW2r7mjKMoScZLDRVFQuA3IHiUupKlVRVRAEREJyEREJCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIqIQVRUCqhAREQERT8Q0UuKS4ZN0lNVsdZjJ25elH3mHYj6qWaQ4aLmeOaOOpwcvmpenjhOZzo9JYR99nbbmOYXLcP8AGOJ0eGSCqdHWwxPEfTyOIdET8OfmWnkeR3WF1eWWJHWhw53NHpaG+zTfX3P7P5ZO/wAewxmL4RVUL7fbMOU/ddyPrZeH001Rhtc03Mc9PLcE/I9p591wvbcCxmDG6AVNObOHVkjvcsd2eHf2Ly32gUD6DiiaZ4vBWfasNrdzh6rBcpTgpxOrwCpKlVqWlVY7n29fmvoeq4HicWL4VBWQgDpG9Zv3XDceq4rimb3TG8epQcoxDDGPb3vabfhf0Wh7PsdZhdW/Dqt5FNVOHRPJ0Y/ax7AdNe1a3tKq2z8SOjDXxvpYWszE/GCb6d3WKnplOipLci24dKhxGVLHutZXhlNeTwjHhNZ+juKcJqS61PLGx4HJokuHj+fMVHcR0smFcS1sMJMbop+khcPlB6zfxUZUVDndA25BgaWtPYMxcPqSuk42eK6HCcbjA/tdP0cpHKRh/wCei1880HjxO5yOlcQb2knHy1Xpk9M4axiLGsJirIyOkIyysHyPG4/Nc/7U640+AR0zbg1Uwaf4W6/jZcx7PMTdQ8RNpS61PXNykX0zjVp/LzW77Wps1fh9PfRkTnkeJt+S2em56HMcCnw1UOLRgvh+Jev0ZK+yaww3EGj4hUNv/IP912OIguoaloFyYngfylcH7KJrVOKwHmIpB9QvRbA789Fkt3mlE53GFycQm/B+iPJMB4jnwHCqajZ1g6eOctcN4XN6w/mXrTCCLg3B1B7l4Hibyyq91O9M18H8sjyPxXudHIG4fBI9wDRC1zieQyi6pbzbck+rBvcet4RUKsVrJvPfscL7RMdlgxKjpqbrMo5WTzG+hfu1p8rnzXUcFVU9dw9BVVby+aV8jnOP8ZXj+KV0mI1NXWSE3mnMm/fp9LBew8FR9Fwrhrf+yHepJVaFR1Ksn1f6MnFrSFrw+nDHvZWvyefUnEWN0jWODXOALjZoJ38Fetw8xgqiIhAREQBFRVQnIREQkKiqiEBERCQiIgCxyyxwxvkle1jGC7nONgPErXxTEabCqN9XWyiOJg1J1JPYBzPcvOMXxWr4hlzVYdDQtN4qQHf95/ae7kslGjOtLkgv2OhYcOqXbztFbv8AB2T+NMCaAW1ZkFyLxxk/8C2H8TYW2OikE5cKyURQ5Wm5N7H05ryipkD5CGizG6NHJWsr+jbhURcb09c6U3OwLmf0K6V7w+FtRTTblr4aLJ258Coacrf8T7u09yREXJPKBERAEREBQKqoFVCoREQFhyvaWkBwOhBGhC8f44wGTAK58tHmbQ1YIDRsDe+Q+lwpPh3j6ppcsWMB1XBsKhg+0b/EOf4rssVhoeK+H5oqWeOaOVt4pGm4a8bX7DyWq3CvD3d0eht4XHCLldKvcejfV4+KPMeD8YmwSpNWwmSkBDaqIbhh2ePA+nmuz9pUEWI8MwYhTubI2KRr2PGt2OFv6Ly4dJTTvY8Fr2Ese06W5EKXpcXqabCarDbmahqG6RHeJ+4c3s1GoWrGsopwfX9T0NzYOdxC6p/Ems96/ODUoZI88T52dLG1w6Rh+Yc10PtNgi/SNBWU5vFU0oAdvfKdNeehC5aB1nkcna371O4tUe/8I0V9ZcOqDE7+B4u0+FwR5LFReOaHbqbNxTar0qq6sp/NaeqXmc4/WxPZY+SnoJxUcEVlK+xfRVcc0faGvuD9fxUDJpryKzU8sjI5RGerJGWSDtbcH8grQlgz1qfOl3NPyf4M+HVXulTSVliTTTNeR2gHX6KW9oFcyv4jmkicHxMbGxpHMZb/AJqApnAgsds5Y3k5Nb3vzVYyaTh3kSoRdZVutJrzx+DufZ88UuNU8l+rVtlp3d7mhr2/mvUm7abLxzh6oEdGJgR0lJXU9Qxt9SCcjvxC9jGx8VvWT/pJHjfaCGLnm+Xlr9GjwfiaNzOIsWBADm1D3dXxXoPGmL+58GUrKaSz62JkbXA/Jlu4/l5riuLiz/q/FMvw9JY+NhdamKVs8+GYXSThwFMx7WX+ZpdcH0FvJa6qcspxPRStf1Mbacto6tfLP1SI9w/srwF73hEbYMLo4m7NgY3/AEheD2vA8LssW4zldw/QYdhzi2pkpWiplbvGALZR3m2/eotakYc7kYuNWVW76KFPtee7vNzjPih7Mdgp8Kyyy0wdkLRm+1cLXtzIF/M9yjOFcP4ixjFH1zK6SFo6kla85ye1rL6E8tNAtjhvh+Osc2lpS4NDR+kqy+uuvQR/+4+S9FcaTCMOLmtZDTU0RNm6ANA5LYp03N88n3nMubulZ01bW8U5YxlrL/j3SNtgLWgONz29q5HjfE521OG4PQSujqayoaXuY6zgwOHPv19FPYDizcYweDEREYGzBxyON8oBI38lwvDk54i9oc+IkXhp2udHfk0dRv4krPOWiS6zmWFu4VKlSqv/ADTz47Jef0PSm8/FXK0nKdNbqoNwCspyiqIiEBERAEVFVCQiIgC0cXxOlwqgkq62TJGwbDdx5Ad5WxVVMVJBJPUSNjijaXPe42AAXlmJYpLxFiXvkwc2jhJFLC7/APojtKy0KE68+SP+jp8N4fK7qa6RW7+yK19bVY5We+14yMb/AHemvdsQ7T2uWKY5IHkcgVeNFiq/7rJ/D+a9RbW8KEVCP+z2kIRpxUILCREb7qPrgRIR2i49P9lIXWjXOY4tyuaTsbFU4xy/p8t6r75X3MtPc9x4crf0jgdDV63khaXX+8ND9QpNcx7OJOk4Sox9x0jP9Z/qunXlpYy8Hzy7gqdxOC6m/qERFBrhERCAiIhAREQHkfGPB8uDvfX4W1z6A6uYNTD/AFb38lA4NjFXhdT7xh83RSn4mHVkg7HD/hU5hHGFbR4l02JXnp5WhlRYauGwdl2zAeqjuL8NpKOtbWYRLHLh1Xd8RjdcMd8zbbjwK5UuWf8AUp6H0O3dWOLW7XNlaPqfan3/AFXeWcYT0dZiorqFwAqY2vmjsRkk+Ya+qi4nFgsdQqRyZ2Fjj1gNCvYeFeCeGcV4bw6tmw7NLNTtc9wmfcu581hlLmzzG25wtKUY6tLQ8ec0HrN07R/RZBLKIJWh3UkaGvHbY3H1C9jq/ZVw/K0mnkrKZ3LLLmA8iPzXMYl7LMVpszsKroKxvJkoMbj56hV8GRG8oT0b8zz0scYhttfdUhJAIBtyUliuE1+EPyYpQT0pvbM9vUd4OGhWhkDes3YqU31m0mpLKMUYs8dxV0vWIHmqkE/C3UHdT/D/AAVjnEELamkhZHSvNhPO/I09thuVbd5IlOMFmTwQDJSzKWvIc0gi3aDdd9hntLfFS5MSoXzTN2kicGh/iDt5KYwv2R0ojBxTE5nyc20zQxo8zclT+H+zHhuncXCimqyBtPIXD0FlaFV0/hZyrt2d0lGpHmxseH11c6rxGorHlgkmkc8gu2uf/CsqauSpMPSuaRDGI2dzRe34r6apuF8HghYx2DUEbQOpKynbp46K+XD4YyYn08IAFsvRttb0VHJZyZ53SppYhovQ+YGyOLCBlN+YKn+GsIOMxe40N2TOlzVc7hpFEPhA7STc+QXrXFHA+E4xQ1DoaKGGvyExTQtyHNbS9tCLrxjh3FZMDxmCsN2tY7oqhnay9nDy38lenyc2uwnXlcUJOjpJbeP89T2vC6Clwuhio6OMMijFgOZPMnvK8u45x9+J4t7tAS+kp3ZWsBsJHDmfPZd7xdi7cO4cmqYpBmmbkhcOeYb+lyvGi2VwdJG0lzB0rv3WtWzdVNVTj/P5+Dh8AtOdzuqur2We3rf28z1HEi/hXgAQdJepMQiB/fedbeGq0/ZRRiPD66tI1kkETT+60a/UrU9pOJx1mFYOI3XbM01J8MoA/EqTjeeG/ZuHfBUPguO3pJDp6A/RZU10ndFGKUJuw5X8daevn+V6mrQ8QOxz2hU0Ud20lK2ZkYDj9obG7ivQQLBeOezqzeK6Nttckuv+RexZhqAL2V7eTnHL7TS45QhQrwpQWiivqyqp0jC8sD25wLlt9QPBcfxTxvTUDn0eGBlTWC4c+944vHtPctT2bSnEKjFsRqZpJ6qSRjDK/S7LEiw5c9FbpYufItzX/wCMqxtpXFTRLbv19Ed6ioqZv+FZTmlyKg1CqgKITZVWljFV7jhVXVXsYYXPHiBopSy8F4Rc5KK3Z537QccfX4h+iqbM6mp3fbZdekk7D3BQ8NbDFE1nRVAsOcRVmFQOeDUzXL3kuJPaldCY8QgZQ10pM7M07OiIETu4nR3kuzidpTjKH9zXV27dnz13bPolrbwoUlSj1evazN78X/qaaof/AJMo9SomrxmaVro2RtYNjrcqehi6JmXMXOO7ncyuPlaWSyMPyuI+q1eKV7qhCDU8ZznH8z6mzTUWzYpf7TI4TOc4AXAJ0WxURtbD1GgBpB0CxYaw3e/lawW3K3Mxze0ELe4db9Jw9zkvfknr192u5En72D0H2U1GfAqinO8NSfQgH8iu3Xj/ALPsegwWtrWVglLJ2DI2Jhe5zwdAAO4rtJMexms/uWGQ0EX7fE5bEeDG6rz85xg8N7Hkr/hdxWvJunHR652Wv7nV3HasVRUwUzC+onjiaNzI8NH1XHTyNkv+l+Ka57baxYZTthZ4ZjcqLkxLhChkBp8MbVzjXpa2c1DyfDUfRYHcdiMlL2cm9ak8eCz+Dq5uLsLDzHROmxCQfLRRGQDxd8P1WvNjuNSRyPpcFjgY1pdmrKmztBf4W3/FRDcYxzEGhmHYVUNj+U9CIWAeLrD0ClMPwLEKtsgxqUsjewhrIqglwJ3vYAeihTqy2Ms7Lhlos1JZfjr5LBNcPV0uJYLSV04YJJ4w8hgIAvy1KkVr0FHDQUcNJTNywwsDGC97ALYWys41PMVnCVSThtl48AiIpMZ89snFy2QFrgbEFVdE03czc9nNTHGuIYTitc2swmGaOV2k+doAf2GwO/aoKJ+nVK4c6Si8wZ9ToVJVKalKPK31PqKNaBsvavZBiAqeF3Ujj16KZzP8rusPxPovFybm66/2XYz+i+JW00rgKfEG9C7NsHj4D+Xmm6MV5T56Tx1anurG36zgcgNnEclfPT9C4E9aN2rXDmFZBI6M5mHxB2Pitk1UZY2Poj0euZt9vBUOPBU3FpvDNWupYXl8UsbZYXgHK9ocCPArx/2qcJ0WGRU+J4TTCnY95ZNHHo0OOoNuV9RovaaprRDCWvD7XbcdnJcrxzh4r+FsQiDbvZF0rO5zNf6plrYzU5ulXWNn9z59YQ46bPbbzC9N9keON97qsIneQZgJoQ46ZgLPaPKx9V5vWUktFMYnjdjZoj95rhcEKtLVT0VZDW0chjnhcJI3DkVZYydatTVWm4n04ABss9G/LLkuQJOrccjyK5zhHiCn4jwiOuhsyQdSeIHWN/MeHYq4pxZguFy9DUVrX1N7CnpwZZSezK25UYeThQjOFTRao6b36djXRuylwNsxWOepM7WtcxoLeYXmHEHtFraLq0+E+6ucLtNfJaQjt6Nuo8yFwOK8XcQYuXNqMTmbEf8ACp/sm/TX1KnHazdhQuKqw5aeZ7XjfFODYI13v+IRNkG0LDnkJ/hH5rwTHqimrsar6qhY+OmqJjJG14sQDqb+d1qBrWkl2pO+up8ShudbWCJpbG7b2saOqeWbsmJVdbh9LQ1E2enpCejbbXXtPO3JdBhmFdDwPi+LTts6qYGRAjaIPGvmfoFxhJa5wB0I1XdcSY2TwLhNGzK2WqiHSBosAxhtt3kD0WxSS5nOT6tDVvYzXR0qKwpSWfl7z88ERh1BJjuP02ExzialpCWCUbdAHE3+tlOe1HEQ+opcKh0jhHSy22Dj8I9LlcRS1M1HWRVNLK6OZhu17TqFsV2JVNe57qtzHvkmMz35QC5xFvQAaDkp6VKDXWyZWUpXUKreYxTwu97sluBmui4jw6q+QzmDzcx39FnxbiaukfjMdLL0cVRVWMwd1soGUMb2Xtcn+qgocUnpqL3anaGubUCoEwPWacpbb0K0oLCzSDprbtVekcaeEXdnGpcOrUXUkvk8l7x0cOVu7tF6h7LqXocCnnOnTTnL4NAH43Xl4PTS32a0LtqHiykwbhynosIb01c5hfKZNGROO977+AS1koSzLxMHGaVWvbqlSWW2vLfU7TiPiSiwCmDqpxfO4fZwM+J/9B3rHw1Hi07JMRxqXI+pALKMCzIWb/zFcbwTgs2PYpJjmLPdPHE+7XSa9NIP/a3s7V6NXYlQ4cwyV9XDTt5GR4F/Ac10ISc/feiPK3dGnbf9akuaf9z+y+/X9DbG2qLlpuO8Hu9tGKmsc0XJhisLeLrK3AuLpcbrxDSYRO2mBPS1T5BlYPwJ81fpIZxk1f8AjrpRc5Qwl26fU6xQfGjJpeGa5lOzO4sBcAdcgN3W7dAdFvS4nTRWbmzu5hmv1XJ8RcXzvwyd/D9NUPhj6s1cY/so+VmnZzisSu6LbUZJtdmpmsrC6daEow2aeuiOZfLTUTvdn1cDnMAu4O0NxfmqueZYHOpXsc61muvcXWWkxI4pU+4TY3We5yU5laZGsa/PzY5wF+Wlliiq4HSuooWxkQjN0jd7k2IPbyK7VpxadxVVKa30yv4z2lNVOROa1/ncjUmZNSBsrZpZQTaQPNxqNx2aqMnpmTOzuJDjuRzUriT7ubGNhqVHyyCONzncl3HZ26oS6VZjvr1Y9TIpPOhY0hgEcbb2WW+hutMVrf2Z9VcK1g3Y4jm29rqlG+t4RbctOpcrSS8iXFsyU0lThWMtMLxDNcNDzezQ8DXTuK9Hi4MqaizsTxud99S2njyg+ZuVx+AYfiXEvEBxCCOOFsUrZHSFn2TMtrNtz0A09V7I0WuvJ1FCpNywcDi/Ea1Bwp05YljXGDnKXgrA4tZqV9S771TK5/02+imqXDqKkAFLR08IG3RxgLaRQopbI81Vuq9X45t/MpZAADsiqrGuEREICIiA+cToeqTZXNBHWbqtrEKJ1KWSh2eOW9ndhG4WoNDe9iuO1jQ+royZu1pVQSCC1xa4G7XDcHkjbnceYQmwusfWSewcKe0nDpaCGnx6o93rWjK6VzDkk77i9j23XaUOMYfiABoa6lqAf2UrTby3XzWHA7FUytBuND2g2KYRoVOHwk8xeD6kHesNYGGknEhGQxuzX2tY3XzpR8R41QW90xitjA2b0xcPQqbpPaTxNECJamnqm7ET041/lso5TWfD6iejRdxfQmLhfhbEHMId0DoHki123Jb9CfVce3S7T8pIXUcS8bYhxHhbMPrKSjiYyRsgfDmuLX0sTYbrmNS5x7TdSlhYOnRUlHEt9ToOEOJBw3JWSGkdUipiEZj6XKzxIt/y63JeOamKldTYJhtBhDXizpKZl5P5jsuTVMw7QmrDo03LmaMz5DLK6SaR8sjzdz3uJJPaTzVC4bX07BoFifdlhobgG4N1jzO7Qo5M7mVMz57fC0BWlxO5WNpJcdd1dlPNxU8qQB+Jp8lV5c4MY57nBuguSbDuVMulh2o88uR3VkyCpc2973Ko1oN3W5plNmE2s7kOSqw2jt2OKjq0Jaa3Lg2wLr78k0yhwOhVT8DVZGbwP7jdV1ayA4B0edlwdnIXgRhsQ33PYlObuc3tCtvla4BWxrgHTUmM4lQYZDhjcWpsPiYCbxNdLL1jexLQcvhotpnCkeI0sdfFjLqt02pqJRla3tBuS4u7gFyLG2iL2m1jtyUvw/ixw+VzZiTSF/Xbb4b8wlavNU3yRy0aUrKUHz05crerwlr9/U6+lwPAaGNobSe/zDeaqJLb9zdls1lVVup8kGWwtliaMrAO4BKWSnq4RNTzNljOzmm6y9C1eYrcRrzliey6tl8/3McaEYvmer7Xr/r5YOZxSSuq6Z1I8imdJ8Jsev8Au6dqzycRxxcP/o2pgdCxrDC6JzCCNNQG7X71P9BGSC4XI2JXHUYOPcUvlk1paY3a3llabAeZ1XSsr+PLJqCUYrL8e7xNmOGZcFwISOFRW0zGRmPKyMuOYi3xG22iqWwHF6s0tPHBFEGQtZGLDQXPncrpa+pgoaSWpnDckYv4nkB3lclhDzJTvnfbPLI6R3mV2vZSda8vpVZ/DFaLqzt9yktdTBVOz1Dz32UbiD7BrL87lbhNyT2lRta69QQDsB/z6r6HxSp0duo9r9Fq/pgQWWdp7NMBosSZWVWIU0VQ2NzY42SagHcm3ourxLgXAqyMiKmNI8/NTuIv4jZcHw/VT4NFTOqHFtJWdZj2/wCG7ax7jYLv6LHJY+pUt6Vv3ho7/dfPKvFKFOu6dWOFtndaaP1OJxC0vuldehUfhnH7E7Q0VPQUsdNRxNihjFmsaNlsLTpcRpajRkoDvuuGUrbuulSq06kc02mu48nVhUhJ9Kmn3lVRLqqyGIIiIQEREAREQHg+IRGKieyM/YFwcWE/C4aXb67KJC6uksKqIvaHNzgEEXBB0/NcxUQmCeWI/I9zPQkLl1EfVYsQEh+myzEBr7/KVihBFidlmtmB79Vqz3LoPiYeXmsRiDeSvY8t8FfuCW6jmFVOUQY42tvq3zV74xqR6LI2wGmyabKjm85JNZVytyF73EW0aB8xVH6EgKy7jre4GgC2oLOpVlALmzj6LJHE57g2OMuJ2ACyRRNDWTSuDWZxpbcc1JUbmO6eZpGUusCNg0LMorYq2Y6DDoJ/7NUtlp53nqT7sHc7u71G1lHUUdRLT1LCyWJ2V47+XkVJuxOAOIa2RzRzAWxj9TT4jQUlZBK01DWdBUM2dYEZSVEkuohN5OdbcELMDdYbG5BGqysP1F1ikXRW9j3KjvqPqquFxZU3aDzCqiSgvYWDu6+wVHaRWvqHLM3VjuwahYnjR/iCkXlgue77BuvJWxfqpR3K06AtPIq6L4Jf4VLWIgQG0zfRCPtiFSPSRnirn6TuT+75AoGkXFrjx0WeEtitnO5usDnfC4bFX2zODTsfxUS13B0OEzTtrKmpw4gyZ7mnboyZuUEgDk4bhddQ1kVfSsqackseOe4PMHvC4HBp3QSGMHLIxwe1w5lSvDOKEY5VQPsI6t7nsA0Af3eOq0OK2UatPpo/EvVGCUTqMRkMOH1Ujd2wuI9CoLgmJlNg01XKQwSPJc92wa0f+V0FXEZ6SeIbyRuaPRcZhlPW4xh9PhceampqYn3lztC5xNwAFyLWKnbTi3hZWX3a/crHZmDGsRqcemm91YfcqVpk10H8R7+wLPR/Y4WOWmim8apKfDeF6mCljyMs1ve4kjUnmVCT9SghZ9639V9B9i3CrGpKEcRTSX1fmRN5Whp8lEzuvNIe8qWKh39aR3ifxXpuMPSK7pP0S+4pnpUdBDWYBBRygZHU7AD2G2/5qM4brJi6bC6z+9UhsDzc0f8APRTeEvEmF0bxs6Bn4Lm+K2PwzF6PGKcbkNkHaR/UfgvjkM1a1W3nu22v/pfkmOuh0n0WeGrqIf1Uz2919FSF8dVAyaM3ZI0Oae4hWuiI21C58ak6ctHhmKUIzWJLJKUeOyscBVjpGHd4FiFPwTRzxiSJwcw81xGyywTywODoZHMPcV2rLjdWj7tX3l6nHveC0q3vUvdfodtdVXO0uPSjq1DGv7xopWnxKmn2kyO7Hr0VvxW0r6KWH2PT9jz1xwu6oauOV2rU3UVAbi/4Kq6JzgiIgPD207jZ75pRLe92GwHgFoYvHJHVVDJniSRk7w54FsxNje3mt7pZInhtS1uU6CRm1+/sWtNA+p97kBzObLc9+g/ouTWkoxyz6otyPjdoW+ayMdl8FhYQDcuCvDgdrnwBWGUcmQuVWOynuVAHnaOT+Qplf+yk/kKhpPRjJsC1rhY3v1GU7KxshZ8TXAd7SFbnDje4VI02nljJSRxNzzVLho1F+7tVXC7HG+1vxVr92nv2WzDSJG7DnPees4k8gNLK9sbmkAvIa9wDrJFbU9llkmvksNyRbxWLnfOkbHRrkbN80NxlMrLbaRgFWVcWTDmU2RpeJnPbLexy5R1T6LE1kjcxqKUyHcyAm6pLNelfY9JFtZ56zDy8Qtp7GoaQccwc7XNuSqAhrt9iriLsbp2K14s4Fa6LmdgBaXNNwQsbRo/uV0DgGuB53VQW2I+a1lj1TZJSLVjh+6rNLgn5hYq+F2Ukd9la9pylvMbKV8TBiNze+4ABWWIWbIO2wVTZ4zW+Iaq1jS291ZvKBSPV0fbdVfrM/wAFcxobJmPosVyS47kqVqwU+W3ZqszT1oz3hY8pOw5WVw0jdc6ttZJaogvgz+9tbG7K4m1+xb0doK2CWE6RTxsae22/4rQgDn1TRGbOJ37FJuY0VVDRx6l07ST5rI8Km8lW9T0TmU7uSHuReBNYheLjbA5B2yMH+pc/W6NhZ2MXQcXC+DH/AOtH+K56v/XgdjAvqnsCv+tU/wDr7B7GqVDO0kN+0qZKiJ25ZXfxH8V6viMFOcE9mpLzwTDY9B4PqOnwOJpPWhcYz4XuPoVtcQUXv+EVEAF3huePuc3X+oXO8B1VpqqlcfjaJGg9o0P0XZ7L4vxaErXiM315z936kvRnOcD1vvGFup3Hr07rD+E6j810a47h5vuXF1fSN0YQ/TzDh+K7Fa3EYJV3KO0sPzE9y1zGu3CxOiI21CzotJNoqauUjcKrXlum4WyqFoPIKeYGSmxGaA/ZyFo5g6gqYgxqIsHTNcHc8uoUAYmnuVuR7PhN+5b9rxK4ttKctOx6o0rnh9vc6zjr2rRnYwVMNQLwyB3dz9EXIMnfG4HVrhzBRdyj7Rrl/qw17tvU4tX2efN/Tnp3nBQFnuThUOBjYXMc4nkNlmwyF0VKOkvmkJeQd9dlcyhp2OBDL2N2tJuAe2y2Vhu7xVo8sdj1rZYIo736Nn8oVwFttFVZI6eaX9XE93gFoOXayDGi2xh1Wf8AAd6j+qr+i6z9ifUf1VOkh2oZRp77rDLS08otJCw99rFbc9NLTkCZhbfa6xLJGbWsWCKqsKjZE98Ejm2F8p1BWpT07Z6GQ6CRpzZj2KfLQ5pa7YixXP8ARGlqzDMSInHW3zBdixruonGb1LxbNdjXtILo32OugWxHCZmmWW8cTHAEc7qYc5rGZiQGi1lpuIMWIG9xmPrZb3RJPJfpW44LaaJsoeY2mnkabXabg+IWhUhwlew2a7NYtbsfBb80wppc4OrousO9YaSknqCKgWAadA/n3qtapGCyyqKQYdLPE9zJQHNdlsdle3B6gi7pYwRqBqVtS4YOi+zJM1+s7pCB4rZpmTU9M4TydK5lyCFzJ3UsZhJeGCHIgAxzHPa61wdlQloNyQFLRUIq2ioqpHOdIA7I3QLbio6aIdSFg7yLn6rJO8hHR6snmOcBBvrpfktiKF0v6t8bj93OL+i6Gw7B6KnRx5w/o2Zh82UX9Vhd9nZEc5zvu00cvRuicC4ZgLb9qo5rmOyvaWu7CLFTHutVLiHSmQBgNmNbqSPyUvK2eZrY8UwepmYwWaIchNu83urSvOVrZ9uv53J58HH/ACEfVWAluh27V0E2EwvcTDh+MRj7pia4fisZwR7o3tjoMSc8izTI1jGg9+qzRuqWNX9CedEKqTMLHZXtcH6dU6Gy9DwvBKSigic6nYaoMGd7+t1ra27FzvE+HVfvZral0IY8ht9QBZY7a+p1q3ItF39fgVVRN4IfD6WVzula8Msdy29ypbhuiFXjrZ2udJFS9Z8jjfM7ksOG4dWYs50UU0ENNHo8scCbd3NdrQUdPhtIKenaGRM1JJ1PaT3qvE7+FOm6UNZP0Kylg2RsFVRFVxLhVMSDVdI4coml3+yjpuNaRt+hpJ3nkXODf6rgQsbmeqg/p9TGoyfUSXFLc2Cym3wyRn/UFzmJD7Zh/dVtdxJVYvTyUcNBdslvgc5zhrdZavDMViYyWppzM0M1dALuHi1e99lL2jwuEqV5LlcnldfV3BxeDRWhXxgDNfXMpKH3SY5W1jIX82VLCwjz1CzYvhHQ4UK1lRFPlcA4Rm7Q06b89bL1d1xvh81FRqe82klh9bx2dnaQk09SIwOqdSYrTTMNrSAHvB0K9ExqsbQYXUzlxu1pEeXfMdAuR4VwJ1XMyrqm2po3XaHf4jhtbuXbVdNDWU7oKpgkid8TT/VfN/aa7ta1/FwWeXSTXWWfeeb8P14oMXhqZnEsuWyOOpsdyvTRtobjkuPqOC+lqqowzMhgNugbYuI7Q7yXXxtDGNYPlAHoLLk8UrUazjOm9ca/YmbT2LkRFyjGEREAREQFCLoqogMTqaB7croYyPCy1nYTSE3DHDwct5FZTktmTk1IsOpYjcRZj2uN1tgWFhoAiKHJy3ZGQiIoBD4+7WBviVDqSx116trfus/EqNXSoLFNGSOwWvW0jKqLKdHD4T2LYRbNOpKnJSiWIQe808D4aiB72WOVzddUhjqZaYMji0e7M9zza/kpsaIuguJS64k5NCPDWueZasiSQ8ho1b4AaA1osBsAi26GgkqnA2LY+biFz69xKb5pshspQUb6ySwNox8TlJYrTxw4e1sTQ0B48eakIYWQRCOMWaPUrDicRlopWgagXHkua6zlUXYY86nM8hbRERb5kCqxrnODWgknYBGtLnBrQSTsAp/DMPFM3pJQDM7cdgWKpUVNZZDeCuHYe2maHyWdKR6LfRFzpScnlmIIiKoCoQCLEAjvVUQFrGNZfI1rb75RZXWB0IBB3BREyDyirhdHXzQvaW5JHDL2AE6LuMM4bwjoIqjoXzdIwOHTPuNRfYWCh+OaHoqyKuYLCYZXkfeHPzH4LpOGZOlwGide5EeU+RIXob65nO0hVpyazo8fzuMsn7qaJCGKOBuSCNkbexjQ0fRXoi8823qzEWOijc4udGwuIsSWgkhc1xXh0NNSiupKeNpacszWiwew6agd66hYqqnZV00tPKLslaWlbFtcOjVUs6dfgTF4ZG8KVfveB05Ju+K8Tv8ALt9CFLrlOCukpqnEcPl+ON4Nu8Eg/kurV76moXEktnr56kyWGERFqFQiIgCIiAIiIAiIgCIiAIiIAnJE7UBzmMOviEndYfRaS3MXBGIS35kfgtNdWn8C8DKtgiuZFJIbMY53gFtw4XVSHrM6MdrlLnGO7GTSW5S4bUVFnZcjPvOUtR4ZDT2c77STtdyW8tWpddUCrl2EfTYTTxWMhMjh97Qei3wABYaDsCqi1ZTlLdlMhERVBE1uE53mSmc0E6lrtlrR4PUuNnljR/FdT6LMriaWC3MzUosPhpesOtJ94rbRFilJyeWVCIigBFp1uIw0b2xvjqJJHNzBsMRcbeOyxMqsVqADSYPIxp1D6qZrB6BbNGzr1lmEScMkUWm2gx2XWSroabujidIfqQFd+hMROrselv8Au0zAFux4NcPdpfzwGO82k2FzsFqDBcTDg5mOyEi/VfTNIPkud4krquneKKbEaWQEB0hijynwOpWSPBKzeslj5/glRyTPE1IKvBallusxvSs8W6/hdafBEufBMn7OZw9bH81H4Hj8EU3u1fU3pZBkzG5yd/gs3Az2s/SFK14cI5Q5tjuNRf6BZK9lUt7OcJPKTTX0LNNRaOqREXBMYTxREBz88YouLaaoAsytidG633wNPyXQBQXFzHsw2Krh/WUkzZGkdnNTFLUR1UEc0RBbI0OFuVwtuvmdGFT5eW3oyz2yZURFqFQiIgCIiAIiIAiIgCIiAIiIAiIgMMtNBMQ6WJriOZRlJTMN2wRg9tlmRTzSxjIyUAsLCwHcFVEUAIiIAiIgCIiAIiIAiIgCIrXvbHG6SRwaxoJc48gN0SyDSryaupp8KY45Z+vUFp2hG4/zHT1XQsaGtytAAGgA7AoThmB0rZsVnbllrCDG0/JEPhHnv5qcuvaWNB0KKg9yX2BFG1eO4ZSPMclU18v7OEGR3oFibjFVN/dMFrng7OmLYh9TdbgwzbxWgbiNBLSumkhzj44zYjW65L/09N//AIn/APp/3XSCbHpD1KKghH/dqHPP+kLbqaiWlw6WokibJLFEXljDYEjcAlCU2tjj38AGON7mV3SvAuGmPKD53Wlw7VNwyqMQhZlmIY8kdZuvb4rexjHZqt1JV0Ezo4XxbA7Ov1ge/ZRmMU8kIZXU4PQ1FpGEcje5b4g3UTpqpTcJdaMiy9GdydCQi0MKxSnxClbK2VgeAM7S4AgreBB2IPgvB1KU6cnGSw0YcFURFQGCvpm1lFPTO2ljLfPl9bLhuEZZafH2wSEgva+N7T2j/wAL0DkVx1fC2i44pZWDKyd7X+ZuD9V1eHVM06tF9abXiv56F4PRo7FERcooEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBRmItOI1kGEMJyy/aVRHyxA7eLjYLfnmZTwSTSXyxtLjYcgsfC0Dvc34jPf3mtd0ju1rNmt8hqutwi26Sr0kto/UldptYliUWHNigZE6epk6sFLENXf0btqtVuE1eIDPjlU5zD/8AKUziyMdxI1d+C2q/BqSunZUS9PHUNZkbLDKYyB2aLXGANHw4riw//Kv+IXqiU0SVHR0tFH0dJBFC3sjbb67rOFDjA5W/BjWKj/7rT+IVf0TXN/VY9W3/AH2Md+SD5kuqOAcCHAEEWII3Cgqx+M4XTSVT66kq4Ymlz2zRdE6w7HA2v5KZpZhUU8Uwa5okY1+V24uLoRg47jDChRPZXUrA2mkIbMxosGO2DgOQIsD5LBgeJU7aeTDcTbmo5Tdrj/hk8129ZTR1lLLTTi8crS1y8tMclPNLSz/rYHlju+2x9FaOuhki8rBIY1gDqB3SmNk1M89SYAa9l7c1TAKv3Cvgja4tgnf0b2knLc/Ce43/ABW9w9i/u7vca2z6KXqkPF8n+ys4pwB1DG+elzOpie25jd/TvVKtKFWDhNZTJz1M6V9VTse5j5mNc02IJtYq5k0UguyRjvBwXOMe7FKBmINIMrWhtQBzcNneYWqvJVrFU5uGdinKdhmb94LmeL2ZKnC61tvs5wwkctQQtbXvWjjIJoSbnqPa7dZLO35K8Xnu89CYxwzvjuUXMQYlVsa0iYuFgbOW0MantrHGe/ULSlazRXlZOooMY1Nzhj9Srm42+/WgYR3OKr+nqdg5WTSKMjxmA/rI3s7xqFtR19LJ8MzfA6LG6U1uiMM2UVGua/4HB3gbqqoQEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBXxyOjN2nxurEVoTlB80Xhg34JRI3scNwsijo3ljw4f+VIMcHtDm7Fer4bffqIcs/iXr3gqtPFMRgw2ASz3c55yxxMF3yO5ABbijMYoaiaelraB0fvVLmysl+GRrtxfkdN10yVua1PhtVicrKvHAA1pvDQtN2M73/ed9FOAWChmY/DC7o8Vglw6W+8zbxu8HjT1spaCaKojEkEjJGHZzHBw+iEvJeuM42w7JVU+IQM1md0MoA0J+U+PJdmtDHaT3zCKuFps/oy5h7HN6wPqEQi8M4SgpveY6uENPTMi6Vg5nKdR6ErrsAnZi+BmCoIeWgxPvzFtHeNlt4Q2mraSmxMU8YnnhBc+2puNbrVwnDJcNxasEY/skzA9h7DfZTnJLeTnOFQ+jxaswyYcnNLTzsbgqtZB7vUyRcmnTwOy6CqwU/wDUUWKxusxsbhKBuTlsFz9ZP7xUvlta50HYOS4vEovpoyXWvuTnLyRGI4g+klEbImklt8zitFlbUVsrYJHWjebODGqVmw+nnlMsrXOcbC2Y2WaKGKEWijazwCrCvRhBYjmXaXysFY2ZI2suTlaBc81eiLTbyVCIigkJ4oiAq1zm/C5w8CtunxKphIGfpG9j9VpoquKluiMHUUVWyriL2CxGjh2IovAHWnlbyLPzRc6rBQm0jG1hk4iIsRAREQBERAEREAREQBERAEREAREQBERAEREAREQBZIZXRntHYsaK9OpOlJTg8NA3BVR9jgqGqbyYStRF0Hxe6xjK8gbgmjmaY3tFjydYgrRl4dwx8hkhgdTSHXPSvMR+miuWCrxSSga09G57TzuLBbtpxiTfLVWe9ErPUX/oeqb+oxzEWDkH5H/iFZLheLOjcxuPPIcC3r0zOenJYouI2O/WMLO+1wtpuKRytzNqGAei3Z8VowXwvy/cnLN3D6VmH0EFI192wxhgc7nbmqz1cEEZkkkGUdmqhajF6dgOV5lfyDVCVdXLVvzSu0GzRsFrf8pVm/dhhd/8QSbJis4ke7q0cWTX436n0UC5xe5znauJuVRFgq1p1XmTLpYCIixEhERAEREAREQBERASGButXW7WkIsGGSCOuhcds1vVFz7pPnyY5bnToiLXKhERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBWva17S17Q5vYRdXLFVTe708kvNguB38kSbeEERGLRUcOkbCJjyB0HiFFWV8j3SPc95u4m5Vq6tOLjHDZlSCIiuAiIhIREQBUVUQgIiISEREAREQFWkggg2INwioijCZB2CIi5BiCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCw1kHvNNJDe2YaHvWZETaeUDkZI3xyOZILOB1CtXTVtFHVs63VeNnrn6mllpn5ZWkA7O5FdKlWU13mRPJhREWYsEREAREQBUVUQgIiIAiIhIREQBERAdgiIuOYQiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCtexsjcsjQ5vYVciAi6jBon3MDujPYdQtGXCquPZgf/CV0SLNG4nHvLKTOTfTzM+OJ48WrGdN7jyXYdysdGx18zGHxaFlV32onmOSRdQ6hpX/ABU7PIWWF2FUbv8ADc3+Eq6uodaHMjnUU67BoT8Msg8bFYXYIfknH+Zqurim+snmREIpM4LUDaSI+qp+hqn70XqVbpqfaMojUUkMFqOb4vqrv0LN+1j+qdNT7RlEWilP0LN+1j+qocFqOUkXqU6an2jKIxFvnCKsbBjv8yKelh2k5R0KIi5ZiCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgP/2Q==">
+      <figcaption>Karel se prepara para enfrentar a Warel.</figcaption>
+    </figure>
+
+    <h2>Problema</h2>
+    <p>Escribe un programa que, dado el mapa de los módulos de recarga, determine
+       si Warel tendrá suficiente energía para recorrer el mundo y, si la tiene,
+       cuál será la máxima cantidad de energía que llegará a tener.</p>
+    <p>Tu programa deberá dejar en la casilla \((1, 1)\) una cantidad de zumbadores
+       igual a:</p>
+    <ul>
+      <li><em>Cero</em>: si Warel no tendrá energía suficiente para recorrer el
+          mundo, es decir, si en algún momento su energía llegará a cero sin que
+          tenga un módulo de recarga.</li>
+      <li>La cantidad máxima de energía que Warel llegue a tener, en el caso de
+          que Warel nunca llegue a quedarse sin energía.</li>
+    </ul>
+
+    <h2>Consideraciones</h2>
+    <ul>
+      <li>Karel inicia en la posición \((1,1)\) con orientación desconocida.</li>
+      <li>Para obtener los puntos de este problema no importa la posición ni la
+          orientación final de Karel, solo los zumbadores que queden en la casilla
+          \((1,1)\).</li>
+      <li>En este problema habrá diferentes subtareas que varían dependiendo de la
+          cantidad de zumbadores que Karel lleva en la mochila y de las dimensiones
+          del mundo.</li>
+    </ul>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El escenario es un mundo de cuadrícula. La <strong>primera fila</strong>
+         (la fila \(1\), hasta abajo) es la pista del duelo: una hilera de casillas
+         delimitada por paredes que va de la casilla \((1,1)\) hacia la derecha.
+         Sobre algunas casillas de esa fila hay <strong>montones de zumbadores</strong>:
+         cada montón es un módulo de recarga y el número de zumbadores del montón
+         es la energía que aporta. Warel no aparece como robot; es solo una regla
+         que recorre la fila de izquierda a derecha (Karel ya conoce su
+         estrategia).</p>
+      <p><strong>Karel</strong> inicia parado en \((1,1)\) con
+         <strong>orientación desconocida</strong>. Su <strong>mochila</strong> trae,
+         según la subtarea, <em>infinitos</em> zumbadores o <em>ninguno</em>. No hay
+         lectura por teclado: toda la información (dimensiones, paredes y módulos)
+         vive en el mundo. Se considera resuelto cuando Karel deja en la casilla
+         \((1,1)\) el número correcto de zumbadores: la energía máxima de Warel, o
+         \(0\) si Warel no logra recorrer toda la fila.</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por <code>stdin</code>. El <strong>mundo</strong> de Karel
+       contiene: las dimensiones del mundo, las paredes que delimitan la primera
+       fila, los montones de zumbadores (módulos de recarga) colocados sobre la
+       fila \(1\), y a Karel en \((1,1)\) con orientación desconocida y la mochila
+       que corresponda a la subtarea.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por <code>stdout</code>. Lo que se evalúa es el
+       <strong>estado final del mundo</strong>: únicamente la cantidad de
+       zumbadores que queden en la casilla \((1,1)\). Esa cantidad debe ser la
+       energía máxima que Warel alcanza durante el recorrido, o \(0\) si Warel se
+       queda sin energía antes de cruzar toda la fila.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>5.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>8 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Instrucciones máximas a ejecutar</td><td><span class="badge">\(10{,}000{,}000\)</span></td></tr>
+        <tr><td>Longitud de la pila (recursión)</td><td><span class="badge">\(65{,}000\)</span></td></tr>
+        <tr><td>Tamaño del mundo</td><td>hasta \(100 \times 100\) casillas (varía por subtarea)</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">17</td>
+              <td>Karel inicia con <strong>infinitos</strong> zumbadores en la
+                  mochila. El mundo tiene \(100\) casillas de altura. La primera
+                  fila mide \(100\) casillas de largo.</td></tr>
+          <tr><td>2</td><td class="pts">21</td>
+              <td>Karel inicia con <strong>infinitos</strong> zumbadores en la
+                  mochila. El mundo tiene \(2\) casillas de altura. La primera fila
+                  tiene una longitud variable.</td></tr>
+          <tr><td>3</td><td class="pts">23</td>
+              <td>Karel inicia con <strong>infinitos</strong> zumbadores en la
+                  mochila. El mundo tiene \(1\) casilla de altura. La primera fila
+                  tiene una longitud variable.</td></tr>
+          <tr><td>4</td><td class="pts">39</td>
+              <td>Karel inicia con <strong>0</strong> zumbadores en la mochila. El
+                  mundo tiene \(1\) casilla de altura. La primera fila tiene una
+                  longitud variable.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo 1</h2>
+    <div class="example">
+      <div class="io"><h4>Mundo inicial</h4>
+        <img alt="Fila 1: montón de 3 en la casilla 1 (con Karel), 2 en la casilla 4 y 5 en la casilla 5; pasillo de 8 casillas."
+             src="data:image/png;base64,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" style="max-width:100%;background:#fff;border-radius:8px;padding:6px">
+      </div>
+      <div class="io"><h4>Mundo final</h4>
+        <img alt="La casilla 1 queda con un montón de 6 zumbadores."
+             src="data:image/png;base64,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" style="max-width:100%;background:#fff;border-radius:8px;padding:6px">
+      </div>
+    </div>
+    <p class="note">Módulos: \((1,1)=3\), \((4,1)=2\), \((5,1)=5\). La energía de
+       Warel toma los valores \(3, 2, 1, 2, 6, 5, 4, 3\) por casilla; nunca llega a
+       cero y la máxima fue \(6\) en la casilla \(5\). Por lo tanto Karel debe dejar
+       \(6\) zumbadores en la casilla \((1,1)\).</p>
+
+    <h2>Ejemplo 2</h2>
+    <div class="example">
+      <div class="io"><h4>Mundo inicial</h4>
+        <img alt="Fila 1: montón de 3 en la casilla 1 (con Karel), 2 en la casilla 4 y 1 en la casilla 5; pasillo de 8 casillas."
+             src="data:image/png;base64,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" style="max-width:100%;background:#fff;border-radius:8px;padding:6px">
+      </div>
+      <div class="io"><h4>Mundo final</h4>
+        <img alt="La casilla 1 queda sin zumbadores; solo permanece Karel."
+             src="data:image/png;base64,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" style="max-width:100%;background:#fff;border-radius:8px;padding:6px">
+      </div>
+    </div>
+    <p class="note">Módulos: \((1,1)=3\), \((4,1)=2\), \((5,1)=1\). La energía toma
+       los valores \(3, 2, 1, 2, 2, 1, 0\): al llegar a la casilla \(7\) la energía
+       baja a \(0\) y no hay módulo de recarga, así que Warel no puede llegar al
+       final del mundo. Tu programa debe dejar \(0\) zumbadores en la casilla
+       \((1, 1)\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Recursión</span>
+      <span class="ptag">Sumas acumuladas</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Sobre la fila \(1\) hay montones de zumbadores (módulos de energía). Recorre
+       la fila de izquierda a derecha simulando la energía de Warel: empieza en
+       \(0\); en cada casilla réstale \(1\) (por el paso) y súmale el montón de esa
+       casilla. Si la energía llega a \(0\), Warel muere → deja \(0\) en \((1,1)\).
+       Si sobrevive hasta el final de la fila, deja en \((1,1)\) la
+       <strong>energía máxima</strong> que alcanzó.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El algoritmo es una <strong>sola pasada</strong>; lo difícil es
+                <em>expresarlo en Karel</em>, sin variables enteras. La energía y el
+                máximo se llevan en el <strong>parámetro de recursión</strong>
+                (\(\text{sucede}/\text{precede}\)) y en <strong>montones de
+                zumbadores</strong>. Las subtareas 1–3 (\(61\) pts) dan mochila
+                infinita; la subtarea 4 (\(39\) pts) la quita y obliga a
+                <strong>reciclar</strong> los zumbadores del propio mundo.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo se modela el duelo?</summary>
+      <div class="body">
+        <p class="q">¿Y si lo ves como una sola caminata de izquierda a derecha
+           llevando un número llamado «energía»? ¿Qué le pasa a ese número al pisar
+           cada casilla?</p>
+        <p>En cada casilla ocurren dos cosas, siempre en este orden: primero el
+           <em>paso</em> resta \(1\) de energía, luego el <em>módulo</em> (si lo
+           hay) suma sus zumbadores. La energía en la casilla \(c\) es
+           \(E(c) = E(c-1) - 1 + M(c)\), donde \(M(c)\) es el montón de la casilla
+           \(c\). La casilla \(1\) es especial: ahí no hubo paso previo, así que
+           \(E(1) = M(1)\) (Warel arranca en \(0\) y de inmediato usa el módulo de
+           \((1,1)\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cuándo muere Warel y qué hay que reportar?</summary>
+      <div class="body">
+        <p class="q">¿Notaste que la energía nunca puede quedar negativa? Si baja,
+           lo hace de uno en uno, así que toca el \(0\) antes de pasar a negativo.
+           ¿Qué decide entonces si vive o muere?</p>
+        <p>Como Warel sigue vivo solo si \(E(c-1) \ge 1\), al dar el paso la energía
+           que «llega» a la casilla es \(E(c-1)-1 \ge 0\). Si esa casilla tiene
+           módulo, se salva; si no, y la energía llegó a \(0\), muere. En la
+           práctica: <strong>muere exactamente cuando \(E(c) = 0\)</strong> en
+           alguna casilla \(c\) (incluida la \(1\) si \(M(1)=0\)). Si nunca pasa,
+           la respuesta es \(\max_c E(c)\). Verifícalo con el Ejemplo 2: la
+           secuencia \(3,2,1,2,2,1,0\) toca \(0\) en la casilla \(7\) → respuesta
+           \(0\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas 1–3: mochila infinita, pero ¿dónde guardo los números?</summary>
+      <div class="body">
+        <p class="q">Karel no tiene variables. ¿Cómo cargas la «energía» mientras
+           caminas, y cómo recuerdas el «máximo hasta ahora»?</p>
+        <p>Truco clásico de Karel: el número vive en la <strong>profundidad de la
+           recursión</strong>. Una instrucción recursiva con parámetro \(n\) usa
+           \(\text{sucede}(n)\) para sumar y \(\text{precede}(n)\) para restar; con
+           \(\text{si-es-cero}(n)\) sabes si la energía se agotó. Para el
+           <strong>máximo</strong>, guárdalo como un montón de zumbadores en
+           \((1,1)\): en cada casilla, compara la energía actual contra ese montón y
+           deja el mayor de los dos. Como la mochila es infinita, «dejar» zumbadores
+           es gratis. La altura del mundo (subtareas 1 y 2) no cambia la idea: basta
+           bajar a la fila \(1\) y trabajar ahí.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 4: mochila vacía (los 39 puntos)</summary>
+      <div class="body">
+        <p class="q">Si la mochila empieza en \(0\), ya no puedes «crear»
+           zumbadores para reportar el máximo. ¿De dónde los sacas… y te
+           alcanzan?</p>
+        <p>De los propios módulos: cada vez que pasas por un montón, recógelo
+           (esos zumbadores son justo tu energía). La energía en cualquier casilla
+           es \(E(c) = \big(\sum_{i\le c} M(i)\big) - (c-1) \le \sum_{i\le c} M(i)\),
+           así que el máximo nunca supera el total de zumbadores que ya recogiste:
+           <strong>siempre tienes en la mochila suficientes para depositar la
+           respuesta</strong> en \((1,1)\). El reto es puramente mecánico:
+           comparar/llevar cuentas moviendo zumbadores reales en lugar de
+           «inventarlos».</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Una sola pasada por la fila \(1\) simulando la
+           energía \(E(c)=E(c-1)-1+M(c)\), con \(E(1)=M(1)\). Llevas la energía como
+           parámetro de recursión y vas guardando en \((1,1)\) el máximo visto. Si
+           en alguna casilla \(E(c)=0\), Warel muere y la respuesta es \(0\); si
+           Karel llega al final de la fila (encuentra la pared derecha) vivo, en
+           \((1,1)\) ya quedó \(\max_c E(c)\).</p>
+
+        <p><strong>Cómo se sube de subtarea en subtarea.</strong></p>
+        <ul>
+          <li><strong>Subtareas 1–3 (61 pts).</strong> Mochila infinita: el máximo
+              se mantiene como un montón en \((1,1)\) y «dejar» zumbadores es libre.
+              La única diferencia entre ellas es la geometría (alto \(100\), \(2\) o
+              \(1\)); resuélvelas todas bajando primero a la fila \(1\).</li>
+          <li><strong>Subtarea 4 (39 pts).</strong> Mochila vacía: recoge los
+              zumbadores de cada módulo y reutilízalos. Como el máximo \(\le\) suma
+              de módulos recogidos, nunca te faltan para depositar la respuesta.</li>
+        </ul>
+
+        <p><strong>Orientarse al inicio.</strong> Karel arranca en \((1,1)\) mirando
+           a una dirección desconocida. Para quedar en la esquina inferior izquierda
+           mirando al este: gira hasta el sur, avanza hasta la pared, gira al oeste,
+           avanza hasta la pared y gira al este. Así caes en \((1,1)\) listo para
+           recorrer la fila.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel)</span>
+<pre>// --- preparación ---
+orientarse-en-(1,1)-mirando-al-este
+
+// --- simular la energía con una sola pasada ---
+// "energia" se lleva en el parámetro de recursión.
+// El máximo vive como un montón de zumbadores en (1,1).
+
+define-nueva-instruccion paso(energia):
+    // 1) usar el módulo de la casilla actual (sumar su energía)
+    mientras junto-a-zumbador:
+        coge-zumbador
+        energia <- sucede(energia)          // +1 por cada zumbador
+
+    // 2) ¿murió aquí? (llegó con 0 y sin módulo)
+    si es-cero(energia):
+        ir-a-(1,1); vaciar-la-casilla; apágate   // respuesta = 0
+
+    // 3) dejar en (1,1) el mayor entre 'energia' y lo que ya hay
+    actualizar-maximo-en-(1,1)(energia)
+
+    // 4) avanzar a la siguiente casilla (cuesta 1 de energía)
+    si frente-libre:
+        avanza
+        paso(precede(energia))              // -1 por el paso
+    // si frente-bloqueado: terminó la fila; el máximo ya quedó en (1,1)
+
+inicio:
+    paso(0)                                 // Warel empieza con energía 0
+    apágate
+
+// actualizar-maximo: caminar a (1,1) cargando 'energia' en la pila,
+// comparar contra el montón y dejar el mayor (mochila infinita => deja-zumbador).
+// En la subtarea 4 (mochila 0) el mismo papel lo hacen los zumbadores
+// recogidos de los módulos, que se transportan en vez de "crearse".</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> La recurrencia reproduce
+           exactamente la regla del duelo (paso \(-1\), luego módulo \(+M\)). Warel
+           solo puede morir tocando \(0\) sin módulo, lo que equivale a \(E(c)=0\);
+           si eso nunca pasa, sobrevive y el dato pedido es el máximo de las \(E(c)\),
+           que es justo lo que Karel va acumulando en \((1,1)\).</p>
+
+        <p><strong>Complejidad.</strong> Una pasada por las \(L\) casillas de la
+           fila. Como en Karel los números se manipulan zumbador por zumbador (la
+           recursión avanza de uno en uno y la comparación contra el máximo recorre
+           el montón), el trabajo por casilla es proporcional a la energía de ese
+           momento: en total \(O\!\big(\sum_c E(c)\big)\) instrucciones, acotado por
+           \(O(L \cdot E_{\max})\). La profundidad de pila es \(O(L + E_{\max})\),
+           muy holgada frente a los límites (\(10^7\) instrucciones, pila
+           \(65{,}000\)).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **66 / 190**
+Total de problemas: **190** · Completados: **74 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -231,18 +231,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Lenguaje | Ferrocarril "El Chepe" | `2015/07 Ferrocarril "El Chepe"/index.html` |
 | [ ] | 8 | Lenguaje | Artesano Rarámuri | `2015/08 Artesano Rarámuri/index.html` |
 
-## 21ª OMI · 2016 — 0 / 8
+## 21ª OMI · 2016 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Memorama | `2016/01 Memorama/index.html` |
-| [ ] | 2 | Karel | Karel y Warel | `2016/02 Karel y Warel/index.html` |
-| [ ] | 3 | Karel | Nuevo Veracruz | `2016/03 Nuevo Veracruz/index.html` |
-| [ ] | 4 | Karel | La muerte de Karel | `2016/04 La muerte de Karel/index.html` |
-| [ ] | 5 | Lenguaje | Chicos Mosby | `2016/05 Chicos Mosby/index.html` |
-| [ ] | 6 | Lenguaje | Fiesta en la Piscina | `2016/06 Fiesta en la Piscina/index.html` |
-| [ ] | 7 | Lenguaje | Pescador | `2016/07 Pescador/index.html` |
-| [ ] | 8 | Lenguaje | All-Out Attack | `2016/08 All-Out Attack/index.html` |
+| [x] | 1 | Karel | Memorama | `2016/01 Memorama/index.html` |
+| [x] | 2 | Karel | Karel y Warel | `2016/02 Karel y Warel/index.html` |
+| [x] | 3 | Karel | Nuevo Veracruz | `2016/03 Nuevo Veracruz/index.html` |
+| [x] | 4 | Karel | La muerte de Karel | `2016/04 La muerte de Karel/index.html` |
+| [x] | 5 | Lenguaje | Chicos Mosby | `2016/05 Chicos Mosby/index.html` |
+| [x] | 6 | Lenguaje | Fiesta en la Piscina | `2016/06 Fiesta en la Piscina/index.html` |
+| [x] | 7 | Lenguaje | Pescador | `2016/07 Pescador/index.html` |
+| [x] | 8 | Lenguaje | All-Out Attack | `2016/08 All-Out Attack/index.html` |
 
 ## 22ª OMI · 2017 — 8 / 8
 
