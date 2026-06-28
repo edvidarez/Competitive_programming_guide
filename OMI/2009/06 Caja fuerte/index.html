@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2009 · Problema 06 — Caja fuerte</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">14ª OMI · 2009 · Lenguaje</div>
+    <h1>Problema <span class="num">06</span> — Caja fuerte</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/Caja-Fuerte">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Hay una caja fuerte cuya cerradura se abre girando discos concéntricos. En vez
+       de números, los discos de la cerradura tienen una secuencia con letras del
+       alfabeto de la \(a\) a la \(z\).</p>
+    <p>Para abrir la cerradura se gira cada uno de los discos en sentido horario o
+       contra-horario, según se quiera, hasta llegar a una posición deseada. Cada que
+       se avanza una letra en uno de los discos, sin importar el sentido, se dice que
+       se está girando <strong>un paso</strong>.</p>
+    <p>La cerradura se representa como una matriz cuadrada de largo \(N\) en donde
+       cada casilla contiene una letra y cada cuadrado concéntrico representa un disco
+       de la cerradura.</p>
+    <p>Dadas dos matrices, la primera representando el estado actual de los discos y la
+       segunda el estado de los mismos que abre la caja, escribe un programa que
+       determine el <strong>número mínimo de pasos</strong> que se requieren para
+       colocar todos los discos en la posición necesaria para abrir la caja.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, el número entero \(N\) que representa el largo de la
+          matriz.</li>
+      <li>En las líneas de la 2 a la \(N+1\) habrá \(N\) letras consecutivas en cada
+          una, que representan el <strong>estado actual</strong> de los discos de la
+          cerradura.</li>
+      <li>En las líneas de la \(N+2\) a la \(2N+1\) habrá \(N\) letras consecutivas en
+          cada una, que representan el <strong>estado en el que deben quedar</strong>
+          los discos para abrir la cerradura.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en la salida estándar un único número entero que
+       representa el número mínimo de pasos necesarios para abrir la cerradura.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Largo de la matriz</td><td><span class="badge">\(2 \le N \le 2{,}000\)</span></td></tr>
+        <tr><td>Alfabeto</td><td><span class="badge">letras de la \(a\) a la \(z\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">85</td><td>\(N \le 100\)</td></tr>
+          <tr><td>2</td><td class="pts">15</td><td>Sin restricciones adicionales (\(N \le 2{,}000\))</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El enunciado describe el puntaje así: en un subconjunto de los
+       casos de prueba, con valor total de 85 puntos, se cumple \(N \le 100\); los
+       puntos restantes corresponden al caso general.</p>
+
+    <h2>Ejemplo 1</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3
+abc
+def
+ghi
+gda
+heb
+ifc</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2</pre></div>
+    </div>
+    <p class="note">Para abrir la cerradura es necesario girar el disco exterior dos
+       pasos en sentido horario.</p>
+    <div class="io"><pre>abc    dab    gda
+
+d f -> g c -> h b
+
+ghi    hif    ifc</pre></div>
+
+    <h2>Ejemplo 2</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>4
+abcd
+efgh
+abcd
+efgh
+eabc
+agcd
+efbh
+fghd</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2</pre></div>
+    </div>
+    <p class="note">Para abrir la cerradura es necesario girar el disco exterior un
+       paso en sentido horario y el interior un paso en sentido contra-horario.</p>
+    <div class="io"><pre>abcd    eabc
+e  h -> a  d    fg -> gc
+a  d    e  h    bc    fb
+efgh    fghd</pre></div>
+
+    <h2>Información útil</h2>
+    <p class="note">En los casos oficiales de la OMI 2009 hay 3 casos que están mal:
+       los casos 7, 8 y 9 (incluso la solución oficial no los resuelve). En este
+       problema ya se corrigieron esos errores.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Strings</span>
+      <span class="ptag">Rotaciones cíclicas</span>
+      <span class="ptag">KMP / Z</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan dos matrices \(N \times N\) de letras. Cada cuadrado concéntrico (anillo)
+       es un disco que puedes rotar cíclicamente; un paso mueve el disco una letra, en
+       cualquier sentido. Hay que reportar el mínimo total de pasos para transformar la
+       matriz inicial en la matriz destino.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 100\) (85 pts) deja probar todas las rotaciones de cada anillo y
+                comparar carácter por carácter, \(O(\sum L^2)\). El caso general
+                \(N \le 2{,}000\) (los 15 pts restantes) necesita alinear cada anillo en
+                tiempo lineal \(O(L)\) con búsqueda de patrones (KMP/Z) o hashing.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que cada cuadrado concéntrico de la matriz es un disco
+           que gira por separado? ¿Lo que le pase a un anillo afecta en algo a los
+           demás?</p>
+        <p>Los anillos son <strong>independientes</strong>: girar el disco exterior no
+           toca al interior. Entonces el costo total es la <strong>suma</strong> del
+           costo mínimo de cada anillo por separado. Solo tienes que resolver, para un
+           anillo, cuántos pasos cuesta llevar su estado inicial a su estado destino.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Un anillo es una cadena cíclica</summary>
+      <div class="body">
+        <p class="q">Si recorres las casillas de un anillo en orden alrededor del
+           cuadrado (por ejemplo, en sentido horario empezando por la esquina superior
+           izquierda), obtienes una cadena de letras. Girar el disco un paso, ¿qué le
+           hace a esa cadena?</p>
+        <p>Girar el disco equivale a una <strong>rotación cíclica</strong> de la cadena.
+           Si \(A\) es la cadena inicial del anillo y \(B\) la destino (leídas en el
+           <em>mismo</em> orden y misma longitud \(L\)), abrir ese disco significa
+           encontrar un desplazamiento \(s\) tal que rotar \(A\) lo convierta en \(B\).</p>
+        <p class="q">Y ojo con el costo: girar \(s\) pasos en un sentido logra lo mismo
+           que girar \(L-s\) pasos en el otro. ¿Cuál de los dos te conviene?</p>
+        <p>El costo de alinear en el desplazamiento \(s\) es \(\min(s,\,L-s)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La subtarea chica (85 puntos)</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 100\), un anillo mide a lo más unos \(400\) caracteres.
+           ¿Qué pasa si simplemente pruebas <em>todos</em> los desplazamientos posibles
+           de cada anillo y comparas letra por letra?</p>
+        <p>Para cada anillo: para cada \(s\) de \(0\) a \(L-1\), verifica si rotar \(A\)
+           por \(s\) da \(B\) (comparación \(O(L)\)); guarda el menor \(\min(s,L-s)\) que
+           funcione. Eso es \(O(L^2)\) por anillo y \(O(\sum L^2)\) en total, suficiente
+           para los \(85\) puntos. El centro (cuando \(N\) es impar) es una sola casilla
+           que no gira: simplemente debe ya coincidir y no aporta pasos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — El caso general (subir a 100)</summary>
+      <div class="body">
+        <p class="q">Con \(N\) hasta \(2{,}000\), el anillo exterior mide casi \(8{,}000\)
+           caracteres y comparar todos los desplazamientos cuadráticamente es demasiado.
+           ¿Cómo encuentras en tiempo lineal en qué desplazamientos \(B\) aparece como
+           rotación de \(A\)?</p>
+        <p>Es el truco clásico de rotaciones: \(B\) es una rotación de \(A\) si y solo si
+           \(B\) es subcadena de \(A+A\) (la cadena \(A\) concatenada consigo misma). Con
+           <strong>KMP</strong> (o el algoritmo <strong>Z</strong>) buscas todas las
+           apariciones de \(B\) dentro de \(A+A\) en \(O(L)\). Cada aparición que empieza
+           en una posición \(s \in [0,L)\) es un desplazamiento válido; su costo es
+           \(\min(s,L-s)\) y te quedas con el mínimo de ellos.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Cada anillo concéntrico es un disco independiente. Lo
+           desenrollas a una cadena cíclica leyendo sus casillas en un orden fijo (el
+           mismo para la matriz inicial y la destino). Para ese anillo, el problema se
+           reduce a: ¿qué rotación lleva \(A\) a \(B\) con el menor número de pasos? La
+           respuesta total es la suma sobre todos los anillos.</p>
+        <p><strong>Por qué es correcto.</strong> Como las letras de un anillo solo se
+           mueven entre sí al girarlo (nunca saltan a otro anillo), los anillos no
+           interfieren; minimizar la suma equivale a minimizar cada sumando. Para un
+           anillo, todo estado alcanzable es una rotación cíclica de \(A\); el destino
+           \(B\) debe ser una de ellas (es el mismo disco, solo girado). Las posiciones
+           de inicio donde \(B\) aparece dentro de \(A+A\) son exactamente los
+           desplazamientos válidos; si el anillo tiene periodo, habrá varios y tomamos el
+           de menor costo. Como girar \(s\) en un sentido cuesta lo mismo que \(L-s\) en
+           el otro, el costo de un desplazamiento \(s\) es \(\min(s,\,L-s)\).</p>
+        <p><strong>Cómo se sube de subtarea.</strong> Con \(N \le 100\) basta probar los
+           \(L\) desplazamientos y comparar a mano (\(O(\sum L^2)\), 85 pts). Para el
+           caso general \(N \le 2{,}000\), reemplazas esa búsqueda por KMP/Z sobre
+           \(A+A\), que la vuelve lineal por anillo y da los \(100\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N
+leer matriz INICIAL (N x N)
+leer matriz DESTINO  (N x N)
+
+total = 0
+para cada anillo i = 0, 1, ... mientras (N - 2*i) >= 2:
+    # desenrolla el anillo en orden horario consistente:
+    A = letras del anillo i de INICIAL   (longitud L)
+    B = letras del anillo i de DESTINO   (longitud L)
+
+    # busca todos los desplazamientos s donde rotar A da B:
+    texto   = A + A
+    patron  = B
+    mejor   = +infinito
+    para cada inicio s en [0, L) donde patron aparece en texto:   # KMP / Z
+        mejor = min(mejor, min(s, L - s))
+
+    total = total + mejor      # B siempre es alcanzable: mejor es finito
+
+# si N es impar, la casilla central no gira y no aporta pasos
+imprimir total</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> La suma de las longitudes de todos los anillos
+           es \(O(N^2)\) (todas las casillas), y KMP/Z procesa cada anillo en lineal, así
+           que el total es \(O(N^2)\) en tiempo y \(O(N^2)\) en memoria (las dos
+           matrices). Para \(N = 2{,}000\) corre de sobra dentro de 1 s y 32 MiB.</p>
+        <p class="note">Detalle del orden de lectura: para el anillo \(i\) recorre la
+           fila superior de izquierda a derecha, la columna derecha de arriba a abajo, la
+           fila inferior de derecha a izquierda y la columna izquierda de abajo a arriba,
+           sin repetir esquinas. Usa exactamente el mismo recorrido para \(A\) y \(B\).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

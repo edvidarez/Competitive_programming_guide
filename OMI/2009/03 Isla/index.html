@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<!--
+  OMI 2009 · Problema 03 — Isla (día de Karel). Página autocontenida.
+  Vista 1: transcripción fiel del enunciado (español). Vista 2: upsolving socrático.
+  Matemáticas con MathJax (autohospedado). Imágenes embebidas en base64.
+-->
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2009 · Problema 03 — Isla</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">14ª OMI · 2009 · Karel</div>
+    <h1>Problema <span class="num">03</span> — Isla</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/K-OMI2009-Isla">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Descripción</h2>
+    <p>Karel está vacacionando en la playa de una isla que se encuentra en algún
+       lugar de su mundo. Sin embargo, sus vacaciones terminaron y debe regresar a
+       su casa, la cual se encuentra en la esquina inferior izquierda del mundo.</p>
+
+    <h2>El problema</h2>
+    <p>Ayuda a Karel a encontrar el camino desde el lugar donde se encuentra hasta
+       su casa, que se encuentra en la esquina inferior izquierda del mundo.</p>
+
+    <!-- ===== BLOQUE KAREL: descripción del mundo del robot ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>Este problema es del <strong>día de Karel</strong>: no se programa en C++, sino
+         con el lenguaje del robot Karel (<code>avanza</code>, <code>gira-izquierda</code>,
+         <code>coge-zumbador</code>, <code>deja-zumbador</code>, <code>mientras</code>,
+         <code>si</code>, <code>define-nueva-instrucción</code>…).</p>
+      <p><strong>El mundo:</strong> la orilla de la isla está dibujada con
+         <strong>paredes</strong> que forman un polígono de forma arbitraria (puede
+         ser cóncavo, como un espiral). Karel arranca en una casilla de
+         <strong>agua adyacente a la orilla</strong>, con una orientación cualquiera.
+         El piso <strong>no</strong> tiene zumbadores y la <strong>mochila</strong>
+         de Karel trae un número infinito de ellos. La <strong>casa</strong> de
+         Karel es la esquina inferior izquierda del mundo, la casilla \((1,1)\).</p>
+      <p><strong>Objetivo:</strong> que Karel se <strong>apague</strong> estando en la
+         esquina inferior izquierda. La orientación final no importa.</p>
+    </div>
+
+    <h2>Consideraciones</h2>
+    <ul>
+      <li>La orilla de la isla está representada por paredes que forman un polígono
+          de forma arbitraria.</li>
+      <li>La orilla siempre está separada de las paredes del mundo por una distancia
+          de al menos \(2\) casillas.</li>
+      <li>Cualesquiera \(2\) segmentos de la orilla se encuentran separados por una
+          distancia de al menos \(2\) casillas, ya sea en dirección vertical u
+          horizontal.</li>
+      <li>El mundo contiene únicamente una isla; además de las paredes que limitan la
+          isla, no hay ninguna otra pared dentro del mundo.</li>
+      <li>No hay zumbadores en ninguna parte del mundo.</li>
+      <li>Karel siempre iniciará en una casilla adyacente a una de las orillas de la
+          isla.</li>
+      <li>Karel lleva un número infinito de zumbadores en la mochila.</li>
+      <li>Karel siempre puede llegar desde su posición inicial hasta la esquina
+          inferior izquierda del mundo.</li>
+      <li>Para obtener los puntos de este problema basta con que Karel se apague
+          estando en la esquina inferior izquierda del mundo, no importa su
+          orientación.</li>
+    </ul>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por consola. Toda la información viene en el
+       <strong>archivo de mundo</strong> de Karel: las dimensiones del mundo, las
+       paredes que forman la orilla de la única isla y la posición y orientación
+       inicial de Karel (siempre en una casilla adyacente a la orilla). El piso llega
+       sin zumbadores y la mochila con infinitos.</p>
+
+    <h2>Salida</h2>
+    <p>El <strong>estado final del mundo</strong>. Basta con que Karel quede
+       <strong>apagado en la esquina inferior izquierda</strong>, la casilla
+       \((1,1)\); su orientación final es irrelevante (y los zumbadores que pueda
+       dejar en el piso no afectan la calificación).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>El estándar del evaluador de Karel (el enunciado no fija uno)</td></tr>
+        <tr><td>Límite de memoria</td><td>El estándar del evaluador de Karel</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Islas en el mundo</td><td>Exactamente \(1\) (único conjunto de paredes interiores)</td></tr>
+        <tr><td>Separación orilla – paredes del mundo</td><td><span class="badge">\(\ge 2\) casillas</span></td></tr>
+        <tr><td>Separación entre segmentos de orilla</td><td><span class="badge">\(\ge 2\) casillas</span></td></tr>
+        <tr><td>Zumbadores en el piso</td><td>Ninguno (mochila: infinitos)</td></tr>
+        <tr><td>Inicio de Karel</td><td>Casilla adyacente a la orilla; siempre alcanza \((1,1)\)</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).
+       Se obtienen los \(100\) puntos si Karel se apaga en la esquina inferior
+       izquierda del mundo.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Mundo inicial. Karel (la flecha azul) arranca metido en un recodo de una isla
+       en forma de espiral, orientado hacia el norte:</p>
+    <figure>
+      <img alt="Mundo inicial: una isla con forma de espiral hecha de paredes en el
+                centro del mundo; Karel, una flecha azul que apunta hacia arriba, está
+                dentro del recodo interior del espiral, rodeado de agua."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Mundo inicial</figcaption>
+    </figure>
+    <p>Mundo final. Karel terminó apagado en la esquina inferior izquierda,
+       orientado hacia el oeste:</p>
+    <figure>
+      <img alt="Mundo final: la misma isla en espiral; Karel, una flecha azul que
+                apunta hacia la izquierda, está apagado en la esquina inferior
+                izquierda del mundo."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Mundo final</figcaption>
+    </figure>
+    <p class="note">El ejemplo muestra una isla cóncava (un espiral): caminar en
+       línea recta hacia la esquina no sirve, hay que rodear la isla.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Seguimiento de pared</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Karel está en el agua que rodea a una <strong>única isla</strong> (un polígono
+       de paredes, posiblemente cóncavo) y debe apagarse en la esquina inferior
+       izquierda \((1,1)\). No puede caminar derecho hacia la esquina porque la isla
+       puede encerrarlo (forma de espiral): hay que <strong>rodear la isla</strong> y,
+       desde ella, encontrar la salida hacia una pared del mundo para luego bajar
+       hasta la esquina.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Hay <strong>una sola isla</strong> y está <strong>aislada</strong>:
+                separada \(\ge 2\) casillas de las paredes del mundo y \(\ge 2\) casillas
+                entre sus propios segmentos. Eso garantiza que el <strong>marco
+                exterior</strong> del mundo (las casillas pegadas a sus paredes) está
+                <strong>libre de isla</strong>, y que no hay pasillos de una sola casilla
+                que compliquen el bordeo. Karel <strong>no tiene variables numéricas</strong>:
+                solo cuenta con las \(4\) orientaciones y con los zumbadores como memoria.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que el mundo es una sola región de <em>agua</em> con un
+           <em>hoyo</em> (la isla)? ¿Por qué caminar en línea recta hacia la esquina
+           puede fallar?</p>
+        <p>Mira el ejemplo: la isla es un espiral y Karel arranca metido adentro. Un
+           rayo recto choca contra la propia isla. Necesitas un método que
+           <em>siga el contorno</em>. Y ojo: Karel <strong>no tiene enteros</strong>
+           para contar; su única memoria son las \(4\) orientaciones y los
+           <strong>zumbadores</strong> que puede dejar en el piso. ¿Cómo usarías los
+           zumbadores para "recordar" por dónde ya pasaste?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Pega la isla a un lado y bórdeala</summary>
+      <div class="body">
+        <p class="q">¿Y si giras hasta dejar la orilla pegada a tu izquierda y la
+           sigues como quien recorre una pared con la mano izquierda? ¿Qué pasa si la
+           bordeas para siempre?</p>
+        <p>El <strong>seguimiento de pared</strong> (regla de la mano izquierda) recorre
+           toda la orilla de la isla y regresa al punto de partida… pero da vueltas
+           <strong>infinitas</strong> porque la isla es un obstáculo aislado: nunca te
+           lleva sola a la esquina. Te hace falta una <strong>regla para soltar la
+           isla</strong> en el momento correcto.</p>
+        <p class="note">Tentación natural: el algoritmo de <em>Pledge</em> (bordear
+           contando el giro neto y soltar cuando el contador vuelve a \(0\)). Pero
+           contar giros necesita un entero, y Karel no lo tiene: solo \(4\)
+           orientaciones. Hay que arreglárselas con zumbadores.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: el marco exterior está limpio</summary>
+      <div class="body">
+        <p class="q">Si la orilla está \(\ge 2\) casillas lejos de las paredes del
+           mundo, ¿qué sabes del borde del mundo? Y si logras tocar <em>cualquier</em>
+           pared del mundo, ¿qué tan difícil es llegar a la esquina?</p>
+        <p>El <strong>marco</strong> de \(2\) casillas pegado a las paredes del mundo
+           <strong>nunca</strong> tiene isla. Así que, una vez que tocas una pared del
+           mundo, basta bordear esa pared exterior hasta la esquina inferior izquierda
+           (el marco es un rectángulo simple, sin obstáculos).</p>
+        <p class="q">¿Y cómo sabe Karel si la pared que tiene enfrente es de la isla o
+           del mundo? ¿Podrías <strong>marcar con zumbadores</strong> las casillas
+           pegadas a la isla, para que "sin marca = pared del mundo"?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Sondear hacia afuera para hallar la salida</summary>
+      <div class="body">
+        <p class="q">Ya marcaste con un zumbador cada casilla de agua pegada a la isla
+           (el "anillo"). Si recorres el anillo otra vez y desde cada casilla
+           <em>disparas un rayo hacia afuera</em>, ¿qué significa que el rayo termine
+           en una casilla <strong>sin marca</strong>?</p>
+        <p>Significa que llegaste a una casilla pegada a una pared <strong>del
+           mundo</strong> (las del anillo de la isla sí tienen marca). Ese es tu punto
+           de fuga: desde ahí bordeas la pared del mundo hasta la esquina. Si el rayo
+           cae en una casilla <em>con</em> marca, solo topaste con otra parte de la
+           isla; regresas y sigues recorriendo el anillo.</p>
+        <p class="note">¿Cómo detectar que ya diste la vuelta completa al anillo en la
+           primera fase? Deja <strong>dos</strong> zumbadores en la casilla inicial:
+           cuando regreses y encuentres una casilla con dos marcas, sabrás que cerraste
+           el recorrido.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La idea, en tres fases, usando los zumbadores como memoria (Karel no tiene
+           enteros) y el seguimiento de pared con la <strong>isla a la izquierda</strong>:</p>
+        <ol>
+          <li><strong>Marcar el anillo.</strong> Gira hasta dejar la orilla pegada a tu
+              izquierda. Deja <strong>dos</strong> zumbadores en la casilla inicial (bandera
+              de "ya di la vuelta"). Recorre toda la orilla con la regla de la mano
+              izquierda y deja <strong>un</strong> zumbador en cada casilla nueva. Cuando
+              vuelvas a una casilla y, al recoger, todavía quede un zumbador, esa es la
+              casilla inicial: cerraste la vuelta. Ahora cada casilla de agua pegada a la
+              isla tiene una marca.</li>
+          <li><strong>Buscar la salida.</strong> Recorre el anillo otra vez. En cada casilla,
+              mira hacia afuera (perpendicular, alejándote de la isla) y avanza recto hasta
+              toparte con una pared. Si la casilla donde te detuviste <strong>no tiene
+              zumbador</strong>, es una pared del <strong>mundo</strong>: ¡encontraste la
+              salida! Si <strong>sí</strong> tiene marca, solo era otra parte de la isla:
+              regresa hasta la orilla y sigue el recorrido.</li>
+          <li><strong>Ir a casa.</strong> Desde la casilla pegada a la pared del mundo,
+              déjala a tu izquierda y bórdea el marco exterior (avanza; en cada esquina del
+              mundo gira a la derecha). Como el marco está libre de isla, llegas sin
+              estorbos a la esquina inferior izquierda. Te detienes cuando estás orientado
+              al oeste con una pared enfrente, y te apagas.</li>
+        </ol>
+        <p><strong>Por qué es correcto:</strong> el agua es una sola región conexa con un
+           hoyo (la isla), así que el seguidor de mano izquierda recorre toda la orilla y
+           regresa al inicio (Fase 1 termina). Como la isla está \(\ge 2\) casillas de las
+           paredes del mundo, las únicas casillas <em>sin marca</em> pegadas a una pared son
+           las del marco del mundo, de modo que el sondeo de la Fase 2 distingue sin
+           ambigüedad "isla" de "mundo" y siempre encuentra una salida (el enunciado
+           garantiza que Karel puede llegar a \((1,1)\)). El marco exterior es un rectángulo
+           sin obstáculos, así que bordearlo lleva a la esquina (Fase 3).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — primitivas de Karel</span>
+<pre>define gira-derecha:        repite 3 veces: gira-izquierda
+define media-vuelta:        repite 2 veces: gira-izquierda
+
+// deja la orilla de la isla pegada a la IZQUIERDA de Karel
+define pega-isla-izquierda:
+    mientras izquierda-libre:
+        gira-izquierda
+
+// un paso de bordeo con la isla a la izquierda (regla de la mano izquierda)
+define paso-de-bordeo:
+    si frente-libre:
+        avanza
+        mientras izquierda-libre:        // esquina convexa: dobla hacia la isla
+            gira-izquierda
+            avanza
+    si-no:                               // pared al frente: gira y reintenta
+        gira-derecha
+        paso-de-bordeo
+
+// ---------- FASE 1: marcar el "anillo" de agua pegado a la isla ----------
+define marca-anillo:
+    pega-isla-izquierda
+    deja-zumbador                        // dos zumbadores en el INICIO =
+    deja-zumbador                        //   bandera de "ya di la vuelta"
+    avanza-y-marca
+
+define avanza-y-marca:
+    paso-de-bordeo                       // muévete a la siguiente casilla del anillo
+    si junto-a-zumbador:                 // ¿ya tiene marca?
+        coge-zumbador
+        si junto-a-zumbador:             // quedaba otra -> es el INICIO: terminé la vuelta
+            // (no hace nada: regresa)
+        si-no:                           // era marca normal: restáurala y sigue
+            deja-zumbador
+            avanza-y-marca
+    si-no:                               // casilla nueva: márcala y sigue
+        deja-zumbador
+        avanza-y-marca
+
+// ---------- FASE 2: buscar la salida hacia una pared del MUNDO ----------
+define busca-salida:
+    pega-isla-izquierda
+    explora
+
+define explora:
+    dispara-rayo                         // ¿esta casilla lleva a la salida?
+    paso-de-bordeo                       // si no, avanza a la siguiente del anillo
+    explora
+
+define dispara-rayo:
+    gira-derecha                         // mira hacia AFUERA (la isla queda detrás)
+    mientras frente-libre: avanza        // avanza hasta toparte con una pared
+    si no-junto-a-zumbador:              // pared SIN marca = pared del MUNDO -> ¡salida!
+        ve-a-casa                        // (ya no regresa de aquí)
+    media-vuelta
+    mientras frente-libre: avanza        // regresa hasta la orilla de la isla
+    gira-derecha                         // retoma la orientación de bordeo
+
+// ---------- FASE 3: del marco exterior a la esquina inferior izquierda ----------
+define ve-a-casa:
+    mientras izquierda-libre:            // pon una pared del MUNDO a tu izquierda
+        gira-izquierda
+    mientras (frente-libre o no-orientado-al-oeste):
+        si frente-bloqueado: gira-derecha   // esquina del mundo: dobla
+        si-no: avanza
+    apágate                              // estás en la esquina inferior izquierda
+
+// ---------- PROGRAMA PRINCIPAL ----------
+inicia-ejecución:
+    marca-anillo                         // Fase 1
+    busca-salida                         // Fase 2 (que termina llamando a ve-a-casa)</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> con una isla de perímetro \(P\) en un mundo de
+           \(W \times H\), la Fase 1 visita cada casilla del anillo \(O(1)\) veces y la
+           Fase 2 dispara desde cada una un rayo de largo \(O(W+H)\); en total
+           \(O(P\,(W+H))\) movimientos, de sobra dentro del límite del evaluador de Karel.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

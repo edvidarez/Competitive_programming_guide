@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **122 / 190**
+Total de problemas: **190** · Completados: **128 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -142,16 +142,16 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 5 | Lenguaje | Espirales | `2008/05 Espirales/index.html` |
 | [ ] | 6 | Lenguaje | Serpientes y escaleras | `2008/06 Serpientes y escaleras/index.html` |
 
-## 14ª OMI · 2009 — 0 / 6
+## 14ª OMI · 2009 — 6 / 6
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Influenza | `2009/01 Influenza/index.html` |
-| [ ] | 2 | Karel | Divisores | `2009/02 Divisores/index.html` |
-| [ ] | 3 | Karel | Isla | `2009/03 Isla/index.html` |
-| [ ] | 4 | Lenguaje | Rangos | `2009/04 Rangos/index.html` |
-| [ ] | 5 | Lenguaje | Espirales | `2009/05 Espirales/index.html` |
-| [ ] | 6 | Lenguaje | Caja fuerte | `2009/06 Caja fuerte/index.html` |
+| [x] | 1 | Karel | Influenza | `2009/01 Influenza/index.html` |
+| [x] | 2 | Karel | Divisores | `2009/02 Divisores/index.html` |
+| [x] | 3 | Karel | Isla | `2009/03 Isla/index.html` |
+| [x] | 4 | Lenguaje | Rangos | `2009/04 Rangos/index.html` |
+| [x] | 5 | Lenguaje | Espirales | `2009/05 Espirales/index.html` |
+| [x] | 6 | Lenguaje | Caja fuerte | `2009/06 Caja fuerte/index.html` |
 
 ## 15ª OMI · 2010 — 8 / 8
 

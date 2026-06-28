@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2009 · Problema 05 — Espirales</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">14ª OMI · 2009 · Lenguaje</div>
+    <h1>Problema <span class="num">05</span> — Espirales</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/Espirales">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Se tiene una cuadrícula rectangular de \(M\) por \(N\) casillas. Iniciando
+       de la casilla en la esquina superior izquierda, se desea dibujar una
+       <strong>espiral</strong> en la cuadrícula.</p>
+
+    <p>Las reglas para dibujar la espiral son las siguientes:</p>
+    <ul>
+      <li>La espiral siempre se inicia a dibujar desde la esquina superior izquierda.</li>
+      <li>La espiral siempre gira en sentido horario.</li>
+      <li>Puedes dejar de dibujar la espiral en cualquier momento.</li>
+      <li>Un punto se considera una espiral, de igual forma una línea.</li>
+      <li>La espiral nunca pasa dos veces sobre un cuadro.</li>
+    </ul>
+
+    <p>Algunos ejemplos de espirales válidas son:</p>
+
+    <figure>
+      <img alt="Seis cuadrículas, cada una con una espiral horaria válida dibujada desde la esquina superior izquierda; la última es un solo punto."
+           src="data:image/png;base64,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">
+      <figcaption>Figura: seis ejemplos de espirales válidas. La de hasta la
+        derecha es un solo punto (la esquina superior izquierda).</figcaption>
+    </figure>
+
+    <p>Dadas las dimensiones de una cuadrícula, escribe un programa que cuente el
+       número total de espirales distintas que pueden dibujarse y escriba ese
+       número módulo \(1\,000\,000\,000\), es decir, el residuo que se obtiene de
+       dividir el número entre \(1\,000\,000\,000\).</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos: en la
+       primera línea, dos números enteros separados por un espacio, \(M\) y \(N\),
+       que representan el <strong>alto</strong> y el <strong>ancho</strong> de la
+       cuadrícula respectivamente.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la salida estándar un único número que
+       indique el número total de espirales distintas que pueden dibujarse (módulo
+       \(1\,000\,000\,000\)).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Dimensiones</td><td><span class="badge">\(1 \le M, N \le 1000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">30</td><td>\(N, M \le 10\)</td></tr>
+          <tr><td>2</td><td class="pts">70</td><td>\(N, M \le 250\)</td></tr>
+          <tr><td>3</td><td class="pts">100</td><td>\(N, M \le 1000\) (caso general)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Tal como lo redacta el enunciado, estos son subconjuntos
+       <em>acumulativos</em> de los casos de prueba: hay casos con valor total de
+       \(30\) puntos donde \(N, M \le 10\), y casos con valor total de \(70\)
+       puntos donde \(N, M \le 250\); el resto, hasta los \(100\) puntos, cubre el
+       caso general \(N, M \le 1000\).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5 5</pre></div>
+      <div class="io"><h4>Salida</h4><pre>251</pre></div>
+    </div>
+    <p class="note">En una cuadrícula de \(5 \times 5\) existen \(251\) espirales
+       horarias distintas que arrancan en la esquina superior izquierda (contando
+       el punto inicial y las líneas).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Combinatoria</span>
+      <span class="ptag">Conteo</span>
+      <span class="ptag">Recursión</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Dada una cuadrícula de \(M \times N\), cuenta cuántas espirales horarias
+       distintas pueden dibujarse empezando en la esquina superior izquierda (un
+       punto y una línea cuentan; la espiral no se cruza ni se sale), y entrega el
+       resultado módulo \(10^9\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, M \le 1000\) descarta enumerar espirales una por una. La
+                subtarea 1 (\(N, M \le 10\)) admite fuerza bruta recursiva; una DP
+                con suma directa \(O(\max(M,N)^3)\) cubre \(N, M \le 250\)
+                (\(70\) pts); y una DP en diferencias \(O(\max(M,N)^2)\) llega al
+                caso general (\(100\) pts). Ojo: el módulo es exactamente
+                \(10^9\), no \(10^9+7\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es, exactamente, una espiral aquí?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en cómo describir una espiral con puros números?
+           Una espiral horaria desde la esquina superior izquierda es una sucesión
+           de tramos rectos que giran 90° a la derecha: derecha, abajo, izquierda,
+           arriba, derecha… y puedes parar en cualquier momento.</p>
+        <p class="q">Desde una celda, ¿cuántas decisiones reales tienes en cada
+           paso? Solo dos: <em>seguir derecho</em> en la dirección actual, o
+           <em>girar una vez</em> en sentido horario y avanzar. ¿Cuándo una
+           continuación es inválida? Cuando la celda destino se sale de la
+           cuadrícula o ya fue usada.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(N, M \le 10\), 30 pts): fuerza bruta</summary>
+      <div class="body">
+        <p class="q">¿Y si simplemente enumeras TODAS las espirales con un
+           backtracking? Empieza en la esquina mirando a la derecha; en cada celda
+           a la que llegas, esa ya es una espiral válida (cuéntala), y luego
+           ramificas en las dos opciones de la Pista 1 (seguir derecho / girar y
+           avanzar), marcando y desmarcando las celdas visitadas.</p>
+        <p class="q">Cada camino distinto que generas es una espiral distinta. Con
+           \(N, M \le 10\) hay pocas, así que esto entrega los primeros 30 puntos.
+           ¿Por qué no escala? Porque el número de espirales crece muy rápido (es
+           lo que el problema te pide contar módulo \(10^9\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: la espiral se "come" a sí misma</summary>
+      <div class="body">
+        <p class="q">Fíjate en el primer giro. La espiral recorre la fila de arriba
+           hasta cierta columna y baja. Después de ese giro, ¿qué te queda por
+           dibujar? Exactamente otra espiral horaria, pero dentro de un rectángulo
+           más chico: ya no puedes usar la fila de arriba.</p>
+        <p class="q">¿Notaste que ese sub-rectángulo, si lo rotas 90° en sentido
+           horario, vuelve a ser EL MISMO problema con el alto y el ancho
+           intercambiados? Esa autosemejanza es la que convierte el conteo en una
+           recurrencia.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La recurrencia (Subtarea 2, hasta 70 pts)</summary>
+      <div class="body">
+        <p>Define \(f(r,c)\) = número de espirales horarias que arrancan en la
+           esquina superior izquierda de una rejilla de \(r\) filas por \(c\)
+           columnas, contando el punto solo.</p>
+        <p><strong>Casos base.</strong> En una sola fila no hay a dónde girar:
+           \(f(1,c)=c\) (el punto, más las líneas de \(2,3,\dots,c\) celdas). Por
+           simetría, \(f(r,1)=r\).</p>
+        <p><strong>Recurrencia.</strong> Separa las espirales por su primer giro:</p>
+        <ul>
+          <li>Las que <em>nunca</em> giran (se quedan en la fila de arriba) son
+              \(c\): el punto y las líneas hacia la derecha.</li>
+          <li>Las que sí giran hacia abajo lo hacen "en" la columna \(t\) (con
+              \(1 \le t \le c\); \(t=1\) significa girar de inmediato, es decir,
+              el primer tramo va hacia abajo). Tras ese giro, lo que falta es una
+              espiral en un sub-rectángulo de \((r-1)\) filas y \(t\) columnas
+              que, rotado, vale \(f(t, r-1)\).</li>
+        </ul>
+        <p>Por lo tanto: \[ f(r,c) \;=\; c \;+\; \sum_{t=1}^{c} f(t,\,r-1). \]</p>
+        <p class="q">¿Ves por qué esto ya te da hasta 70 puntos? Llenar la tabla
+           \(f\) usando la suma directa cuesta \(O(\max(M,N)^3)\), que con
+           \(N, M \le 250\) es de sobra rápido. ¿Y para \(N, M = 1000\)? Ahí la
+           suma cúbica empieza a apretar el límite de 1 s.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Toma la recurrencia de la Pista 4 y elimina la suma. Resta dos términos
+           consecutivos en \(c\):</p>
+        \[ f(r,c) - f(r,c-1) \;=\; 1 + f(c,\,r-1)
+           \quad\Longrightarrow\quad
+           f(r,c) \;=\; f(r,c-1) + 1 + f(c,\,r-1). \]
+        <p>Ahora cada celda de la tabla se calcula en \(O(1)\). Llena \(f\) por
+           valores crecientes de \(\max(\text{fila},\text{columna})\): al calcular
+           \(f(r,c)\) ya tienes \(f(r,c-1)\) (misma fila, columna anterior) y
+           \(f(c,r-1)\) (que vive en un "anillo" anterior). Aprovecha la simetría
+           \(f(r,c)=f(c,r)\) para rellenar las dos casillas espejo a la vez. Al
+           final imprimes \(f(M,N)\). Todo el aritmético se hace módulo \(10^9\).</p>
+        <p><strong>¿Por qué es correcto?</strong> La descomposición por el primer
+           giro es exhaustiva y disjunta: cada espiral o se queda en la fila de
+           arriba (los \(c\) casos), o gira hacia abajo en una única columna \(t\)
+           bien definida, y a partir de ahí es, salvo rotación, una espiral más
+           pequeña ya contada por \(f(t,r-1)\). La versión en diferencias es la
+           misma fórmula, solo escrita para evitar recomputar la suma.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer M, N            // M = alto (filas), N = ancho (columnas)
+P    &lt;- 1 000 000 000
+Lim  &lt;- max(M, N)
+
+// f[r][c] = # de espirales en una rejilla de r filas x c columnas
+para t = 1 .. Lim:
+    f[1][t] &lt;- t mod P
+    f[t][1] &lt;- t mod P
+
+para r = 2 .. Lim:
+    para c = 2 .. r:
+        f[r][c] &lt;- (f[r][c-1] + 1 + f[c][r-1]) mod P
+        f[c][r] &lt;- (f[c][r-1] + 1 + f[r][c-1]) mod P   // espejo (simetria)
+
+imprimir f[M][N]</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(\max(M,N)^2)\) en tiempo y memoria.
+           Para \(M, N \le 1000\) son \(\approx 10^6\) celdas: una tabla de enteros
+           de \({\sim}4\) MB, muy por debajo del límite de 32 MiB, y corre en
+           milisegundos.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Cuidado (gotcha)</span>
+<pre>El modulo es 1 000 000 000 (10^9) EXACTO, no 10^9 + 7.
+Aplica "mod P" tras cada suma. Con P &lt; 2^30 todo cabe en enteros
+de 32 bits sin desbordarse, pero si dudas usa 64 bits y duermes tranquilo.</pre>
+          <p class="note">No es un truco de algoritmo, solo el detalle que más
+             puntos cuesta si se pasa por alto.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

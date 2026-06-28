@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2009 · Problema 04 — Rangos</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">14ª OMI · 2009 · Lenguaje</div>
+    <h1>Problema <span class="num">04</span> — Rangos</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/rangos">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Se tiene un renglón con casillas numeradas del 1 al \(N\). Inicialmente cada
+       casilla contiene el número 0. Los valores en las casillas del renglón se
+       pueden actualizar utilizando el siguiente mecanismo:</p>
+    <ul>
+      <li>Se define un rango de casillas del renglón como \(i\), \(j\), donde
+          \(i < j\). Por ejemplo \(i=3\), \(j=6\).</li>
+      <li>Se le suma 1 a la casilla \(i\), 2 a la casilla \(i+1\), 3 a la \(i+2\),
+          y así hasta llegar a la casilla \(j\).</li>
+    </ul>
+    <p>Por ejemplo, si \(N=7\) se tiene un renglón de 7 posiciones que originalmente
+       está lleno con 7 ceros \(\{0,0,0,0,0,0,0\}\), al actualizar el rango 3, 6 el
+       renglón queda \(\{0,0,1,2,3,4,0\}\), una siguiente actualización al rango 4, 7
+       dejaría el renglón como sigue: \(\{0,0,1,3,5,7,4\}\).</p>
+    <p>Después de aplicar actualizaciones al renglón, se requiere poder responder
+       preguntas del siguiente tipo:</p>
+    <ul>
+      <li>Se define un rango de casillas del renglón como \(u\), \(v\), donde
+          \(u < v\). Por ejemplo \(u=4\), \(v=6\).</li>
+      <li>Se debe dar como respuesta la suma de los valores de todas las casillas
+          comprendidas en el rango, módulo 10,000, es decir, el residuo que se
+          obtiene si se divide el total entre 10,000.</li>
+    </ul>
+
+    <h3>Problema</h3>
+    <p>Dado el número \(N\) y una serie de \(A\) rangos de actualización, escribe un
+       programa que sea capaz de contestar \(P\) preguntas en el tiempo dado.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>La primera línea contiene 3 números enteros separados por un espacio:
+          \(N\), \(A\) y \(P\), que representan el largo del renglón, el número de
+          actualizaciones y el número de preguntas, respectivamente.</li>
+      <li>Las siguientes \(A\) líneas contienen 2 números enteros cada una y
+          representan un rango de actualización.</li>
+      <li>Las siguientes \(P\) líneas contienen 2 números enteros cada una y
+          representan el rango de una pregunta.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la salida estándar \(P\) líneas, cada una con un
+       número entero que representa la respuesta a la pregunta correspondiente.</p>
+    <p><strong>NOTA:</strong> Recuerda que las respuestas a las preguntas deberán ser
+       módulo 10,000.</p>
+
+    <h2>Información útil</h2>
+    <p>La fórmula para calcular la sumatoria de los números desde 1 hasta \(k\) es la
+       siguiente:</p>
+    <p>Suma de todos los números desde 1 hasta \(k\) es igual a
+       \[ \frac{k(k + 1)}{2} \]</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Largo del renglón</td><td><span class="badge">\(1 \le N \le 1{,}000{,}000{,}000\)</span></td></tr>
+        <tr><td>Número de actualizaciones</td><td><span class="badge">\(1 \le A \le 1{,}000\)</span></td></tr>
+        <tr><td>Número de preguntas</td><td><span class="badge">\(1 \le P \le 1{,}000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">30</td><td>\(N \le 1000\) y \(A, P \le 100\).</td></tr>
+          <tr><td>2</td><td class="pts">30</td><td>Subconjunto distinto del anterior: el rango de cada una de las preguntas nunca tendrá una longitud mayor a 1001, y \(A, P \le 100\).</td></tr>
+          <tr><td>3</td><td class="pts">40</td><td>Caso general, sin restricciones adicionales (dentro de los límites globales).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El enunciado describe dos subconjuntos de casos de prueba con
+       valor de 30 puntos cada uno; los 40 puntos restantes corresponden al caso
+       general. Reconstruimos así la tabla de subtareas.</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>7 2 2
+3 6
+4 7
+4 6
+1 7</pre></div>
+      <div class="io"><h4>Salida</h4><pre>15
+20</pre></div>
+    </div>
+    <p class="note">Con \(N=7\), tras aplicar las actualizaciones 3, 6 y 4, 7 el
+       renglón queda \(\{0,0,1,3,5,7,4\}\). La pregunta 4, 6 suma
+       \(3+5+7=15\); la pregunta 1, 7 suma \(1+3+5+7+4=20\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Sumas parciales</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Un renglón de \(N\) casillas en cero (con \(N\) hasta \(10^9\)). Cada una de
+       las \(A\) actualizaciones \((i,j)\) suma una "rampa" \(1,2,3,\dots\) a las
+       casillas \(i,i+1,\dots,j\) (la casilla \(i+t\) recibe \(t+1\)). Luego hay
+       \(P\) preguntas: para cada rango \([u,v]\) hay que dar la suma de las casillas
+       de ese rango, módulo \(10{,}000\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\) hasta \(10^9\) hace imposible guardar el renglón completo,
+                pero \(A, P \le 1000\): hay pocas operaciones. Un algoritmo
+                \(O(A\cdot P)\approx 10^6\) basta para los 100 puntos. La subtarea 1
+                (\(N\le 1000\)) sí cabe en un arreglo y permite simular.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que la respuesta a una pregunta no depende del
+           orden de las actualizaciones, sino solo de cuánto aporta cada una?
+           ¿Necesitas de verdad el renglón completo, o te bastan las \(A\)
+           actualizaciones guardadas tal cual?</p>
+        <p>La operación de actualizar y la de sumar un rango son <em>lineales</em>:
+           la suma final de un rango es la suma de lo que cada actualización mete en
+           ese rango. Esa idea te deja olvidarte del arreglo gigante.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: simula (30 pts)</summary>
+      <div class="body">
+        <p class="q">Si \(N\le 1000\) y \(A,P\le 100\), ¿puedes literalmente crear
+           el arreglo de \(N\) casillas, aplicar cada actualización casilla por
+           casilla, y luego, por cada pregunta, sumar su rango?</p>
+        <p>Construye <code>renglon[1..N]</code>. Para la actualización \((i,j)\)
+           recorre \(c=i\dots j\) y suma \(c-i+1\). Para la pregunta \([u,v]\) suma
+           <code>renglon[u..v]</code>. Toma módulo \(10{,}000\) al sumar. Costo
+           \(O(A\cdot N + P\cdot N)\): suficiente para esta subtarea.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2: preguntas cortas (30 pts)</summary>
+      <div class="body">
+        <p class="q">La segunda subtarea promete que cada pregunta abarca a lo más
+           \(\sim 1001\) casillas. Aunque \(N\) sea enorme, ¿qué pasa si recorres
+           solo las casillas de la pregunta y, para cada una, sumas lo que aportan
+           las \(A\) actualizaciones?</p>
+        <p>Para una casilla \(c\), una actualización \((i,j)\) aporta \(c-i+1\) si
+           \(i\le c\le j\), y 0 si no. Recorre \(c=u\dots v\) y suma sobre las \(A\)
+           actualizaciones. Costo \(O\big(P\cdot \text{(longitud)}\cdot A\big)\), que
+           con longitud \(\le 1001\) y \(A,P\le 100\) cabe en tiempo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave (caso general)</summary>
+      <div class="body">
+        <p class="q">Con preguntas largas y \(N\) hasta \(10^9\), tocar casillas una
+           por una muere. ¿Y si en vez de iterar casillas, iteras <em>parejas</em>
+           (pregunta, actualización) y resuelves cada pareja en \(O(1)\)?</p>
+        <p class="q">Para una pregunta \([u,v]\) y una actualización \([i,j]\),
+           ¿cuáles casillas importan? Solo la intersección
+           \([\max(i,u),\ \min(j,v)]\). Sobre ese tramo contiguo, los aportes son
+           enteros consecutivos. ¿Sabes sumar enteros consecutivos sin recorrerlos?</p>
+        <p>Sí: con \(T(k)=\dfrac{k(k+1)}{2}\) (la suma \(1+2+\dots+k\)). Esa es la
+           "información útil" del enunciado.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Olvídate del renglón; guarda solo las \(A\)
+           actualizaciones. Por la linealidad, la respuesta de la pregunta \([u,v]\)
+           es la suma de las contribuciones de cada actualización.</p>
+        <p>La actualización \((i,j)\) le da a la casilla \(c\) (con \(i\le c\le j\))
+           el valor \(c-i+1\). La pregunta suma sobre \(u\le c\le v\). Por lo tanto
+           solo cuentan las casillas en la intersección
+           \([\,\text{lo},\text{hi}\,]\) con \(\text{lo}=\max(i,u)\),
+           \(\text{hi}=\min(j,v)\); si \(\text{lo}>\text{hi}\), esa actualización no
+           aporta nada a esta pregunta.</p>
+        <p>En el tramo \([\text{lo},\text{hi}]\) los valores que mete la actualización
+           son \(\text{lo}-i+1,\ \text{lo}-i+2,\ \dots,\ \text{hi}-i+1\), una sucesión
+           de enteros consecutivos. Su suma es
+           \[ T(\text{hi}-i+1)\;-\;T(\text{lo}-i),\qquad T(k)=\frac{k(k+1)}{2}. \]
+           Acumula esto sobre las \(A\) actualizaciones, todo módulo \(10{,}000\).</p>
+        <p><strong>Por qué es correcto.</strong> Cada casilla del rango de la
+           pregunta recibe, de cada actualización, exactamente \(c-i+1\) (o nada si
+           queda fuera de \([i,j]\)); sumar primero por actualización y luego por
+           casilla da el mismo total que el orden inverso. La fórmula de \(T\) suma
+           ese tramo de consecutivos en \(O(1)\) sin tocar casillas, así que \(N\)
+           gigante deja de importar.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, A, P
+para t en 1..A:
+    leer i[t], j[t]
+
+funcion T(k):           // suma 1+2+...+k ;  T(k)=0 si k<=0
+    regresa k*(k+1)/2
+
+repetir P veces:
+    leer u, v
+    resp = 0
+    para t en 1..A:
+        lo = max(i[t], u)
+        hi = min(j[t], v)
+        si lo <= hi:
+            contrib = T(hi - i[t] + 1) - T(lo - i[t])
+            resp = (resp + (contrib mod 10000)) mod 10000
+    imprimir resp</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(A\cdot P)\approx 10^6\) operaciones y
+           \(O(A)\) de memoria.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (cuidado con el desbordamiento)</span>
+<pre>// k llega hasta ~1e9, así que k*(k+1)/2 ~ 5e17:
+// usa long long (no int) para T(k) y para contrib.
+// 5e17 < 9.2e18, así que cabe en long long sin problema.
+// Aquí contrib siempre es >= 0, pero por costumbre normaliza el módulo:
+//   resp = ((resp + contrib) % 10000 + 10000) % 10000;</pre>
+          <p class="note">Solo es una nota sobre tipos de dato; no es la solución en
+             código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
