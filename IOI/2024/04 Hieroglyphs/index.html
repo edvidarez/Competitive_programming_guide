@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2024 · Tarea 4 — Hieroglyphs</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2024 · Día 2</div>
+    <h1>Tarea <span class="num">4</span> — Hieroglyphs</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Un equipo de investigadores estudia las similitudes entre secuencias de
+       jeroglíficos. Cada jeroglífico se representa con un entero no negativo. Para su
+       estudio usan los siguientes conceptos sobre secuencias.</p>
+
+    <p>Para una secuencia fija \(A\), una secuencia \(S\) es una <strong>subsecuencia</strong>
+       de \(A\) si y solo si \(S\) se puede obtener eliminando algunos elementos (posiblemente
+       ninguno) de \(A\).</p>
+
+    <p>La siguiente tabla muestra algunos ejemplos de subsecuencias de la secuencia
+       \(A = [3, 2, 1, 2]\).</p>
+
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Subsecuencia</th><th>Cómo se obtiene de \(A\)</th></tr></thead>
+        <tbody>
+          <tr><td>\([3, 2, 1, 2]\)</td><td>No se elimina ningún elemento.</td></tr>
+          <tr><td>\([2, 1, 2]\)</td><td>Se elimina el \(3\) inicial.</td></tr>
+          <tr><td>\([3, 2, 2]\)</td><td>Se elimina el \(1\).</td></tr>
+          <tr><td>\([3, 2]\)</td><td>Se eliminan el \(1\) y un \(2\).</td></tr>
+          <tr><td>\([3]\)</td><td>Se elimina todo menos el \(3\).</td></tr>
+          <tr><td>\([\,]\)</td><td>Se eliminan todos los elementos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>En cambio, \([3, 3]\) y \([1, 3]\) <strong>no</strong> son subsecuencias de \(A\).</p>
+
+    <p>Considera dos secuencias de jeroglíficos, \(A\) y \(B\). Una secuencia \(S\) es una
+       <strong>subsecuencia común</strong> de \(A\) y \(B\) si y solo si \(S\) es subsecuencia
+       de ambas. Además, decimos que una secuencia \(U\) es una
+       <strong>subsecuencia común universal</strong> (UCS, por sus siglas en inglés) de
+       \(A\) y \(B\) si y solo si se cumplen las dos condiciones siguientes:</p>
+    <ul>
+      <li>\(U\) es una subsecuencia común de \(A\) y \(B\).</li>
+      <li>Toda subsecuencia común de \(A\) y \(B\) es también subsecuencia de \(U\).</li>
+    </ul>
+
+    <p>Se puede demostrar que dos secuencias cualesquiera \(A\) y \(B\) tienen
+       <strong>a lo más una</strong> subsecuencia común universal.</p>
+
+    <p>Los investigadores encontraron dos secuencias de jeroglíficos \(A\) y \(B\). La
+       secuencia \(A\) consta de \(N\) jeroglíficos y la secuencia \(B\) consta de \(M\)
+       jeroglíficos. Ayuda a los investigadores a calcular una subsecuencia común universal
+       de \(A\) y \(B\), o a determinar que tal secuencia no existe.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta tarea es <strong>funcional</strong>: no lees de la entrada estándar ni escribes en
+       la salida estándar. Debes implementar el siguiente procedimiento, que el evaluador
+       llama exactamente una vez por cada caso de prueba.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>std::vector&lt;int&gt; ucs(std::vector&lt;int&gt; A, std::vector&lt;int&gt; B)</pre>
+    </div>
+    <ul>
+      <li><code>A</code>: arreglo de longitud \(N\) que describe la primera secuencia.</li>
+      <li><code>B</code>: arreglo de longitud \(M\) que describe la segunda secuencia.</li>
+      <li>Si existe una subsecuencia común universal de \(A\) y \(B\), el procedimiento debe
+          regresar un arreglo que contenga esa secuencia. En caso contrario, debe regresar
+          \([-1]\) (un arreglo de longitud \(1\) cuyo único elemento es \(-1\)).</li>
+      <li>Si la única subsecuencia común es la vacía, la UCS existe y es de longitud \(0\):
+          el procedimiento debe regresar el arreglo vacío \([\,]\) (no \([-1]\)).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB (\(2147483648\) bytes)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Longitud de \(A\)</td><td><span class="badge">\(1 \le N \le 100\,000\)</span></td></tr>
+        <tr><td>Longitud de \(B\)</td><td><span class="badge">\(1 \le M \le 100\,000\)</span></td></tr>
+        <tr><td>Valores de \(A\)</td><td><span class="badge">\(0 \le A[i] \le 200\,000\)</span></td></tr>
+        <tr><td>Valores de \(B\)</td><td><span class="badge">\(0 \le B[j] \le 200\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). Una fila por subtarea. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">3</td>
+              <td>\(N = M\); cada una de \(A\) y \(B\) consta de \(N\) enteros
+                  <em>distintos</em> entre \(0\) y \(N-1\) (inclusive).</td></tr>
+          <tr><td>2</td><td class="pts">15</td>
+              <td>Para todo entero \(k\), (el número de elementos de \(A\) iguales a \(k\)) más
+                  (el número de elementos de \(B\) iguales a \(k\)) es a lo más \(3\).</td></tr>
+          <tr><td>3</td><td class="pts">10</td>
+              <td>\(A[i] \le 1\) para cada \(i\) con \(0 \le i &lt; N\); y \(B[j] \le 1\) para
+                  cada \(j\) con \(0 \le j &lt; M\) (alfabeto binario).</td></tr>
+          <tr><td>4</td><td class="pts">16</td>
+              <td>Se garantiza que existe una subsecuencia común universal de \(A\) y \(B\).</td></tr>
+          <tr><td>5</td><td class="pts">14</td>
+              <td>\(N \le 3000\); \(M \le 3000\).</td></tr>
+          <tr><td>6</td><td class="pts">42</td>
+              <td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>ucs([0, 0, 1, 0, 1, 2],
+    [2, 0, 1, 0, 2])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[0, 1, 0, 2]</pre></div>
+    </div>
+    <p class="note">Aquí las subsecuencias comunes de \(A\) y \(B\) son: \([\,]\), \([0]\),
+       \([1]\), \([2]\), \([0,0]\), \([0,1]\), \([0,2]\), \([1,0]\), \([1,2]\), \([0,0,2]\),
+       \([0,1,0]\), \([0,1,2]\), \([1,0,2]\) y \([0,1,0,2]\). Como \([0,1,0,2]\) es una
+       subsecuencia común y todas las demás son subsecuencias de ella, el procedimiento
+       regresa \([0,1,0,2]\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>ucs([0, 0, 2], [1, 1])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[]</pre></div>
+    </div>
+    <p class="note">Aquí la única subsecuencia común de \(A\) y \(B\) es la secuencia vacía
+       \([\,]\). Por lo tanto, el procedimiento regresa el arreglo vacío \([\,]\).</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>ucs([0, 1, 0], [1, 0, 1])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[-1]</pre></div>
+    </div>
+    <p class="note">Aquí las subsecuencias comunes son \([\,]\), \([0]\), \([1]\), \([0,1]\) y
+       \([1,0]\). Se puede demostrar que no existe una subsecuencia común universal (ni
+       \([0,1]\) ni \([1,0]\) contiene a la otra), así que el procedimiento regresa \([-1]\).</p>
+
+    <h3>Evaluador de ejemplo (sample grader)</h3>
+    <div class="example">
+      <div class="io"><h4>Formato de entrada</h4><pre>N  M
+A[0] A[1] ... A[N-1]
+B[0] B[1] ... B[M-1]</pre></div>
+      <div class="io"><h4>Formato de salida</h4><pre>T
+R[0] R[1] ... R[T-1]</pre></div>
+    </div>
+    <p class="note">Donde \(R\) es el arreglo que regresa <code>ucs</code> y \(T\) es su
+       longitud.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Strings / Secuencias</span>
+      <span class="ptag">Greedy (mezcla)</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">UCS</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Dadas dos secuencias \(A\) (longitud \(N\)) y \(B\) (longitud \(M\)) de jeroglíficos
+       (enteros \(0..200000\)), regresa su <strong>subsecuencia común universal</strong>
+       \(U\): una subsecuencia común tal que <em>toda</em> subsecuencia común es a su vez
+       subsecuencia de \(U\). Si no existe, regresa \([-1]\); si la única común es la vacía,
+       regresa \([\,]\). El enunciado garantiza que \(U\), si existe, es única.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, M \le 10^5\) con valores hasta \(2\cdot10^5\) pide
+                \(O((N+M)\log(N+M))\). La subtarea 5 (\(N, M \le 3000\)) abre la puerta a una
+                verificación cuadrática \(O(NM)\); la subtarea 4 regala la <em>existencia</em>
+                para que solo construyas el candidato; la 2 (conteos \(\le 3\)) y la 3
+                (binario) son casos especiales que revelan las ideas estructurales.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es exactamente la UCS y por qué es única?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en qué significa que TODA común sea subsecuencia de \(U\)?
+           ¿Qué pasaría si hubiera dos comunes \([x,y]\) y \([y,x]\) a la vez?</p>
+        <p>Si \(U\) debe contener a toda común como subsecuencia, entonces \(U\) es a la vez la
+           "más grande" y única posible: si existieran dos comunes con órdenes incompatibles
+           (una con \(x\) antes de \(y\), otra con \(y\) antes de \(x\)), ninguna secuencia
+           podría contener ambas, así que <em>no existiría</em> \(U\). Esa es la intuición
+           central: la UCS existe únicamente cuando todos los conflictos de orden se resuelven
+           de una sola manera. El enunciado te regala que es única; tu trabajo es construirla
+           o decidir que no hay.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (permutaciones): ¿cuándo existe?</summary>
+      <div class="body">
+        <p class="q">Si \(A\) y \(B\) son permutaciones de \(0..N-1\) (cada valor una sola
+           vez), ¿qué subsecuencias comunes hay? ¿Cuándo una contiene a todas las demás?</p>
+        <p>Con valores distintos, cada carácter aparece a lo más una vez en cualquier común.
+           Si los relativos de dos valores difieren entre \(A\) y \(B\), tienes el conflicto
+           \([x,y]\) vs \([y,x]\) de la pista 1 y no hay UCS. La UCS, si existe, debe respetar
+           el orden tanto de \(A\) como de \(B\): eso solo es posible cuando el orden común
+           coincide. Piensa qué tan restrictivo es eso para permutaciones.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 3 (binario): caracterización con dos símbolos</summary>
+      <div class="body">
+        <p class="q">Con alfabeto \(\{0,1\}\): tras quitar el prefijo y el sufijo comunes,
+           ¿qué queda? ¿Cuándo dos cadenas binarias tienen UCS?</p>
+        <p>Existe UCS si y solo si una de las secuencias es subsecuencia de la otra, o si, tras
+           recortar prefijo y sufijo comunes, lo que sobra de una de ellas usa un solo símbolo.
+           Si en la parte central ambas tienen ceros y unos entrelazados de forma distinta,
+           reaparece el conflicto \(0\,1\) vs \(1\,0\) y la respuesta es \([-1]\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 2 (conteos \(\le 3\)): cada carácter, casi único</summary>
+      <div class="body">
+        <p class="q">Si para todo \(k\) se cumple \((\#A=k)+(\#B=k) \le 3\), ¿cuántas veces
+           puede aparecer \(k\) en una <em>común</em>? ¿Y en la UCS?</p>
+        <p>Una común no puede usar \(k\) más de \(\min(occ_A(k), occ_B(k))\) veces, y con la
+           cota \(\le 3\) eso es a lo más \(1\). Entonces la UCS contiene cada carácter a lo
+           más una vez, y solo tienes que decidir su orden y detectar el patrón prohibido
+           \(x\ldots y\ldots x\) frente a \(y\ldots x\ldots y\). Esta subtarea te susurra la
+           idea que generaliza todo: <strong>el multiconjunto de la UCS está forzado</strong>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — El conteo forzado: ¿cuántas veces aparece cada carácter?</summary>
+      <div class="body">
+        <p class="q">¿Y si pruebas con las comunes de la forma \(x\,x\,\ldots\,x\)? ¿Cuántas
+           \(x\) seguidas son comunes a \(A\) y \(B\)?</p>
+        <p>La secuencia \(x\) repetida \(t\) veces es común si y solo si
+           \(t \le \min(occ_A(x), occ_B(x))\). Como TODA común debe ser subsecuencia de \(U\),
+           \(U\) debe contener \(x\) exactamente \(\min(occ_A(x), occ_B(x))\) veces (ni más
+           —no sería común— ni menos —no contendría esa común—). Así el
+           <strong>multiconjunto</strong> de \(U\) queda totalmente determinado; solo falta el
+           <strong>orden</strong>. Además, comprimir coordenadas deja un alfabeto efectivo de
+           tamaño \(O(N+M)\): los caracteres que aparecen en una sola secuencia se ignoran (su
+           \(\min\) es \(0\)).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 6 — Subtarea 4 (existe UCS): construye el candidato por mezcla</summary>
+      <div class="body">
+        <p class="q">Llama "A-débil" a \(x\) con \(occ_A(x) \le occ_B(x)\) y "B-débil" al
+           resto. ¿Notaste que el orden de los A-débiles ya está fijado por \(A\), y el de los
+           B-débiles por \(B\)? ¿Cómo los mezclas sin crear ambigüedad?</p>
+        <p>Toma \(W_A\) = subsecuencia de \(A\) con sus caracteres A-débiles (en orden), y
+           \(W_B\) = subsecuencia de \(B\) con sus B-débiles. La UCS es una mezcla (merge) de
+           \(W_A\) y \(W_B\) que respeta ambos órdenes. Mézclalas con dos colas: al comparar la
+           cabeza \(x\) de \(W_A\) con la cabeza \(y\) de \(W_B\), decide cuál va primero
+           comprobando en \(O(1)\) (con conteos prefijo/sufijo de ocurrencias) si la cadena
+           "\(x\ldots x\,y\ldots y\)" o la "\(y\ldots y\,x\ldots x\)" es común. Si la existencia
+           está garantizada (subtarea 4), exactamente una de las dos lo es; colócala. Esto
+           construye el único entrelazado posible.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 7 — Subtarea 5 (\(N,M \le 3000\)): verificación cuadrática</summary>
+      <div class="body">
+        <p class="q">Ya tienes un candidato \(C\). ¿Cómo confirmas que <em>toda</em> común es
+           subsecuencia de \(C\), si \(N, M \le 3000\) te permiten \(O(NM)\)?</p>
+        <p>Una caracterización clásica: \(C\) es UCS si y solo si \(C\) es una subsecuencia
+           común y, además, el "merge" codicioso de \(A\) y \(B\) (estilo LCS único) no se
+           bifurca. Con \(O(NM)\) puedes calcular la tabla de programación dinámica del LCS y
+           verificar que en cada celda relevante la elección sea forzada (un único carácter
+           candidato); si en algún punto hay dos caracteres distintos que podrían extender una
+           común, hay ambigüedad y la respuesta es \([-1]\). Esto te da los puntos de las
+           subtareas pequeñas sin necesitar la verificación logarítmica del caso pleno.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> La solución tiene dos fases: <em>(1)</em> construir un
+           candidato \(C\) (el único entrelazado posible del multiconjunto forzado) y
+           <em>(2)</em> verificar que \(C\) realmente es universal, es decir, que ninguna común
+           se le escapa. Si la verificación pasa, \(C\) es la UCS (posiblemente vacía); si no,
+           la respuesta es \([-1]\).</p>
+
+        <h3>Hechos base</h3>
+        <ul>
+          <li><strong>Compresión de coordenadas.</strong> El alfabeto efectivo es \(O(N+M)\);
+              los caracteres que solo aparecen en una secuencia se ignoran.</li>
+          <li><strong>Conteo forzado.</strong> Si \(U\) existe, cada carácter \(x\) aparece
+              exactamente \(\min(occ_A(x), occ_B(x))\) veces (pista 5). El multiconjunto de
+              \(U\) está fijado; solo falta el orden.</li>
+          <li><strong>Débiles.</strong> \(x\) es <em>A-débil</em> si \(occ_A(x) \le occ_B(x)\)
+              y <em>B-débil</em> si \(occ_B(x) &lt; occ_A(x)\). El orden relativo entre los
+              A-débiles queda fijado por \(W_A\) (subsecuencia de \(A\) con sus A-débiles), y el
+              de los B-débiles por \(W_B\) (en \(B\)). \(U\) es una mezcla de \(W_A\) y \(W_B\)
+              que respeta ambos órdenes.</li>
+        </ul>
+
+        <h3>Fase 1 — construir el candidato \(C\)</h3>
+        <p>Mezcla \(W_A\) y \(W_B\) con dos colas. Al comparar la cabeza \(x\) de \(W_A\) con la
+           cabeza \(y\) de \(W_B\), decide cuál colocar verificando en \(O(1)\), con conteos
+           prefijo/sufijo, si "\(x\ldots x\,y\ldots y\)" es común o si lo es
+           "\(y\ldots y\,x\ldots x\)" (el número de \(x\) es \(1\) más los \(x\) ya colocados, y
+           el de \(y\) los \(y\) que aún faltan). Si <em>ambas</em> o <em>ninguna</em> son
+           comunes, hay ambigüedad \(\Rightarrow\) \([-1]\). Al vaciar una cola, vuelca la otra.
+           Al final, comprueba que \(C\) sea subsecuencia de \(A\) y de \(B\); si no, \([-1]\).</p>
+
+        <h3>Fase 2 — verificar universalidad en \(O(n\log n + m\log m)\)</h3>
+        <p>Hay que detectar si existe una común de \(A\) y \(B\) que NO sea subsecuencia de
+           \(C\). El lema clave dice que, de existir tal común, existe una
+           \(S = S_1 + S_2\) con una sola alternancia de "debilidad" entre sus extremos
+           (\(S_2\) sufijo monocromático en debilidad), caracterizada por índices extremos
+           izquierdos/derechos. Se precomputan, con pilas de mínimos acumulados y búsqueda
+           binaria, los vectores índice \(IL/IR\) de \(C\) dentro de \(A\) y de \(B\) (el
+           "index vector" y su inverso) y los vectores
+           \(VL_{A;C}, VR_{A;C}, VL_{B;C}, VR_{B;C}\). Recorriendo \(C\) con dos pilas
+           monótonas se busca un par de posiciones \(i &lt; j\) de signos de debilidad opuestos
+           que violen las desigualdades del lema (\(VL[j] &lt; w_R(i)\) y \(VR[i] > w_L(j)\)).
+           Si se halla, \(C\) no es universal \(\Rightarrow\) \([-1]\); si no, \(C\) es la UCS.</p>
+
+        <h3>Por qué es correcto</h3>
+        <ul>
+          <li>El conteo de cada carácter en \(U\) es forzosamente \(\min\) de las ocurrencias
+              (probado con las comunes \(x\,x\,\ldots\,x\)).</li>
+          <li>El orden entre caracteres de la misma debilidad lo fijan \(W_A\) y \(W_B\), así
+              que cualquier UCS debe contenerlas como subsecuencias.</li>
+          <li>La mezcla codiciosa produce el ÚNICO entrelazado posible: en cada paso exactamente
+              una de "\(x\ldots x\,y\ldots y\)" / "\(y\ldots y\,x\ldots x\)" puede ser común si
+              \(U\) existe; si ambas o ninguna lo son, coexisten dos comunes incompatibles
+              (\(\ldots x y\ldots\) y \(\ldots y x\ldots\)) y no hay universal.</li>
+          <li>Que \(C\) sea común se comprueba directamente; el lema de "mínimo número de
+              alternancias débiles" reduce el chequeo de universalidad a buscar una
+              descomposición \(S_1 + S_2\) concreta, y las cuatro desigualdades con
+              \(VL/VR\) detectan exactamente cuándo existe una común no cubierta por \(C\).</li>
+          <li>El caso "única común = vacía" cae solo: \(C\) resulta vacío y la verificación lo
+              acepta, devolviendo \([\,]\).</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion ucs(A, B):
+    C &lt;- construir_candidato(A, B)
+    si verificar(A, B, C): regresa C
+    si no: regresa [-1]
+
+funcion construir_candidato(A, B):
+    contar occ_A[x], occ_B[x] para todo x
+    # x es A-debil si occ_A[x] &lt;= occ_B[x]; si no, B-debil
+    encolar en qA los indices A-debiles de A (en orden)
+    encolar en qB los indices B-debiles de B (en orden)
+    mantener conteos "actuales" y "siguientes" para consultas O(1)
+    C &lt;- vacio
+    mientras qA y qB no vacias:
+        x &lt;- cabeza de A en qA ;  y &lt;- cabeza de B en qB
+        a_bien &lt;- ¿"x...x y...y" es comun?    (usando los conteos)
+        b_bien &lt;- ¿"y...y x...x" es comun?
+        si (a_bien y b_bien) o (ni a_bien ni b_bien):
+            regresa [-1]                       # ambiguedad / imposible
+        si a_bien: anadir x a C; sacar de qA; avanzar conteos de x
+        si no:     anadir y a C; sacar de qB; avanzar conteos de y
+    volcar el resto de qA (o qB) a C
+    si C es subsecuencia de A y de B: regresa C ; si no: regresa [-1]
+
+funcion verificar(A, B, C):   # ¿toda comun de A,B es subsecuencia de C?
+    si C == [-1]: regresa falso
+    si C == vacio: regresa verdadero
+    IL_A, IL_B &lt;- vectores indice de C en A y en B (ultimo indice izq-&gt;der)
+    IR_A, IR_B &lt;- version inversa (primer indice der-&gt;izq)
+    construir, con pilas de minimos acumulados + busqueda binaria,
+        los vectores VL/VR de C en A y en B
+    recorrer C con dos pilas monotonas:
+        para cada posicion i de C segun su debilidad (A-debil / B-debil):
+            empujar/limpiar la pila correspondiente con los indices IR
+            consultar la pila opuesta: si existe i &lt; j de debilidades
+              opuestas con  VL[j] &lt; wR(i)  y  VR[i] &gt; wL(j):
+                    regresa falso              # hay comun no cubierta
+    regresa verdadero
+
+# Notas: coordenadas comprimidas al inicio; caracteres en una sola
+# secuencia se ignoran; occ de x en C es min(occ_A[x], occ_B[x]).
+# C vacio  =&gt;  salida [].</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> tiempo \(O((N+M)\log(N+M))\): compresión y conteos
+           \(O(N+M)\); construcción del candidato \(O(N+M)\); verificación con
+           index-vector / \(VL\) / \(VR\) mediante pilas de mínimos acumulados y búsqueda
+           binaria en \(O(N\log N + M\log M)\). Memoria \(O(N+M)\) (más arreglos del tamaño del
+           alfabeto, \(200001\)). En la práctica, el caso mayor con \(N+M = 200\,000\) corre en
+           \(\approx 0.071\) s frente al límite de \(1.0\) s. (Para subtareas 1–5 basta el
+           candidato más una verificación DP \(O(NM)\), suficiente con \(N, M \le 3000\).)</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (solo C++)</span>
+<pre># En macOS con Apple clang, &lt;bits/stdc++.h&gt; NO incluye &lt;queue&gt;.
+# Compila con  -include queue  para tener std::queue disponible.
+# No afecta el algoritmo; es solo un detalle de compilacion.</pre>
+          <p class="note">Detalle de portabilidad, no parte de la solución. Nunca pongas la
+             solución completa en código real.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
