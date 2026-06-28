@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2014 · Problema 05 — Menú de Pastes</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">19ª OMI · 2014 · Lenguaje</div>
+    <h1>Problema <span class="num">05</span> — Menú de Pastes</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2014LENGUAJE1">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>En los días previos a la competencia, en el COMI quisimos probar los
+       tradicionales pastes. Sin dudarlo entramos en una sucursal de pastes Kikos
+       y pedimos un menú. El menú era una cuadrícula de \(m\) filas por \(n\)
+       columnas con un sabor de paste en cada cuadro.</p>
+
+    <p>Siempre buscando sistematizar y optimizar, numeramos los sabores de la
+       siguiente forma:</p>
+    <ul>
+      <li>Los sabores de la fila superior se numeraron del \(1\) al \(n\)
+          comenzando por la izquierda.</li>
+      <li>Los de la siguiente fila hacia abajo se numeraron del \(n+1\) al \(2n\)
+          comenzando, de nuevo, por la izquierda.</li>
+      <li>Y así con cada fila hasta que los sabores de la fila inferior quedaron
+          con los números del \(n(m-1)+1\) a \(nm\).</li>
+    </ul>
+
+    <p>Los miembros del COMI pidieron entonces \(p\) pastes diciendo el número de
+       sabor que querían.</p>
+
+    <p>Desgraciadamente, al tomar la orden giraron el menú 90 grados en el sentido
+       de las manecillas del reloj cambiando así los sabores que recibió cada
+       miembro del COMI (<strong>para que te quede más claro, revisa la
+       explicación del ejemplo</strong>).</p>
+
+    <p>Escribe un programa que dadas las dimensiones del menú: \(m\), \(n\), el
+       número \(p\) de pastes que se pidieron y la lista de números de sabores
+       pedidos, entregue como resultado los números de sabor que realmente se
+       recibieron en el mismo orden en que fueron pedidos.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado la siguiente información:</p>
+    <ul>
+      <li>En la primera línea los números \(m\), \(n\): las dimensiones del menú.</li>
+      <li>En la segunda línea el número \(p\) de pastes a pedir.</li>
+      <li>En la tercera línea \(p\) números enteros separados por un espacio que
+          representan los pastes que se ordenaron.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir en la pantalla \(p\) números enteros separados
+       por una línea que representan los números de paste que se recibieron
+       después de que se giró el menú.</p>
+    <p class="note">Nota de transcripción: el ejemplo oficial y los casos de
+       prueba muestran los \(p\) números en una sola línea separados por espacios;
+       el juez compara por tokens.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado oficial</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado; el enunciado advierte que <em>no</em> cabe una matriz de \(2{,}000{,}000 \times 2{,}000{,}000\) enteros</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Dimensiones del menú</td><td><span class="badge">\(1 \le m, n \le 2{,}000{,}000\)</span></td></tr>
+        <tr><td>Número de pastes pedidos</td><td><span class="badge">\(1 \le p \le 1{,}000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas (Evaluación)</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">47</td><td>\(n, m \le 1{,}000\)</td></tr>
+          <tr><td>2</td><td class="pts">53</td><td>\(n, m \le 2{,}000{,}000\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El enunciado advierte: <em>«Recuerda que los compiladores no
+       te permiten definir una matriz de 2 millones × 2 millones de enteros. Si tu
+       solución para este problema ocupa una matriz, sólo funcionará para los
+       primeros 47 puntos en donde \(m\) y \(n\) son menores o iguales a
+       \(1{,}000\); por lo que, de ser así, te recomendamos que envíes tu código
+       definiendo matrices de tamaño \(1{,}000 \times 1{,}000\).»</em></p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2 3
+5
+1 3 5 6 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4 5 6 3 4</pre></div>
+    </div>
+    <p>El menú tiene una dimensión de \(m=2\) filas por \(n=3\) columnas. Según el
+       método de numeración los sabores se numeraron así:</p>
+    <div class="io"><pre>1  2  3
+4  5  6</pre></div>
+    <p>Y los miembros del COMI pidieron los sabores \(1, 3, 5, 6, 1\).
+       Al girar el menú 90 grados en el sentido de las manecillas del reloj quedó
+       de la siguiente forma:</p>
+    <div class="io"><pre>4  1
+5  2
+6  3</pre></div>
+    <p>Por lo que ahora, al servir un paste \(1\) (la primera casilla del menú
+       girado), en realidad se está sirviendo un paste \(4\) del menú original.</p>
+
+    <p class="note" style="margin-top:22px;font-style:italic">«¿Y mis 50 mil puntos qué?»</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Aritmética</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Implementación</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Una cuadrícula de \(m\) filas por \(n\) columnas está numerada por
+       renglones (de izquierda a derecha, de arriba hacia abajo). Se gira
+       \(90^\circ\) en sentido horario. Para cada una de \(p\) consultas te dan un
+       número \(k\), que es la <strong>posición</strong> leída por renglones sobre
+       el menú <em>ya girado</em>; debes responder qué número del menú
+       <em>original</em> cae en esa posición.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(p \le 1{,}000\) es minúsculo: basta responder cada consulta en
+                \(O(1)\). Lo grande es \(m, n \le 2\times10^6\): una matriz de
+                \(m\times n\) <strong>no cabe</strong> en memoria (hasta
+                \(4\times10^{12}\) celdas), así que la versión general necesita una
+                fórmula directa, sin construir la cuadrícula. La subtarea 1
+                (\(n,m \le 1{,}000\)) sí permite construir la matriz.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que un «número de sabor» no es más que una
+           posición \((\text{fila}, \text{columna})\) dentro de una cuadrícula?</p>
+        <p>En el menú original, numerado por renglones, el número \(v\) ocupa una
+           celda bien definida. ¿Sabrías, dado \(v\), recuperar su fila y su
+           columna? ¿Y al revés, dada una celda, calcular su número? Todo el
+           problema es traducir entre «número» y «coordenada» en dos cuadrículas:
+           la original y la girada.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (47 puntos)</summary>
+      <div class="body">
+        <p class="q">¿Qué te regala la subtarea con \(n, m \le 1{,}000\)?</p>
+        <p>Con esos tamaños sí puedes <em>construir</em> la cuadrícula original
+           (a lo más \(10^6\) celdas), girarla \(90^\circ\) en sentido horario y
+           guardar el resultado en otra matriz. Después, cada consulta \(k\) solo
+           lee la casilla \(k\)-ésima (por renglones) de la matriz girada.
+           ¿Recuerdas cómo se gira una matriz \(90^\circ\) horario, y qué
+           dimensiones tiene la girada respecto de la original?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave (los otros 53 puntos)</summary>
+      <div class="body">
+        <p class="q">Cuando \(m\) y \(n\) llegan a 2 millones, ¿de verdad
+           necesitas materializar la cuadrícula?</p>
+        <p>Como \(p \le 1{,}000\), solo te preguntan por mil posiciones. No hace
+           falta guardar nada: basta una <strong>fórmula</strong> que, dada la
+           posición \(k\) en el menú girado, devuelva directamente el número
+           original. El reto es puramente aritmético: convertir \(k\) a coordenada
+           en el girado, aplicar la rotación, y convertir esa coordenada de vuelta
+           a número en el original. Ojo con el tamaño: \(m\cdot n\) puede valer
+           \(4\times10^{12}\), así que usa enteros de 64 bits.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — El detalle de la rotación</summary>
+      <div class="body">
+        <p class="q">El menú original es \(m\times n\). ¿Qué forma tiene tras
+           girar \(90^\circ\) horario, y de dónde viene cada casilla?</p>
+        <p>Al girar \(90^\circ\) en sentido horario, una cuadrícula de \(m\) filas
+           por \(n\) columnas se vuelve de \(n\) filas por \(m\) columnas. Si
+           indexas desde \(0\): la casilla en (fila \(i\), columna \(j\)) del menú
+           <em>girado</em> proviene de (fila \(m-1-j\), columna \(i\)) del
+           <em>original</em>. Y en el original, la celda (fila \(r\), columna
+           \(c\)) tiene el número \(r\cdot n + c + 1\). Junta las dos cosas y sale
+           la respuesta sin construir nada.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Olvídate de la matriz: con \(p \le 1{,}000\) consultas y una fórmula
+           cerrada, resuelves todo en tiempo y memoria mínimos, válido también
+           para \(m,n\) gigantes.</p>
+
+        <p><strong>Idea.</strong> El menú girado tiene \(n\) filas y \(m\)
+           columnas. La consulta \(k\) es la \(k\)-ésima casilla del girado leída
+           por renglones (\(1\)-indexada). Trabaja con \(\text{idx}=k-1\):</p>
+        <ul>
+          <li>columna en el girado: \(j = \text{idx} \bmod m\) (en \(0..m-1\));</li>
+          <li>fila en el girado: \(i = \lfloor \text{idx}/m \rfloor\) (en \(0..n-1\)).</li>
+        </ul>
+        <p>La rotación \(90^\circ\) horaria coloca la casilla original
+           \((m-1-j,\; i)\) en esa posición del girado. Por tanto, en el menú
+           original esa casilla está en la fila \(r=m-1-j\) y la columna \(c=i\),
+           cuyo número (numeración por renglones) es \(r\cdot n + c + 1\).</p>
+
+        <p><strong>Por qué es correcto.</strong> La numeración por renglones del
+           original es exactamente \(\text{fila}\cdot n + \text{columna} + 1\)
+           (con índices desde 0). La fórmula de rotación \(90^\circ\) horaria es la
+           estándar: el renglón del original se vuelve columna del girado, y la
+           columna del original se invierte para volverse renglón. Verificado
+           contra el ejemplo (\(1\to4\), \(3\to5\), \(5\to6\), \(6\to3\)) y contra
+           los 16 casos oficiales.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer m, n        // m filas, n columnas (original)
+leer p
+repetir p veces:
+    leer k                       // posicion en el menu girado (1-indexada)
+    idx = k - 1
+    j   = idx mod m              // columna en el girado  (0..m-1)
+    i   = idx div m              // fila    en el girado  (0..n-1)
+    r   = m - 1 - j              // fila en el original
+    c   = i                      // columna en el original
+    respuesta = r * n + c + 1    // numero original (numeracion por renglones)
+    imprimir respuesta separada por espacio</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(p)\) en tiempo y \(O(1)\) en memoria
+           (no se almacena la cuadrícula).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa long long: m*n puede llegar a ~4e12 y se desborda un int de 32 bits.</pre>
+          <p class="note">Es el único cuidado de lenguaje; la lógica es puramente
+             aritmética.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

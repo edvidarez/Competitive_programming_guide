@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2014 · Problema 01 — Zig-zag de Estaturas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">19ª OMI · 2014 · Karel</div>
+    <h1>Problema <span class="num">01</span> — Zig-zag de Estaturas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2014KAREL1">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p><strong>Historia.</strong> En primaria Karel gustaba de hacer desesperar a sus
+       maestras. Cuando éstas ordenaban a los niños que se formaran por estaturas,
+       Karel organizaba a sus compañeros para que hicieran una <em>fila de estaturas
+       en zig-zag</em>: los estudiantes en una posición non (impar) de la fila debían
+       ser más bajos que el estudiante en la posición delante de ellos (a excepción
+       del estudiante en la posición 1 de la fila, que no tenía a nadie delante), y
+       los estudiantes en posiciones pares debían ser más altos que el estudiante en
+       la posición delante de ellos. Es decir, la fila debe ir
+       <em>bajo, alto, bajo, alto, bajo, alto</em>, …</p>
+    <p>Para este problema Karel recibirá un mundo de tamaño \(N\) columnas de ancho
+       por \(100\) filas de alto. En la fila inferior habrá montones de zumbadores en
+       todas las columnas; estos montones pueden tener entre 1 y 99 zumbadores. Cada
+       montón representa un niño, y el número de zumbadores en el montón representa la
+       altura de ese niño.</p>
+    <p><strong>Problema.</strong> Escribe un programa que, dados los niños
+       representados por los montones de zumbadores de la fila 1, los reordene de modo
+       que formen una <em>fila de estaturas en zig-zag</em>.</p>
+
+    <!-- ===== BLOQUE KAREL: descripción del mundo ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>Mundo de \(100 \times 100\) casillas. Karel arranca en la casilla
+         \((1,1)\) (esquina inferior izquierda) <strong>viendo al Norte</strong> y con
+         la <strong>mochila vacía</strong> (0 zumbadores).</p>
+      <ul>
+        <li>La <strong>fila 1</strong> (la de hasta abajo) tiene \(N\) montones de
+            zumbadores, uno en cada columna de la 1 a la \(N\); cada montón tiene
+            entre 1 y 99 zumbadores (la estatura de un niño).</li>
+        <li>Justo a la <strong>derecha de la columna \(N\)</strong> hay una pared
+            vertical que recorre todo el alto del mundo y marca el final de la fila.
+            (Cuando \(N=100\), el borde del mundo hace ese papel.) Karel descubre dónde
+            termina la fila porque, al avanzar al Este, topa con esa pared o borde.</li>
+        <li>Las filas 2 a 100 están <strong>vacías</strong> y sirven de espacio de
+            maniobra.</li>
+      </ul>
+      <p><strong>Objetivo:</strong> dejar la fila 1 con los mismos montones, pero
+         reacomodados de modo que las estaturas queden en zig-zag (posiciones impares
+         = valles «bajo», posiciones pares = picos «alto»).</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No se lee de <code>stdin</code>: la «entrada» es el propio <strong>mundo</strong>.
+       Los datos son los \(N\) montones de zumbadores de la fila 1 (sus alturas) y la
+       pared que marca el final de la fila.</p>
+
+    <h2>Salida</h2>
+    <p>El <strong>estado final del mundo</strong>. La fila 1 debe quedar con exactamente
+       los mismos montones que había (las mismas estaturas), pero reordenados en
+       zig-zag: el montón de la posición 1 debe ser \(\le\) el de la posición 2, el de
+       la posición 2 \(\ge\) el de la posición 3, el de la posición 3 \(\le\) el de la
+       posición 4, y así sucesivamente. <strong>No importan la posición ni la
+       orientación final de Karel.</strong></p>
+
+    <h2>Consideraciones</h2>
+    <ul>
+      <li>Karel inicia en la posición \((1,1)\) del mundo viendo al Norte.</li>
+      <li>La fila 1 del mundo está llena de montones de zumbadores; los montones tienen
+          entre 1 y 99 zumbadores.</li>
+      <li>Karel inicia con <strong>0 zumbadores en la mochila</strong>.</li>
+      <li>Los mundos tienen siempre <strong>100 filas de alto</strong>.</li>
+      <li>No importan la dirección ni la orientación final de Karel.</li>
+      <li><strong>Para un mundo puede haber muchas filas posibles que son correctas;
+          cualquiera de ellas que deje tu programa será considerada correcta.</strong></li>
+      <li><strong>Te aseguramos que siempre habrá al menos una solución posible.</strong></li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Tope de instrucciones</td><td>10 000 000</td></tr>
+        <tr><td>Tamaño de la pila</td><td>65 000</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del mundo</td><td><span class="badge">\(100 \times 100\)</span></td></tr>
+        <tr><td>Número de montones</td><td><span class="badge">\(1 \le N \le 100\)</span></td></tr>
+        <tr><td>Altura de cada montón</td><td><span class="badge">\(1 \le h \le 99\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <p>El mundo de ejemplo muestra un grupo inicial de niños, con sus alturas
+       representadas por el número de zumbadores en cada montón. El mundo de salida
+       muestra cómo quedaría una posible fila por estaturas en zig-zag. Además de la
+       solución que se muestra hay muchas otras posibles.</p>
+    <figure>
+      <img alt="Mundo de entrada: fila de montones de zumbadores de alturas variadas, sin orden."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPYAAABLCAIAAADMJO00AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAABYQSURBVHhe7d0HrFVFtwdwPtHos+sXwRjDh76oEXtMjCU2YsPeUbEbe+8Fe8OnYg32Ghsq2HvhIU9UUOxYsfcGKnbR834wfPs7XO7Zs8/sA17M3rm5Offc2WuvWfOfNWvWrLV2p6GFr+eee+7cc8/tNOnafffd+/Xrd/K/r+OOO+6SSy6pxa6HHnroqKOOyu5q98PRRx99yy23xCjVbr75Zi3zSXnWI488EiWFc/xHSY0aNSqf1I8//njWWWedcMIJOaROOukkz3rvvffySX3++ecnnniixjmkNDj11FPHjRuXT+q111475phj8nt3/PHHn3feeb///ns+qSeffPLII4/MJ3XsscdeffXVUZnffffdUSRocMcdd0RJXXvttR6Kq7PPPnv55ZcHzi5dupwy6QqsdiqM8KEVxCuIz/AQ/98przbor4f4rrvuevrpp9NY4aJQL7744uiEe+CBBw477LDsrnY/HHHEETfddFOU1I033qhlPinPsm5ESeEc/1FSuh+F+BlnnEFJ55CiLz3r3XffzSf12Wef9e3bV+McUhpQ81EtPnr0aLjM7x0teM4550S1+LBhww499NB8UlTvFVdcEZX5nXfeGUWCBoMGDYqSsmh4KK6YFcsttxwtvsACC1jiXIHVKbT4/0155UB8n332Of/8863L4TrttNOKLE+PP/64UcnuaveDlWXw4MHRjum8lvmkPGvIkCFRUjjHf5TUiy++mE/qp59+uuCCC6A8h5Rh8KwPPvggn9QXX3xx5plnapxDSgNL87fffptP6s0337Rk5/cOzwMGDIhC/JlnnoGbfFJspxtuuCEqc8ouigQN7r333igpCtFDcXXRRRetuOKKIN61a9f/mXQFVidDnPoG6E8++YTIxo8f/8MPP4wdO/app54CkQzo9Vr8scce+/nnnw1qdv3yyy9Rbn777TcGa/1dU3/W4Ndff42S0qYIKU+MksJ5Pkv+61lRBPz5559tZNKI7B9//JHPlQZRlkIDD80nNWHChCKkcB4VFAlEZe5Z0xkJ2fDpwo477gjiPXr0qO/yFBD/6quv4Pvtt98eM2aMFXDkyJGN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">
+      <figcaption>Entrada: las estaturas (montones) en su orden original.</figcaption>
+    </figure>
+    <figure>
+      <img alt="Mundo de salida: los mismos montones reacomodados en patrón bajo-alto-bajo-alto."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPMAAABMCAIAAAA3CBbIAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAABbASURBVHhe7Z15tJbTF8ffK02ShDJnyuyaVstQZlapliFKixIaSAqVJkRSQoaQMVytZchQ/mDpKmRKCNcUUSoylJSrqAy3fp/bfj3v2zucfZ7zPPq9vZ1nte661Xn2s/f37HPO3ufsvU/J66+/ntCezTff/I8//jjvvPOWLl167LHHnn766fxVXlq7di0/e/Xq1bhxYwOZOXPmlJWV1a5d29Dmn3/+2Wabbfr06cPnDM3efPPNF198sV69eoY2q1evPuCAA84//3yzZE8//XRFRUXdunUNzZC0VatWJ598sqENIIwdO3bx4sU1a9Y0cwVLMGZo8+uvv0IKKDbbbLN8zdasWcP/9u7de9tttzWQmj179vjx4+vUqWNo8/fffzdq1AhSNWrUMDSbNm3a5MmTVcxLS0tREjPmTz755GeffWbmCsxbt2594oknGkhVVVUB1JIlS2rVqoXCPPDAAwsXLtxvv/0uvPBCep8X88Knabv/f49AQSPgNbugu8cz54xAUrNZTzMew1LIQpDxiE1iXq+z38r5L6okrMUs1io1mtmQUunwLRtSKh1poAIFz3GR4luWpGyAKnDMBdh0kZOajZmFsRI8BiMPswZ7K+MxtBfUoL/llltmv5j+LzTYYostVJRhoH79+iopsyUnX6GNyhXf4osqV3CukqKB2YXgKyUlJWbRgv9VMedbNiwVB+biJyBygE8JHiTDceedd95xxx0BC2R55s+fjz8UdEO6BzlgwIDhw4dnzD24hmagmTz++usvVT/4tKqRcAspWpqpwY/ZYeV16EDNTApJ8QvNriGk8Fps5mMGidlXg4g4QOoDUGbOY8QcR5NHxRzR1FkAzGFMXeHDYn7SSSe9++67p5122jPPPCMdkdTsJk2a7L777j/++CMCbL311njo3377bdCd6Zp9zTXXjBgxQsXdN/AIbEgEjjnmmOnTp7dr127SpEny3ZQ18ssvv3Tu3Llly5Y33ngjgy/fHGxjdG5Ikfy3PAIgENjZARpJzWbhvv766/v27fvOO+80aNBg1KhRbC17yDwCGy8CSc1euXIlms15xA477IABt2zZMtVB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">
+      <figcaption>Salida: una fila válida en zig-zag (bajo, alto, bajo, alto, …).</figcaption>
+    </figure>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En la fila 1 hay \(N\) montones de zumbadores (las estaturas). Hay que
+       reacomodarlos para que formen un <strong>zig-zag</strong>: cada posición impar
+       debe ser un <em>valle</em> (\(\le\) sus vecinos) y cada posición par un
+       <em>pico</em> (\(\ge\) sus vecinos); o sea bajo, alto, bajo, alto, … Cualquier
+       acomodo válido sirve. Se programa en <strong>Karel</strong>, moviendo
+       zumbadores entre casillas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 100\) y las alturas <strong>se pueden repetir</strong> (por
+                ejemplo, varios montones de altura 1). Como se garantiza que siempre
+                hay solución, el zig-zag se entiende <strong>no estricto</strong>
+                (\(\le\) en las subidas, \(\ge\) en las bajadas). Eso permite resolverlo
+                con <strong>una sola pasada</strong> de comparar-e-intercambiar
+                vecinos, que cabe de sobra en el tope de instrucciones.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué relación hay entre vecinos?</summary>
+      <div class="body">
+        <p class="q">Olvida por un momento «la fila completa». Si te fijas solo en dos
+           montones que están uno junto al otro, ¿qué debe cumplirse entre ellos?</p>
+        <p>Numera las posiciones \(1,2,3,\dots\) de izquierda a derecha. En un zig-zag
+           «bajo, alto, bajo, alto», el paso de la posición 1 a la 2 es una
+           <em>subida</em> (\(\le\)), el de la 2 a la 3 es una <em>bajada</em>
+           (\(\ge\)), el de la 3 a la 4 otra subida… ¿Notas que la relación entre
+           vecinos consecutivos solo <strong>alterna</strong> subida / bajada /
+           subida / …?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico</summary>
+      <div class="body">
+        <p class="q">¿Qué pasa con \(N=1\)? ¿Y con \(N=2\)? ¿Cuánto trabajo es de
+           verdad cada caso?</p>
+        <p>Con \(N=1\) no hay nada que hacer: un solo montón ya es un zig-zag. Con
+           \(N=2\) basta con dejar el más bajo en la posición 1 y el más alto en la 2
+           (un solo «intercambio si hace falta»). ¿Y si pudieras resolver todo el
+           problema repitiendo esa misma idea de «arreglar una pareja» a lo largo de
+           la fila?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: una sola pasada basta</summary>
+      <div class="body">
+        <p class="q">Camina de izquierda a derecha arreglando cada pareja de vecinos
+           según toque (subida o bajada). Cuando arreglas la pareja \((i, i{+}1)\),
+           ¿podrías estar rompiendo la pareja \((i{-}1, i)\) que ya habías dejado bien?</p>
+        <p>La respuesta es que <strong>no</strong>. En una subida (queremos
+           \(a_i \le a_{i+1}\)) solo intercambias cuando \(a_i > a_{i+1}\), y al hacerlo
+           el nuevo \(a_i\) es <em>más pequeño</em> que antes: si \(a_{i-1}\) ya era un
+           pico (\(\ge a_i\) viejo), sigue siendo \(\ge\) que el nuevo \(a_i\). En una
+           bajada pasa lo simétrico: el nuevo \(a_i\) solo <em>crece</em>, así que el
+           valle de la izquierda sigue siendo valle. Por eso una <strong>única pasada
+           de comparar-e-intercambiar</strong>, alternando subida/bajada, deja toda la
+           fila en zig-zag. ¿Te recuerda a una pasada de <em>burbuja</em>, pero con la
+           desigualdad cambiando de sentido en cada paso?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Pero esto es Karel: ¿cómo hace cada cosa el robot?</summary>
+      <div class="body">
+        <p class="q">El algoritmo es simple; lo difícil es traducirlo a movimientos de
+           Karel. ¿Cómo logra el robot, sin saber «contar» con números, estas cuatro
+           cosas?</p>
+        <ul>
+          <li><strong>Recorrer la fila y saber dónde acaba.</strong> ¿Qué pasa cuando
+              Karel, viendo al Este, intenta avanzar y tiene la pared (o el borde)
+              enfrente? Eso le dice que llegó a la columna \(N\).</li>
+          <li><strong>Comparar dos montones vecinos.</strong> Karel no tiene números,
+              pero sí tiene <em>espacio</em>: las filas de arriba están vacías. ¿Y si
+              «levanta» cada montón como una <strong>barra vertical</strong> (un
+              zumbador por casilla hacia arriba) y sube por las dos barras en paralelo?
+              La barra que se acaba primero corresponde al montón más bajo.</li>
+          <li><strong>Intercambiar dos montones.</strong> Con una casilla temporal
+              vacía (arriba), ¿cómo moverías el montón derecho a la temporal, el
+              izquierdo a la derecha y luego la temporal a la izquierda?</li>
+          <li><strong>Alternar subida y bajada sin una «variable».</strong> ¿Y si en
+              cada vuelta del ciclo procesas <em>dos</em> pasos seguidos —primero una
+              subida, luego una bajada— y avanzas de dos en dos? Así nunca necesitas
+              recordar la paridad de la posición.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Una sola pasada de izquierda a derecha. En la
+           columna \(i\) miramos la pareja (montón actual, montón de la derecha) y
+           garantizamos la relación que toca:</p>
+        <ul>
+          <li>Si \(i\) es <strong>impar</strong> → paso de <em>subida</em>: el montón
+              actual debe quedar \(\le\) el de la derecha. Si es mayor, los
+              intercambiamos.</li>
+          <li>Si \(i\) es <strong>par</strong> → paso de <em>bajada</em>: el montón
+              actual debe quedar \(\ge\) el de la derecha. Si es menor, los
+              intercambiamos.</li>
+        </ul>
+        <p>Como vimos en la Pista 3, arreglar una pareja nunca echa a perder la
+           anterior, así que al terminar la pasada la fila entera es un zig-zag válido.
+           Para no llevar una «variable de paridad», cada vuelta del ciclo hace
+           <em>primero</em> una subida y <em>después</em> (si todavía hay columna) una
+           bajada, avanzando de dos en dos.</p>
+
+        <p><strong>Cómo lo hace Karel.</strong> Karel arranca viendo al Norte; lo
+           primero es girar para ver al Este. El final de la fila se detecta porque,
+           viendo al Este, el frente queda bloqueado (la pared tras la columna \(N\) o
+           el borde del mundo). Para comparar dos montones, los convierte en barras
+           verticales en las casillas vacías de arriba y sube por ambas a la vez: la
+           que se agota primero es el montón más bajo; luego deshace las barras
+           dejándolas como estaban (comparación <em>no destructiva</em>). El
+           intercambio de dos montones se hace con una casilla temporal de la fila de
+           arriba.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel)</span>
+<pre>define gira-derecha:                 // Karel solo sabe gira-izquierda
+    gira-izquierda; gira-izquierda; gira-izquierda
+
+// --- comparar (NO destructivo): ¿el monton actual es mas alto que el de la derecha?
+// Levanta ambos montones como barras verticales en las casillas de arriba,
+// sube por las dos en paralelo, y la que se acaba primero es la mas baja.
+// Al final reconstruye ambos montones tal como estaban y regresa Karel
+// a la casilla de partida viendo al Este.
+define actual-mas-alto-que-derecha -> (si / no):
+    a-barra(actual)                  // monton actual  -> barra vertical (1 zumbador por celda)
+    avanza; a-barra(derecha); regresa-al-oeste
+    // subir por las dos barras a la vez:
+    mientras (barra-izq tiene zumbador) y (barra-der tiene zumbador): subir un paso en ambas
+    si (barra-izq aun tiene zumbador) y (barra-der ya no): resultado = "si"   // actual mas alto
+    en otro caso:                                          resultado = "no"   // (incluye empate)
+    de-barra-a-base(izquierda); de-barra-a-base(derecha)   // restaura todo
+    regresa resultado
+
+// --- intercambiar los dos montones vecinos usando una casilla temporal de arriba
+define intercambia:
+    avanza                                       // ir al monton derecho (D)
+    mueve-todo-el-monton hacia-la-casilla-de-arriba   // D -> Temporal (D queda vacia)
+    regresa-al-oeste                             // volver al monton izquierdo (I)
+    mueve-todo-el-monton hacia-la-derecha        // I -> D (I queda vacia)
+    avanza; sube-una-casilla
+    mueve-todo-el-monton hacia-abajo-y-a-la-izquierda // Temporal -> I
+    baja-y-regresa-a-la-casilla-izquierda viendo-al-este
+
+define ordena-subida:                // queremos actual <= derecha
+    si actual-mas-alto-que-derecha: intercambia
+define ordena-bajada:                // queremos actual >= derecha
+    si (NO actual-mas-alto-que-derecha) y (los montones NO son iguales): intercambia
+
+inicia-programa:
+    gira-derecha                     // de Norte a Este
+    mientras frente-libre:           // hay una columna a la derecha (no estamos en N)
+        ordena-subida                // paso impar -> par
+        avanza
+        si frente-libre:             // ¿queda otra columna?
+            ordena-bajada            // paso par -> impar
+            avanza
+    // al toparse con la pared/borde, la fila ya quedo en zig-zag
+termina-programa</pre>
+        </div>
+
+        <p class="note">Detalle fino: <code>ordena-bajada</code> intercambia solo cuando
+           el montón actual es <em>estrictamente</em> menor que el de la derecha; si son
+           iguales no hace falta mover nada, porque \(\ge\) admite el empate. Lo mismo
+           del lado de la subida. Por eso el zig-zag que se obtiene es el no estricto,
+           que es justo el que el juez acepta (lo confirman los casos oficiales, donde
+           aparecen valles y picos con alturas repetidas, p. ej. una salida que termina
+           en <code>… 5 5</code>).</p>
+
+        <p><strong>Por qué es correcta.</strong> Tras procesar la columna \(i\), la
+           relación de esa pareja queda garantizada, y el argumento de la Pista 3
+           muestra que ningún paso rompe la pareja anterior. Como recorremos todas las
+           parejas \((1,2), (2,3), \dots, (N{-}1,N)\) con la desigualdad correcta en
+           cada una, la fila final cumple
+           \(a_1 \le a_2 \ge a_3 \le a_4 \ge \cdots\), que es exactamente el zig-zag
+           pedido. El enunciado garantiza que siempre existe acomodo válido, y este
+           método siempre lo produce.</p>
+
+        <p><strong>Complejidad.</strong> Hay \(N-1\) parejas; comparar e intercambiar
+           cada una cuesta a lo más \(O(H)\) movimientos de zumbadores, con
+           \(H \le 99\) la altura máxima. En total \(O(N \cdot H)\) operaciones
+           (a lo sumo unas \(\sim 10^4\) transferencias de zumbadores, cada una con
+           unos pocos pasos de Karel), muy por debajo del tope de 10 000 000 de
+           instrucciones. El espacio extra son las casillas vacías de las filas de
+           arriba.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

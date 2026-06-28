@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **82 / 190**
+Total de problemas: **190** · Completados: **90 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -205,18 +205,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Lenguaje | Tejidos | `2013/07 Tejidos/index.html` |
 | [ ] | 8 | Lenguaje | Secuencias Contiguas | `2013/08 Secuencias Contiguas/index.html` |
 
-## 19ª OMI · 2014 — 0 / 8
+## 19ª OMI · 2014 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Zig-zag de Estaturas | `2014/01 Zig-zag de Estaturas/index.html` |
-| [ ] | 2 | Karel | Karel el Demócrata | `2014/02 Karel el Demócrata/index.html` |
-| [ ] | 3 | Karel | Flappy Karel | `2014/03 Flappy Karel/index.html` |
-| [ ] | 4 | Karel | Karel Gump | `2014/04 Karel Gump/index.html` |
-| [ ] | 5 | Lenguaje | Menú de Pastes | `2014/05 Menú de Pastes/index.html` |
-| [ ] | 6 | Lenguaje | Granjas | `2014/06 Granjas/index.html` |
-| [ ] | 7 | Lenguaje | Nieves Pizzero | `2014/07 Nieves Pizzero/index.html` |
-| [ ] | 8 | Lenguaje | Freddy el Amante de los Hotcakes | `2014/08 Freddy el Amante de los Hotcakes/index.html` |
+| [x] | 1 | Karel | Zig-zag de Estaturas | `2014/01 Zig-zag de Estaturas/index.html` |
+| [x] | 2 | Karel | Karel el Demócrata | `2014/02 Karel el Demócrata/index.html` |
+| [x] | 3 | Karel | Flappy Karel | `2014/03 Flappy Karel/index.html` |
+| [x] | 4 | Karel | Karel Gump | `2014/04 Karel Gump/index.html` |
+| [x] | 5 | Lenguaje | Menú de Pastes | `2014/05 Menú de Pastes/index.html` |
+| [x] | 6 | Lenguaje | Granjas | `2014/06 Granjas/index.html` |
+| [x] | 7 | Lenguaje | Nieves Pizzero | `2014/07 Nieves Pizzero/index.html` |
+| [x] | 8 | Lenguaje | Freddy el Amante de los Hotcakes | `2014/08 Freddy el Amante de los Hotcakes/index.html` |
 
 ## 20ª OMI · 2015 — 8 / 8
 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2014 · Problema 02 — Karel el Demócrata</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">19ª OMI · 2014 · Karel</div>
+    <h1>Problema <span class="num">02</span> — Karel el Demócrata</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI2014KAREL2">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <h3>Historia</h3>
+    <p>Karel sufre de una fiebre democrática, ahora le gusta organizar votaciones
+       para todo. Pero Karel es muy estricto y quiere que en sus votaciones el
+       ganador siempre tenga <em>estricta mayoría</em>, es decir, alguien es ganador
+       sólo si recibe una cantidad de votos mayor que la mitad del número de
+       votantes.</p>
+    <p>Karel necesita implementar un sistema de conteo de votos que reciba como
+       entrada los votos y decida si hay un ganador que tenga <em>estricta
+       mayoría</em>. Para este sistema Karel recibirá un mundo de tamaño <strong>N</strong>
+       columnas de ancho por <strong>100</strong> filas de alto. En la fila inferior
+       habrá montones de zumbadores en todas las columnas; estos montones pueden
+       tener entre 1 y 99 zumbadores. Cada montón representa un voto, y el número de
+       zumbadores en el montón representa la opción elegida por el votante.</p>
+
+    <h3>Problema</h3>
+    <p>Escribe un programa que reciba un mundo con votos y decida si hay una opción
+       que sea ganadora con <em>estricta mayoría</em>. Si hay una opción ganadora,
+       Karel deberá terminar con tantos zumbadores en la mochila como el número de
+       esa opción; es decir, <em>si la opción 5 es ganadora, Karel deberá terminar
+       con 5 zumbadores en la mochila</em>. <strong>Si no hay opción ganadora, Karel
+       deberá terminar sin zumbadores en la mochila.</strong></p>
+
+    <h3>Consideraciones</h3>
+    <ul>
+      <li>Karel inicia en la posición \((1,1)\) del mundo viendo al Norte.</li>
+      <li>La fila 1 del mundo está llena de montones de zumbadores; los montones
+          tienen entre 1 y 99 zumbadores.</li>
+      <li>Karel inicia con <strong>0 zumbadores en la mochila</strong>.</li>
+      <li>Los mundos tienen siempre <strong>100 filas de alto</strong>.</li>
+      <li>No importan la dirección ni la orientación final de Karel, tampoco los
+          zumbadores que queden en el mundo.</li>
+      <li>Para cada caso, Karel debe terminar con <strong>0 zumbadores en la mochila
+          si no hay opción ganadora</strong> y con <strong>\(k\) zumbadores en la
+          mochila si \(k\) es la opción ganadora</strong>. En este problema se
+          agrupan los casos de prueba: para obtener los puntos de un grupo, tu
+          programa deberá resolver de manera correcta <strong>todos los casos del
+          grupo</strong>.</li>
+    </ul>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p><strong>El mundo.</strong> Una cuadrícula de \(N\) columnas de ancho por
+         \(100\) filas de alto. La fila 1 (la inferior) tiene un montón de zumbadores
+         en cada una de las columnas \(1, 2, \dots, N\): cada montón es un voto y su
+         número de zumbadores (entre 1 y 99) es la opción votada. El borde derecho del
+         mundo (después de la columna \(N\)) marca el final de los votos, así que Karel
+         detecta el fin con <em>frente-bloqueado</em> al ir hacia el Este.</p>
+      <p><strong>Karel.</strong> Empieza en la esquina inferior izquierda \((1,1)\)
+         viendo al <strong>Norte</strong>, con la <strong>mochila vacía</strong>
+         (0 zumbadores).</p>
+      <p><strong>Objetivo.</strong> Que Karel termine con \(k\) zumbadores en la
+         mochila si la opción \(k\) gana con estricta mayoría
+         \(\left(\text{apariciones} > \tfrac{N}{2}\right)\), o con la mochila vacía
+         si ninguna opción tiene estricta mayoría. La posición y la orientación
+         finales de Karel, y los zumbadores que queden en el piso, no importan.</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada estándar: la información viene en el <strong>mundo</strong>. En
+       la fila 1, las columnas \(1\) a \(N\) tienen un montón cada una; el número de
+       zumbadores de cada montón es el voto (la opción elegida, entre 1 y 99). El final
+       de los votos es el borde derecho del mundo.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida estándar: lo que se evalúa es el <strong>estado final de la
+       mochila</strong> de Karel. Debe quedar con \(k\) zumbadores si la opción \(k\)
+       es la ganadora por estricta mayoría, o con \(0\) zumbadores si no hay ganadora.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Modalidad</td><td>Tarea de Karel (la información está en el mundo; no hay stdin/stdout)</td></tr>
+        <tr><td>Alto del mundo</td><td>100 filas (fijo)</td></tr>
+        <tr><td>Ancho del mundo</td><td>\(N\) columnas, una por voto</td></tr>
+        <tr><td>Valor de cada voto</td><td><span class="badge">\(1 \le v \le 99\) zumbadores por montón</span></td></tr>
+        <tr><td>Mochila inicial</td><td>0 zumbadores</td></tr>
+        <tr><td>Máx. de instrucciones (evaluador)</td><td>10 000 000</td></tr>
+        <tr><td>Longitud de pila (stack)</td><td>65 000</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">El puntaje se reparte en cuatro grupos de casos. Para llevarte los
+       puntos de un grupo debes resolver correctamente <strong>todos</strong> sus casos.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">33</td><td>Los votos están <strong>ordenados</strong>.</td></tr>
+          <tr><td>2</td><td class="pts">10</td><td>Los votos están <strong>desordenados</strong> (sin límite de movimientos).</td></tr>
+          <tr><td>3</td><td class="pts">20</td><td>Tu programa debe usar la instrucción <code>avanza</code>/<code>move</code> a lo más \(4N\) veces (\(N\) = número de columnas).</td></tr>
+          <tr><td>4</td><td class="pts">37</td><td>Tu programa debe usar la instrucción <code>avanza</code>/<code>move</code> a lo más \(2N\) veces.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Se muestran dos mundos de entrada (la fila inferior con sus votos y Karel en la
+       esquina inferior izquierda).</p>
+    <figure>
+      <img alt="Mundo de entrada 1: la fila inferior tiene varios montones de zumbadores con distintos valores (un voto por columna) y ninguna opción se repite más de la mitad de las veces; Karel está en la esquina inferior izquierda viendo al Norte."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQUAAABKCAIAAAA9jdbLAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAABioSURBVHhe7d0HkB3FEQbgh8kZDMLkjMEECzAFJucMZYGNQUQBxuRkAy6yTUEVGZGTSJLJQUQRJEACAyIITLSNDQgQYKIQJkd/x1Cr1bt3M3u7T4DEvlKp3t3N9vb80z3T09PdM8nQoUMbhT+TTTbZhx9+uPXWW7/11lvLLLNM7969/Zg97ftmm232y1/+Mk7vhhtuuP/++6eZZppIsy+++GLqqafeZ599pp122kizDz744LTTTvvoo48mnXTSSDOMrbTSSr/61a/ijA0fPnzgwIFxxr766iu87brrrnPPPXec2tlnnz1q1Kgpppgi0uyTTz5ZaKGFdt555zip559/vl+/flNOOWW8mW5utdVWxiXe7Oqrrx4xYgR4I80+//zzGWecEf5x/t99993TTz9d4x/96Edx/Ndaa631118/ztiwYcNuueWW+IjDH5E99thjttlmi1D78ssvMfbmm29OPvnkenrppZc+8cQTM800kx6RYX8Nz3788ceLL774dtttl5GKdaOwmtQNawQmEgRqfZhIBrLuRlsQqPWhLTDWRCYSBGp9mEgGsu5GWxCo9aEtMNZEJhIEan2YSAay7kZbEKj1oS0w1kQmEgSa9YFznTvZ/+FLcPe2/GjAfcv3n334vz2SBObTTz/VMv9gV98jbw9v0aAIHa/z0iRjmC/IWObAjtAETpKaBo4gkox5XZIUHNqLP/6TjBXH/7PPPktS06ZIN/W0u/iT1ZbS0hn/SbLzOH2bZJJJ5pxzTuc+4XjFb1555RWvz05b8udxvXr1OuaYY8Kbwoc8zTPPPLPOOmu8506pHJQgFWnm1Y7YFl100Xgzb/zXv/6FB5xHqGnWo0eP5AmaQ8aXX345yRjeFllkkfixHWaeffZZcMcPCnE+/fTTO5KLI/b+++//5z//iZMK+M8333w//vGP49Reeumlt99+O95NAuckDv7xgzazDPyD5MTxn3322eeYY444Y6+//vqrr76axB+Rn/70p1NNNVVcfjBmrsE/3A466CAnfXPNNddNN92Upw9/x44LLLBARqpZH37+8587IMSZFrPMMothyMtuXh922WWX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">
+      <figcaption>Entrada 1 — ninguna opción tiene estricta mayoría.</figcaption>
+    </figure>
+    <figure>
+      <img alt="Mundo de entrada 2: la fila inferior tiene los votos, donde la opción 2 aparece en más de la mitad de las columnas; Karel está en la esquina inferior izquierda viendo al Norte."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQsAAABKCAIAAAAjROZ4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAABddSURBVHhe7d0FsFzF0gDgzcPdISG4BHeXwvUBgQrBNViQHygsPNwlJEihQVJUsMLdHxoguEsILsHdHf4vmffv239375lz5+wtcpNzauvW3ntn+vT0TPd093T3dHnggQcq7XymnnrqwYMHn3XWWfrtvPPO88wzzy+//FKF8fPPP/fp06dHjx7ZUF9++eVLL710kkkmyW4G8pxzzrnrrrtGcbzoooveeuutiSaaKLvlTz/9tN122y200ELZzV5//fWLL744Cu3XX3/t3r37nnvuGUVvyJAhr7766sQTT5zd8scff9xyyy2XWGKJ7GbvvPPOhRdeOMEEE3Tp0iWj5W+//TbDDDPsvffe//jHP7IBXnHFFS+++GIe9Hr16rXccstlQ/vggw8GDRo03njjZaP3+++/W0v77LOPgWQDvPbaa5966qnoavnhhx969uy58sorZ0P79NNPzz33XG2gZ4ot5jfeeGOqqaYKmPz555+13SOEi0582aCkwNhNgZJDxu75LUdXlAIlhxSlYNl/7KZAySFj9/yWoytKgeYc8lfNk/2G0JBxU/vkQaqxVx2Q6q9a/i0A28Kn7u8lek1np7NQr3b6muLcnEPY+NUne3WGZlwltU+eBd3Yqw5I9ddsf0j1XS0H2BY+dX8v0Ws63Z2FerXT1xTnLnXeXizFuzr55JNXHXDvv//+J598wnNXJUStt/e2227j+6tlRN85ziaccMJsPuHG/eabb6JeSNBg4o1Rrvv66685N6PrlZyAXh43LvSi0KA3/vjjTzPNNFH0QOMajgKE3pRTThn1uhqp8UahQc/ETTvttFH0vv32WzMSBQi9KaaYIup15cb96quvotACeqgXbfndd99x00dXC/Qs3UknnTR7vNBDvdDGqzfffPP77rtvlllmefzxxxvXbRMOcVYA6eeeew4g3YAYPnx4rce6lkMAXXbZZaMTUDYoKTDGUmCDDTa4/fbbZ5999rfffruRV+u1LC0w4s033+z05IADDujfv7/Tn4wDHVw0xo68RKykQB4KhCNCG5qdubF9PYfYyL7//nubjlPMRx55ZLrppjvmmGPyaBF5UCnblBTodBSo55A//vhjsskmO/PMM6mbBkMtEwcRVRM73bBLhEsK5KRAE1+W7QZXsHief/75ESNG7LjjjnaVnODKZiUFxjIKNPf22kaE2R199NE77LDDhhtuWHLIWDbr5XDyU6AJh9Cs3nvvvSOPPJKxvsYaa3zxxRdRL1v+95UtSwp0LgrUcwj/NM993759BTkvvvjiDkNKO6RzzWiJbWsp0MTba8dwRMhYX3vttTfZZJNrrrnGEVtr31pCKynQWShQzyHONxxJ3n///by9N954oyNzCT12lc4ynhLPkgKtpUATO0QAgvgI6pZ4imiaWDQ+orXoltBKCrScAiGiypFG01Cp+qgTTR0x1sZZUbrqzkNqo06kqkoZrU1cdKIy77zzRhUzcTtSHzFh9oBBczIz33zzRenCMS16pzZ+rGkXm6S04egZKDHx2muvRaGF46MFFlggip60XltxFCD05pprLge12QB5FzkbG6emrpd5IcIWXHDB6InWm2++aUbyoDfHHHPI7M1Gj+0qUilEtWa0hJ5FKcop6goSD/L5559HV4tDccEjM800UzZ6QrygF7jCqyVRDxs2rGvXrjfddBN86oK1m3BIdLJrOWSbbbaZe+655aZXe/m+++67RxfNCy+8ILM8GgMnnA58mdZRrM4++2wsFw1JRJ1ddtll0UUXzQZo/cm0jkKz2c4666z7779/FL0LLrhAan50y5VpzcO+zDLLZAOUka9OQJ489RlnnLFfv37RJUjSicTLg95WW2210korZaPHwXPGGWdEFRDigKg6+OCDo3nq0ugfe+yx6GohOHr37r366qtno/fxxx+fdtppgUMMWb0EHChgVDmE1uepewG8mS61T1QUQU6bul5t/RqdtkAOzXIC/FvQw2x50LMjRSWlwVrxeaBpE11VgXpjOHpEe57xol6U2eqohz5VLavpK8ocw6j0LxuM0xQoOWScnv5y8FEKlBwSJVHZYJymQMkh4/T0l4OPUqDkkCiJygbjNAVKDhmnp78cfJQCJYdESVQ2GKcpUHLIOD395eCjFGgZh9RWiMtTZC20z9MyOoayQUmBjqNAyzjEAb7D4PDUReP88UcT/J0KaxmNhui4kZeQSwrkoUATDmlX1U2hNcLFhAx269btf0Y/agipSVd99803V1wlMnBgPTLCBw888MCFF15YPB8IbT0Cn3IWHNJM4wxQ4V/a1F0Q0ZRM2uSE1rSETCPM1qJn7y3Ra5xrNBFLGl33ofBP9amtBtQIczyFGuogCtERBkPAC3HxxYbgrbXbggioZ5999oknntBxzTXXFE2pmZ9yEkW5VANd/PemmyqbbFL56qvKv/8tSqyy5JLif/7zNsEwWn755Zeq3wlfUzii6SNURtBl9EIcQAWfhXKPbYEKfwcQW0bLEIogHDlyZBSaQCChgYssskh0Vt59911kjAKEnlDcPMGzMqUF2wl8zhgv9KaffnphmtHYXrGGFkce9Oaff34zkj1e4aHGC7ds9GBuIiybqCqhaJuIWCGz2ZNrRQkDn3nmmbPREw5rtQAFPUN2d4/AYZRXksGviFb7liY1F71DC0h7nzBmyFkrteF0tbG9amqtuOKKTRGye2y3XcVlTy4YUnfOLUhnnlmJXa4UXWllg5ICLabA+uuvf+edd84222wyFBpTRJpoWeQN3iIG7rjjjmh8dVvC6c47KxtvXJl11sqwYZUHH6w88kjloYdGscc997R4eCW4kgKtokDTraxJzUUas2KkYuWPPfbYaIJEU2fU7bdXtthiFNqhvPWIEcMPPfRfPp9++sU++1ROPLEFI7JRXn311S0AVKnItfjX6Oejjz5qCcDzzjsPNAkhBaGdfPLJ4KgTAM7QoUMVvwx4nnrqqQUhX3XVVa2q8PTZZ58FrGSwFcQqdL/ssstAC/kbxR86fEBPPlIUWlMDtU1fFrWKrhUF2tjgttsq229f+fbbUf8B4PHHhw0YMEBlVJ8BA07+7LN3DzusMvqaxfSHSsp8wsDpIP6v59NPP33CCSeE3+Bpny0Ic+DAga7MBOSll15yGWcaNHIHG6inofuDDz6ojDJxcO+994by/WkwQy83XLrodI899qhNeksGKA3zMNM5+jnnnHOeeeaZZFBVIA9RNioVVla4SrbIwxbCGwECgSUHKwWa2xFqHzUcPvzwQzME0dVWW80XsuGee+6pbSMZrZr0xw6puY3nr1tv/atrVxfi/Oezwgq6DzfHoc3o1Lmh/jv++H+ddVZtv/Z9D/JPzfn2dWvWWlqi0YX/uENVDfCCMJW/gB4gjz76aLg3IuFh07MGpcXqe8kll7hwWCKeVLgEUHVdDBAPs7bJ/uLQ2Ki3mvLRz8YbbyxptCBM6JELgLjsl3umIDR33hIuAYjUyNNPP70pwPXWW89yYodQTBobNBdI2rW3vokt4pZbRpnmH3/8X0aVnNujx/yrrLIKzc3rRyevj1K8GO777ls5/fRKDtdcPdvDjZv4+OOPD5WFCz5SfLnjAAGWjy567Un0dRYKZ4hm3HTRbPgMaJKtJYsiGoNQ2jpPixp/q6666kYbbcS3HkWjrQasUu54HqScTursF/EauVogtAnOyWTEQkfo8Q36wrkU9TdG38UliFyhWcjKjHZpbFBoy64F9+yzlf32q/z0UwUXhE9tEr89Dp/IwF5++YXCf10sPmBA5dpr242zlWf3tFaKr+bqu6kccs033XTTFVZYod0INevAgUifTtayTCctS4UBRLMX+aKyxNZbb00PVAOAhsnxn4wnR3ad+z4ZVOiI2XAvBYG3tCCo0N3GbqTJ1KvDgXQ+8cQTnb+5SScBvZZxCK/u0KGVkSMrb7456vPyy6OMkGqBB7PL4rzuuutOOun10OC99yq01n/+s904b7HFFpttthn5Sk+wF7e7f0MHShFlmo+fcyJNzNSBpIVydTBv3E+Uhh6T0SbpQbQll1yS2WqO/UqxpLmpS2LHS4Pc8l549aSTTrIK99tvP+czxeE7qTjkkEPYD3kK3ERfBzHUU1mXmprnJrO8ewgfLtDtcnfYExzUqGITPr7bQ5yEfPjhyOHDX4EcPY/aOvHE31XbOHdKUJQUyxkyZIgVw6r2JUqj7AZ2cyYmAYOCeSo8RF/3yiuv8GWdf/75tYEF0V6NDRRbcXSIaEiHbk70mCWa2TnJ7DGEQ6jigwcPpp2ajqjbMw8RGL08eB7HiHnaZ7exgFlxeNiGnKwBNt9DzAE9eK211soZ8dGI6C+/jPqbE/TXXhsxYEB/WpZnscUWm3bayHFslC7gcBtYgljlqKOOirbPbsAzwb1jjlmZIGOYggCVRwLthhtuAO2uu+5Kg0ZCUaCpGYDwjNFegrfXr/64zjrrFGFm3MUHmif0Joq8+zOOOOII6n6gHjaOdslusNdee7G7uHZAU72qIDSuNiZr9+7dA3p2pwSATaJO8IaDQkbYuuuui1VowHVXctZGnXCzKBjV+GK2uFgsHDJw4Fxdu3ZT45T/jn/Wsk7AsrFLqJVG5SgIjeSjrdmOKGww5M5K24uraEAMKGcsoPGYpxk2OAQbOLUgU8WMUP+U7bP+OBhZEdygRTgEqgQfxIpLfRsamWIhBuottdRS0Wpu2fPFAAMH9Zia1h5rs8j8WsYmt4oeSjYNSLn88stZPtxILjtoJGyTqBOek2rlORjjEM6TWjd8bdQJkxRdGofBAuGTmH32yuizgfIpKTDmUsAWrT61wMKmZm2TmoscHbVqbuMpVS2HsNIEAgrfwp0EcJUMOAR70LV69vx/pOnfv9Kt23//4qRTfcgMrxRpZxN3MhMlMNWLwIiWYyOZlAy082YD5AkgsKPQ0IpLN/iLs5+HH37YQVO03hmlefnllzdb2dBIbuON7iShpqvtKBq5yGNmj8qD3tJLL81Fno0ek8lVmNHDTfst10gepfHJJ5+kI0XR4xzn2OghmDzzIfQdv4YmYHLEicQV4knfthTr9M+iVUm33XZbihO9Fp9QBmo5ZN55R7m26p6XXhoVy1h9brnllrvvvjvDgzSuVSUla7bffvsWViWl9hx00EHRxZqzKin03AUwxlYlpYJy2SdXJd1tt90wTF38fFFvL102VCVtrB3qbKTxqYuZyFMMc5yqSoqS0Y0LVfNXJc1JvTwTEYp2tha9nC6mnFVJoRfdZ+qoV1uVNORu1NUmLcohgQds4rQXBr3HfuI7V6+teLbZ6j8hltGjjZaO6qIKQEx/Kf9fUqADKdAaDiGB5JDwsXiE/bB4eLFEoIkDrPtUXVncR85NHa7llCIdSIMSdEmBtinQGg4Bn31Tl9Zou2j8VENRQvuWeOXL+S0p0HEUaBmHhMtKwpNHcQrt87TsuMGXkEsKRClQlEMab+2gNeWJaeUybrSKGi9w0CZnmopmOQHmORM0hJzQQiRv9Pkb0Ys6siDPKZxzvNHbxUBrF/Xy2NatRU/UcON1N4R10/tDEr29jvHd+YQWfM/i1ca+W9q4HFhKeQ4c/pZb2pzhOm6PbsJ/1y1tvK7iyjrLLW0O3Z2QcJcJhGuUJokcIjpIwF9UcJYNSgp0dgqkcAjJ6uiXz6p6MNmUCnXsGLK3kunVKJAKWvkleslzoWNHU6/gamkheikcEtLxQrxWUyprAEU34tq5sJOH20pQQ57rTJsCDLEn0i3orKGmozwqm6PGCbY+9PQS8V496MRsYteKoCdmQaR6CIWmd6EMNSO8KGEhwof6KkAuyBRDFnMhpC+Pyt74uhAaI5Il1ECDEh0S9ZLzqKCHemakip5AQy7+ZPTYNpIFrJNQny3c9IuYydQDDUyHEAEC3IT85DnrbKReCoeAgjTI0ZYJ6L9Gq86aJYiRZB4jKLXelzQsEUuGE5ajfDt4YVOKDnKWkkbEsHCF4uNz0U1+dXMvhAFPm2NoCO4QreSLWZHhZHoEqKahF9he/hCWIAgCMZEabmmbME7AbMZoocANNIG9LuYtclwLPTwmCAVKJAKYyYkSgYFlpZOhYBqpCmyi9QBP5hAWBZhi4UQtEQ3klwjAtMlN5JBsuYhqhIGoeNUlFN0iEpTqkOcgsz6ZQ4xTPJx8MUAQUQiNOqh5SlA2ohrWHH67/vrrXUMMVfk6vXr1Sq60bXHIrhafZkbF2MFN1QXvTZ5jc2lS5eegYaCY8D7JCCzghB0JlcgXMN3gbOXBVj4qAZGsyaC/W9WlXhDMfHS2X6UhJFHh5zT0UI8wddws4YS60adPHxxYF0GbH7JxwUfhFavFnNpPlHeBc5p8KertbQtvCEmFkUgkarIlCeVks2vhhc0xfnjSDj30UMsl6mtqCz0d8RvVRaETUagWjenJ48fMmCcTYJrlGBCExbN5CT8ByErJSCfySDwWpJN/ldS1NDSeFXumwZJZ9vO6nJ92QbZ28S3hIvxZjmHI7zfd7QJS25g7FBwCBXpmxMrOE8mbsfaAkso7aNAgAIk/mXbJk9tRHMKUJwURUYWEIrSrUsGMWnwKt1g6xGHynh4AQo8afcoppwS5gp+TNaIqhnhYIr64V5sJJJOXS+hIrMiuth0pFq6kDRd+mggM0IJWHPiWUmQJUkIK0jBMqzxK26Yk9fYWx6mjT5X+yOh7sglXBWsvCilidPJqvlPCpHQUh9A3gq+JpE/TJusGAwjBMDomsouALuU/zHeyOyugRxbS/VSZsKUI3WcyJVCwdgkSWvLJGGBFapEEgNCzBAlXFg6pf+WVVxask6C7TE+DtQ+rLll8Y7f+JOXb2Pv16xdU32TqcWxQhCxl6PXu3VsuLrdHMg3DKZCiR6QzgMoGUAWTF2H6qJLJkdzROg4jt2gQscqEyQAJKufr1H1fKNNpllx4u03cTOAN1gL9rchyAY0QJelVIeBSlwjOzlZqraDmRriw5QxWhhYdNdlxV6U2ctGFFK005IIVHIHi2CCwoCfzlsuEYE2mYXClyg9XfQtAXsGwKaWtk87EIYatSAzp4qcBp5npVTKRNJYyjWinnXYCivpbJMo4uLAUH5D/xEYkVvkn0twSYQMB0FIOKy+415PnGITgQuUANFjKKicPsZ1sxQFoTZMpjAfbZnGVEuWZNDYN6CnnKamuIANjCRBA82CSdlXtqWOkDueQUG0xjX1re1HEMQZvSc+ePTnLw2FI8hO0/H333ZcTkCCEJLO4iF4Oms2NGqOqlYTkvn37EvnJPGz9sctJQb4d6OETZkMyNFQKHlWmAmhKCxhsY7ppu4iJu/AYLUt5hGRdt/rG4C6HJPQ48XkpSYRksCQpUEwjTh0AJVSzOdOhtYsu7W0MLRoCd1syftU3Bo0I+VQcpLPSE4LTtr0ohfZUDquEEcwU5voMvssiziJTgodpWeQ0UyRcapMs9a0Yfg5qNB6GHhXu8MMPD/Wy0h5DM0AwQbOHqB+FjYsUJjWhBL9htsoNYy7436HHIOQ4trcXtENUCTzuuOMAJLwYrsmT21HnIdauzPWqJKBvFDwxJFccO9qOrEXATQzXfprHI/Symhlw4AQvbahnk2aKBBFogsMuFNDjA7CM0gxEKEEv3OLiu7XoNK3IoTXecGIYLnYLGQrh5CEZPUdyIWIVeiYX6UL1owQGDsLFiWG4Qw9u4BCFvqehByuDNWTGTFBQHVVbfmmT26ReVsIgG7sYG4RMMAdU+MlTZH2nmV9hGryFvoFwod5zcD2lEbGKHmge6JHQxdGj7wIFSV8oIWkMHIiJemGwxdELTAsZRAsAkc5TEL2AmFUY5sLPtMkN6PkJWhU9CmER9KyWKvV8MbnJ6HXIHhLmOJyJhhUcNKK01RygBdO8Cs2XZBWrM6IXBH+y8KqlXgDSWuqNxeh1IIckT2fZsaTAmEOBdLE05oyhxKSkQMdRoOSQjqNtCXlsoEDJIWPDLJZj6DgK/C8y1irfZzhS/wAAAABJRU5ErkJggg==">
+      <figcaption>Entrada 2 — la opción 2 gana con estricta mayoría.</figcaption>
+    </figure>
+    <p class="note">En el primer mundo no hay ninguna opción ganadora, por lo que Karel
+       deberá terminar con <strong>0 zumbadores en la mochila</strong>. En el segundo
+       mundo <strong>la opción 2 es ganadora</strong>, por lo que Karel deberá terminar
+       con <strong>2 zumbadores en la mochila</strong>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Boyer–Moore (voto de mayoría)</span>
+      <span class="ptag">Conteo</span>
+      <span class="ptag">Greedy</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En la fila inferior hay \(N\) votos (un montón por columna; su altura, de 1 a
+       99, es la opción votada). Hay que decidir si alguna opción aparece en
+       <strong>más de la mitad</strong> de los votos (estricta mayoría). Si la opción
+       \(k\) gana, Karel debe terminar con \(k\) zumbadores en la mochila; si no hay
+       ganadora, con la mochila vacía.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El reto no es el tiempo, sino <strong>cuántas veces puede avanzar</strong>
+                Karel. El grupo de 37 puntos pide \(\le 2N\) <code>avanza</code>: solo
+                alcanza para <strong>una pasada de ida y una de vuelta</strong>. El de 20
+                puntos da holgura (\(\le 4N\)). El grupo «ordenados» (33) permite un atajo
+                geométrico, y el grupo «desordenados» sin límite (10) admite fuerza bruta.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué se pregunta y cómo guardo un número en Karel?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que la pregunta es exactamente «¿existe un elemento que
+           sea mayoría estricta en una lista?»? ¿Y cómo representas un número o un
+           contador en el mundo de Karel?</p>
+        <p>Un número (un valor de voto, o un candidato) puede vivir como zumbadores en
+           la <strong>mochila</strong> o como la altura de un <strong>montón</strong>.
+           Un contador puede vivir como la <strong>profundidad de la recursión</strong>
+           (cada llamada anidada equivale a “+1”). Tener claras estas formas de
+           “almacenar” es la mitad de la batalla.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — El grupo «ordenados» (33 pts)</summary>
+      <div class="body">
+        <p class="q">Si los votos vienen ordenados, ¿en qué columna estaría
+           <strong>forzosamente</strong> la opción ganadora, si es que existe?</p>
+        <p>Cuando una opción ocupa más de la mitad de las casillas y todas las iguales
+           quedan juntas (ordenadas), ese bloque <strong>cubre el centro</strong>. Así
+           que el candidato es el voto que está en la columna de en medio. Camina hasta
+           el centro, léelo como candidato, y solo falta confirmar que de verdad es
+           mayoría.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Desordenados sin límite de avanza (10 pts)</summary>
+      <div class="body">
+        <p class="q">Si no te preocupa cuántas veces avanzas, ¿puedes simplemente
+           probar cada opción candidata y contar cuántos votos valen igual que ella?</p>
+        <p>Recorre los votos; por cada opción candidata, da otra pasada contando sus
+           apariciones y compáralas con \(\tfrac{N}{2}\). Es \(O(N^2)\) movimientos
+           —demasiados para los grupos de \(2N\)/\(4N\)—, pero te regala esos 10 puntos
+           y te obliga a resolver lo esencial: <em>comparar el montón de una columna
+           con un valor que llevas guardado</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: cancelar votos distintos</summary>
+      <div class="body">
+        <p class="q">¿Y si llevas un único <strong>candidato</strong> con un
+           <strong>contador</strong>, y cada vez que aparece un voto distinto al
+           candidato “cancelas” un voto a favor? ¿Notaste que dos votos diferentes se
+           anulan mutuamente sin cambiar quién es la mayoría?</p>
+        <p>Ese es el <strong>voto de mayoría de Boyer–Moore</strong>: si el contador
+           llega a 0, adoptas como nuevo candidato el voto actual. Tras una sola pasada,
+           el candidato que “sobrevive” es <strong>el único que podría</strong> tener
+           mayoría estricta. Ojo: sobrevivir no garantiza ganar, así que hay que
+           <strong>verificar</strong> al final.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Cumplir el presupuesto de avanza (4N y 2N)</summary>
+      <div class="body">
+        <p class="q">La trampa: comparar el montón con el candidato no debería costarte
+           <code>avanza</code>. ¿Puedes hacer toda esa comparación <strong>en la misma
+           casilla</strong>, usando solo <code>coge-zumbador</code>,
+           <code>deja-zumbador</code> y giros?</p>
+        <p>Sí: vacías la mochila sobre la casilla, emparejas zumbador a zumbador con el
+           montón del voto y, según cuál se acabe primero, dejas a Karel viendo al
+           <strong>Norte</strong> (iguales) o al <strong>Sur</strong> (distintos); luego
+           restauras montón y mochila. Eso no gasta ni un <code>avanza</code>. Así, los
+           movimientos se gastan solo en <strong>caminar</strong>: una pasada al Este
+           para encontrar candidato (\(\approx N\)) y una al Oeste para verificarlo
+           (\(\approx N\)) dan \(2N\) en total. Si comparas o verificas con menos
+           cuidado (por ejemplo, una pasada extra para reposicionarte), caes en el rango
+           de \(4N\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El problema es encontrar el <em>elemento de mayoría
+           estricta</em> de la fila de votos. Se resuelve en dos fases, cada una con una
+           sola pasada horizontal, lo que respeta el límite de \(2N\) movimientos.</p>
+
+        <p><strong>Almacenamiento en Karel (el truco).</strong></p>
+        <ul>
+          <li><strong>Candidato</strong> = los zumbadores de la <strong>mochila</strong>
+              (su cantidad es el valor del candidato).</li>
+          <li><strong>Contador / balance</strong> = la <strong>profundidad de la
+              recursión</strong> (más profundo = mayor; usar dos funciones mutuamente
+              recursivas, “positivo” y “negativo”, permite balances con signo).</li>
+          <li><strong>Comparar montón vs. candidato</strong> = rutina <em>en la misma
+              casilla</em> (sin <code>avanza</code>): empareja los zumbadores del montón
+              con los de la mochila y codifica el resultado en la <strong>orientación</strong>
+              de Karel (Norte = iguales, Sur = distintos), restaurando todo al final.</li>
+        </ul>
+
+        <p><strong>Fase 1 — Encontrar candidato</strong> (una pasada al Este, \(\approx N\)
+           <code>avanza</code>). Aplica Boyer–Moore: si el contador es 0 adoptas el voto
+           actual como candidato (contador 1); si el voto es igual al candidato, subes el
+           contador; si es distinto, lo bajas (y si llega a 0, la mochila queda vacía).</p>
+
+        <p><strong>Fase 2 — Verificar</strong> (una pasada al Oeste, \(\approx N\)
+           <code>avanza</code>). Si la mochila quedó vacía, no hay candidato: termina con
+           0. Si no, recorre de regreso llevando un balance: \(+1\) por cada voto igual al
+           candidato y \(-1\) por cada uno distinto. Como
+           \(\text{balance} = (\#\text{candidato}) - (N-\#\text{candidato}) = 2\cdot\#\text{candidato}-N\),
+           se cumple \(\#\text{candidato} > \tfrac{N}{2} \iff \text{balance} > 0\). Si el
+           balance final es positivo, deja en la mochila el valor del candidato; si no,
+           vacía la mochila.</p>
+
+        <p><strong>Por qué es correcta.</strong> Si una opción tiene mayoría estricta,
+           Boyer–Moore garantiza que sobrevive como candidato (su exceso no puede
+           cancelarse del todo). La fase 2 confirma con un conteo exacto que sí supera la
+           mitad; cualquier falso positivo se descarta porque su balance no será \(>0\).
+           El caso «par mitad y mitad» da balance \(=0\) y se reporta correctamente como
+           «sin ganadora».</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel)</span>
+<pre>define IGUAL-AL-CANDIDATO        # solo coge/deja-zumbador y giros; 0 avanza
+    # empareja los zumbadores del monton actual con los de la mochila;
+    # deja a Karel viendo al NORTE si son iguales, al SUR si difieren;
+    # restaura el monton y la mochila a como estaban.
+
+define FASE-1-ENCONTRAR-CANDIDATO     # una pasada al Este (~N avanza)
+    orienta-al-Este
+    mientras frente-libre-o-primer-voto:
+        si mochila-vacia:                  # contador == 0
+            copia el voto actual a la mochila   # nuevo candidato, contador = 1
+        si-no si IGUAL-AL-CANDIDATO:       # voto == candidato
+            contador + 1                   # (un nivel mas de recursion)
+        si-no:
+            contador - 1                   # (sube un nivel; si llega a 0, mochila vacia)
+        si frente-libre: avanza            # siguiente columna
+
+define FASE-2-VERIFICAR               # una pasada al Oeste (~N avanza)
+    si mochila-vacia: termina           # no hubo candidato -> 0
+    balance = 0
+    orienta-al-Oeste
+    mientras frente-libre-o-primera-columna:
+        si IGUAL-AL-CANDIDATO: balance + 1
+        si-no:                 balance - 1
+        si frente-libre: avanza
+    si balance > 0: deja-el-candidato-en-la-mochila   # gana la opcion
+    si-no:          vacia-la-mochila                  # no hay ganadora
+
+programa:
+    FASE-1-ENCONTRAR-CANDIDATO
+    FASE-2-VERIFICAR</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> \(O(N)\) movimientos <code>avanza</code> en
+           total (\(\approx 2N\): una ida y una vuelta), suficiente para los \(2N\) del
+           grupo de 37 puntos y, por lo tanto, para todos los demás. El número de
+           instrucciones totales es \(O(N \cdot V)\) (con \(V \le 99\) el valor máximo de
+           un voto), muy por debajo del tope del evaluador.</p>
+
+        <p class="note"><strong>Atajos por grupo.</strong> Para «ordenados» (33) basta ir
+           al centro y verificar. Para «desordenados sin límite» (10) sirve la fuerza
+           bruta \(O(N^2)\). La versión Boyer–Moore de arriba resuelve los cuatro grupos
+           y obtiene los 100 puntos.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
