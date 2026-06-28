@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2019 · Tarea 5 — Vision Program</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2019 · Día 2</div>
+    <h1>Tarea <span class="num">5</span> — Vision Program</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Estás programando el sistema de visión de un robot. Cada vez que la cámara del robot
+       toma una foto, ésta se guarda como una imagen en blanco y negro en la memoria del robot.
+       Cada imagen es una cuadrícula de \(H \times W\) píxeles, con las filas numeradas de \(0\)
+       a \(H-1\) y las columnas de \(0\) a \(W-1\). En cada imagen hay <strong>exactamente dos</strong>
+       píxeles negros; todos los demás son blancos.</p>
+
+    <p>El robot puede procesar cada imagen con un <em>programa</em> formado por instrucciones
+       sencillas. Te dan los valores de \(H\), \(W\) y un entero positivo \(K\). Tu objetivo es
+       escribir un procedimiento que <strong>construya</strong> un programa para el robot que, para
+       cualquier imagen, determine si la <strong>distancia</strong> entre los dos píxeles negros es
+       <strong>exactamente \(K\)</strong>. Aquí, la distancia entre un píxel en la fila \(r_1\),
+       columna \(c_1\), y otro en la fila \(r_2\), columna \(c_2\), es
+       \(|r_1-r_2|+|c_1-c_2|\) (la <strong>distancia de Manhattan</strong>). En esta fórmula \(|x|\)
+       es el valor absoluto de \(x\): vale \(x\) si \(x \ge 0\) y vale \(-x\) si \(x \lt 0\).</p>
+
+    <h3>Cómo funciona el robot</h3>
+    <p>La memoria del robot es un arreglo suficientemente grande de celdas, indexadas desde \(0\).
+       Cada celda guarda un \(0\) o un \(1\), y su valor, una vez fijado, ya no cambia. La imagen se
+       guarda fila por fila en las celdas \(0\) a \(H\cdot W - 1\). La primera fila va en las celdas
+       \(0\) a \(W-1\), y la última fila en las celdas \((H-1)\cdot W\) a \(H\cdot W-1\). En
+       particular, si el píxel en la fila \(i\), columna \(j\), es negro, el valor de la celda
+       \(i\cdot W + j\) es \(1\); si no, es \(0\).</p>
+
+    <p>El programa del robot es una secuencia de <strong>instrucciones</strong>, numeradas con
+       enteros consecutivos a partir de \(0\). Al correr el programa, las instrucciones se ejecutan
+       una por una. Cada instrucción lee los valores de una o más celdas (les llamamos las
+       <strong>entradas</strong> de la instrucción) y produce un solo valor \(0\) o \(1\) (le
+       llamamos la <strong>salida</strong>). La salida de la instrucción \(i\) se guarda en la celda
+       \(H\cdot W + i\). Las entradas de la instrucción \(i\) sólo pueden ser celdas que guarden
+       píxeles o salidas de instrucciones anteriores, es decir, las celdas \(0\) a
+       \(H\cdot W + i - 1\).</p>
+
+    <p>Hay cuatro tipos de instrucciones (compuertas lógicas):</p>
+    <ul>
+      <li><code>NOT</code>: tiene exactamente una entrada. Su salida es \(1\) si la entrada es \(0\);
+          en otro caso, su salida es \(0\).</li>
+      <li><code>AND</code>: tiene una o más entradas. Su salida es \(1\) si y sólo si
+          <strong>todas</strong> las entradas son \(1\).</li>
+      <li><code>OR</code>: tiene una o más entradas. Su salida es \(1\) si y sólo si
+          <strong>al menos una</strong> entrada es \(1\).</li>
+      <li><code>XOR</code>: tiene una o más entradas. Su salida es \(1\) si y sólo si un número
+          <strong>impar</strong> de las entradas es \(1\).</li>
+    </ul>
+
+    <p>La salida de la <strong>última</strong> instrucción del programa debe ser \(1\) si la
+       distancia entre los dos píxeles negros es exactamente \(K\), y \(0\) en otro caso.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento. No lees de la entrada estándar ni escribes a la
+       salida estándar: el evaluador llama a tu procedimiento, y tú vas <strong>añadiendo
+       instrucciones</strong> al programa del robot mediante las funciones <code>add_*</code>.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>void construct_network(int H, int W, int K)</pre>
+    </div>
+    <ul>
+      <li>\(H, W\): dimensiones de cada imagen que toma la cámara del robot.</li>
+      <li>\(K\): un entero positivo.</li>
+      <li>Este procedimiento debe construir un programa para el robot. Para cualquier imagen, ese
+          programa debe determinar si la distancia entre los dos píxeles negros es exactamente \(K\).</li>
+    </ul>
+
+    <p>Para añadir instrucciones al programa (que empieza vacío), tu procedimiento debe llamar a una
+       o más de las siguientes funciones:</p>
+    <div class="sig">
+      <span class="tag">Funciones del evaluador</span>
+<pre>int add_not(int N)
+int add_and(int[] Ns)
+int add_or(int[]  Ns)
+int add_xor(int[] Ns)</pre>
+    </div>
+    <ul>
+      <li>Añaden una instrucción <code>NOT</code>, <code>AND</code>, <code>OR</code> o
+          <code>XOR</code>, respectivamente.</li>
+      <li>\(N\) (para <code>add_not</code>): el índice de la celda de la cual la instrucción
+          <code>NOT</code> lee su entrada.</li>
+      <li>\(Ns\) (para <code>add_and</code>, <code>add_or</code>, <code>add_xor</code>): arreglo con
+          los índices de las celdas de las cuales la instrucción lee sus entradas.</li>
+      <li>Cada función regresa el índice de la celda que guarda la salida de la instrucción. Las
+          llamadas consecutivas devuelven enteros consecutivos a partir de \(H\cdot W\).</li>
+    </ul>
+
+    <p>El programa del robot puede tener a lo más <strong>\(10\,000\)</strong> instrucciones. Las
+       instrucciones pueden leer a lo más <strong>\(1\,000\,000\)</strong> de valores en total. Es
+       decir, la suma de las longitudes de los arreglos \(Ns\) en todas las llamadas a
+       <code>add_and</code>, <code>add_or</code> y <code>add_xor</code>, más el número de llamadas a
+       <code>add_not</code>, no puede pasar de \(1\,000\,000\).</p>
+
+    <p>Tras añadir la última instrucción, <code>construct_network</code> debe regresar. El programa
+       del robot se evaluará después sobre cierto número de imágenes. Tu solución pasa un caso de
+       prueba si, para cada una de esas imágenes, la salida de la última instrucción es \(1\) si y
+       sólo si la distancia entre los dos píxeles negros es exactamente \(K\).</p>
+
+    <p class="note">Mensajes de error posibles del evaluador: <code>Instruction with no inputs</code>
+       (le pasaste un arreglo vacío a <code>add_and</code>/<code>add_or</code>/<code>add_xor</code>);
+       <code>Invalid index</code> (índice de celda inválido o negativo); <code>Too many
+       instructions</code> (más de \(10\,000\) instrucciones); <code>Too many inputs</code> (las
+       instrucciones leen más de \(1\,000\,000\) de valores en total).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>1024 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Dimensiones</td><td><span class="badge">\(1 \le H \le 200\)</span> <span class="badge">\(1 \le W \le 200\)</span></td></tr>
+        <tr><td>Tamaño mínimo</td><td><span class="badge">\(2 \le H \cdot W\)</span></td></tr>
+        <tr><td>Distancia objetivo</td><td><span class="badge">\(1 \le K \le H+W-2\)</span></td></tr>
+        <tr><td>Máx. instrucciones</td><td><span class="badge">\(10\,000\)</span></td></tr>
+        <tr><td>Máx. entradas totales</td><td><span class="badge">\(1\,000\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">10</td><td>\(\max(H, W) \le 3\)</td></tr>
+          <tr><td>2</td><td class="pts">11</td><td>\(\max(H, W) \le 10\)</td></tr>
+          <tr><td>3</td><td class="pts">11</td><td>\(\max(H, W) \le 30\)</td></tr>
+          <tr><td>4</td><td class="pts">15</td><td>\(\max(H, W) \le 100\)</td></tr>
+          <tr><td>5</td><td class="pts">12</td><td>\(\min(H, W) = 1\)</td></tr>
+          <tr><td>6</td><td class="pts">8</td><td>El píxel en la fila \(0\), columna \(0\), es negro en cada imagen.</td></tr>
+          <tr><td>7</td><td class="pts">14</td><td>\(K = 1\)</td></tr>
+          <tr><td>8</td><td class="pts">19</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El puntaje es por subtarea y de tipo <strong>todo o nada</strong>: cada subtarea
+       da sus puntos sólo si tu programa es correcto en <em>todos</em> sus casos. No hay puntos extra
+       por usar menos instrucciones; los topes de \(10\,000\) instrucciones y \(1\,000\,000\) de
+       entradas son límites duros, no un gradiente de puntaje.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Supón \(H=2\), \(W=3\), \(K=3\). Sólo hay dos imágenes posibles en las que la distancia entre
+       los píxeles negros es \(3\):</p>
+
+    <figure>
+      <img alt="Dos cuadrículas de 2 filas por 3 columnas con celdas numeradas 0 a 5. En la izquierda las celdas negras son la 0 y la 5; en la derecha son la 2 y la 3."
+           src="data:image/png;base64,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">
+      <figcaption>Las dos únicas imágenes con distancia \(3\): a la izquierda, negros en \(0\) y \(5\)
+        (distancia \(|0-1|+|0-2|=3\)); a la derecha, negros en \(2\) y \(3\).</figcaption>
+    </figure>
+
+    <ul>
+      <li>Caso 1: los píxeles negros son el \(0\) y el \(5\).</li>
+      <li>Caso 2: los píxeles negros son el \(2\) y el \(3\).</li>
+    </ul>
+
+    <p>Una solución posible es construir el programa del robot con estas llamadas:</p>
+    <div class="example">
+      <div class="io"><h4>Llamadas</h4><pre>add_and([0, 5])   // celda 6
+add_and([2, 3])   // celda 7
+add_or([6, 7])    // salida</pre></div>
+      <div class="io"><h4>Qué hace cada una</h4><pre>celda 6 = 1  sii  caso 1
+celda 7 = 1  sii  caso 2
+salida  = 1  sii  caso 1 o caso 2</pre></div>
+    </div>
+    <p class="note">La primera <code>AND</code> da \(1\) sólo si se cumple el caso 1; la segunda, sólo
+       si se cumple el caso 2; la <code>OR</code> final da \(1\) si ocurre alguno de los dos.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Circuitos lógicos</span>
+      <span class="ptag">Geometría (Manhattan→Chebyshev)</span>
+      <span class="ptag">Ventana deslizante</span>
+      <span class="ptag">Paridad / XOR</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Dada una imagen de \(H \times W\) con <strong>exactamente dos</strong> píxeles negros, debes
+       <strong>construir</strong> (no ejecutar) un circuito de compuertas
+       <code>NOT</code>/<code>AND</code>/<code>OR</code>/<code>XOR</code> encadenadas cuya última
+       salida valga \(1\) si y sólo si la distancia de Manhattan entre los dos negros es
+       <strong>exactamente \(K\)</strong>. Tope: \(10\,000\) instrucciones y \(1\,000\,000\) de
+       entradas totales.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(H, W \le 200\) y el tope de \(10\,000\) compuertas obligan a una construcción
+                <strong>lineal</strong> \(O(H+W)\) en instrucciones: nada de enumerar pares de
+                píxeles (eso es \(O((HW)^2)\), explota). La imagen tiene <em>siempre</em> 2 negros:
+                ese hecho es el motor de todo el truco de paridad.</td></tr>
+        <tr><td>Pista de las subtareas</td>
+            <td>Las subtareas 1–4 acotan \(\max(H,W)\) (te dejan probar ideas pequeñas);
+                la 5 es \(\min(H,W)=1\) (todo en una recta, 1D); la 6 fija un negro en \((0,0)\);
+                la 7 es \(K=1\) (vecinos inmediatos). Cada una sugiere un escalón de la idea
+                general.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué quiere decir "construir un programa"?</summary>
+      <div class="body">
+        <p class="q">¿Notaste que NO debes decidir la respuesta tú? Tu función
+           <code>construct_network</code> sólo se llama UNA vez (con \(H, W, K\)) y arma un circuito
+           fijo de compuertas. Ese mismo circuito se evaluará después con MUCHAS imágenes distintas.</p>
+        <p>Por eso no puedes "ver" dónde están los píxeles: tu circuito debe funcionar para
+           <em>cualquier</em> par de negros. Piensa en términos de funciones booleanas sobre las
+           \(H\cdot W\) celdas de entrada. ¿Qué propiedad global de la imagen tiene que detectar el
+           circuito?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por la subtarea 5 (\(\min(H,W)=1\)): el caso 1D</summary>
+      <div class="body">
+        <p class="q">Si la imagen es una sola fila (o columna), los dos negros están en posiciones
+           \(p\) y \(q\) sobre una recta y la distancia es \(|p-q|\). ¿Cómo detectas con compuertas
+           que \(|p-q| = K\)?</p>
+        <p>Idea clave del caso 1D: desliza una <strong>ventana de \(K+1\) celdas consecutivas</strong>.
+           Si ambos negros caen dentro de una ventana de tamaño \(K+1\), entonces \(|p-q| \le K\).
+           ¿Y cómo sabes que hay <em>exactamente dos</em> negros dentro de una ventana, usando
+           sólo compuertas? Recuerda: en toda la imagen hay exactamente 2 negros.</p>
+        <p class="q">¿Qué te dice un <code>XOR</code> de todas las celdas de la ventana? ¿Y un
+           <code>OR</code>?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — El truco de paridad para "exactamente 2 en la ventana"</summary>
+      <div class="body">
+        <p>Toma una ventana cualquiera (un conjunto de celdas). Como en TODA la imagen hay
+           exactamente 2 negros, dentro de la ventana puede haber 0, 1 o 2 negros.</p>
+        <ul>
+          <li><code>XOR</code> de las celdas de la ventana = paridad del número de negros: vale \(0\)
+              si hay \(0\) o \(2\), y \(1\) si hay \(1\).</li>
+          <li><code>OR</code> de las celdas de la ventana = \(1\) si hay <em>al menos</em> un negro.</li>
+        </ul>
+        <p class="q">¿Ves que <code>OR</code> \(\wedge\) <code>NOT</code>(<code>XOR</code>) vale \(1\)
+           exactamente cuando hay \(\ge 1\) negro <strong>y</strong> un número par de negros, o sea
+           cuando hay <strong>exactamente 2</strong>?</p>
+        <p>Esa compuerta detecta "los dos negros están dentro de esta ventana". Si haces un
+           <code>OR</code> sobre todas las ventanas de tamaño \(K+1\), obtienes "\(|p-q| \le K\)".
+           Y "\(=K\)" sale como \((\le K)\ \wedge\ \text{NOT}(\le K{-}1)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — De 1D a 2D: el lema de las diagonales (Manhattan → Chebyshev)</summary>
+      <div class="body">
+        <p>En 2D la distancia es \(|r_1-r_2|+|c_1-c_2|\), que no es separable por filas y columnas de
+           forma directa. El editorial usa un cambio de coordenadas con <strong>diagonales</strong>:</p>
+        <ul>
+          <li><strong>Diagonal derecha</strong> de un píxel \((r,c)\): se identifica por
+              \(D = r-c\) (constante a lo largo de la diagonal "\\"). Hay \(H+W-1\) de ellas.</li>
+          <li><strong>Diagonal izquierda</strong>: se identifica por \(D = r+c\) (diagonal "/").
+              También \(H+W-1\).</li>
+        </ul>
+        <p>Dos diagonales de la misma orientación están "a distancia \(d\)" si \(|D_1-D_2| = d\).</p>
+        <p class="q"><strong>Lema:</strong> ¿ya viste que \(|r_1-r_2|+|c_1-c_2| \le d\) si y sólo si
+           \(|(r_1-c_1)-(r_2-c_2)| \le d\) <strong>Y</strong> \(|(r_1+c_1)-(r_2+c_2)| \le d\)?</p>
+        <p>Es decir: la distancia de Manhattan \(\le d\) equivale a que las dos diagonales
+           <em>derechas</em> estén a distancia \(\le d\) <strong>y</strong> las dos
+           <em>izquierdas</em> estén a distancia \(\le d\). ¡Convertiste un problema 2D en dos
+           problemas 1D independientes (uno por orientación)! Y cada problema 1D es justo el de la
+           Pista 3.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Reducir cada orientación a 1D con OR/XOR por diagonal</summary>
+      <div class="body">
+        <p>Para aplicar la ventana de la Pista 3 a las diagonales, primero "colapsa" cada diagonal a
+           un solo bit doble:</p>
+        <ul>
+          <li>Para cada diagonal \(i\) (de una orientación), \(\textsf{or}[i] = \) <code>OR</code> de
+              todas sus celdas: ¿hay algún negro en esa diagonal?</li>
+          <li>\(\textsf{xor}[i] = \) <code>XOR</code> de todas sus celdas: paridad de negros en esa
+              diagonal.</li>
+        </ul>
+        <p>Ahora las \(H+W-1\) diagonales son como las celdas de una recta 1D, y deslizas una ventana
+           de \(K+1\) diagonales consecutivas: el <code>OR</code> de la ventana son los
+           \(\textsf{or}[i]\) de la ventana; el <code>XOR</code> de la ventana son los
+           \(\textsf{xor}[i]\). La compuerta "exactamente 2 negros en la ventana" es idéntica.</p>
+        <p class="q">¿Por qué basta con esos \(\textsf{or}\) y \(\textsf{xor}\) por diagonal y no
+           necesitas mirar celda por celda dentro de la ventana? Porque cada negro vive en
+           exactamente UNA diagonal de cada orientación, así que la paridad y el "hay alguno" se
+           preservan al agregar por diagonal.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Construimos un circuito (sin ramificaciones, sólo compuertas
+           encadenadas) que devuelve \(1\) si y sólo si la distancia de Manhattan entre los dos
+           negros es exactamente \(K\). El corazón es el <strong>lema de diagonales</strong>:</p>
+        <p>\[ |r_1-r_2|+|c_1-c_2| \le d \;\Longleftrightarrow\; |(r_1-c_1)-(r_2-c_2)| \le d \;\wedge\; |(r_1+c_1)-(r_2+c_2)| \le d. \]</p>
+        <p><strong>Por qué es cierto.</strong> Las dos desigualdades de la derecha son
+           \(-d \le (r_1-c_1)-(r_2-c_2) \le d\) y \(-d \le (r_1+c_1)-(r_2+c_2) \le d\). Reagrupando,
+           equivalen a las cuatro desigualdades dobles
+           \(-d \le \pm(r_1-r_2) \pm (c_1-c_2) \le d\) (las cuatro combinaciones de signo), que en
+           conjunto dicen exactamente \(|r_1-r_2|+|c_1-c_2| \le d\). Así, el problema 2D de Manhattan
+           se parte en dos problemas 1D independientes: uno sobre las diagonales
+           <strong>derechas</strong> (\(D=r-c\)) y otro sobre las <strong>izquierdas</strong> (\(D=r+c\)).</p>
+
+        <p><strong>Detectar "ambos negros dentro de una ventana".</strong> Como la imagen tiene
+           <em>siempre</em> exactamente 2 negros, para cualquier conjunto de celdas (ventana):</p>
+        <ul>
+          <li><code>XOR</code> de la ventana \(= 0\) \(\Leftrightarrow\) hay un número par de negros
+              dentro \(\Leftrightarrow\) hay \(0\) o \(2\) negros.</li>
+          <li><code>OR</code> de la ventana \(= 1\) \(\Leftrightarrow\) hay \(\ge 1\) negro.</li>
+          <li>Entonces <code>AND</code>(<code>OR</code>, <code>NOT</code>(<code>XOR</code>)) \(= 1\)
+              \(\Leftrightarrow\) hay <strong>exactamente 2</strong> negros en la ventana.</li>
+        </ul>
+
+        <p><strong>Construcción "distancia \(\le d\)" por orientación.</strong> Para una orientación,
+           colapsa cada diagonal \(i\) a \(\textsf{or}[i]\) (¿algún negro?) y \(\textsf{xor}[i]\)
+           (paridad). Desliza una ventana de \(d+1\) diagonales consecutivas \([i-d \ldots i]\):
+           si los dos negros caen en esa ventana, sus diagonales distan \(\le d\). Haces un
+           <code>OR</code> sobre todas las ventanas. Repites para la otra orientación. Por el lema,
+           \[ (\text{dist} \le d) = \big(\text{par-en-ventana}_{\text{der}}(d)\big) \;\wedge\; \big(\text{par-en-ventana}_{\text{izq}}(d)\big). \]</p>
+
+        <p><strong>De "\(\le\)" a "\(=\)".</strong> Finalmente,
+           \[ (\text{dist} = K) \;=\; (\text{dist} \le K)\ \wedge\ \text{NOT}(\text{dist} \le K-1). \]
+           El caso \(d=K-1=0\) (cuando \(K=1\)) produce ventanas de tamaño 1 y funciona igual: una
+           diagonal sola con 2 negros significaría distancia \(0\) en esa orientación, imposible para
+           dos píxeles distintos, así que \((\text{dist}\le 0)\) sale \(0\) y el "exactamente 1" queda
+           bien definido.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>construct_network(H, W, K):
+    # 1) Por cada orientación, OR y XOR de cada diagonal
+    (orDer, xorDer) = recolectar_diagonales(H, W, DERECHA)    # D = r - c
+    (orIzq, xorIzq) = recolectar_diagonales(H, W, IZQUIERDA)  # D = r + c
+
+    # 2) ¿distancia de Manhattan &lt;= K?  (lema: ambas orientaciones &lt;= K)
+    leqK   = AND( par_en_ventana(orDer, xorDer, K),
+                  par_en_ventana(orIzq, xorIzq, K) )
+    # 3) ¿distancia &lt;= K-1?
+    leqKm1 = AND( par_en_ventana(orDer, xorDer, K-1),
+                  par_en_ventana(orIzq, xorIzq, K-1) )
+
+    # 4) salida = (&lt;=K) y NO(&lt;=K-1) = exactamente K
+    AND( leqK, NOT(leqKm1) )        # la ULTIMA compuerta es la respuesta
+
+recolectar_diagonales(H, W, orientacion):
+    para i en 0 .. H+W-2:
+        celdas = indices de las celdas de la i-esima diagonal de esa orientacion
+        or[i]  = OR(celdas)         # ¿hay algun negro en la diagonal?
+        xor[i] = XOR(celdas)        # paridad de negros en la diagonal
+    devolver (or, xor)
+
+par_en_ventana(or, xor, d):         # ¿las dos diagonales estan a distancia &lt;= d?
+    n = d + 1                       # tamaño de ventana
+    resultados = []
+    para i en 0 .. len(or)-1:
+        si i >= d:                  # ventana completa [i-d .. i]
+            hayAlguno = OR( or[i-d .. i] )      # >=1 negro en la ventana
+            paridad   = XOR( xor[i-d .. i] )    # paridad total en la ventana
+            resultados.append( AND( hayAlguno, NOT(paridad) ) )  # exactamente 2
+    devolver OR(resultados)         # alguna ventana contiene a AMBOS negros
+
+# Compuertas auxiliares sobre la API:
+#   AND(a,b) = add_and([a,b]);  OR(v) = add_or(v)
+#   XOR(v)   = add_xor(v);      NOT(a) = add_not(a)</pre>
+        </div>
+
+        <p><strong>Correctitud.</strong> El lema reduce Manhattan a dos condiciones de diagonales; la
+           detección de "exactamente 2 en la ventana" es sólida porque la imagen siempre tiene 2
+           negros (\(\textsf{XOR}=0\Leftrightarrow\) par \(\Leftrightarrow 0\) o \(2\), y
+           \(\textsf{OR}=1\) descarta el \(0\)). Comprobado con el verificador oficial sobre los
+           \(123\) casos de prueba: todos "Correct". Las 8 subtareas quedan completas
+           \(\Rightarrow 100/100\).</p>
+
+        <p><strong>Complejidad.</strong> \(O(H+W)\) instrucciones y \(O(H\cdot W)\) entradas totales.
+           Pico medido: \(7980\) instrucciones en el peor caso \(H=W=200,\ K=1\) (con \(K\) chico hay
+           muchísimas ventanas pequeñas); con \(K\) grande baja a unas \(6400\). Ambos topes del
+           evaluador (\(10\,000\) instrucciones, \(1\,000\,000\) entradas) se respetan con holgura.</p>
+
+        <p class="note"><strong>Subtarea por subtarea.</strong> La construcción del editorial resuelve
+           las 8 de un golpe, pero conceptualmente: 5 (\(\min(H,W)=1\)) es el caso 1D puro de la
+           Pista 2; 7 (\(K=1\)) es la ventana mínima (Pista 3 con \(d=0/1\)); 6 (un negro fijo en
+           \((0,0)\)) confirma que el truco de paridad sigue valiendo con un negro inmóvil; 1–4
+           acotan \(\max(H,W)\) y se cubren al ser todo \(O(H+W)\). El puntaje es todo-o-nada por
+           subtarea y no premia usar menos compuertas: sólo importa la correctitud dentro de los
+           topes.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
