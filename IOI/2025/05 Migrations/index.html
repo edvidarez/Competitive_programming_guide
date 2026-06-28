@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2025 · Tarea 5 — Migrations</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2025 · Día 2</div>
+    <h1>Tarea <span class="num">5</span> — Migrations</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El Museo de Historia Natural está investigando los patrones de migración de
+       los dinosaurios en Bolivia. Los paleontólogos descubrieron huellas de
+       dinosaurio en \(N\) sitios distintos, numerados del \(0\) al \(N-1\) en orden
+       de edad <em>decreciente</em>: el sitio \(0\) tiene las huellas más antiguas y
+       el sitio \(N-1\) las más recientes.</p>
+
+    <p>Los dinosaurios migraron a cada sitio (salvo el sitio \(0\)) desde un sitio
+       específico más antiguo. Para todo sitio \(i\) con \(1 \le i \le N-1\) existe
+       exactamente un sitio más antiguo \(P[i]\) (con \(P[i] \lt i\)) desde el cual
+       algunos dinosaurios migraron <em>directamente</em> hacia el sitio \(i\). Un
+       mismo sitio antiguo pudo haber sido el origen de migraciones hacia varios
+       sitios más jóvenes.</p>
+
+    <p>Los paleontólogos modelan cada migración como una <strong>conexión no
+       dirigida</strong> entre los sitios \(i\) y \(P[i]\). Nótese que para cualesquiera
+       dos sitios distintos \(x\) y \(y\) es posible viajar de \(x\) a \(y\) recorriendo
+       una secuencia de conexiones. La <strong>distancia</strong> entre los sitios \(x\)
+       y \(y\) se define como el mínimo número de conexiones necesarias para viajar de
+       \(x\) a \(y\). (Estas conexiones forman un árbol con \(N\) nodos.)</p>
+
+    <p>Por ejemplo, la siguiente imagen muestra un caso con \(N=5\) sitios, donde
+       \(P[1]=0\), \(P[2]=1\), \(P[3]=2\) y \(P[4]=2\). Se puede viajar del sitio \(3\)
+       al sitio \(4\) a través de \(2\) conexiones, así que la distancia entre ellos es \(2\).</p>
+
+    <figure>
+      <img alt="Árbol con 5 sitios: 0 unido a 1, 1 unido a 2, y 2 unido tanto a 3 como a 4."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhwAAAD6CAIAAABlHgmdAAAACXBIWXMAABcRAAAXEQHKJvM/AAAgAElEQVR42u3dcUwb1+EH8EtLMnuCDKcYxW7tRZfVdDiKu5kJZ3YGVZ2VpjiFVKZLKshKKrNCZ3fNH6YlE46aqHZ/JcMsqWomspospAUpqWyasNlRTGMHkGytRJACGk5jFLuFiksDwwSo8vvjJuaRNiVnY2P4fv4iju/d6T3b33vv3r1bc+fOHQIAACAWHkAVAAAAQgUAABAqAACAUAEAAECoAAAAQgUAABAqAACAUAEAAECoAAAAQgUAABAqAAAACBUAAECoAAAAQgUAABAqAAAACBUAAECoAAAAQgUAAAChAgAACBUAAECoAAAAQgUAAAChAgAACBUAAECoAAAAIFQAAAChAgAAySAFVQAAEI2rV6/6/f5AIDA2Njb/IpfLFQqFPB6PJEkOh4NQAQCAe5menjaZTPX19Tdv3qRf4XA4UqmUIAifz0dRFP0ii8Wqrq7WarWrJFrW3LlzBx8OAIBFoiiqsbHR6XReuXLl0UcflUqlCoWCJEmRSJSWljb/tomJiaGhIYqiuru7Ozo6PB6PTCZ79tlnS0pKSJJEqAAArHZXrlw5fvz4mTNnVCpVcXGxRCIRCoWL3DYcDvt8vhMnTpw+fVomk5nN5q1btyJUAABWo6tXrxqNRqfTqVarKysrs7KyGBcVDodPnjxpMBg2b9782muvFRcXI1QAAFYRj8dDD3B5vd5YXRehKOqZZ57p6upyu91yuXwlVRemFAMAfKeenp49e/YUFhY6HI4YXmnncDiXL182Go179uxpaGiYm5tDTwUAYCWbnJysqalpaWk5ceKESqVaor2cP39+//79mzdvttlsK2N6GEIFAOBbVFdXm0wmm822dIkyb8uWLYWFhUajcQXUG4a/AAAWunLlitVqtVgscUgUgiBOnTpltVpPnjy5AqruQYPBgA8QAMA8n89XVFT09ttv//a3v43PHjdu3Mjn80tLS9euXfurX/0qqWsPw18AAP8VCoXEYrFUKnU4HHHedWNjY0VFxbVr1zZt2pS8FYjhLwCA//llD4fD9fX18d+1RqN5/vnnrVYreioAACukm7J169bTp08rlcqEHEAgEJBIJE6nk15DDD0VAIAk1traKpPJEpUoBEEIhUKFQlFSUpK8dYhQAQAgCIKYnp5+9913KysrE3sYOp3O7/efOHEiSasRw18AAARBENXV1S6Xq7u7O+FH8vLLL/f19V26dAmhAgCQrDgcTkVFRTR3IPp8vra2tnA4LBaLS0tL2Ww2s3IoitqwYUOS/jhj+AsAgPB4PDdv3szNzWW2+eDgYFVVldvtViqVBQUFPp8vKyvr7NmzjONNKpV6PB6ECgBAUjp//jyHwykoKGC2+f79++VyuU6nUyqVTz/9tMVikclkJSUlbW1tzAosKipinEkIFQCABOvs7NRoNMwGrMLhsMfjeeGFFyJfzM7Onpuba2xsZHY8MpnswoULCBUAgKQUCATUajWzbVNSUng8nkAgiHyRXs2exWIxK/Oxxx4bHx9PxprEhXoAWO3m5uY4HM7ExATjEsLhMEEQkR0dlUrldDrdbjfj2xjT0tICgUDSrYePngoAoJsSyMzMjKYENpsdmSgURdHPHo7mxvjMzEyfz5d0lYlQAYDVLhQK8Xi8WJXmcrl27NiRn58f5fNRBAJBMl5WScHnCQBWOXrwKnomkykcDodCIRaLJZfL09LSojrlf+CBZHzMMEIFACA29Ho9/QdFUWKxuKenx263My5tZmbmwQcfTLpKwPAXAKx2aWlpse0TcDgcjUbT3t5eUlLCuBu0bt269evXI1QAAJKMSCQKBAKxLZNe6ritra29vZ1ZCQMDA0VFRQgVAIAkw+FwQqEQ4819Pt+GDRucTmfki3w+n/6jv7+fWbGhUCg7OxuhAgCQfLKyshakwuI1NjZSFLVgsfr5u16Y3WgyPDwsFAqTsSYRKgAAhFQqNRgMzLYVCAQikWjBDfl0B4XFYjFbT6ynp4fx6pYIFQCABMvLy/N4PMFgkMG2e/fuFYlExcXFkS92dHQQBGE2m7OyshiU2dnZqVAoECoAAElJJpMRBOFyuRhsS5JkQUFBRUWF3W7v7e31+Xw6ne7s2bPHjh3TaDTMjsftdufn5ydjTWLtLwAAgiAIpVKZmZnZ0tLCbPPR0dErV64MDg4SBCEUCnNzcxkv/WK321955ZXr168jVAAAklVbW1tFRcVyWBt406ZNv/zlLxnHW2Jh+AsAgCAIQq1WkySZ8J/ytra269evM16HHz0VAIDlorOzs7y8vK+vj/Hj5aM0Ozv72GOPlZWV1dbWJmkdoqcCAPAfeXl5bDb71VdfTWCqEQSRvImCUAEA+J/f9KmpqcbGRmbTwKL3f//3f7///e+Tug4RKgAARGdn5/bt2/Pz869du7Zt27aysrKYrwZ2b4FAICcn59///vcrr7yCUAEASFahUOiVV17Jz893u91CodBut1++fLmqqkqlUjG7F5KBiYmJ3bt3s9nstra2lJTkfiIJLtQDwOrldDp37NhB/02SpMPhIEmS/mdOTg5FUfG5aG82m0+ePOn1eldAlaKnAgCrVENDw+7duwmCYLPZdXV1/f3984lC/9CHw+Hdu3fPLw25RH2U6urqt956y2QyrYxaRagAwGqMk4cfflin083NzZWVlX366aevvfYai8WKfI9cLvf7/VlZWTk5OdE8wPEe/H5/Tk6O0+n8+OOPn3zyyZVRtxj+AoDV5dChQ/MLEtvt9sLCwnu/f9euXXa73WKxMF7I61tRFJWTkyMWi20220qqXvRUAGC1oKd40YmiUCgWkygEQbS0tOj1+pqaGp1Ox/iJW5FGR0d1Ot3GjRvFYnGSrsWCUAGAVW1ycnLBFK9Lly4tJlEIgkhNTTUajVevXl2zZk1OTg5dCLPD8Hg8ZWVlYrGYIIh//vOfNpstNTV1hVU1hr8AYOXbvn07nQQLpnjdL4qi1Gr1hQsXSJLUarU6nW6RG7a1tTU3N7e3t6enp588eXKReYZQAQBYXhoaGkwmUzAYZLPZhw8frqysXHBB/n7Nzc21tbW5XK6enp7x8XGJRJKfn0+SJEmSXC6XfjQ9RVGBQMDv909MTHg8nvPnz3/zzTdyuXznzp2/+c1vojwAhAoAQAI4nc4jR47QC67IZDKr1SoSiWK7C7/f7/P5fD7f0NAQHSHz/5WWlkbHjEQiUSqVMd81QgUAIH4ip3jp9XqDwbCy+wfLRwqqAABWklAodOTIkePHjxMEIRQKjx8/voIvYCBUAACWyuTkZHV19XycVFZWajQaDoeDmoknDH8BwAoxP8WLw+F4vV7GU7wgGrhPBQCSHr3sitvtZrPZZWVl3d3dSJREwfAXACSxOEzxAvRUAGBVOHTo0I4dO+hE0ev1Fy9eRKKgpwIAcN8wxQuhAgAQA5jitcxh9hcAJBNM8VrmcE0FAJIDpnglBQx/AcByhyle6KkAAMQGpnihpwIAEAOY4oVQAQCIAUzxSl6Y/QUAyw6meCUvXFMBgGUEU7ySHYa/AGBZwBQv9FQAAGIDU7zQUwEAiIEF1+QxxQuhkgDT09Mul8vlco2MjPj9/tHR0VAoFA6HCYJgs9kikYjP53O5XLlc/vTTTwsEAjRzQoyMjPT29rpcrqGhIYqi/H5/MBik/yszM1MgEGRmZpIkmZeXJ5FIcFqaKGNjY+fPn/d4PKFQKBAIjI2NzTcTl8sVCoV8Pl8gEOTn5z/99NOpqamxjZOWlpYjR44EAgFM8Vo57iSVYDCo1+v5fD598KWlpfX19Q6HY/4NU1NTra2tWq02Ly+Pfo9arbbb7XcgjoaHh3U6HV3/PB5Pq9VaLJa+vr7IN7S2tur1eh6PN99MXq8XVRdPbrdbo9GwWCyCIEiS1Gg0Vqt1eHh4/g03btywWCx6vf4nP/kJQRAcDkev10e+IUoKhYJufQ6HE8NiIbGSJlS8Xm9ZWVl6erpcLtdqtZcuXZqamrr3JtevX6+vr1er1QKBIDc312w2j4+Po8mX1Pnz56VSKYvFUiqV9fX1Xq/33s00MzPT19fX1NRUWFjI4XAeffTRlpYWVOOSCofDzc3NSqWSy+UWFha++eabAwMDi/kC1tTUyOXy9PT0wsJCh8MxOzvL+BgcDkd+fj6dKDKZbHBwEO2CUIkfl8sllUo5HE5NTQ3jVPjwww+VSmVGRobRaES0LMXvlN1uz8/PJ0nyzJkzjMv5+9//LpVK09PT9Xo9mmkpmun48eN8Pl8ulzc1Nc3MzDAohKKod955hyRJZm09PDwcGSdRhhMgVO77O6DRaOixkZgUaLPZ6M5+R0cH2j6G6HEMpVL5vd3HxbBYLBwOZ8uWLciVGOrv709PTycIwmq1xqRAvV5PEERubu7im8nr9c6PXSsUinA4jHZBqMTPxMSESqXicDjHjh1jdkr1rT799NPS0lKBQOB2u9H8MQn+8vLyrVu32my2mCQKbWBg4Ne//jWfz4+m3wORiUKSpFwuv3jxYgyL/eCDD0iSzM3NDQaD3/t1rqqqouNEKBRiwAChEm8OhyMrK6uysjKGv1ORzp07l5GRodFovvfLAPfQ1NTEYrGKiopu3boV88JnZmasViuPxzt8+DCqOpqTs9ra2oyMjFh1UO5WW1srFAqbm5u/dSBrYmLCYrEIhUI6UcrLyxEnCJV40+v1LBbr2LFjS7qXgYGBwsLChx9+GLnCjNFoFIlENpttSfdy48YNuVy+adMmXMtllig///nPpVJpV1fXku7ozJkzmZmZdw9Tu1yuyDjBFC+ESgJ4vV6CIOI2u7SwsFCr1eJzwKCZWCzWpUuX4rCvGzduEAShUqlQ7ffrrbfekkql8dnX+Pg4i8WKnL5PX3Sh6XQ6NAdCJQHGx8dzc3Nra2vjtseBgYH09HSz2YwpKIvX3d3NYrE0Gk08M0wgEOD6yn2x2+0ZGRnxCX5aU1MTSZL9/f2Y4oVQWRZ6e3v5fP6ePXvivN9z586xWKzq6mp8GhYjEAgIBAK9Xh/D2ROLzJWNGzd++umnaILFoFc9sVgscd4vPXZNTzPjcDh1dXWIk9VmGT1PZd++fXa7va+vb37SYdy0tbW99NJLn3/+OZaI+F56vf7q1at2uz3+uz5w4MBXX31ltVrRCt9rw4YNGo3GaDTGeb/hcDg3N3dkZGTLli02mw1fKCzTkjDBYDAjIyNywZU4KyoqMpvNOMv43vFJPp+fqPVUrl+/np6ejtVcvteZM2e2bt2aqL0PDw8/8sgjn3zyCRoCPZVEqqioSE1NraurS9QBDA4OKhSKnp4ePBHou1AUtX379q1bt7a0tCTqGA4cOHDixImenh4sQHmP5VbFYrHFYlEqlYk6BrPZfOHCBZvNhuZYhZbF81Qoimpubp6/NyohsrKysrKyKioq8Jn4Lu3t7f39/eXl5Qk8hqqqqps3byYw1ZY/g8FAr26QwGPQaDQOh8PpdKI5ECqJUVJSolAoEt5FePnlly9fvuxwOPCx+FYnTpxQq9Xzyz8nBEmSRqPx1KlTaI5vNTQ0ZDKZKisrE3sYbDZ7z549+/fvn5ycRKMgVOLN5/M5nU56jS/G/H6/0+l0Op2jo6PRZNumTZs++OADfCzuFgqF+vv7rVbr2rVroyknHA739/dHU4Jer1+3bl1PTw8a5W5tbW0sFqu0tJRxCf39/fRXKcpm0mg0gUAAnRWESgJ4PB6CIORyOeMfqerqapVKRVGUz+d7/PHH3W43s6LWrl2r0+l6e3vxsfjW7JdIJGw2O8rs37Jli8lkivJgFApFd3c3GuVuLperrKwsMzOT2eYVFRXbt283mUxlZWVbtmzZsWMH/ew7BmQyGYfDoR8PDAiVuHK73YWFhYynEe/fv9/tdjscDrVaTT/auqKiwu/3MytNrVYPDw+PjY3hk7GA0+lkPPB19uxZg8Gwd+/evXv3Mm6aSHl5eZ2dnWiUBebm5q5cucK403/48GGpVDo+Pu5wOOinqPX29u7evZtxruj1enQoV6PETj4Lh8Pp6emRzwS8L62trQKBYMGik3q9vrCwkPEh7dmz5/3338e8wAVEIhHjZvryyy+Hh4fpBSIJgigtLY1+ZnN6enooFEK7RHK5XHK5nNm2Dofj7iUSLBYLQRBSqZTZuq5TU1NcLhfrfa02Ce6pBINBPp8vFosZjyBnZWUtGJPJzs5ub2+nKIpZmRKJ5LPPPsPZRiSKosbGxhg3E/0s+igvxkTicDhsNruvrw9NE2lwcFAqlTLb1mQyNTY2NjY2Rr5ID0r7fD6fz8egTDabLRAIYtI3BQx/3ccgezT3z/t8vvmHnM+jCzSbzczKFIlE+Bos4PF47q7nxBKLxbgIfPe3aX5JYAZfJYIgFiyUMH8/POMBYYlEgsFkhEpcjYyMMJ5J7Pf7/X7/3etApKSk0J0YZsXyeLyRkRF8MiI5nU7Gv1ZLRCQS0VM8IPIbwfjb5HA4tFptTU3Ngh4q/QeXy2VWbFZW1tWrV9E0q0pKYncfCAQYnwLT/Ym7Q4X++WP8Uc7MzIxmXvKK1N/fv9x6Klwul/E0v5UqFAqlpaUx21Yqld49dDb/JWI8qsbj8S5cuICmQajE1XI7BSZJ8ptvvtm3bx8+HPNGR0cZz/leIj/+8Y9/9KMfoZkiffXVV7G9g7ilpSU1NbWlpYXxVPL09PQHH3wQTYNQie8RpKQst0q5fft2c3MzPhzzNm3atOw+uCkpc3NzaKZIjzzySAxLMxgM7e3tLS0tKpWKcSEsFgvtglCJt+np6eVWKQ899NDJkyfx4Yj8fVluzXT79u2HHnroo48+QuvMe/3112NVlNPpPHTokFarVavV0ZRDUdQyPGuElRwqaWlpUU61mpubW/BKMBiMpsDBwUEi0evxLTeNjY2BQGBZHdLnn38+NzeHZopkMpmiuVYf+Q2qrq7W6/ULrtsz8PXXX69btw5Ns6okePYXSZKMQ0Uul6ekpNz9Y0efUzP+uRkZGVlul3kSTqFQLLdp1kNDQ0iUu79N0Wd/MBh89dVX6+vrjUYjfdmfoqiJiQnGp2h4SAFCJa5SU1MZdyzYbPa3/vrTq0ownq8SDAYZT6BcqbKzs5fb3QbBYHC5TUhLOD6fH2WohMPhLVu2lJaWKhSKyA4Q49VWxsbG0EwIlbgSi8XRnALn5uYODQ0teDEQCLBYLK1Wy6zMgYEBnFstoFQqx8fHGZ+uLoWrV68+++yzaJpIUd63Ozs7W11dbbVaF1yZdzqdjIOht7eX8eqWkKQSfE2Fx+NlZmaazWadTsdg85qampycHJ/PF9kvaW9v1+l0jG/U//jjjxcsVgEEQWzbtq2joyPKy7axiiWfz8fn87dt24Z2iaRQKHQ6XTgcZjYDuLq62ufzURQVeeMwRVF+v5/ZCj1ut/uLL75YbpPRYcklfPUxjUZDkiTjzbVaLYfDuXHjBv1Pr9fLYrGYrX9HP16bxWJhSbi7GY1GrVbLuFYdDkdra2t2djZBEBwOx2KxOBwOxk+br6+vv3v1Q7hz5w79IGEGG+r1+nv0Uxl/tVUqFRpltUn8bL/8/PzGxsbe3l6JRMJg88OHD5MkWV1dTZ9MDQ4Out1uxvdqNTY2ymQynGp861nwgQMHmG0bCATou9/VajVJkqFQKBgMBoNBoVDI7NKXy+UqKSlBo9xNIpE0NzczWP2exWLV1tZ+V9MzOJLR0dHm5uaDBw+iUdBTibfx8XEWi1VTU5PwI7l27doPf/jDo0eP4lzjbrOzs5mZmQ6HI+FHcuPGjczMzPHxcTTK3c6ePUsQxKVLlxJ+JFarNSUlpb+/H42Cpe/jjcPh6HS606dPJ/xI3n///ampqaeeegqnGt9y8S0lpaCgoKSkhPEjm2Jl3759IpHo7jXfgCAI+kFqy+HW3cbGxvz8fHrAE1aVB5bDQRgMBoIgEruS+ezs7MmTJw0GA74G36W8vJyiqMTGP/349BdffBHN8V2naHa7/cyZM4yfJxQT/f39fr+ffsYXrDZr7ty5sxyOg37ibAKfD282my9cuGCz2fCZuPfpp8FgGB4ejvJh9YxJJBL6sgHa4h4qKipSU1Pr6uoSdQAqlWrHjh2Mp/VDcls+I3F8Pl+v1ydq71Kp1G63Yzx0MRXV2tqakF07HA4Oh4Mm+F5erzeBFeVwONatW/fZZ5+hIXBNJcG0Wq3ZbI7/INjExERJScnXX3+NZT8W2UwGgyHKBdaYjU++/fbbr776Kprge0mlUolEolAo4t9Mvb29L7zwwg9+8IOnnnrKZDIldhQOVntPZXZ21mg0ZmRkDAwMxHO/RUVFfD5/cHAQpxiLpNFoWCxWV1dXPHdaWVlZUFAwOzuL+l+MYDAolUpzc3MZ37PFbGKeQCDQaDS/+93v6J8XoVCIAYDVhlhuB6TRaAoLC+O2O5vNxmKxMD/1voTDYZIkpVJp3PZIX/INBoOo/PtCkmR9fX3cdqfVaufvlKRn39D0en04HEZzIFQSdoYlFAo1Gk0cfui9Xq9IJGpqasLngEEzZWdnv/nmm3HY14cffkgQxOHDh1Ht98vhcAgEApvNttQ7mpqaqqurS09Pj+zxOxyO/Px8OldkMhkGAxAqCTM4OKhQKEQi0dKNg83MzNBjOPH5WVzBuSKVSpd0HKy2tlYoFP7tb39DhTNjtVpZLFZRUdGtW7eWaBc3btyQSqVisfiTTz65+3/NZjO9EB+bzS4rK0O0IFQSpqmpKT093Wg0xvzL0NfXl5eXp1KpMJwSpYmJidra2oyMDKvVGvPCz507R5Jkbm4umilK4XBYo9FkZ2fHfEGEmZkZq9XK4/G+tx9pNpvpp7Ow2ey6ujqMhiFUEsNsNhMEoVQqY3ix0Wq1pqenS6VSfKxjpbW1lSCI2I5Y2my29evXo5liiJ7cWFtbG8My9+7dS08IXMybHQ7H/FUWkiSHh4fRKAiVeJudnbXb7fn5+SKRqL6+fn4pYmYcDkdpaSmfz9fpdENDQ2j7GLJYLFKpVCAQRH+B6syZM4WFhRkZGYcOHUKixNDo6GhtbS1JkkVFRTabbWZmhnFR4+PjVqs1NzdXIpG89957i2+mYDBYVVWFiWEIlcSz2+0qlWrjxo16vd5ms3355ZeL7557vd6mpqbHH3+cz+cbDAZM9Fo6brdboVBs3brVaDRevHjxvn62urq66uvrt2/fLhaLzWbz6Ogo6nMphMNhs9ksFovpiWGXLl1a/DDArVu3HA7HwYMHBQKBQqFobm5mdgwul2t+5WOFQoFoQagkMlroZQTpZbq/Nx4cDsf8Ql4vvvgiGjs+5tddz87ONhqN926mqakpi8Uy/xynp556Cr2T+DAajXSd83i8xSyRUF9fP//te++996I/gMg5x8iVlWS5rP21SJOTk729vS6Xq6Ojw+12Z2dnC4VCLpcrFApTUlIIgpienvb7/X6/PxgMrl27VqlUFhQUSKVSkiRxo2vcUBTl8/lOnz7d29s7PDy8efNmHo/H5/Pnn0o7NjY2NjYWCASGhob4fL5UKi0uLs7NzcXzzONpZGSkt7fX4XB0dHSMjY0JBAKSJDMzM+dbgX7sI0VRdDOpVKq8vDyZTJaamhqTA2hoaDCZTMFgkM1mHz58uLKyksVioV2SXZKFygJDQ0OBQIB+6NP09DRBEGlpaSRJCgSCyJ8wSOx5wODgIEVRIyMjgUBg/uyYJMm0tDQsYr9MhEKhsbExv98/MTEx/6B7LpdLkiR90sblcpdo1w0NDQcPHpyYmOBwOAcPHtRqtfQJIiBUAACYcDqdO3bsoP/W6XT19fWok+T1AKoAABJLqVTOX703m83bt29vb29HtaCnAgAQlc7OzrKyMnqYtLy8vKamBldDESoAAMyFQiGVSuXz+eh/2u32wsJCVEsSwfAXACwjPB7P6/XOL+tSUlJy9OhRehoOoKcCAMCQ3+83mUynT5/GxDCECgBAbGBiWNLB8BcALF+YGIaeCgBA7GFiGEIFACCWMDEsKWD4CwCSAyaGoacCABB7mBiGUAEAiDFMDFueMPwFAEkJE8PQUwEAiD1MDEOoAADEEiaGLR8Y/gKApIeJYeipAADEHiaGIVQAAGIME8MQKgAAsdTZ2Xnw4EG3200QhEKh0Ov1S3eVZXJy0u/3+/3+iYmJ+RfT0tIEAgGfz+fxeAgVAIAVEi2RE8PeeecdDocTk5JDoZDb7f7oo496e3uDwSBJkgKBQCgU0uVTFBUIBEZGRiiKmp6ezs/Pz8vLk8lkW7duXfmVfgcAYOUKBoNSqZT+uVMoFOPj41EWGA6H5zs9crm8tbV1amrqHu/v6+uTy+X0+5988snh4eGVXeGY/QUAK1nkxDC327158+ajR4/Ozc0x650YDAaxWDw3N1dfX+/1et1ut1qtZrPZ99hKLBa73e7h4eFTp06tW7dOLBbv27dvZGQEPRUAgCQ2PDycn59P/+7JZDKHwzE7O7vIbcfHx/V6fXp6ulqtvnjxYpSHUVtbm56erlKpLl26tPLqGddUAGAVqa6uNplM9N+LnBgWCoWys7PXrFnjcDjmR9Ki5PP5VCoVRVH9/f0r7P5/DH8BwCpiNBpdLpdQKCQIwmw279+/3+/33+P9Q0NDTzzxhFgsjmGiEAQhlUqHh4crKyt37ty50pYsQ6cYAFabiYkJi8VCRwtBEOXl5XdfwA+Hw3/6058yMjIsFsvSHYnFYmGxWM8991w4HMbwFwBAEguFQjk5OcFgkCAIhUJhs9kiJxw3NDTodDqj0ajX65f0MCiKEovF1dXVWq12BdTqgwaDAZ8tAFiF0tLSiouLp6enh4aG/vWvfzU2Nq5du/YXv/jFAw884Pf7NRrNH/7wB71e/+CDDy7pYbDZbIlEcuDAAYlEsgKuryBUAGD14nA4KpXq+eefv3LlysDAwD/+8Q+Hw8Hlcl966aWXX375jTfeWOpEoZEkyWKx9uzZIxQKf9GxFHQAAAXvSURBVPaznyV1lWL4CwCAIAjC6XQeOXKkq6vrgQceKC0ttVgscT4Au91eVlbW2dmZ1DfeI1QAAP5LoVB4PJ7x8fFYLehyX3Q63Zo1a5J6BUxMKQYA+A+Kovx+f2tra0IShSCIysrKU6dO3XuWM0IFACA5HD16VKlUqtXqRB1AVlaWSqXasWNHKBRCqAAAJLfjx4/rdLrEHkNVVRXdW0KoAAAkMZPJxOPxYnjbPDNSqfS5557r6OhAqAAAJKvJyUmj0RjDgS+VSuVyuZht+5e//KW7u5uiKIQKAEBS6u7uvnnzpkKhiFWnp729ndkC+wRBcDgcsVjs8/kQKgAAScnj8bBYrNzc3Jjkk9lsjrKQ/Pz8zs5OhAoAQFLq6OgwGAxpaWlRlhMOh9va2srKyqIs55lnnjl37hxCBQAgKY2OjiqVyujLaWtrKy4ujr6cxx577IsvvkCoAAAkpchH2UfTTent7Y3JhRkOhzM+Pj49PY1QAQBIMkNDQ9EvDzw6Orpr166qqqpYHZVIJLLb7QgVAIAkEwgEol+X5d133zUajTFcu57P53d1dSFUAABWndHRUYIgYnvj5O3bt+Oz8D5CBQBgeTGZTAcOHEA9IFQAAIgox778fn9mZmb005EXmJmZycjISLrKTMHnCQBWOaFQGAgEGG9+/PjxvXv3Rq5XHw6HCYIYHR31+/0sFovP5zMoNhAIxGSWc5zhIV0AAMT69euvX7/OrMty4MCBsbGxyFecTmcoFCooKOByuSKR6ODBg/db5uzs7EMPPXTr1i30VAAAkg+Xy/X5fMx6BnV1dQteoR+IcuDAAcZdjatXr3K53GSsSVxTAQAgJBJJ9At2xdDQ0NBPf/pThAoAQFIqKipqb28fHByMspxAINDd3d3f308QRHd3t9/vDwaDDMo5e/bs7t27ESoAAEkpJyeHIIjoFwZ+4okntm3bFgqFeDzeH//4x82bN5eUlDAop6enRyaTJWNN4kI9AABBEIRCoSBJsrm5OeFH4na7n3vuuS+//BI9FQCAZGUymc6fP5/w5y1SFKVWq3fu3Jmk1YhQAQAgCIKQy+WPP/54wnsqbW1tX3zxxQsvvJCk1YjhLwCA/zh79qzBYOju7maz2Yk6BolEIpFIlsMoHHoqAABRKS4u3rBhw65du2ZnZxNyACdOnFi/fn3yJgpCBQDgf5SXlzudzo6OjoTs/c9//rNGo0nqCsTwFwDAf01OTpaXl/t8vq6urszMzLjtl6KokpKSYDB4+fLlH/3oRwgVAICVo7q62ufz2Wy2+FxcmZ2d3blzZygUstlsMXzMF0IFAGBZmJ6e3rx5c3Z2tsPhiMPumpubX3/99b6+vugfQJlwuKYCALAQi8U6duyY2+0uLy9f0ov2s7OzjY2Nb7zxhtlsXgGJgp4KAMB3CoVCVVVVo6OjZrM5to8KpgWDwZKSkmvXrjU1NRUUFKyMSkOoAADcS05Ojs/nczgcMX9klkKhmJ6e9nq9K6m6MPwFAHAvdru9rKxsz549dXV1MVnEJRwO19XVCQSC27dvnz17doVVF0IFAOBeeDye1Wr1eDwej2fDhg1lZWWMV8gfHBw0GAxZWVkej+evf/1rV1eXQCBYYdWF4S8AgMWiKKqhoeHYsWOZmZm5ublqtVomk937Ans4HHa5XJ2dnd3d3b29vbt27dJoNHK5fKVWEUIFAOD+TE9PNzc3NzQ00A/jUqvVSqVSqVRG3mLi9/udTqff729ubg6FQgRB6PV6vV6/MqZ4IVQAAGJsbm6up6fH7Xb7fL6RkRG/33/r1i0+n08QRDAYXL9+PUmSXC5XJBIVFxdLpVIWi7UaqgWhAgAAMYML9QAAgFABAACECgAAIFQAAAAQKgAAgFABAACECgAAIFQAAAAQKgAAgFABAACECgAAAEIFAAAQKgAAgFABAACECgAAAEIFAAAQKgAAgFABAABAqAAAAEIFAAAQKgAAgFABAABAqAAAAEIFAAAQKgAAAAgVAABAqAAAAEIFAAAQKgAAAIz8P2C2p+6wzoi8AAAAAElFTkSuQmCC">
+      <figcaption>Figura 1: ejemplo con \(N=5\) y \(P[1]=0,\,P[2]=1,\,P[3]=2,\,P[4]=2\).
+        El par de distancia máxima es \((0,3)\) o \((0,4)\), ambos con distancia \(3\).</figcaption>
+    </figure>
+
+    <p>El Museo busca identificar un par de sitios con la <strong>máxima distancia
+       posible</strong> (los extremos del diámetro del árbol).</p>
+
+    <p>Nótese que el par no es necesariamente único: en el ejemplo de arriba, tanto
+       \((0,3)\) como \((0,4)\) tienen distancia \(3\), que es la máxima. En tales casos,
+       cualquiera de los pares que alcance la distancia máxima se considera válido.</p>
+
+    <p>Al inicio, los valores de \(P[i]\) <strong>no se conocen</strong>. El Museo envía
+       un equipo de investigación que visita los sitios \(1, 2, \ldots, N-1\), en orden.
+       Al llegar a cada sitio \(i\) (con \(1 \le i \le N-1\)) el equipo realiza ambas
+       acciones siguientes:</p>
+    <ul>
+      <li>Determina el valor de \(P[i]\), es decir, el origen de la migración hacia el sitio \(i\).</li>
+      <li>Decide si manda <em>un</em> mensaje al Museo o no manda ninguno desde ese sitio,
+          con base en la información reunida previamente.</li>
+    </ul>
+
+    <p>Los mensajes se transmiten por un sistema de comunicación satelital muy caro,
+       así que cada mensaje debe ser un entero entre \(1\) y \(20\,000\), inclusive.
+       Además, el equipo puede mandar a lo más \(50\) mensajes en total.</p>
+
+    <p>Tu tarea es implementar una estrategia con la que:</p>
+    <ul>
+      <li>El equipo de investigación seleccione desde qué sitios se mandan mensajes,
+          junto con el valor de cada mensaje.</li>
+      <li>El Museo pueda determinar un par de sitios con la distancia máxima, basándose
+          <strong>únicamente</strong> en los mensajes recibidos y sabiendo desde qué
+          sitio se mandó cada uno.</li>
+    </ul>
+
+    <p>Mandar números grandes por el satélite es costoso. Tu puntaje dependerá tanto
+       del <strong>mayor entero enviado</strong> como del <strong>número total de
+       mensajes</strong> transmitidos.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar dos procedimientos: uno para el equipo de investigación y otro
+       para el Museo. El programa que llama a estos procedimientos se ejecuta exactamente
+       <strong>dos veces</strong> (ver «Las dos corridas»).</p>
+
+    <div class="sig">
+      <span class="tag">Procedimiento del equipo de investigación</span>
+<pre>int send_message(int N, int i, int Pi);</pre>
+    </div>
+    <ul>
+      <li>\(N\): el número de sitios con huellas.</li>
+      <li>\(i\): el índice del sitio que el equipo está visitando.</li>
+      <li><code>Pi</code>: el valor de \(P[i]\).</li>
+      <li>Se llama \(N-1\) veces por caso de prueba, en el orden \(i = 1, 2, \ldots, N-1\).</li>
+    </ul>
+    <p>Debe regresar \(S[i]\), que especifica la acción tomada en el sitio \(i\):</p>
+    <ul>
+      <li>\(S[i]=0\): el equipo decide <em>no</em> mandar mensaje desde el sitio \(i\).</li>
+      <li>\(1 \le S[i] \le 20\,000\): el equipo manda el entero \(S[i]\) como mensaje desde el sitio \(i\).</li>
+    </ul>
+
+    <div class="sig">
+      <span class="tag">Procedimiento del Museo</span>
+<pre>std::pair&lt;int,int&gt; longest_path(std::vector&lt;int&gt; S);</pre>
+    </div>
+    <ul>
+      <li>\(S\): un arreglo de longitud \(N\) tal que \(S[0]=0\) y, para cada
+          \(1 \le i \le N-1\), \(S[i]\) es el entero regresado por
+          <code>send_message(N, i, Pi)</code>.</li>
+      <li>Se llama exactamente una vez por caso de prueba.</li>
+      <li>Debe regresar un par de sitios \((U, V)\) con la distancia máxima.</li>
+    </ul>
+
+    <h3>Las dos corridas</h3>
+    <p>En la calificación real, el programa que llama a estos procedimientos se ejecuta
+       exactamente dos veces:</p>
+    <ul>
+      <li><strong>Primera corrida:</strong> se llama a <code>send_message</code> exactamente
+          \(N-1\) veces. Tu programa puede guardar y conservar información entre llamadas
+          sucesivas. Los valores regresados (el arreglo \(S\)) los guarda el sistema de
+          calificación. En algunos casos el evaluador es <strong>adaptativo</strong>: el
+          valor de \(P[i]\) en una llamada a <code>send_message</code> puede depender de las
+          acciones tomadas por el equipo en las llamadas anteriores.</li>
+      <li><strong>Segunda corrida:</strong> se llama a <code>longest_path</code> exactamente
+          una vez. La única información disponible para <code>longest_path</code> proveniente
+          de la primera corrida es el arreglo \(S\).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB (2&nbsp;147&nbsp;483&nbsp;648 bytes)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de sitios</td><td><span class="badge">\(N = 10\,000\) (fijo)</span></td></tr>
+        <tr><td>Padres</td><td><span class="badge">\(0 \le P[i] \lt i\) para \(1 \le i \le N-1\)</span></td></tr>
+        <tr><td>Tipo de tarea</td><td>Comunicación (2 procesos): codificador + decodificador</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">30</td>
+              <td>El sitio \(0\) y algún otro sitio forman un par con distancia máxima
+                  entre todos los pares de sitios (llamada «from_root»).</td></tr>
+          <tr><td>2</td><td class="pts">70</td>
+              <td>Sin restricciones adicionales (incluye casos adaptativos).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Puntaje por calidad</h3>
+    <p>Sea \(Z\) el mayor entero que aparece en el arreglo \(S\), y sea \(M\) el número
+       de mensajes mandados por el equipo. En cualquier caso de prueba, si se cumple al
+       menos una de las siguientes condiciones, el puntaje de ese caso será \(0\)
+       (reportado como «Output isn't correct» en CMS):</p>
+    <ul>
+      <li>Al menos un elemento de \(S\) es inválido.</li>
+      <li>\(Z \gt 20\,000\) o \(M \gt 50\).</li>
+      <li>El valor regresado por <code>longest_path</code> es incorrecto.</li>
+    </ul>
+
+    <p>En otro caso, el puntaje de la <strong>subtarea 1</strong> se calcula así:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Condición</th><th>Puntaje</th></tr></thead>
+        <tbody>
+          <tr><td>\(9\,998 \le Z \le 20\,000\)</td><td class="pts">10</td></tr>
+          <tr><td>\(102 \le Z \le 9\,997\)</td><td class="pts">16</td></tr>
+          <tr><td>\(5 \le Z \le 101\)</td><td class="pts">23</td></tr>
+          <tr><td>\(Z \le 4\)</td><td class="pts">30</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>El puntaje de la <strong>subtarea 2</strong> se calcula así:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Condición</th><th>Puntaje</th></tr></thead>
+        <tbody>
+          <tr><td>\(5 \le Z \le 20\,000\) y \(M \le 50\)</td><td class="pts">\(35 - 25\log_{4000}\!\left(\tfrac{Z}{5}\right)\)</td></tr>
+          <tr><td>\(Z \le 4\) y \(32 \le M \le 50\)</td><td class="pts">40</td></tr>
+          <tr><td>\(Z \le 4\) y \(9 \le M \le 31\)</td><td class="pts">\(70 - 30\log_{4}\!\left(\tfrac{M}{8}\right)\)</td></tr>
+          <tr><td>\(Z \le 4\) y \(M \le 8\)</td><td class="pts">70</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El pleno (100 puntos) se alcanza con \(Z \le 4\) en la subtarea 1
+       (30 pts) y con \(Z \le 4\) y \(M \le 8\) en la subtarea 2 (70 pts).</p>
+
+    <h2>Ejemplo</h2>
+    <p>Sea \(N=10\,000\). Considera la situación con \(P[1]=0\), \(P[2]=1\), \(P[3]=2\),
+       \(P[4]=2\) y \(P[i]=1\) para \(i \gt 4\). Supón que la estrategia del equipo es mandar
+       el mensaje \(10\cdot V + U\) cada vez que el par \((U,V)\) de distancia máxima cambia
+       como resultado de una llamada a <code>send_message</code>. (Es solo una estrategia
+       ilustrativa, no la solución.)</p>
+    <div class="example">
+      <div class="io"><h4>Primera corrida — send_message</h4>
+<pre>Inicialmente el par máximo es (0,0).
+
+send_message(10000, 1, 0)
+   par (0,1)   regresa 10
+send_message(10000, 2, 1)
+   par (0,2)   regresa 20
+send_message(10000, 3, 2)
+   par (0,3)   regresa 30
+send_message(10000, 4, 2)
+   par (0,3)   regresa 0
+
+En las llamadas restantes P[i] = 1: el
+par máximo no cambia y el equipo no
+manda más mensajes.</pre></div>
+      <div class="io"><h4>Segunda corrida — longest_path</h4>
+<pre>longest_path([0, 10, 20, 30, 0, ...])
+
+El Museo lee el último mensaje mandado,
+S[3] = 30, y deduce que (0, 3) es el par
+de sitios con la distancia máxima.
+
+Regresa (0, 3).</pre></div>
+    </div>
+    <p class="note">Nótese que este enfoque ilustrativo <strong>no</strong> siempre
+       permite al Museo determinar correctamente el par con la distancia máxima.</p>
+
+    <h3>Evaluador de ejemplo</h3>
+    <p>El evaluador de ejemplo llama a <code>send_message</code> y a <code>longest_path</code>
+       en la <em>misma</em> corrida, lo cual difiere del evaluador real. Lee de la entrada:</p>
+    <div class="io"><pre>N
+P[1] P[2] ... P[N-1]</pre></div>
+    <p>y escribe en la salida:</p>
+    <div class="io"><pre>S[1] S[2] ... S[N-1]
+U V</pre></div>
+    <p class="note">Puedes usar el evaluador de ejemplo con cualquier valor de \(N\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Comunicación</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">Diámetro</span>
+      <span class="ptag">Codificación</span>
+      <span class="ptag">Adaptativo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Un árbol de \(N=10\,000\) nodos se revela <strong>en línea</strong>: para
+       \(i=1,\ldots,N-1\) llega la hoja \(i\) con su padre \(P[i] \lt i\). En cada sitio
+       el <em>codificador</em> (<code>send_message</code>) decide mandar un entero en
+       \([1,20\,000]\) o nada, con a lo más \(50\) mensajes. Después, el <em>decodificador</em>
+       (<code>longest_path</code>) recibe <strong>solo</strong> el arreglo \(S\) (sabe de
+       qué sitio vino cada mensaje, pero <strong>no</strong> conoce el árbol) y debe regresar
+       un par de sitios a distancia máxima (los extremos del diámetro). Calidad: minimizar
+       \(Z\) (mayor entero) y \(M\) (número de mensajes).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\) es fijo (\(10\,000\)), así que todo el «calendario» puede precomputarse
+                como función <em>solo</em> de \(N\), idéntico en ambos lados. El pleno exige
+                \(Z \le 4\) (cada mensaje vale \(1..4\), es decir 2 bits) y \(M \le 8\)
+                mensajes. La subtarea 1 («from_root») fija un extremo en el sitio \(0\):
+                solo hay que codificar el otro extremo.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué estás buscando, en realidad?</summary>
+      <div class="body">
+        <p class="q">Las conexiones forman un árbol. ¿Qué nombre tiene «el par de sitios
+           a distancia máxima»? ¿Y quién, de los dos protagonistas, <em>sí</em> conoce el árbol?</p>
+        <p>El par a distancia máxima son los extremos del <strong>diámetro</strong> del árbol.
+           El codificador ve cada hoja con su padre y puede reconstruir el árbol completo; el
+           decodificador <strong>no</strong> ve nada del árbol, solo el arreglo \(S\). Así que
+           todo el trabajo es: el codificador <em>conoce</em> el diámetro y debe
+           <em>comunicar</em> la identidad de sus dos extremos con muy pocos mensajes
+           pequeños.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Cómo cambia el diámetro al agregar una hoja?</summary>
+      <div class="body">
+        <p class="q">Si ya tenías el diámetro con extremos \((u,v)\) y llega una hoja nueva
+           \(i\), ¿de dónde pueden salir los nuevos extremos? ¿Tienes que recalcular «desde cero»?</p>
+        <p>Invariante clave: al agregar una hoja a un árbol, los extremos del nuevo diámetro
+           están dentro de \(\{u, v, i\}\). Es decir, en cada paso el diámetro <em>o</em> no
+           cambia, <em>o</em> reemplaza uno de sus extremos por la hoja nueva \(i\). El
+           codificador puede entonces mantener el diámetro real en línea (recalculándolo con
+           \(2\) BFS cuando haga falta) y nunca pierde de vista los verdaderos extremos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 1 (from_root): un solo extremo que codificar</summary>
+      <div class="body">
+        <p class="q">En la subtarea 1, el sitio \(0\) siempre es uno de los extremos del
+           diámetro. Entonces, ¿cuánta información te falta comunicar? ¿Y qué \(Z\) necesitas
+           si solo mandas el índice del otro extremo «tal cual»?</p>
+        <p>Solo falta comunicar <strong>un</strong> número: el otro extremo \(v \in \{1,\ldots,N-1\}\).
+           Si lo mandas directo (un entero hasta \(9\,999\)) caes en \(102 \le Z \le 9\,997\)
+           y ganas solo \(16\) de \(30\). Para llegar a \(Z \le 4\) (los \(30\) puntos)
+           necesitas codificar ese índice en <em>varios</em> mensajitos de magnitud \(\le 4\).
+           ¿Cómo? Estrechando un conjunto de candidatos paso a paso: cada mensaje \(1..4\)
+           dice en cuál de \(4\) sub-bloques cae el extremo verdadero, reduciendo los
+           candidatos por un factor \(\sim 4\) cada vez.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La idea general: estrechar candidatos en fases</summary>
+      <div class="body">
+        <p class="q">¿Y si <strong>ambos</strong> lados (codificador y decodificador) mantienen,
+           de forma determinista e idéntica, la <em>misma</em> lista de candidatos a extremos?
+           Si el calendario de qué sitio reserva qué mensaje depende <em>solo</em> de \(N\),
+           ¿qué información necesita realmente viajar por el satélite?</p>
+        <p>Idea central: como \(N\) es fijo, ambos lados precomputan el <strong>mismo</strong>
+           plan de \(\sim 5\) «fases». Cada fase cubre un bloque de sitios y reserva un sitio
+           donde se manda un valor \(1..4\) que indica en cuál sub-bloque (de tamaño \(b\)) cae
+           el extremo verdadero. Cada mensaje recorta los candidatos por factor \(\sim 4\)
+           (o \(\sim b\)). Para la subtarea 2 hay <em>dos</em> extremos; las fases
+           «triangulares» empacan el par no ordenado \((u \le v)\) en un solo índice (numeración
+           triangular), ahorrando mensajes. Con \(M \le 8\) mensajes de \(Z \le 4\) tienes
+           \(4^8 \approx 65\,000\) combinaciones distinguibles, de sobra para fijar el par.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <h3>Idea</h3>
+        <p>El codificador <strong>siempre</strong> conoce el diámetro real porque lo mantiene en
+           línea: al llegar cada hoja \(i\), por el invariante de la Pista 2 los nuevos extremos
+           salen de \(\{u, v, i\}\), así que recalcular con \(2\) BFS basta. El reto es comunicar
+           los dos extremos finales con \(Z \le 4\) y \(M \le 8\). Para ello, codificador y
+           decodificador construyen, como función <em>solo</em> de \(N\), el <strong>mismo</strong>
+           calendario de fases y mantienen dos listas de candidatos idénticas \(candP\) y
+           \(candQ\) (posibles extremos).</p>
+        <ul>
+          <li>Cada <strong>fase</strong> cubre un bloque de sitios y reserva <em>un</em> sitio donde
+              se manda un valor \(1..4\) que selecciona, sin ambigüedad, el sub-bloque (de tamaño
+              \(b\)) en el que cae cada extremo. Tras la fase se recortan \(candP\) y \(candQ\) a ese
+              sub-bloque, reduciendo los candidatos por factor \(\sim 4\).</li>
+          <li>Las fases <strong>triangulares</strong> empacan las dos coordenadas del par no ordenado
+              \((u \le v)\) en un único índice mediante numeración triangular, gastando menos mensajes.</li>
+          <li>Tras las fases quedan pocos candidatos; los <strong>3 últimos sitios</strong>
+              (\(N-3, N-2, N-1\)) mandan etiquetas en base \(5\) que fijan exactamente el par final,
+              estrechando de \(\sim 24 \to \sim 10 \to 5\) candidatos.</li>
+          <li><strong>Subtarea 1</strong> (from_root): como un extremo es siempre el sitio \(0\), solo
+              se codifica <em>un</em> extremo con el mismo esquema (es más fácil).</li>
+          <li><strong>Casos chicos</strong> \(N \le 9\): se rastrea el diámetro y se manda \(0/1/2\)
+              por paso directamente.</li>
+        </ul>
+
+        <h3>Por qué es correcto</h3>
+        <p>El decodificador no conoce el árbol, solo \(S\). La correctitud descansa en dos pilares:
+           <strong>(1)</strong> el invariante del diámetro en línea (los extremos nuevos salen de
+           \(\{u, v, i\}\)), que permite al codificador conocer <em>siempre</em> el diámetro real vía
+           BFS exacto (no aproximación); y <strong>(2)</strong> el calendario de fases es función
+           determinista <em>solo</em> de \(N\), idéntico en ambos lados, de modo que recortan
+           \(candP\)/\(candQ\) <em>exactamente</em> igual. Cada mensaje \(1..4\) selecciona un
+           sub-bloque sin ambigüedad; al final los \(\le 24/10/5\) candidatos se distinguen con
+           etiquetas base \(5\) en los sitios \(N-3 \ldots N-1\). Es robusto al caso adaptativo
+           (el árbol crece reaccionando al mensaje): el modelo lo soporta con el mismo \(M=8\),
+           \(Z=4\). El evaluador valida que el par regresado cumpla \(\text{dist}(U,V) = \text{diámetro}\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — codificador (send_message)</span>
+<pre>funcion send_message(N, i, Pi):
+    si N ≤ 9:                       // casos chicos: rastreo directo
+        si i == 1: inicializa el grafo; lastU ← 0; lastV ← 1
+        agrega arista (i, Pi); recalcula el diámetro (u, v)
+        si no cambió:         regresa 0
+        si cambió un extremo: regresa 1
+        si cambió el otro:    regresa 2
+        actualiza (lastU, lastV); regresa
+
+    // caso general N ≥ 10
+    si i == 1:
+        guarda N; construye el CALENDARIO de fases (pickB / calculateCandidates)
+        candP ← [0];  candQ ← [0]
+    agrega arista (i, Pi)
+    si i ≤ N-4: anexa i a candP y a candQ
+
+    si i == inicio de la fase actual:
+        recalcula el diámetro (u, v) con 2 BFS
+        localiza u en candP y v en candQ (intercámbialos si hace falta)
+        bloque_u ← sub-bloque (tamaño b) que contiene a u
+        bloque_v ← sub-bloque (tamaño b) que contiene a v
+        recorta candP y candQ al sub-bloque elegido
+        idx ← codifica(bloque_u, bloque_v)     // triangular si la fase es 'tri'
+        de idx deriva (sitio_destino, valor en 1..4); guárdalo como mensaje retrasado
+        descarta la fase
+
+    si i == sitio del mensaje retrasado:   regresa su valor (1..4)
+    si i ∈ {N-3, N-2, N-1}:                regresa la etiqueta base-5 (0..4) del par final
+    regresa 0                              // sin mensaje</pre>
+        </div>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — decodificador (longest_path)</span>
+<pre>funcion longest_path(S):
+    N ← longitud de S
+    si N ≤ 9:
+        rastrea el diámetro leyendo 0/1/2 de S;  regresa (u, v)
+
+    reconstruye el MISMO calendario de fases (solo depende de N)
+    candP ← [0];  candQ ← [0]
+    para cada fase, en orden:
+        avanza candP y candQ con los sitios que cubre la fase
+        lee el primer S no-cero de la fase como su mensaje
+        recorta candP y candQ al sub-bloque que indica   // decod. triangular si 'tri'
+    rellena candP y candQ hasta 4 elementos
+    con S[N-3], S[N-2], S[N-1] decodifica el par exacto entre los candidatos finales
+    regresa ese par (U, V)</pre>
+        </div>
+
+        <h3>Complejidad</h3>
+        <p>El codificador recomputa el diámetro (\(2\) BFS \(=O(N)\)) solo en las \(\sim 5\)
+           fronteras de fase y en los \(3\) sitios finales (\(\approx 8\) BFS), más la
+           construcción de adyacencia \(O(N)\): total \(O(N)\) para \(N \ge 10\). El decodificador
+           es \(O(N)\). Memoria \(O(N)\). Con \(N=10\,000\) corre muy holgado bajo el límite de
+           \(3\) s.</p>
+
+        <p><strong>Puntaje:</strong> la estrategia logra \(Z=4\) (umbral de pleno en ambas
+           subtareas) y \(M=8\) (cota dura \(50\); \(M \le 8\) es el pleno de la subtarea 2). Por
+           las tablas: subtarea 1 con \(Z \le 4 \Rightarrow 30/30\); subtarea 2 con \(Z \le 4\) y
+           \(M \le 8 \Rightarrow 70/70\). Total \(= 100/100\). Para el pleno <em>no</em> hay que
+           minimizar \(Z\) por búsqueda: basta replicar esta estrategia.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Nota práctica (no es un truco de lenguaje)</span>
+<pre>En macOS, al verificar localmente, no uses 'timeout'; envuelve cada
+proceso con  perl -e 'alarm 25; exec @ARGV'  y compila con g++ usando
+-isysroot $(xcrun --show-sdk-path) (testlib.h puede fallar con Apple clang).</pre>
+          <p class="note">Es solo para reproducir la verificación; no toca el algoritmo.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
