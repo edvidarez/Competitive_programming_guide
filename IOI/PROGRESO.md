@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **124 / 142**
+Total de tareas: **142** · Completadas: **130 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -239,16 +239,16 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Rarest Insects | `2022/05 Rarest Insects/index.html` |
 | [x] | 6 | Thousands Islands | `2022/06 Thousands Islands/index.html` |
 
-## IOI 2023 — 0 / 6
+## IOI 2023 — 6 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
-| [ ] | 1 | Closing Time | `2023/01 Closing Time/index.html` |
-| [ ] | 2 | Longest Trip | `2023/02 Longest Trip/index.html` |
-| [ ] | 3 | Soccer | `2023/03 Soccer/index.html` |
-| [ ] | 4 | Beech Tree | `2023/04 Beech Tree/index.html` |
-| [ ] | 5 | Overtaking | `2023/05 Overtaking/index.html` |
-| [ ] | 6 | Robot Contest | `2023/06 Robot Contest/index.html` |
+| [x] | 1 | Closing Time | `2023/01 Closing Time/index.html` |
+| [x] | 2 | Longest Trip | `2023/02 Longest Trip/index.html` |
+| [x] | 3 | Soccer | `2023/03 Soccer/index.html` |
+| [x] | 4 | Beech Tree | `2023/04 Beech Tree/index.html` |
+| [x] | 5 | Overtaking | `2023/05 Overtaking/index.html` |
+| [x] | 6 | Robot Contest | `2023/06 Robot Contest/index.html` |
 
 ## IOI 2024 — 0 / 6
 
