@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2025 · Tarea 3 — World Map</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2025 · Día 1</div>
+    <h1>Tarea <span class="num">3</span> — World Map</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El señor Pacha, un arqueólogo boliviano, descubrió cerca de Tiwanaku un documento
+       antiguo que describe el mundo durante el Periodo Tiwanaku (300-1000 d.C.). En aquel
+       entonces había \(N\) países, numerados del \(1\) al \(N\).</p>
+
+    <p>En el documento hay una lista de \(M\) pares <strong>distintos</strong> de países
+       adyacentes:</p>
+    \[ (A[0], B[0]),\ (A[1], B[1]),\ \ldots,\ (A[M-1], B[M-1]). \]
+    <p>Para cada \(i\) (con \(0 \le i &lt; M\)), el documento afirma que el país \(A[i]\) era
+       adyacente al país \(B[i]\) y viceversa. Los pares de países que <strong>no</strong>
+       aparecen en la lista <strong>no</strong> eran adyacentes.</p>
+
+    <p>El señor Pacha quiere crear un mapa del mundo donde todas las adyacencias entre países
+       sean <strong>exactamente</strong> las que había durante el Periodo Tiwanaku. Para ello,
+       primero elige un entero positivo \(K\). Luego dibuja el mapa como una rejilla de
+       \(K \times K\) celdas cuadradas, con las filas numeradas del \(0\) al \(K-1\) (de arriba
+       hacia abajo) y las columnas numeradas del \(0\) al \(K-1\) (de izquierda a derecha).</p>
+
+    <p>Quiere colorear cada celda del mapa usando uno de \(N\) colores. Los colores están
+       numerados del \(1\) al \(N\), y el país \(j\) (con \(1 \le j \le N\)) se representa con el
+       color \(j\). El coloreo debe cumplir <strong>todas</strong> estas condiciones:</p>
+    <ul>
+      <li>Para cada \(j\) (con \(1 \le j \le N\)), hay al menos una celda con el color \(j\).</li>
+      <li>Para cada par de países adyacentes \((A[i], B[i])\), existe al menos un par de celdas
+          adyacentes tales que una tiene el color \(A[i]\) y la otra el color \(B[i]\). Dos
+          celdas son adyacentes si comparten un lado.</li>
+      <li>Para cada par de celdas adyacentes con colores <strong>distintos</strong>, los países
+          representados por esos dos colores <strong>sí</strong> eran adyacentes durante el
+          Periodo Tiwanaku.</li>
+    </ul>
+
+    <p>Por ejemplo, si \(N = 3\), \(M = 2\) y los pares de países adyacentes son \((1, 2)\) y
+       \((2, 3)\), entonces el par \((1, 3)\) no era adyacente, y el siguiente mapa de dimensión
+       \(K = 3\) cumple todas las condiciones.</p>
+
+    <figure>
+      <img alt="Rejilla 3x3 coloreada: fila 0 = [2,3,3], fila 1 = [2,3,2], fila 2 = [1,2,1]."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 1: un mapa de dimensión \(K = 3\) para \(N = 3\) con las adyacencias
+        \((1,2)\) y \((2,3)\). El país \(3\) forma una región conexa, mientras que los países
+        \(1\) y \(2\) quedan en regiones separadas.</figcaption>
+    </figure>
+
+    <p>En particular, un país <strong>no</strong> necesita formar una región conexa en el mapa.
+       En el mapa de arriba, el país \(3\) forma una región conexa, mientras que los países
+       \(1\) y \(2\) forman regiones desconectadas.</p>
+
+    <p>Tu tarea es ayudar al señor Pacha a elegir un valor de \(K\) y crear un mapa. El documento
+       garantiza que tal mapa existe. Como el señor Pacha prefiere mapas más pequeños, en la
+       última subtarea tu puntaje depende del valor de \(K\), y valores más chicos de \(K\)
+       pueden dar mejor puntaje. Sin embargo, <strong>no se exige</strong> encontrar el valor
+       mínimo posible de \(K\).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento:</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>std::vector&lt;std::vector&lt;int&gt;&gt; create_map(int N, int M,
+                                       std::vector&lt;int&gt; A, std::vector&lt;int&gt; B)</pre>
+    </div>
+    <ul>
+      <li>\(N\): el número de países.</li>
+      <li>\(M\): el número de pares de países adyacentes.</li>
+      <li>\(A\) y \(B\): arreglos de longitud \(M\) que describen los países adyacentes.</li>
+      <li>Este procedimiento se llama <strong>hasta 50 veces</strong> por cada caso de prueba.</li>
+    </ul>
+    <p>El procedimiento debe devolver un arreglo \(C\) que representa el mapa. Sea \(K\) la
+       longitud de \(C\).</p>
+    <ul>
+      <li>Cada elemento de \(C\) debe ser un arreglo de longitud \(K\), con enteros entre \(1\)
+          y \(N\) inclusive.</li>
+      <li>\(C[i][j]\) es el color de la celda en la fila \(i\) y la columna \(j\) (para cada
+          \(i, j\) tales que \(0 \le i, j &lt; K\)).</li>
+      <li>\(K\) debe ser menor o igual a \(240\).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de países</td><td><span class="badge">\(1 \le N \le 40\)</span></td></tr>
+        <tr><td>Número de pares</td><td><span class="badge">\(0 \le M \le \dfrac{N(N-1)}{2}\)</span></td></tr>
+        <tr><td>Cada par</td><td><span class="badge">\(1 \le A[i] &lt; B[i] \le N\)</span></td></tr>
+        <tr><td>Tamaño del mapa</td><td><span class="badge">\(K \le 240\)</span></td></tr>
+        <tr><td>Llamadas a <code>create_map</code></td><td><span class="badge">hasta 50 por caso</span></td></tr>
+      </table>
+    </div>
+    <p class="note">Los pares \((A[0], B[0]), \ldots, (A[M-1], B[M-1])\) son distintos entre sí,
+       y se garantiza que existe al menos un mapa que cumple todas las condiciones.</p>
+
+    <h2>Subtareas y puntaje</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td>
+              <td>\(M = N-1\), con \(A[i] = i+1\) y \(B[i] = i+2\) para cada \(0 \le i &lt; M\)
+                  (un camino lineal \(1\!-\!2\!-\!\cdots\!-\!N\)).</td></tr>
+          <tr><td>2</td><td class="pts">10</td>
+              <td>\(M = N-1\) (el grafo de adyacencias es un árbol).</td></tr>
+          <tr><td>3</td><td class="pts">7</td>
+              <td>\(M = \dfrac{N(N-1)}{2}\) (grafo completo: todos los países son adyacentes entre sí).</td></tr>
+          <tr><td>4</td><td class="pts">8</td>
+              <td>El país \(1\) es adyacente a todos los demás países. Puede haber otros pares
+                  de países también adyacentes.</td></tr>
+          <tr><td>5</td><td class="pts">14</td>
+              <td>\(N \le 15\).</td></tr>
+          <tr><td>6</td><td class="pts">56</td>
+              <td>Sin restricciones adicionales. El puntaje depende de \(K\) (ver abajo).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>En la subtarea 6, tu puntaje depende del valor de \(K\). Si <strong>algún</strong> mapa
+       devuelto por <code>create_map</code> no cumple todas las condiciones, tu puntaje en la
+       subtarea es \(0\). En caso contrario, sea \(R\) el valor máximo de \(K/N\) sobre todas las
+       llamadas a <code>create_map</code>. Entonces recibes un puntaje parcial según esta tabla:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Límites de \(R\)</th><th>Puntaje</th></tr></thead>
+        <tbody>
+          <tr><td>\(6 &lt; R\)</td><td class="pts">0</td></tr>
+          <tr><td>\(4 &lt; R \le 6\)</td><td class="pts">14</td></tr>
+          <tr><td>\(3 &lt; R \le 4\)</td><td class="pts">28</td></tr>
+          <tr><td>\(2.5 &lt; R \le 3\)</td><td class="pts">42</td></tr>
+          <tr><td>\(2 &lt; R \le 2.5\)</td><td class="pts">49</td></tr>
+          <tr><td>\(R \le 2\)</td><td class="pts">56</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Las subtareas 1 a 5 se evalúan de forma binaria (correcto / incorrecto): basta
+       con devolver cualquier mapa válido con \(K \le 240\). Sólo la subtarea 6 mide la razón
+       \(K/N\).</p>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <p>Considera la llamada <code>create_map(3, 2, [1, 2], [2, 3])</code>. Es el ejemplo de la
+       descripción de la tarea, así que el procedimiento puede devolver el siguiente mapa.</p>
+    <div class="io"><pre>[
+  [2, 3, 3],
+  [2, 3, 2],
+  [1, 2, 1]
+]</pre></div>
+
+    <h3>Ejemplo 2</h3>
+    <p>Considera la llamada <code>create_map(4, 4, [1, 1, 2, 3], [2, 3, 4, 4])</code>. Aquí
+       \(N = 4\), \(M = 4\) y los pares de países \((1, 2)\), \((1, 3)\), \((2, 4)\) y \((3, 4)\)
+       son adyacentes. En consecuencia, los pares \((1, 4)\) y \((2, 3)\) <strong>no</strong> son
+       adyacentes. El procedimiento puede devolver el siguiente mapa de dimensión \(K = 7\), que
+       cumple todas las condiciones:</p>
+    <div class="io"><pre>[
+  [2, 1, 3, 3, 4, 3, 4],
+  [2, 1, 3, 3, 3, 3, 3],
+  [2, 1, 1, 1, 3, 4, 4],
+  [2, 2, 2, 1, 3, 4, 3],
+  [1, 1, 1, 2, 4, 4, 4],
+  [2, 2, 1, 2, 2, 4, 3],
+  [2, 2, 1, 2, 2, 4, 4]
+]</pre></div>
+    <p>El mapa podría ser más pequeño; por ejemplo, el procedimiento también puede devolver el
+       siguiente mapa de dimensión \(K = 2\):</p>
+    <div class="io"><pre>[
+  [3, 1],
+  [4, 2]
+]</pre></div>
+    <p class="note">Nota que ambos mapas cumplen \(K/N \le 2\).</p>
+
+    <h2>Evaluador de ejemplo</h2>
+    <p>El evaluador de ejemplo (sample grader) lee de la entrada un entero \(T\) (el número de
+       escenarios) y, a continuación, la descripción de \(T\) escenarios. Cada escenario viene en
+       el formato:</p>
+    <div class="io"><pre>N M
+A[0] B[0]
+:
+A[M-1] B[M-1]</pre></div>
+    <p>Para cada escenario, el evaluador imprime el arreglo \(C\) devuelto por
+       <code>create_map</code> en el formato: una línea con \(P\) (la cantidad de filas de
+       \(C\)), una línea con las longitudes \(Q[0]\ Q[1]\ \cdots\ Q[P-1]\) de cada fila, y luego
+       las \(P\) filas con sus colores.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Árbol generador</span>
+      <span class="ptag">DFS / Paseo de Euler</span>
+      <span class="ptag">Antidiagonales</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un grafo de \(N \le 40\) países (vértices) con \(M\) aristas (los pares adyacentes),
+       garantizado conexo y con un mapa válido posible. Debes <strong>construir</strong> una
+       rejilla \(K \times K\) coloreada con los \(N\) colores tal que el conjunto de adyacencias
+       entre colores distintos sea <strong>exactamente</strong> el conjunto de aristas del grafo
+       (sin sobrar ni faltar ninguna) y cada color aparezca al menos una vez. Para el puntaje
+       pleno de la subtarea 6 basta con lograr \(K \le 2N\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 40 \Rightarrow K = 2N \le 80 \le 240\): el límite duro sobra. En la
+                subtarea 6 el puntaje sale de \(R = \max(K/N)\); con \(R \le 2\) (es decir
+                \(K \le 2N\)) obtienes los \(56\) puntos. <strong>No</strong> hace falta minimizar
+                \(K\): basta \(K \le 2N\). Las subtareas 1-5 sólo piden un mapa válido cualquiera
+                con \(K \le 240\), así que la misma construcción de \(2N\) las cubre todas.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en ver los países como vértices de un grafo y las adyacencias
+           como aristas? En la rejilla, ¿qué significa que dos celdas vecinas tengan colores
+           distintos?</p>
+        <p>Cada par de celdas vecinas con colores distintos \(u \ne v\) "realiza" la arista
+           \((u,v)\). Las tres condiciones se traducen a: (a) cada color aparece, (b) cada arista
+           del grafo aparece como <em>al menos</em> un par de celdas vecinas, y (c) <strong>nunca</strong>
+           aparece un par de celdas vecinas con colores distintos que no sea arista. La condición
+           (c) es la dura: el conjunto de adyacencias de tu mapa debe coincidir <em>exactamente</em>
+           con las aristas. Ojo: dos celdas vecinas del <em>mismo</em> color no imponen nada, así que
+           puedes "rellenar" con repeticiones libremente. Esto no es buscar un número: es
+           <strong>fabricar</strong> la rejilla (problema de construcción).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: el camino lineal</summary>
+      <div class="body">
+        <p class="q">Si las aristas son \((1,2),(2,3),\ldots,(N-1,N)\), ¿no basta una sola fila
+           \([\,1, 2, 3, \ldots, N\,]\)?</p>
+        <p>En esa fila, la celda con color \(i\) es vecina de la de color \(i+1\): aparecen
+           exactamente las aristas del camino y ningún par prohibido. Como el mapa debe ser
+           cuadrado \(K \times K\), repite esa misma fila en las \(K = N\) filas: los vecinos
+           verticales quedan del mismo color (permitido). Resultado: \(K = N \le 2N\). La idea que
+           te llevas: <em>un orden lineal de colores realiza un camino</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2: el árbol y el paseo de Euler</summary>
+      <div class="body">
+        <p class="q">Si el grafo es un árbol, ¿cómo lo "aplanas" en una secuencia lineal donde
+           los elementos consecutivos sean adyacentes en el árbol?</p>
+        <p>Haz un recorrido en profundidad (DFS) y registra el <strong>paseo de Euler</strong>:
+           apila el nodo al entrar y vuelve a apilar al padre cada vez que regresas de un hijo.
+           Esa secuencia tiene longitud exactamente \(2N-1\) y cumple que dos entradas
+           <em>consecutivas</em> son vértices adyacentes en el árbol. Colócala como una fila (y
+           repite la fila para llenar el cuadrado): cada arista del árbol se materializa, no
+           aparece ninguna adyacencia prohibida, y \(K = 2N-1 \le 2N\). ¡Esto ya da puntaje pleno
+           para cualquier árbol!</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 3-5: aparecen aristas que no son del árbol</summary>
+      <div class="body">
+        <p class="q">En un grafo general (completo, estrella, o \(N \le 15\)) toma un árbol
+           generador y su paseo de Euler. Eso realiza las aristas del árbol... pero, ¿qué pasa
+           con las demás aristas (las "de retorno")?</p>
+        <p>Una sola fila no alcanza: dos vértices unidos por una arista que <em>no</em> está en el
+           árbol pueden quedar lejísimos en el paseo de Euler. Necesitas la <strong>segunda
+           dimensión</strong> de la rejilla para acercarlos. La pregunta clave: ¿cómo pongo un
+           vértice \(u\) pegado a cada uno de sus vecinos "extra" \(v\) <strong>sin</strong> crear
+           ninguna adyacencia prohibida de paso? Pista geométrica: en una rejilla, las celdas de
+           una misma <em>antidiagonal</em> (\(\text{fila}+\text{columna}=c\)) nunca son vecinas
+           entre sí; sólo tocan celdas de las antidiagonales \(c-1\) y \(c+1\). (Para las subtareas
+           1-5 basta cualquier mapa válido con \(K \le 240\), así que la construcción de la pista
+           final ya las resuelve todas; estas subtareas sólo te guían hacia la idea general.)</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos, \(K = 2N\))</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Construimos una rejilla \(2N \times 2N\) (es decir \(K = 2N\),
+           puntaje pleno) "desplegando" el paseo de Euler de un árbol generador a lo largo de las
+           <strong>antidiagonales</strong> de la rejilla, y materializando las aristas que no son
+           del árbol con una pequeña expansión local.</p>
+
+        <p><strong>Paso 1 — Árbol generador + paseo de Euler.</strong> Desde el nodo \(0\) (en
+           base 0) hacemos DFS y construimos el paseo de Euler <code>tour</code> (longitud
+           \(2N-1\)): cada vez que volvemos de un hijo, re-apilamos al padre. Las aristas que
+           <em>no</em> son del árbol (aristas de retorno) las guardamos una sola vez, por el
+           extremo de menor profundidad.</p>
+
+        <p><strong>Paso 2 — Elegir una posición "anfitriona" por nodo.</strong> Cada nodo aparece
+           varias veces en el paseo. Para cada nodo escogemos <em>una</em> aparición: la de mayor
+           \(\text{rango} = \min(i,\ 2N-2-i)\), es decir la más cercana al <strong>centro</strong>
+           del paseo (donde la antidiagonal de la rejilla es más larga y hay más espacio). Cada
+           arista de retorno \((u,v)\) se orienta hacia el extremo de mayor rango (digamos \(u\)) y
+           se "cuelga" en la lista \(H[u]\).</p>
+
+        <p><strong>Paso 3 — Desplegar por antidiagonales.</strong> Recorremos el paseo de
+           izquierda a derecha llevando un "frente" <code>cur</code> (el índice de antidiagonal).
+           "Pintar la antidiagonal \(c\) con color \(x\)" significa poner \(x\) en las celdas
+           \((j,\ c-j)\) que caigan dentro de la rejilla.</p>
+        <ul>
+          <li><em>Aparición normal</em> del color <code>tour[i]</code>: pinta una sola
+              antidiagonal <code>cur</code> con ese color y avanza <code>cur += 1</code>. Como dos
+              entradas consecutivas del paseo son adyacentes en el árbol y dos antidiagonales
+              contiguas se tocan, la arista del árbol queda realizada.</li>
+          <li><em>Aparición anfitriona</em> del nodo \(u\): se expande a <strong>tres</strong>
+              antidiagonales (<code>cur</code>, <code>cur+1</code>, <code>cur+2</code>). Las de los
+              extremos van con color \(u\); la del <strong>medio</strong> intercala los vecinos de
+              \(H[u]\) (y rellena los huecos con el propio \(u\)). Avanza <code>cur += 3</code>.</li>
+        </ul>
+        <p>Al final, suma \(1\) a cada celda para tener colores en \(1..N\) y devuelve la rejilla.</p>
+
+        <p><strong>Por qué es correcto.</strong></p>
+        <ul>
+          <li><em>Todos los colores aparecen:</em> el grafo es conexo (si existe un mapa válido y
+              conexo con todos los colores, el grafo debe serlo), así que el DFS desde \(0\) llega
+              a los \(N\) nodos y el árbol generador los cubre.</li>
+          <li><em>Aristas del árbol:</em> dos entradas consecutivas del paseo de Euler son
+              vértices adyacentes en el árbol; al quedar en antidiagonales contiguas, sus celdas se
+              tocan, así que la arista se realiza.</li>
+          <li><em>Aristas de retorno:</em> cada \(v \in H[u]\) se coloca en la antidiagonal del
+              medio de la aparición anfitriona de \(u\). Como las celdas de una misma antidiagonal
+              nunca son vecinas entre sí, los únicos vecinos de cada celda \(v\) son celdas de las
+              antidiagonales \(cur\) y \(cur+2\), ambas de color \(u\). Así \(v\) queda pegado a
+              \(u\) (arista realizada) y no toca a ningún otro color.</li>
+          <li><em>No hay adyacencias prohibidas:</em> entre antidiagonales contiguas sólo aparecen
+              colores que <em>sí</em> son aristas (consecutivos del paseo, o el par anfitrión
+              \(u\)-\(v\)); elegir la aparición anfitriona en el centro garantiza que la
+              antidiagonal del medio sea lo bastante larga (\(2N\) celdas) para encajar todos los
+              vecinos de retorno de \(u\) (a lo más \(N-1\)).</li>
+        </ul>
+        <p>Por lo tanto el conjunto de adyacencias del mapa es <strong>exactamente</strong> el de
+           aristas, con \(K = 2N \le 80 \le 240\). Como \(R = K/N = 2 \Rightarrow R \le 2\),
+           obtienes los \(56\) puntos de la subtarea 6, y las subtareas 1-5 también pasan por ser
+           mapas válidos. <strong>Total: 100 puntos.</strong></p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion create_map(N, M, A, B):
+    G = lista de adyacencia (indices en base 0)
+
+    # --- arbol generador + paseo de Euler ---
+    tour = []            # longitud 2N-1
+    RA, RB = [], []      # aristas que NO son del arbol (de retorno)
+    funcion DFS(x):
+        marcar x visitado;  agregar x a tour
+        para cada vecino i de x:
+            si i no visitado:
+                prof[i] = prof[x] + 1
+                DFS(i)
+                agregar x a tour            # re-apilar al padre al volver
+            si i visitado y prof[x] &lt; prof[i]:
+                registrar arista de retorno (x, i) en RA, RB
+    DFS(0)
+
+    # --- una posicion "anfitriona" por nodo (lo mas al centro posible) ---
+    rango[*] = -1;  anfi[*] = -1
+    para i en 0..2N-2:
+        d = min(i, (2N-2) - i)              # pico en el centro del paseo
+        si rango[tour[i]] &lt; d:
+            rango[tour[i]] = d;  anfi[tour[i]] = i
+
+    # --- colgar cada arista de retorno en el extremo de mayor rango ---
+    H[*] = []
+    para cada arista de retorno k:
+        orientar (RA[k], RB[k]) para que RA[k] tenga mayor rango
+        H[RA[k]].agregar(RB[k])
+
+    # --- desplegar por antidiagonales en una rejilla 2N x 2N ---
+    ans = matriz 2N x 2N llena de 0
+    # "pintar antidiagonal c con color x": celda (j, c-j) si 0 &lt;= c-j &lt; 2N
+    cur = 0
+    para i en 0..2N-2:
+        si i == anfi[tour[i]]:
+            pos = 0
+            para j en 0..2N-1:
+                pintar (j, cur   - j) con tour[i]          # si cae en rango
+                # antidiagonal del medio: intercala H[tour[i]]
+                si pos &lt; tamano(H[tour[i]]):
+                    pintar (j, (cur+1) - j) con H[tour[i]][pos];  pos += 1
+                si no:
+                    pintar (j, (cur+1) - j) con tour[i]
+                pintar (j, (cur+2) - j) con tour[i]        # si cae en rango
+            cur += 3
+        si no:
+            para j en 0..2N-1:
+                pintar (j, cur - j) con tour[i]            # si cae en rango
+            cur += 1
+
+    sumar 1 a cada celda de ans          # colores en 1..N
+    devolver ans                         # K = 2N</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Por llamada \(O(N^2)\): la rejilla es \(2N \times 2N\)
+           celdas y el DFS con manejo de aristas es \(O(N+M)\) con \(M \le N(N-1)/2 = O(N^2)\). Con
+           hasta \(50\) llamadas por caso y \(N \le 40\), el costo total es trivial frente al
+           límite de \(1.0\) s y \(2\) GiB. Además \(K = 2N \le 80\), muy por debajo del tope duro
+           \(K \le 240\).</p>
+
+        <p class="note">Detalle: no se busca el \(K\) mínimo (el enunciado dice explícitamente que
+           no es necesario); \(K = 2N\) ya alcanza el puntaje pleno. Existen construcciones
+           alternativas que logran \(K\) aún menor, pero no aportan más puntos.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

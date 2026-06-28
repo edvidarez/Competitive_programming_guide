@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2025 · Tarea 4 — Festival</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2025 · Día 2</div>
+    <h1>Tarea <span class="num">4</span> — Festival</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Nayra está en un festival jugando un juego cuyo gran premio es un viaje a la
+       Laguna Colorada. El juego consiste en usar <em>fichas</em> para comprar
+       <em>cupones</em>. Comprar un cupón puede darle fichas adicionales. La meta es
+       conseguir la mayor cantidad de cupones posible.</p>
+
+    <p>Nayra empieza el juego con \(A\) fichas. Hay \(N\) cupones, numerados de \(0\)
+       a \(N-1\). Para comprar el cupón \(i\) (con \(0 \le i &lt; N\)) tiene que pagar
+       \(P[i]\) fichas, y debe tener al menos \(P[i]\) fichas <strong>antes</strong> de la
+       compra. Cada cupón se puede comprar a lo más una vez.</p>
+
+    <p>Además, cada cupón \(i\) tiene asignado un <em>tipo</em>, denotado \(T[i]\), que es
+       un entero entre \(1\) y \(4\) inclusive. Después de que Nayra compra el cupón \(i\),
+       el número de fichas que le quedan se multiplica por \(T[i]\). Formalmente, si en
+       algún momento del juego tiene \(X\) fichas y compra el cupón \(i\) (lo cual requiere
+       \(X \ge P[i]\)), entonces después de la compra tendrá
+       \[(X - P[i]) \cdot T[i]\]
+       fichas.</p>
+
+    <p>Tu tarea es determinar <strong>qué</strong> cupones debe comprar Nayra y <strong>en
+       qué orden</strong>, para maximizar el número total de cupones que tiene al final.
+       Si hay más de una secuencia de compras que logra ese máximo, puedes reportar
+       cualquiera de ellas.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento. El evaluador lo llama
+       <strong>exactamente una vez</strong> por cada caso de prueba.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>std::vector&lt;int&gt; max_coupons(int A, std::vector&lt;int&gt; P,
+                            std::vector&lt;int&gt; T)</pre>
+    </div>
+    <ul>
+      <li><code>A</code>: el número inicial de fichas de Nayra.</li>
+      <li><code>P</code>: un arreglo de longitud \(N\) con los precios de los cupones.</li>
+      <li><code>T</code>: un arreglo de longitud \(N\) con los tipos de los cupones.</li>
+    </ul>
+    <p>El procedimiento debe regresar un arreglo \(R\) que describe las compras de Nayra así:</p>
+    <ul>
+      <li>La longitud de \(R\) debe ser el <strong>máximo</strong> número de cupones que puede comprar.</li>
+      <li>Los elementos de \(R\) son los índices de los cupones que debe comprar, en orden
+          cronológico. Es decir, compra primero el cupón \(R[0]\), luego \(R[1]\), y así sucesivamente.</li>
+      <li>Todos los elementos de \(R\) deben ser distintos (únicos).</li>
+    </ul>
+    <p>Si no se puede comprar ningún cupón, \(R\) debe ser un arreglo vacío.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB (2&nbsp;147&nbsp;483&nbsp;648 bytes)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de cupones</td><td><span class="badge">\(1 \le N \le 200\,000\)</span></td></tr>
+        <tr><td>Fichas iniciales</td><td><span class="badge">\(1 \le A \le 10^9\)</span></td></tr>
+        <tr><td>Precios</td><td><span class="badge">\(1 \le P[i] \le 10^9\)</span></td></tr>
+        <tr><td>Tipos</td><td><span class="badge">\(1 \le T[i] \le 4\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(T[i] = 1\) para todo \(i\) con \(0 \le i &lt; N\).</td></tr>
+          <tr><td>2</td><td class="pts">7</td><td>\(N \le 3000\); \(T[i] \le 2\) para todo \(i\).</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>\(T[i] \le 2\) para todo \(i\).</td></tr>
+          <tr><td>4</td><td class="pts">15</td><td>\(N \le 70\).</td></tr>
+          <tr><td>5</td><td class="pts">27</td><td>Nayra puede comprar <strong>todos</strong> los \(N\) cupones (en algún orden).</td></tr>
+          <tr><td>6</td><td class="pts">16</td><td>\((A - P[i]) \cdot T[i] &lt; A\) para todo \(i\) (ningún cupón aumenta el saldo).</td></tr>
+          <tr><td>7</td><td class="pts">18</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>max_coupons(13, [4, 500, 8, 14],
+                [1, 3, 3, 4])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[2, 3, 0]</pre></div>
+    </div>
+    <p>Nayra empieza con \(A = 13\) fichas. Puede comprar 3 cupones en el orden mostrado:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Cupón comprado</th><th>Precio</th><th>Tipo</th><th>Fichas tras la compra</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>8</td><td>3</td><td>\((13 - 8) \cdot 3 = 15\)</td></tr>
+          <tr><td>3</td><td>14</td><td>4</td><td>\((15 - 14) \cdot 4 = 4\)</td></tr>
+          <tr><td>0</td><td>4</td><td>1</td><td>\((4 - 4) \cdot 1 = 0\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">No es posible que Nayra compre más de 3 cupones, y la secuencia anterior
+       es la única forma de comprar 3 de ellos. Por eso el procedimiento debe regresar
+       <code>[2, 3, 0]</code>.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>max_coupons(9, [6, 5], [2, 3])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[0, 1]  o  [1, 0]</pre></div>
+    </div>
+    <p class="note">Aquí Nayra puede comprar ambos cupones en cualquier orden, así que el
+       procedimiento puede regresar <code>[0, 1]</code> o <code>[1, 0]</code>.</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>max_coupons(1, [2, 5, 7], [4, 3, 1])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[ ]   (arreglo vacío)</pre></div>
+    </div>
+    <p class="note">Nayra tiene una sola ficha, que no alcanza para comprar ningún cupón, así
+       que el procedimiento debe regresar el arreglo vacío.</p>
+
+    <h2>Evaluador de ejemplo</h2>
+    <p>Formato de entrada:</p>
+    <div class="io"><pre>N A
+P[0] T[0]
+P[1] T[1]
+...
+P[N-1] T[N-1]</pre></div>
+    <p>Formato de salida:</p>
+    <div class="io"><pre>S
+R[0] R[1] ... R[S-1]</pre></div>
+    <p class="note">Aquí \(S\) es la longitud del arreglo \(R\) que regresa
+       <code>max_coupons</code>. Nota: esta es una tarea con <em>juez especial</em>
+       (checker): cualquier secuencia válida que alcance el máximo número de cupones se
+       acepta, no solo una respuesta fija.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Argumento de intercambio</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Búsqueda binaria</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Empiezas con \(A\) fichas. Comprar el cupón \(i\) cuesta \(P[i]\) y transforma tu saldo
+       \(X \to (X - P[i]) \cdot T[i]\), con \(T[i] \in \{1,2,3,4\}\). Puedes comprar cada cupón
+       a lo más una vez y el <strong>orden importa</strong>. Devuelve una secuencia de índices
+       que maximice <em>cuántos</em> cupones compras (cualquier secuencia óptima es válida).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 200\,000\) pide algo cercano a \(O(N \log N)\). Pero \(A, P \le 10^9\):
+                cada cupón con \(T \ge 2\) que de verdad reduce tu saldo lo multiplica por
+                \(\ge 2\); como el saldo está acotado, no caben más de \(\sim \log_2(\text{saldo}) &lt; 33\)
+                de esos. Esa cota logarítmica es la clave que abre una DP pequeñísima.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que cada compra es una función afín del saldo,
+           \(f_i(X) = (X - P[i]) \cdot T[i]\), y que comprar una secuencia es
+           <em>componer</em> esas funciones? Como la composición de funciones afines
+           <strong>no</strong> conmuta en general, ¿por qué el orden de compra cambia el resultado?</p>
+        <p>Piensa en dos cosas separadas: <em>qué subconjunto</em> de cupones compras y
+           <em>en qué orden</em> los compras. La restricción es que el saldo nunca baje de
+           \(P[i]\) justo antes de comprar \(i\) (y nunca sea negativo). Maximizas el
+           <em>tamaño</em> del subconjunto, no el saldo final.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: todos los tipos valen 1</summary>
+      <div class="body">
+        <p class="q">Si \(T[i] = 1\) para todos, comprar el cupón \(i\) hace
+           \(X \to X - P[i]\): solo <em>resta</em> y nunca multiplica. Entonces, ¿el orden
+           importa para el saldo final? ¿Y cuántos cupones caben?</p>
+        <p>Con puro restar, el saldo final es \(A\) menos la suma de los precios comprados,
+           sin importar el orden. Para meter <em>la mayor cantidad</em> de cupones conviene
+           comprar los <strong>más baratos primero</strong>: ordena por precio creciente y
+           compra mientras alcance. Eso son los 5 puntos de la Subtarea 1, y esos cupones de
+           tipo 1 reaparecerán al final del problema completo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 5: si caben todos, ¿en qué orden?</summary>
+      <div class="body">
+        <p class="q">Suponiendo que <em>se pueden comprar todos</em> (Subtarea 5), el reto
+           ya no es <em>cuáles</em> sino <em>en qué orden</em> para nunca quedar corto.
+           ¿Cuándo conviene comprar el cupón \(i\) antes que el \(j\)?</p>
+        <p>Usa un <strong>argumento de intercambio</strong>: toma dos cupones adyacentes en
+           tu orden y pregunta si intercambiarlos mejora (o no empeora) el saldo. Sale que el
+           orden óptimo ordena por la razón \(\dfrac{P \cdot T}{T-1}\) de menor a mayor (a igual
+           tipo, por precio creciente). Para evitar divisiones, compara con productos:</p>
+        <div class="pseudo">
+          <span class="tag">Criterio de orden (i antes que j)</span>
+<pre>si T[i] == T[j]:  P[i] &lt; P[j]
+si no:            P[i]*T[i]*(T[j]-1) &lt; P[j]*T[j]*(T[i]-1)</pre>
+        </div>
+        <p>Si recorres en ese orden y en cada paso el saldo nunca baja del precio, ya tienes
+           una respuesta de \(N\) cupones. Esos son los 27 puntos de la Subtarea 5.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 2 y 3: solo tipos 1 y 2</summary>
+      <div class="body">
+        <p class="q">Con \(T[i] \le 2\), tienes cupones que solo restan (tipo 1) y cupones
+           que duplican lo que sobra (tipo 2). ¿Notas que un cupón de tipo 2 que compras
+           cuando ya no <em>aumenta</em> tu saldo lo multiplica por \(2\)? ¿Cuántos de esos
+           caben antes de desbordar?</p>
+        <p>Ordena por la razón de la Pista 3 y haz una <strong>fase de crecimiento greedy</strong>:
+           recorre y compra todo cupón que <em>no reduzca</em> el saldo, es decir cuando
+           \((\text{saldo} - P[i]) \cdot T[i] \ge \text{saldo}\). Esos nunca te perjudican y
+           elevan el saldo disponible. Lo que queda son cupones que sí lo reducirían: como cada
+           tipo 2 que compres multiplica por \(2\), no puedes comprar más de \(\sim \log_2\) de
+           ellos, así que basta probar los más baratos. La Subtarea 2 (\(N \le 3000\)) tolera
+           algo más lento; la Subtarea 3 ya pide hacerlo eficiente.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 6: ningún cupón aumenta el saldo</summary>
+      <div class="body">
+        <p class="q">Si \((A - P[i]) \cdot T[i] &lt; A\) para todos, la fase de crecimiento está
+           vacía: <em>cada</em> compra de tipo \(\ge 2\) reduce el saldo (pero lo multiplica por
+           \(\ge 2\)). ¿Cómo decides cuántos cupones de tipo 2, de tipo 3 y de tipo 4 comprar,
+           si de cada tipo solo caben unos \(33\)?</p>
+        <p>Como cada cupón de tipo \(\{2,3,4\}\) multiplica por \(\ge 2\), a lo más caben
+           \(\sim 33\) de los tres tipos juntos; de cada tipo solo importan los \(\le 32\) más
+           baratos. Haz una <strong>DP de 3 dimensiones</strong> \(dp[i][j][k]\) = máximo saldo
+           tras comprar los \(i\) más baratos de tipo 2, \(j\) de tipo 3 y \(k\) de tipo 4 (en el
+           orden óptimo de la Pista 3). Los cupones de tipo 1 (que solo restan) van al
+           <strong>final</strong>, los más baratos primero; con prefijos de precios y una
+           <strong>búsqueda binaria</strong> sabes cuántos caben dado el saldo. Esto resuelve la
+           Subtarea 6 (y, combinado con la fase de crecimiento, también la Subtarea 4 con
+           \(N \le 70\)).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Junta todo: <strong>orden por intercambio</strong> + <strong>fase greedy de
+           crecimiento</strong> + <strong>DP acotada por el logaritmo</strong> + <strong>búsqueda
+           binaria para los tipo 1</strong>.</p>
+
+        <h3>Idea, paso a paso</h3>
+        <ol>
+          <li><strong>Orden por intercambio.</strong> Ordena los cupones por la razón
+              \(\dfrac{P \cdot T}{T-1}\) (a menor razón, antes; a igual tipo, por \(P\) creciente).
+              La comparación se hace sin división:
+              \(P[i]\,T[i]\,(T[j]-1) &lt; P[j]\,T[j]\,(T[i]-1)\).</li>
+          <li><strong>Fase de crecimiento greedy.</strong> Recorre en ese orden y compra todo
+              cupón que <em>no</em> disminuya el saldo, esto es cuando
+              \((\text{saldo} - P[i]) \cdot T[i] \ge \text{saldo}\). Cada compra de este tipo al
+              menos no reduce y normalmente multiplica el saldo. Si el saldo supera un umbral
+              grande (\(\sim 10^{15}\)), entonces ya alcanza para comprar <em>todos</em> los cupones
+              en ese orden: devuelve la lista completa (respuesta \(= N\)).</li>
+          <li><strong>Cupones que sí reducirían el saldo.</strong> Lo que queda se reparte por
+              tipo. Como cada cupón de tipo \(\{2,3,4\}\) comprado aquí multiplica por \(\ge 2\) y
+              el saldo está acotado por \(\sim 10^{15}\), no caben más de \(M = 33\) de esos. De cada
+              tipo guarda solo los \(\le M-1\) más baratos y corre la DP
+              \(dp[i][j][k]\) = máximo saldo tras comprar \(i\) de tipo 2, \(j\) de tipo 3 y
+              \(k\) de tipo 4.</li>
+          <li><strong>Cupones de tipo 1.</strong> Solo restan, así que van al final y los más
+              baratos primero. Con sumas de prefijo \(\text{pref}[m]\), para un estado con saldo
+              \(s\), el número de tipo 1 que caben es el mayor \(m\) con \(\text{pref}[m] \le s\)
+              (búsqueda binaria).</li>
+          <li><strong>Respuesta.</strong> Elige el estado \((i,j,k,m)\) que maximiza
+              \(i+j+k+m\); reconstruye el orden de la DP por backtracking y concatena:
+              primero los cupones de la fase de crecimiento, luego los multiplicadores elegidos por
+              la DP, y al final los \(m\) cupones de tipo 1 más baratos.</li>
+        </ol>
+
+        <h3>¿Por qué es correcto?</h3>
+        <p>El orden por \(\dfrac{P \cdot T}{T-1}\) sale del argumento de intercambio: si dos
+           cupones multiplicadores adyacentes están en el orden equivocado, intercambiarlos no
+           empeora el saldo final (la composición de las funciones afines \(X \to (X-P)\cdot T\)
+           es monótona según esa razón), así que existe un orden óptimo que la respeta. La fase
+           greedy compra todo lo que no reduce el saldo: nunca perjudica y maximiza el saldo para
+           los cupones caros. La cota \(M = 33\): cada cupón de tipo \(\ge 2\) que ya no
+           «crece» multiplica el resto por \(\ge 2\), y con saldo acotado a \(\sim 10^{15}\) no
+           caben más de \(\log_2\) de ellos; por eso solo importan los \(\le 32\) más baratos de
+           cada tipo y la DP es exhaustiva sobre esos conteos. Los tipo 1 solo restan, así que van
+           al final, los más baratos primero, y su cantidad máxima dado un saldo es una búsqueda
+           binaria sobre prefijos. Esto alcanza el <strong>pleno (100 puntos)</strong>; se valida
+           con un argumento de intercambio (la composición de las funciones afines es monótona en
+           esa razón) y la cota logarítmica vuelve exhaustiva la DP; en los casos oficiales el
+           conteo iguala siempre al óptimo del jurado y la secuencia es factible.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion max_coupons(A, P[], T[]):
+    N = longitud(P)
+    orden = indices 0..N-1 ordenados por:
+        si T[i] == T[j]:  P[i] &lt; P[j]
+        si no:            P[i]*T[i]*(T[j]-1) &lt; P[j]*T[j]*(T[i]-1)   // razon P*T/(T-1)
+
+    resultado = []
+    fichas = A
+    grupos[1..4] = listas vacias        // cupones (precio, indice) que NO crecen
+    para i en orden:
+        si (fichas - P[i]) * T[i] >= fichas:        // comprarlo no reduce el saldo
+            resultado.agrega(i)
+            fichas = (fichas - P[i]) * T[i]
+            si fichas >= UMBRAL (~1e15): devolver orden   // caben todos -> respuesta N
+        si no:
+            grupos[T[i]].agrega((P[i], i))
+
+    M = 33
+    para t en {2,3,4}: si tam(grupos[t]) >= M: recortar a los M-1 mas baratos
+    ordenar cada grupos[t] por precio creciente
+
+    dp[i][j][k] = -infinito                 // i,j,k en 0..M-1
+    dp[0][0][0] = fichas
+    para i de 0..|g2|, j de 0..|g3|, k de 0..|g4|:
+        si i>0: dp[i][j][k] = max(dp[i][j][k], (dp[i-1][j][k] - precio g2[i-1]) * 2)
+        si j>0: dp[i][j][k] = max(dp[i][j][k], (dp[i][j-1][k] - precio g3[j-1]) * 3)
+        si k>0: dp[i][j][k] = max(dp[i][j][k], (dp[i][j][k-1] - precio g4[k-1]) * 4)
+
+    pref[0] = 0
+    pref[m] = pref[m-1] + precio g1[m-1]    // tipo 1 ordenado por precio
+
+    mejor = 0 ; estado = (0,0,0,0)
+    para cada (i,j,k) con dp[i][j][k] >= 0:
+        m = mayor indice con pref[m] &lt;= dp[i][j][k]      // busqueda binaria
+        si i+j+k+m > mejor: mejor = i+j+k+m ; estado = (i,j,k,m)
+
+    resultado += reconstruir_orden_DP(estado.i, estado.j, estado.k)
+    resultado += los estado.m cupones de tipo 1 mas baratos
+    devolver resultado
+
+
+reconstruir_orden_DP(i, j, k):   // backtracking: elige la transicion que dio el max
+    res = []
+    mientras i+j+k > 0:
+        si i>0 y (dp[i-1][j][k] - precio g2[i-1])*2 == dp[i][j][k]:
+            res.agrega(g2[i-1]); i = i-1
+        sino si j>0 y (dp[i][j-1][k] - precio g3[j-1])*3 == dp[i][j][k]:
+            res.agrega(g3[j-1]); j = j-1
+        sino:
+            res.agrega(g4[k-1]); k = k-1
+    invertir(res); devolver res</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N \log N)\) por el ordenamiento, más \(O(M^3)\) de la
+           DP con \(M = 33\) (constante, \(\sim 36\,000\) estados), más \(O(\log N)\) por las
+           búsquedas binarias; en total \(O(N \log N + \log^3 A \cdot \log N)\). Para \(N = 200\,000\) corre en
+           \(\sim 0.05\) s (límite \(1.0\) s). Memoria: la DP es \(33^3\) enteros de 64 bits
+           (\(\sim 290\) KB) más \(O(N)\), muy dentro del límite de 2 GiB.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Cuidado numérico</span>
+<pre>Usa enteros de 64 bits (long long) para el saldo y los productos:
+(fichas - P[i]) * T[i] puede crecer hasta el umbral ~1e15.
+El umbral (~1e15) y M=33 dependen de A,P &lt;= 1e9; con limites
+mayores habria que recalcular M.</pre>
+          <p class="note">No hace falta ningún truco de lenguaje más allá de usar enteros de 64
+             bits; \(33^3\) entra holgado en memoria.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

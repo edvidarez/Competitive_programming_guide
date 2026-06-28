@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **136 / 142**
+Total de tareas: **142** · Completadas: **142 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -261,13 +261,13 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Mosaic | `2024/05 Mosaic/index.html` |
 | [x] | 6 | Sphinx's Riddle | `2024/06 Sphinx's Riddle/index.html` |
 
-## IOI 2025 — 0 / 6
+## IOI 2025 — 6 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
-| [ ] | 1 | Souvenirs | `2025/01 Souvenirs/index.html` |
-| [ ] | 2 | Triple Peaks | `2025/02 Triple Peaks/index.html` |
-| [ ] | 3 | World Map | `2025/03 World Map/index.html` |
-| [ ] | 4 | Festival | `2025/04 Festival/index.html` |
-| [ ] | 5 | Migrations | `2025/05 Migrations/index.html` |
-| [ ] | 6 | Obstacles for a Llama | `2025/06 Obstacles for a Llama/index.html` |
+| [x] | 1 | Souvenirs | `2025/01 Souvenirs/index.html` |
+| [x] | 2 | Triple Peaks | `2025/02 Triple Peaks/index.html` |
+| [x] | 3 | World Map | `2025/03 World Map/index.html` |
+| [x] | 4 | Festival | `2025/04 Festival/index.html` |
+| [x] | 5 | Migrations | `2025/05 Migrations/index.html` |
+| [x] | 6 | Obstacles for a Llama | `2025/06 Obstacles for a Llama/index.html` |
