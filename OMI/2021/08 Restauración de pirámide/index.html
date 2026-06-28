@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2021 · Problema 08 — Restauración de pirámide</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">26ª OMI · 2021 · Día 2</div>
+    <h1>Problema <span class="num">08</span> — Restauración de pirámide</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2021-restauracion/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Acaban de descubrir una nueva pirámide en Karelotitlán y han pedido tu ayuda
+       para restaurarla.</p>
+    <p>En la primera fase de trabajo se va a restaurar la escalera principal de la
+       pirámide. La escalera tiene \(N\) escalones (numerados de \(1\) a \(N\)),
+       pero muchos de ellos se encuentran dañados. A algunos de ellos les faltan
+       pedazos y están a menor altura de la que deberían y a otros les han caído
+       piedras encima y son más altos de lo que deberían.</p>
+    <p>Hay \(K\) escalones que se conservan en perfectas condiciones y tienen bellos
+       relieves grabados. Durante la restauración, debes mantener los \(K\) escalones
+       tal como están y restaurar <strong>algunos</strong> de los escalones restantes
+       para asegurar que toda la escalera sea ascendente, es decir, que la altura del
+       escalón \(i\) sea menor que la altura del escalón \(i + 1\). Al restaurar un
+       escalón puedes aumentar o disminuir su altura en cualquier cantidad.
+       <strong>La altura final del escalón debe ser entera y mayor o igual que
+       cero.</strong></p>
+    <p>Restaurar cada escalón cuesta, por lo que se busca restaurar el menor número de
+       escalones posible.</p>
+    <p>La empresa te ha dado una lista de \(N\) números que representan las alturas
+       actuales de los escalones y te ha dado las posiciones de los \(K\) escalones
+       que se desea conservar.</p>
+
+    <h3>Tarea</h3>
+    <p>Escribe un programa que dadas las alturas de los \(N\) escalones y la lista de
+       los \(K\) escalones que se desean conservar, proponga una posible configuración
+       final para la escalera restaurada. La configuración debe conservar los \(K\)
+       escalones deseados y puede modificar los valores de altura del resto.</p>
+    <p>La calificación que obtenga tu programa será mejor mientras menos escalones
+       modifique.</p>
+
+    <h2>Entrada</h2>
+    <ul>
+      <li>En la primera línea los números \(N\) y \(K\), el número de escalones y la
+          cantidad de ellos que se desea conservar.</li>
+      <li>En la segunda línea habrá \(N\) números separados por espacio que representan
+          las alturas de los escalones del \(1\) al \(N\).</li>
+      <li>En la tercera línea habrá \(K\) números distintos separados por espacio que
+          representan las posiciones de los escalones que se desea conservar.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <ul>
+      <li>Una línea con \(N\) enteros que representan las alturas finales de los
+          escalones en la escalera restaurada.</li>
+    </ul>
+    <p><strong>En caso de que sea imposible construir una escalera ascendente tu
+       programa deberá imprimir <code>-1</code>.</strong></p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Escalones</td><td><span class="badge">\(2 \le N \le 10^5\)</span></td></tr>
+        <tr><td>Escalones a conservar</td><td><span class="badge">\(0 \le K \le N\)</span></td></tr>
+        <tr><td>Alturas iniciales</td><td><span class="badge">\(0 \le h_i \le 10^9\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Evaluación</h2>
+    <p>Para cada subtarea tu programa será evaluado de la siguiente forma:</p>
+    <ul>
+      <li>Si tu programa escribe una escalera inválida, obtendrá \(0\) puntos. Una
+          escalera inválida es aquella que:
+        <ul>
+          <li>Tiene más o menos de \(N\) escalones.</li>
+          <li>Modifica alguno de los \(K\) escalones que se debían dejar intactos.</li>
+          <li>No es ascendente.</li>
+        </ul>
+      </li>
+      <li>Si tu programa escribe \(-1\) cuando sí era posible construir una escalera,
+          obtendrá \(0\) puntos.</li>
+      <li>Si tu programa escribe una escalera <strong>válida</strong> que modifica
+          \(N - K\) escalones, es decir, todos los escalones que se pueden modificar,
+          obtendrá <strong>10% de los puntos</strong>.</li>
+      <li>Si tu programa escribe una escalera <strong>válida</strong> que modifica el
+          número mínimo de escalones, obtendrá <strong>100% de los puntos</strong>.</li>
+      <li>Si tu programa escribe una escalera <strong>válida</strong> que modifica
+          entre \(N - K\) y el número mínimo de escalones, obtendrá un puntaje
+          intermedio entre <strong>10% y 100% de los puntos</strong>.</li>
+    </ul>
+    <p class="note">Es decir, se trata de un problema con calificación parcial
+       (<em>special judge</em>): hay muchas escaleras válidas y el puntaje crece a
+       medida que modificas menos escalones.</p>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">23</td><td>\(N \le 20\) y no hay ninguna escalera que no se pueda restaurar.</td></tr>
+          <tr><td>2</td><td class="pts">37</td><td>\(N \le 1000\)</td></tr>
+          <tr><td>3</td><td class="pts">40</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10 2
+4 3 5 4 8 16 15 18 19 3
+7 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2 3 5 6 8 14 15 18 19 20</pre></div>
+    </div>
+    <p class="note">Los escalones que se desea conservar son el \(3\) (con altura
+       \(5\)) y el \(7\) (con altura \(15\)). Una opción de restauración
+       (<strong>hay otras distintas</strong>) sería:
+       <strong>2</strong> 3 5 <strong>6</strong> 8 <strong>14</strong> 15 18 19
+       <strong>20</strong>, donde los números en negrita representan los escalones que
+       se restauraron. Para esta pirámide, no es posible restaurar la escalera
+       modificando menos de \(4\) escalones, por lo que esta solución obtendría el
+       100% de los puntos.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5 2
+1 2 4 3 5
+3 4</pre></div>
+      <div class="io"><h4>Salida</h4><pre>-1</pre></div>
+    </div>
+    <p class="note">La escalera del ejemplo es imposible de restaurar ya que se desea
+       conservar los escalones \(3\) y \(4\) pero sus alturas no cumplen con la regla
+       de ser una escalera ascendente.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Subsecuencia creciente (LIS)</span>
+      <span class="ptag">Programación dinámica</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Greedy / constructivo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan las alturas \(a_1,\dots,a_N\) de los escalones y un conjunto de \(K\)
+       posiciones <em>fijas</em> que no puedes tocar. Debes producir una escalera
+       <strong>estrictamente ascendente</strong> de enteros \(\ge 0\) que conserve las
+       alturas de los \(K\) escalones fijos y que <strong>modifique el menor número
+       posible</strong> de los demás. Si ni siquiera respetando los fijos se puede
+       hacer ascendente, imprime \(-1\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 20\) (subtarea 1) admite probar todas las máscaras de
+                escalones a conservar, \(O(2^N)\). \(N \le 1000\) (subtarea 2) admite
+                una DP cuadrática \(O(N^2)\). \(N \le 10^5\) (subtarea 3) exige
+                \(O(N\log N)\): la subsecuencia más larga con búsqueda binaria.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué estás minimizando de verdad?</summary>
+      <div class="body">
+        <p class="q">«Modificar el menor número de escalones» suena a optimización…
+           ¿pero no será lo mismo que <em>conservar la mayor cantidad</em> de
+           escalones intactos?</p>
+        <p>Los \(K\) escalones fijos siempre se conservan. La pregunta es: ¿qué otros
+           escalones puedes dejar tal como están (con su altura original) de modo que,
+           rellenando los huecos, la escalera completa sea válida? Si llamas
+           <em>conservados</em> al conjunto de escalones que no tocas, modificas
+           \(N - |\text{conservados}|\). Maximizar conservados = minimizar
+           modificados. ¿Ves cómo el problema se volvió «elegir el subconjunto más
+           grande de escalones intactos que sean compatibles entre sí»?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La transformación que mata la palabra «entero»</summary>
+      <div class="body">
+        <p class="q">La condición es \(f_i < f_{i+1}\) con enteros. Entre dos
+           escalones conservados \(p &lt; q\), ¿cuántas unidades de altura necesitas
+           como mínimo para subir de \(f_p\) a \(f_q\) en pasos estrictamente
+           crecientes de enteros?</p>
+        <p>Necesitas al menos \(q - p\) de diferencia: \(f_q \ge f_p + (q - p)\). Si
+           defines \(g_i = a_i - i\), esa condición se vuelve simplemente
+           \(g_p \le g_q\). ¡La condición «ascendente con enteros» equivale a que la
+           sucesión \(g\) de los escalones conservados sea <strong>no
+           decreciente</strong>! ¿Notas que con esto desaparece la distancia entre
+           escalones y queda un problema clásico de subsecuencias?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cuándo es imposible (\(-1\))?</summary>
+      <div class="body">
+        <p class="q">Los \(K\) fijos no se pueden mover. ¿Qué condiciones imponen
+           ellos solos, sin importar lo demás?</p>
+        <p>Entre dos fijos consecutivos \(p &lt; q\) necesitas \(a_q - a_p \ge q - p\)
+           (equivalente a \(g_p \le g_q\)); si falla, no hay forma de meter una
+           subida válida entre ellos. Además, el primer fijo en la posición \(p_1\)
+           necesita altura suficiente para que los escalones de antes quepan como
+           \(0,1,2,\dots\): debe cumplirse \(a_{p_1} \ge p_1 - 1\) (es decir
+           \(g_{p_1} \ge -1\)). Si alguna de estas falla, la respuesta es \(-1\). En
+           cualquier otro caso <em>siempre</em> hay solución. ¿Puedes ver que basta
+           con que \(g\) sea no decreciente a lo largo de los fijos, añadiendo un fijo
+           virtual al inicio con \(g = -1\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 1 y 2: fuerza bruta y DP cuadrática</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 20\), ¿cuántos subconjuntos de escalones puedes
+           probar? Con \(N \le 1000\), ¿qué DP clásica calcula «la cadena no
+           decreciente más larga que termina en \(i\)»?</p>
+        <p><strong>Subtarea 1 (\(N \le 20\)):</strong> recorre las \(2^N\) máscaras de
+           «qué escalones dejo intactos», descarta las que rompen la condición o no
+           incluyen a los \(K\) fijos, y quédate con la que conserva más. Garantiza
+           que siempre exista solución (la subtarea lo promete).</p>
+        <p><strong>Subtarea 2 (\(N \le 1000\)):</strong> es una subsecuencia no
+           decreciente más larga (LIS) sobre los \(g_i\), pero <em>forzada</em> a
+           pasar por todos los fijos. Una DP \(O(N^2)\): para cada escalón
+           <em>viable</em> \(i\), \(\textit{mejor}[i] = 1 + \max\{\textit{mejor}[j]\}\)
+           sobre los \(j &lt; i\) viables con \(g_j \le g_i\) que respeten los fijos.
+           Guarda un apuntador al \(j\) elegido para reconstruir. Un escalón es
+           «viable» solo si su \(g\) cae dentro de la ventana \([g_{\text{fijo izq}},
+           g_{\text{fijo der}}]\) que lo rodea.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Sustituye \(g_i = a_i - i\): la escalera es válida
+           si y solo si los escalones conservados tienen \(g\) <strong>no
+           decreciente</strong>. Maximizar conservados = encontrar la subsecuencia no
+           decreciente más larga de \(g\) que pase por los \(K\) fijos.</p>
+        <p><strong>Centinelas y segmentos.</strong> Agrega un escalón virtual en la
+           posición \(0\) con \(g_0 = -1\) (modela la no-negatividad: el primer escalón
+           real puede valer \(0\)) y otro en \(N+1\) con \(g_{N+1} = +\infty\). Junto
+           con los \(K\) fijos ordenados, estos puntos parten el arreglo en segmentos.
+           La pirámide es restaurable si y solo si \(g\) es no decreciente a lo largo
+           de esos puntos fijos; si en algún par baja, imprime \(-1\).</p>
+        <p><strong>Por segmento.</strong> Entre dos puntos fijos consecutivos \(u\) y
+           \(v\), un escalón intermedio \(j\) solo se puede conservar si
+           \(g_u \le g_j \le g_v\) (si no, jamás encajaría en una cadena no
+           decreciente entre \(g_u\) y \(g_v\)). Entre esos escalones «viables» toma la
+           <strong>subsecuencia no decreciente más larga</strong> con la técnica de
+           <em>patience sorting</em> + búsqueda binaria, guardando apuntadores para
+           reconstruirla, y márcalos como conservados.</p>
+        <p><strong>Construcción final.</strong> Recorre de izquierda a derecha: los
+           escalones conservados quedan con su altura original; cada modificado toma
+           <code>anterior + 1</code> (lo mínimo para seguir subiendo, empezando en
+           \(0\) gracias al centinela \(g_0 = -1\)). Como entre dos conservados se
+           cumple \(g_u \le g_v\), siempre hay espacio para rellenar con enteros
+           estrictamente crecientes \(\ge 0\); el resultado es óptimo porque conservaste
+           el máximo posible.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Restaurar(N, K, a[1..N], fijos):
+    para i en 1..N:  g[i] = a[i] - i
+    g[0]   = -1            # escalon virtual inicial (permite f_1 = 0)
+    g[N+1] = +INFINITO     # escalon virtual final
+    P = [0] + ordenar(fijos) + [N+1]      # puntos fijos con centinelas
+
+    # 1) Factibilidad: g no decreciente sobre los puntos fijos
+    para cada par consecutivo (u, v) en P:
+        si g[u] > g[v]:  imprime "-1";  termina
+
+    conservado[*] = falso
+    para cada f en fijos:  conservado[f] = verdadero
+
+    # 2) En cada segmento, LIS no decreciente de los escalones viables
+    para cada par consecutivo (u, v) en P:
+        pilas = []                        # patience sorting
+        para j en (u+1 .. v-1):
+            si g[j] < g[u] o g[j] > g[v]:  continuar   # no viable
+            pos = primera pila cuya cola > g[j]         # busqueda binaria
+            padre[j] = cola de la pila (pos - 1)        # -1 si pos = 0
+            coloca j en la pila pos (crea pila nueva si pos no existe)
+        si hubo pilas:
+            c = cola de la ultima pila
+            mientras c != -1:  conservado[c] = verdadero;  c = padre[c]
+
+    # 3) Construye la escalera (modificados = lo minimo)
+    prev = -1
+    para i en 1..N:
+        si conservado[i]:  f[i] = a[i]
+        si no:             f[i] = prev + 1
+        prev = f[i]
+    imprime f[1..N]</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N \log N)\) en tiempo (la búsqueda binaria
+           de la LIS) y \(O(N)\) en memoria.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>El centinela +INFINITO conviene en 64 bits (long long, p. ej. 4e18)
+para que ningun g[j] real (hasta ~1e9) lo alcance. Las alturas y los
+g[i] caben en int (g[i] entre -N y 1e9), pero usar long long en todo
+evita sorpresas. La altura final maxima es del orden de a_max + N.</pre>
+          <p class="note">No hace falta más; nunca pongas la solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

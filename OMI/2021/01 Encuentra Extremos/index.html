@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2021 · Problema 1 — Encuentra Extremos</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">26ª OMI · 2021 · Día 1</div>
+    <h1>Problema <span class="num">01</span> — Encuentra Extremos</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2021-extremos/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <p><span class="badge">Tarea interactiva</span></p>
+
+    <h2>El problema</h2>
+    <p>Existe un arreglo \(A = [a_1, a_2, \ldots, a_n]\) tal que \(a_i \neq a_j\)
+       para \(i \neq j\) (todos sus elementos son distintos). Debes encontrar la
+       <strong>posición</strong> del menor y la del mayor de ellos. Para hacerlo
+       puedes invocar la función <code>esMenor(i, j)</code>, que te devuelve
+       verdadero si \(a_i &lt; a_j\) y falso si \(a_i &gt; a_j\).</p>
+    <p>Encuentra la posición del mayor y del menor número del arreglo invocando la
+       <strong>menor cantidad de veces</strong> la función <code>esMenor(i, j)</code>.</p>
+
+    <h2>Implementación</h2>
+    <p>Deberás implementar la función <code>void buscaExtremos(int n)</code>.</p>
+    <p>Para obtener información debes invocar la función
+       <code>bool esMenor(int i, int j)</code>, que devolverá <code>true</code> si
+       el número en la posición \(i\) es menor que el número en la posición \(j\), y
+       <code>false</code> en caso de que no lo sea.
+       <strong>Recuerda que los números van de la posición \(1\) a la \(n\).</strong></p>
+    <p>Una vez que sepas la posición del mayor y del menor número del arreglo,
+       deberás invocar la función <code>void respuesta(int posMenor, int posMayor)</code>,
+       a la que le pasarás como parámetros la posición del número menor y la posición
+       del número mayor. <strong>Sólo puedes invocar la función
+       <code>respuesta</code> una vez.</strong></p>
+
+    <h2>Evaluación</h2>
+    <p>Tu puntaje dependerá de la cantidad de veces que invoques la función
+       <code>esMenor</code>. En algunas subtareas basta con que la cantidad de
+       invocaciones sea menor que un límite para obtener los puntos. En la última
+       subtarea tu puntaje dependerá de qué tanto te acerques al número de
+       invocaciones de la solución oficial.</p>
+    <p>En cualquiera de los siguientes casos obtendrás <strong>0 puntos</strong>:</p>
+    <ul>
+      <li>Si al invocar la función <code>esMenor(i, j)</code> utilizas posiciones
+          que están fuera del rango del arreglo, es decir, menores a \(1\) o
+          mayores a \(n\).</li>
+      <li>Si invocas la función <code>respuesta(posMenor, posMayor)</code> más de
+          una vez.</li>
+      <li>Si excedes la cantidad máxima de invocaciones a <code>esMenor(i, j)</code>
+          permitidas para esa subtarea.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No indicado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Límite de memoria</td><td>No indicado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del arreglo</td><td><span class="badge">\(1 \le N \le 500\)</span></td></tr>
+        <tr><td>Métrica calificada</td><td>número de llamadas a <code>esMenor</code></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Condición sobre las llamadas a <code>esMenor</code></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td class="pts">15</td>
+            <td>Obtienes <em>todos</em> los puntos si invocas <code>esMenor</code>
+                a lo más \(n^2\) veces.</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="pts">30</td>
+            <td>Obtienes <em>todos</em> los puntos si invocas <code>esMenor</code>
+                a lo más \(2n\) veces.</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td class="pts">55</td>
+            <td>
+              <ul>
+                <li>Si invocas <code>esMenor</code> \(2n\) veces obtendrás \(0\) puntos.</li>
+                <li>Si invocas <code>esMenor</code> a lo más el número de veces que
+                    lo hace la solución oficial, obtendrás el 100% de los puntos.</li>
+                <li>Si invocas <code>esMenor</code> entre \(2n\) y el número de la
+                    solución oficial, obtendrás una cantidad parcial de los puntos.</li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p class="note">El siguiente es un ejemplo de interacción para un arreglo de
+       tamaño \(3\), digamos \(A = [a_1, a_2, a_3]\).</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Función llamada</th><th>Valor devuelto</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>buscaExtremos(3)</code></td>
+            <td>—</td>
+            <td>Ésta será la llamada inicial a tu procedimiento
+                <code>buscaExtremos</code>.</td>
+          </tr>
+          <tr>
+            <td><code>esMenor(1, 2)</code></td>
+            <td><code>false</code></td>
+            <td>El número en la posición \(1\) es mayor que el número en la
+                posición \(2\).</td>
+          </tr>
+          <tr>
+            <td><code>esMenor(2, 3)</code></td>
+            <td><code>true</code></td>
+            <td>El número en la posición \(2\) es menor que el número en la
+                posición \(3\); por lo tanto es el menor de todos.</td>
+          </tr>
+          <tr>
+            <td><code>esMenor(1, 3)</code></td>
+            <td><code>true</code></td>
+            <td>El número en la posición \(1\) es menor que el número en la
+                posición \(3\); por lo tanto el número en la posición \(3\) es el
+                mayor de todos.</td>
+          </tr>
+          <tr>
+            <td><code>respuesta(2, 3)</code></td>
+            <td>—</td>
+            <td>Tras devolver el resultado usando la función <code>respuesta</code>,
+                tu programa debe terminar.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El juez incluye un material de <strong>experimentación</strong>
+       (paquete de <code>libinteractive</code>) para probar tu programa localmente
+       contra el evaluador.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Interactivo</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Emparejamiento</span>
+      <span class="ptag">Argumento adversarial</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay un arreglo oculto de \(n\) números <strong>distintos</strong>. La única
+       operación es <code>esMenor(i, j)</code>, que compara dos posiciones. Debes
+       reportar con <code>respuesta(posMenor, posMayor)</code> la posición del
+       mínimo y la del máximo, <strong>minimizando el número de comparaciones</strong>.
+       Lo que se califica no es el tiempo, sino cuántas veces llamas a
+       <code>esMenor</code>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 500\) es minúsculo: el tiempo nunca es el problema, el reto
+                es puramente <em>cuántas comparaciones</em> usas. La subtarea 1
+                (\(n^2\)) admite ordenar todo; la 2 (\(2n\)) admite dos pasadas
+                lineales; la 3 exige bajar por debajo de \(2n\), hacia
+                \(\lceil 3n/2 \rceil - 2\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué te regala cada comparación?</summary>
+      <div class="body">
+        <p class="q">Cuando llamas <code>esMenor(i, j)</code> y descubres, por
+           ejemplo, que \(a_i &lt; a_j\): ¿qué dejas de saber sobre cada uno?
+           ¿Puede \(a_i\) seguir siendo candidato a <em>máximo</em>? ¿Puede \(a_j\)
+           seguir siendo candidato a <em>mínimo</em>?</p>
+        <p>Piensa en cada comparación como un mini-torneo: el que pierde queda
+           descartado como máximo, el que gana queda descartado como mínimo. ¿Cómo
+           podrías usar esa doble información de un solo golpe?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(n^2\) llamadas, 15 pts)</summary>
+      <div class="body">
+        <p class="q">¿Y si simplemente <em>ordenas</em> todo el arreglo usando
+           <code>esMenor</code> como comparador? ¿Quiénes quedan en los extremos?</p>
+        <p>Un ordenamiento elemental (tipo burbuja) hace \(O(n^2)\) comparaciones;
+           al terminar, el primero es el mínimo y el último el máximo. Eso ya cae
+           dentro del presupuesto \(n^2\) y te da los primeros puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (\(2n\) llamadas, 30 pts)</summary>
+      <div class="body">
+        <p class="q">Si sólo te interesan los <em>extremos</em>, ¿de verdad
+           necesitas ordenar <em>todo</em>?</p>
+        <p>Lleva un candidato a mínimo y uno a máximo. Recorre el arreglo una vez:
+           compara cada elemento contra el candidato a mínimo (y actualízalo) y
+           contra el candidato a máximo (y actualízalo). Son \(2(n-1)\) comparaciones,
+           justo por debajo de \(2n\). Pero ojo: en la subtarea 3, \(2n\) llamadas
+           valen \(0\) puntos, así que hay que apretar más.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3: ¿se puede bajar de \(2n\)?</summary>
+      <div class="body">
+        <p class="q">En la pasada de la subtarea 2, a cada elemento le gastas
+           <em>dos</em> comparaciones. ¿Hay desperdicio? ¿Cuántos booleanos
+           (\(\text{puede-ser-mínimo}\), \(\text{puede-ser-máximo}\)) puedes apagar
+           con una sola comparación, y cuándo?</p>
+        <p>Argumento adversarial: una comparación apaga <em>a lo más dos</em>
+           booleanos, y eso sólo cuando enfrentas a dos elementos que aún tienen
+           sus dos booleanos encendidos (dos elementos "vírgenes"). Si primero los
+           enfrentas en parejas, cada comparación apaga dos a la vez. ¿Qué grupos
+           te quedan después de emparejar?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Asocia a cada posición dos banderas: "puede ser
+           el mínimo" y "puede ser el máximo". Al inicio todas están encendidas.
+           Cada comparación entre dos elementos con <em>ambas</em> banderas
+           encendidas apaga, de un solo golpe, la bandera de "máximo" del perdedor
+           y la de "mínimo" del ganador. Esa es la jugada eficiente, y conviene
+           hacerla tantas veces como se pueda.</p>
+
+        <p><strong>Construcción.</strong></p>
+        <ol>
+          <li><em>Empareja.</em> Toma los elementos de dos en dos y compara cada
+              pareja (\(\lfloor n/2 \rfloor\) comparaciones). El menor de cada
+              pareja entra al grupo <em>candidatos a mínimo</em>; el mayor, al grupo
+              <em>candidatos a máximo</em>. Si \(n\) es impar, el elemento que sobra
+              entra a ambos grupos sin gastar comparación.</li>
+          <li><em>Mínimo global.</em> Es el menor del grupo de candidatos a mínimo;
+              encontrarlo cuesta \(\lceil n/2 \rceil - 1\) comparaciones.</li>
+          <li><em>Máximo global.</em> Es el mayor del grupo de candidatos a máximo;
+              otras \(\lceil n/2 \rceil - 1\) comparaciones.</li>
+        </ol>
+
+        <p><strong>Por qué es correcto.</strong> El mínimo global nunca gana una
+           comparación, así que en su pareja fue el menor y cayó al grupo de
+           candidatos a mínimo; el paso 2 lo encuentra ahí. Simétricamente, el
+           máximo global nunca pierde, cayó al grupo de candidatos a máximo y el
+           paso 3 lo encuentra. Como los valores son distintos, ambos extremos son
+           únicos. Además, esta cota \(\lceil 3n/2 \rceil - 2\) es óptima: el
+           argumento adversarial de las banderas muestra que ninguna estrategia
+           puede usar menos comparaciones en el peor caso.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion buscaExtremos(n):
+    candMin = lista vacia     # posiciones que aun pueden ser el minimo
+    candMax = lista vacia     # posiciones que aun pueden ser el maximo
+
+    # 1) Empareja y reparte  (piso(n/2) comparaciones)
+    i = 1
+    mientras i + 1 <= n:
+        si esMenor(i, i+1):                 # a_i < a_(i+1)
+            agrega i   a candMin;  agrega i+1 a candMax
+        si no:
+            agrega i+1 a candMin;  agrega i   a candMax
+        i = i + 2
+    si i == n:                              # n impar: sobra uno
+        agrega n a candMin;  agrega n a candMax
+
+    # 2) Minimo entre los candidatos a minimo  (|candMin| - 1 comparaciones)
+    mn = candMin[0]
+    para p en candMin (desde el 2.o):
+        si esMenor(p, mn): mn = p
+
+    # 3) Maximo entre los candidatos a maximo  (|candMax| - 1 comparaciones)
+    mx = candMax[0]
+    para p en candMax (desde el 2.o):
+        si esMenor(mx, p): mx = p
+
+    respuesta(mn, mx)</pre>
+        </div>
+
+        <p><strong>Conteo de llamadas.</strong> \(\lfloor n/2 \rfloor +
+           (\lceil n/2 \rceil - 1) + (\lceil n/2 \rceil - 1) =
+           \lceil 3n/2 \rceil - 2\) comparaciones. Por ejemplo: \(n=5 \Rightarrow 6\),
+           \(n=93 \Rightarrow 138\), \(n=496 \Rightarrow 742\).</p>
+
+        <p><strong>Complejidad:</strong> \(\lceil 3n/2 \rceil - 2\) llamadas a
+           <code>esMenor</code>; \(O(n)\) en tiempo y \(O(n)\) en memoria.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

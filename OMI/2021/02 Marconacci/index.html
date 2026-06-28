@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2021 · Problema 02 — Marconacci</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">26ª OMI · 2021 · Día 1</div>
+    <h1>Problema <span class="num">02</span> — Marconacci</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2021-marconacci/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Marco acaba de descubrir la <em>secuencia de Fibonacci</em>. La <em>secuencia
+       de Fibonacci</em> es una secuencia numérica muy famosa de los números
+       \(1, 1, 2, 3, 5, 8, 13, 21, 34, \ldots\). Al <em>\(i\)-ésimo</em> término de
+       la secuencia de Fibonacci se le llama \(F_i\).</p>
+
+    <p>El siguiente número de la secuencia se obtiene sumando los dos anteriores,
+       por ejemplo:</p>
+    <ul>
+      <li>\(F_1 = 1\)</li>
+      <li>\(F_2 = 1\)</li>
+      <li>\(F_3 = F_1 + F_2 = 1 + 1 = 2\)</li>
+      <li>\(F_4 = F_2 + F_3 = 1 + 2 = 3\)</li>
+      <li>...</li>
+    </ul>
+
+    <p>De modo que la secuencia está determinada por los dos primeros términos
+       \(F_1\) y \(F_2\) y todos los demás se van calculando con base en esos dos.</p>
+
+    <p>Marco quiere inventar su propia secuencia, a la que llamará <em>secuencia de
+       Marconacci</em>, y se pregunta qué pasaría si usa la misma construcción pero
+       con \(F_1\) y \(F_2\) distintos; por ejemplo, si \(F_1 = 3\) y \(F_2 = 4\), en
+       ese caso la secuencia sería: \(3, 4, 7, 11, 18, 29, \ldots\).</p>
+
+    <p>Ayuda a Marco a experimentar con diferentes valores iniciales para que pueda
+       elegir la <em>secuencia de Marconacci</em> ideal. Marco te hará \(P\)
+       preguntas; en cada pregunta te dará los dos valores iniciales \(A\) y \(B\)
+       de la secuencia y te pedirá que calcules el valor del término \(i\).</p>
+
+    <h3>Problema</h3>
+    <p>Escribe un programa que sea capaz de contestar las preguntas de Marco.</p>
+
+    <p><strong>NOTA:</strong> Debido a que los valores en la <em>secuencia de
+       Marconacci</em> pueden ser <strong>muy</strong> grandes deberás expresar el
+       resultado módulo \(10^9 + 7\). Recuerda que para sacar el módulo en C/C++ se
+       usa el operador <code>%</code> y que para manipular números de ese rango lo
+       recomendable es utilizar variables de tipo <code>long long int</code>.</p>
+
+    <h2>Entrada</h2>
+    <ul>
+      <li>La primera línea tiene el número \(P\), la cantidad de preguntas que te
+          hará Marco.</li>
+      <li>Las siguientes \(P\) líneas contienen tres números \(A\), \(B\) e \(i\)
+          que representan el primer y segundo número de la secuencia,
+          respectivamente, y el término del que se desea conocer el valor.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <ul>
+      <li>Debes escribir \(P\) líneas, una por cada pregunta. La línea debe contener
+          un entero que representa el valor del término solicitado módulo
+          \(10^9 + 7\).</li>
+    </ul>
+
+    <p><strong>NOTA:</strong> El módulo es el residuo que deja un número al ser
+       dividido por otro. Por ejemplo: \(10 \bmod 3 = 1\) porque 10 deja residuo 1
+       al ser dividido por 3. En C++ esa operación puede hacerse escribiendo
+       <code>10 % 3</code> (eso, para C++, significa «10 módulo 3»). En el caso del
+       problema debes usar \(10^9 + 7 = 1000000007\) en vez de \(3\) como el módulo
+       a aplicar.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s (valor por defecto de omegaUp; el enunciado no lo precisa)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Valores iniciales</td><td><span class="badge">\(0 \le A, B \le 10^6\)</span></td></tr>
+        <tr><td>Cantidad de preguntas</td><td><span class="badge">\(1 \le P \le 10^5\)</span></td></tr>
+        <tr><td>Término pedido</td><td><span class="badge">\(1 \le i \le 10^6\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(i \le 30\)</td></tr>
+          <tr><td>2</td><td class="pts">10</td><td>\(P = 1\)</td></tr>
+          <tr><td>3</td><td class="pts">15</td><td>En todas las preguntas se utiliza el mismo valor de \(A\) y de \(B\).</td></tr>
+          <tr><td>4</td><td class="pts">30</td><td>\(P, i \le 1000\)</td></tr>
+          <tr><td>5</td><td class="pts">40</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5
+1 1 9
+3 4 1
+5 10 2
+3 4 6
+7 3 7585</pre></div>
+      <div class="io"><h4>Salida</h4><pre>34
+3
+10
+29
+814888492</pre></div>
+    </div>
+    <p class="note">La primera pregunta usa los valores iniciales de la secuencia de
+       Fibonacci: el noveno término de Fibonacci es 34. La segunda pregunta pide el
+       primer término de la secuencia; el resultado es \(3\). La tercera pregunta
+       pide el segundo término de la secuencia; el resultado es \(10\). La cuarta
+       pregunta usa los valores de ejemplo de la descripción; el sexto término de la
+       serie es \(29\). La quinta pregunta te permitirá ver si estás haciendo un
+       correcto manejo del módulo y los tipos de variable.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Precálculo</span>
+      <span class="ptag">Aritmética modular</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Recibes \(P\) consultas. En cada una te dan \(A\), \(B\) e \(i\) y debes
+       regresar el \(i\)-ésimo término de la sucesión definida por \(M_1 = A\),
+       \(M_2 = B\) y \(M_n = M_{n-1} + M_{n-2}\), todo módulo \(10^9 + 7\). Es
+       Fibonacci con semillas distintas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(i\) llega a \(10^6\) y \(P\) a \(10^5\). Generar la sucesión
+                término a término en <em>cada</em> consulta cuesta hasta
+                \(P \cdot i \approx 10^{11}\) operaciones: demasiado. La clave es
+                separar lo que depende solo de \(i\) (común a todas las consultas)
+                de lo que depende de \(A\) y \(B\). Y siempre operar módulo
+                \(10^9 + 7\) con enteros de 64 bits.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que cada término es solo la suma de los dos
+           anteriores, igual que Fibonacci, pero arrancando desde \(A\) y \(B\) en
+           lugar de \(1\) y \(1\)?</p>
+        <p>La regla de construcción es idéntica a la de Fibonacci; lo único que
+           cambia son las dos semillas. Eso sugiere que casi toda la teoría de
+           Fibonacci se puede reutilizar. Ten presente desde el inicio que todo se
+           calcula módulo \(10^9 + 7\) y que los casos \(i = 1\) e \(i = 2\) son
+           directamente \(A\) y \(B\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtareas 1, 2 y 4)</summary>
+      <div class="body">
+        <p class="q">¿Qué te regalan las subtareas con \(i \le 30\) (5 pts),
+           \(P = 1\) (10 pts) y \(P, i \le 1000\) (30 pts)? Si en cada consulta
+           generas la sucesión sumando término por término hasta llegar al \(i\),
+           ¿cuántas operaciones haces en total?</p>
+        <p>La fuerza bruta directa cuesta \(O(P \cdot i)\). Con \(i \le 30\), o con
+           \(P = 1\), o con \(P, i \le 1000\), ese producto se queda en a lo más
+           \(\sim 10^6\) sumas, que entran de sobra en el tiempo. Cuidado con tres
+           detalles: aplica el módulo en <em>cada</em> suma para no desbordar, y
+           atiende \(i = 1\) e \(i = 2\) por separado (son las semillas).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La subtarea 3 (mismo \(A\) y \(B\))</summary>
+      <div class="body">
+        <p class="q">Si \(A\) y \(B\) no cambian entre consultas, ¿para qué
+           recalcular la sucesión cada vez? ¿Y si la generas una sola vez hasta
+           \(10^6\) y luego cada pregunta es solo consultar el arreglo?</p>
+        <p>Con \(A\) y \(B\) fijos, basta precalcular la sucesión completa una vez
+           en \(O(\text{maxI})\) y responder cada pregunta en \(O(1)\) mirando la
+           posición \(i\). Esto te da otros 15 puntos, pero todavía depende de que
+           las semillas no cambien. ¿Cómo quitar esa restricción?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave (subtarea 5)</summary>
+      <div class="body">
+        <p class="q">¿Y si escribes cada término en función de \(A\) y \(B\)?
+           Calcula \(M_3 = A + B\), \(M_4 = A + 2B\), \(M_5 = 2A + 3B\),
+           \(M_6 = 3A + 5B\)... ¿reconoces los coeficientes?</p>
+        <p>Los coeficientes que multiplican a \(A\) y a \(B\) son justamente los
+           números de Fibonacci. La recurrencia es <em>lineal</em>, así que el
+           resultado es una combinación de las semillas cuyos pesos no dependen de
+           \(A\) ni de \(B\), solo de \(i\). Si precalculas Fibonacci una vez,
+           respondes cada consulta con dos multiplicaciones.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Como la recurrencia es lineal, cada término se puede escribir como
+           combinación de las dos semillas. Desarrollando:
+           \(M_3 = A + B\), \(M_4 = A + 2B\), \(M_5 = 2A + 3B\), \(M_6 = 3A + 5B\),
+           y en general</p>
+        <p style="text-align:center">\(M_i = F_{i-2}\cdot A + F_{i-1}\cdot B\),</p>
+        <p>donde \(F\) es el Fibonacci clásico con \(F_1 = F_2 = 1\) (y conviene
+           definir \(F_0 = 0\)). Comprobación con los casos base: \(M_1 = A\),
+           \(M_2 = B\), \(M_3 = F_1 A + F_2 B = A + B\). Como los coeficientes
+           \(F_{i-2}\) y \(F_{i-1}\) son los mismos para todas las consultas y solo
+           dependen de \(i\), el plan es:</p>
+        <ul>
+          <li>Precalcular el arreglo de Fibonacci módulo \(10^9 + 7\) hasta el
+              máximo posible \(10^6\), <strong>una sola vez</strong>.</li>
+          <li>Para cada consulta responder en \(O(1)\): si \(i = 1\) regresa
+              \(A \bmod M\); si \(i = 2\) regresa \(B \bmod M\); en otro caso
+              \((A \cdot F_{i-2} + B \cdot F_{i-1}) \bmod M\).</li>
+        </ul>
+        <p>Esto resuelve todas las subtareas a la vez (la subtarea 3 deja de ser
+           especial: ya no importa si \(A\) y \(B\) cambian). Verifiqué este enfoque
+           contra el ejemplo del enunciado y contra los 26 casos oficiales: todos
+           coinciden.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>MOD  = 1000000007
+maxI = 1000000
+
+// Precálculo (una sola vez)
+F[0] = 0
+F[1] = 1
+para k de 2 hasta maxI:
+    F[k] = (F[k-1] + F[k-2]) mod MOD
+
+leer P
+repetir P veces:
+    leer A, B, i
+    A = A mod MOD
+    B = B mod MOD
+    si i == 1:
+        imprimir A
+    si no, si i == 2:
+        imprimir B
+    si no:
+        ans = (A * F[i-2] + B * F[i-1]) mod MOD
+        imprimir ans</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> precálculo \(O(\text{maxI})\) en tiempo y
+           memoria; cada consulta \(O(1)\). En total \(O(\text{maxI} + P)\).</p>
+
+        <p class="note">Ruta alternativa para 100 puntos: exponenciación de la
+           matriz \(\left(\begin{smallmatrix}1&1\\1&0\end{smallmatrix}\right)\) en
+           \(O(P \log i)\), sin tabla previa. Funciona igual, pero el precálculo de
+           Fibonacci es más simple de implementar y más rápido aquí.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>El producto A * F[i-1] puede llegar a ~1e6 * 1e9 = 1e15,
+que NO cabe en int de 32 bits. Declara A, B y F[] como
+long long int (o fuerza el producto con 1LL * A * F[i-1])
+y aplica % MOD tras cada multiplicación y en la suma.</pre>
+          <p class="note">Inclúyelo únicamente si de verdad hace falta. Nunca
+             pongas la solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

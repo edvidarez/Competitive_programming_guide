@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2021 · Problema 07 — Reactor</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">26ª OMI · 2021 · Día 2</div>
+    <h1>Problema <span class="num">07</span> — Reactor</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2021-reactor/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>El señor Burns se levantó de buenas y le dio vacaciones a Homero; tú tendrás
+       que cubrir su puesto en la planta nuclear.</p>
+
+    <p>Homero te explicó rápidamente la planta. La planta nuclear de Springfield
+       tiene \(N\) reactores numerados del \(1\) al \(N\) conectados entre sí por
+       \(M\) conexiones <strong>unidireccionales</strong>; esto quiere decir que una
+       conexión que va del reactor \(a\) al \(b\) (\(a \rightarrow b\)) no puede
+       usarse en sentido contrario (\(a \nleftarrow b\)).</p>
+
+    <p>Homero te advierte que la planta es vieja y los reactores pueden fallar de
+       pronto y volverse <em>inestables</em>. La advertencia de Homero te preocupa,
+       por lo que te pones a investigar y averiguas lo siguiente:</p>
+    <ul>
+      <li>Si un reactor se vuelve <em>inestable</em>, comienza a emitir radiación y
+          pasa una de las siguientes dos cosas:
+        <ul>
+          <li>Si el reactor <em>inestable</em> tiene conexión a otros reactores, la
+              radiación hace que todos ellos se vuelvan <em>inestables</em>.</li>
+          <li>Si el reactor <em>inestable</em> <strong>no está conectado a ningún
+              reactor, la radiación se emite al medio ambiente</strong>.</li>
+        </ul>
+      </li>
+    </ul>
+    <p>Observa que un reactor puede volverse <em>inestable</em> aun sin estar
+       conectado directamente al reactor que falló (ver Figura 1 del enunciado
+       oficial).</p>
+
+    <p>Cuando un reactor es <em>inestable</em>, la única forma de volverlo a la
+       normalidad es eliminar la causa de su inestabilidad; por ejemplo, si es
+       <em>inestable</em> porque falló, se requiere reparar la falla; si es
+       <em>inestable</em> porque está recibiendo radiación de otro reactor, se
+       requiere que el reactor que emite la radiación se estabilice y deje de radiar.
+       <strong>Si un reactor tiene más de una causa de <em>inestabilidad</em>, todas
+       las causas deben ser eliminadas antes de que pueda volverse estable.</strong></p>
+
+    <p>Hay dos tipos de <em>inestabilidades</em>:</p>
+    <ul>
+      <li><strong>Simple:</strong> el reactor tiene sólo una causa de
+          <em>inestabilidad</em>.</li>
+      <li><strong>Compuesta:</strong> el reactor tiene dos o más causas de
+          <em>inestabilidad</em>.</li>
+    </ul>
+    <p>La Figura 2 del enunciado oficial muestra de qué tipo son las
+       <em>inestabilidades</em> en el caso de la Figura 1. Observa que el reactor que
+       falla originalmente tiene una <em>inestabilidad compuesta</em>, ya que las
+       causas de su <em>inestabilidad</em> son: 1) la falla y 2) la radiación que
+       recibe de un reactor <em>inestable</em>.</p>
+
+    <p>Cuando un reactor falla se dice que la planta entra en <em>crisis</em>. Hay
+       tres tipos de <em>crisis</em>:</p>
+    <ul>
+      <li><strong>Bajo nivel:</strong> en esta <em>crisis</em>, si se repara la falla
+          del reactor inicialmente <em>inestable</em>, el resto de los reactores
+          vuelve a la normalidad al cabo de un tiempo.</li>
+      <li><strong>Grave:</strong> en esta <em>crisis</em>, si se elimina la falla del
+          reactor inicialmente <em>inestable</em>, existe un conjunto de reactores que
+          quedan en <em>inestabilidad simple</em>.</li>
+      <li><strong>Severa:</strong> <em>crisis</em> en la que, si se elimina la falla
+          del reactor inicialmente inestable, existe un conjunto de reactores que
+          quedan en <em>inestabilidad compuesta</em>.</li>
+    </ul>
+
+    <p>Quieres estar preparado (te gustaría impresionar a Homero), así que piensas
+       escribir un programa que pueda decirte qué pasaría si falla alguno de los
+       reactores.</p>
+
+    <p>Escribe un programa que, dada la configuración de los reactores y un posible
+       reactor de falla, sea capaz de contestar tres cosas:</p>
+    <ul>
+      <li>¿Qué tipo de <em>crisis</em> se generaría? (Bajo nivel, Grave o Severa).</li>
+      <li>¿Cuántos reactores estarán emitiendo radiación al medio ambiente durante la
+          falla?</li>
+      <li>¿Cuántos reactores continuarán emitiendo radiación al medio ambiente luego
+          de que se corrija la falla?</li>
+    </ul>
+
+    <p class="note">Nota: el enunciado original incluye las figuras 1 a 5 (diagramas
+       del grafo de reactores y sus inestabilidades). No están disponibles en esta
+       copia local; consúltalas en el enlace al juez si las necesitas.</p>
+
+    <h2>Entrada</h2>
+    <ul>
+      <li>La primera línea contiene los números \(N\), \(M\) y \(R\): la cantidad de
+          reactores, la cantidad de conexiones y el número del reactor que falla.</li>
+      <li>Las siguientes \(M\) líneas contienen dos enteros \(a\) y \(b\), indicando
+          que la conexión va del reactor \(a\) al reactor \(b\). <strong>Un reactor
+          nunca está conectado a sí mismo.</strong></li>
+    </ul>
+
+    <h2>Salida</h2>
+    <ul>
+      <li>En la primera línea, un carácter que indique el tipo de <em>crisis</em>. Debes
+          usar <strong>B</strong> para <em>bajo nivel</em>, <strong>G</strong> para
+          <em>grave</em> y <strong>S</strong> para <em>severa</em>.</li>
+      <li>En la segunda línea debe haber dos números que indiquen la cantidad de
+          reactores que emiten radiación al medio ambiente durante la falla y la
+          cantidad de reactores que continúan emitiendo radiación al medio ambiente
+          luego de corregir la falla.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (predeterminado del juez)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Reactores y conexiones</td><td><span class="badge">\(1 \le N, M \le 10^5\)</span></td></tr>
+        <tr><td>Reactor que falla</td><td><span class="badge">\(1 \le R \le N\)</span></td></tr>
+        <tr><td>Extremos de cada conexión</td><td><span class="badge">\(1 \le a, b \le N\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Evaluación</h2>
+    <p>En este problema se evaluará por separado si tu programa puede detectar el tipo
+       de <em>crisis</em> y si hace correctamente el cálculo de emisiones de
+       partículas.</p>
+    <ul>
+      <li>Si tu programa detecta correctamente el tipo de <em>crisis</em>, obtendrás
+          <strong>50%</strong> de los puntos.</li>
+      <li>Si tu programa calcula correctamente el número de partículas emitidas al
+          medio ambiente, obtendrás <strong>50%</strong> de los puntos.</li>
+    </ul>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">12</td><td>\(a &lt; b\) para todas las conexiones. \(N \le 1000\)</td></tr>
+          <tr><td>2</td><td class="pts">24</td><td>\(a &lt; b\) para todas las conexiones.</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>\(a &lt; b\) para todas las conexiones menos una. \(N \le 1000\)</td></tr>
+          <tr><td>4</td><td class="pts">24</td><td>\(a &lt; b\) para todas las conexiones menos una.</td></tr>
+          <tr><td>5</td><td class="pts">28</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10 12 1
+1 2
+1 3
+2 4
+3 4
+4 5
+6 7
+7 6
+7 1
+7 8
+8 6
+9 10
+10 9</pre></div>
+      <div class="io"><h4>Salida</h4><pre>B
+1 0</pre></div>
+    </div>
+    <p class="note">La crisis es de <em>Bajo nivel</em>, ya que al corregir la falla en
+       el reactor \(1\) los demás reactores vuelven a ser estables. Durante la falla, el
+       reactor \(5\) emite radiación al medio ambiente; al corregirse la falla, ningún
+       reactor emite radiación. (Ver Figura 3 del enunciado oficial.)</p>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10 12 10
+1 2
+1 3
+2 4
+3 4
+4 5
+6 7
+7 6
+7 1
+7 8
+8 6
+9 10
+10 9</pre></div>
+      <div class="io"><h4>Salida</h4><pre>G
+0 0</pre></div>
+    </div>
+    <p class="note">Aunque se corrija la falla del reactor \(10\), este permanece
+       inestable porque sigue recibiendo radiación del reactor \(9\). No hay ningún
+       reactor que emita partículas al medio ambiente ni durante la falla ni luego de
+       que esta se corrija. (Ver Figura 4 del enunciado oficial.)</p>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10 12 7
+1 2
+1 3
+2 4
+3 4
+4 5
+6 7
+7 6
+7 1
+7 8
+8 6
+9 10
+10 9</pre></div>
+      <div class="io"><h4>Salida</h4><pre>S
+1 1</pre></div>
+    </div>
+    <p class="note">El reactor \(6\) recibe radiación del reactor \(7\) y del reactor
+       \(8\), por lo que se encuentra en <em>inestabilidad compuesta</em>. Al corregir
+       la falla del reactor \(7\), este permanece inestable porque está recibiendo
+       radiación del reactor \(6\), y el reactor \(6\) permanece en <em>inestabilidad
+       compuesta</em>. Durante la falla y luego de que esta se corrija, el reactor
+       \(5\) emite partículas al medio ambiente. (Ver Figura 5 del enunciado oficial.)</p>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>7 8 1
+1 2
+2 3
+3 4
+4 2
+1 5
+5 4
+3 6
+5 7</pre></div>
+      <div class="io"><h4>Salida</h4><pre>G
+2 1</pre></div>
+    </div>
+    <p class="note">El enunciado oficial no incluye una descripción para este cuarto
+       caso de ejemplo.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">BFS/DFS</span>
+      <span class="ptag">Detección de ciclos</span>
+      <span class="ptag">Simulación</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un grafo dirigido de \(N\) reactores y \(M\) conexiones \(a \rightarrow b\),
+       y un reactor \(R\) que falla. La inestabilidad nace en \(R\) y se propaga por las
+       aristas. Debes reportar tres cosas: (1) el tipo de crisis (<strong>B</strong>,
+       <strong>G</strong> o <strong>S</strong>), (2) cuántos reactores <em>sumidero</em>
+       (sin conexiones de salida) emiten al ambiente <em>durante</em> la falla y
+       (3) cuántos siguen emitiendo <em>después</em> de reparar \(R\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, M \le 10^5\) pide una solución lineal \(O(N+M)\). En las subtareas
+                1–2, <em>todas</em> las conexiones cumplen \(a &lt; b\) ⇒ el grafo es un
+                DAG (sin ciclos). En las subtareas 3–4 hay exactamente <em>una</em> arista
+                "hacia atrás" ⇒ a lo más un ciclo. La subtarea 5 no tiene restricciones
+                (puede haber muchos ciclos anidados). El puntaje es 50% por el tipo de
+                crisis y 50% por el conteo de emisiones.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que esto es un grafo dirigido, donde cada reactor es un
+           nodo y cada conexión \(a \rightarrow b\) una arista dirigida?</p>
+        <p class="q">¿Qué significa "emitir al medio ambiente"? ¿No es justo un reactor
+           inestable que no tiene aristas de salida, es decir, un <em>sumidero</em>
+           (hoja)?</p>
+        <p class="q">¿Y cuándo se vuelve inestable un reactor: cuando le llega radiación
+           por una arista entrante desde un nodo inestable, o porque es el que falló
+           (\(R\))?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Quién emite durante la falla? (mitad de los puntos)</summary>
+      <div class="body">
+        <p class="q">Durante la falla, ¿qué reactores quedan inestables? ¿No son
+           exactamente los <em>alcanzables</em> desde \(R\) siguiendo las aristas?</p>
+        <p class="q">De esos, ¿cuáles emiten al ambiente? ¿Sólo los sumideros (sin
+           aristas de salida)?</p>
+        <p class="q">El grafo no es un árbol: a una hoja se puede llegar por muchos
+           caminos. ¿Cómo evitas contarla doble? ¿Una DFS/BFS que marque visitados no lo
+           resuelve?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Por qué con \(a &lt; b\) siempre es "Bajo nivel"? (subtareas 1–2)</summary>
+      <div class="body">
+        <p class="q">Si en <em>todas</em> las conexiones \(a &lt; b\), ¿puede existir un
+           ciclo? ¿No haría falta una arista que regrese de un número mayor a uno menor?</p>
+        <p class="q">Sin ciclos, al reparar \(R\) la estabilidad se propaga y todo vuelve
+           a la normalidad. Entonces, ¿el tipo siempre es <strong>B</strong> y el conteo
+           "después" siempre es \(0\)?</p>
+        <p>Así las subtareas 1–2 se resuelven con: tipo \(=\) <strong>B</strong>, "durante"
+           \(=\) hojas alcanzables desde \(R\), "después" \(= 0\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La arista "hacia atrás" (subtareas 3–4)</summary>
+      <div class="body">
+        <p class="q">Si todas cumplen \(a &lt; b\) menos una, esa única arista (de mayor a
+           menor) puede cerrar un ciclo. ¿\(R\) <em>alcanza</em> ese ciclo (o forma parte
+           de él)?</p>
+        <p class="q">Si no lo alcanza, sigue siendo <strong>B</strong>. Si lo alcanza, los
+           reactores del ciclo se mantienen inestables al reparar \(R\) ⇒ <strong>G</strong>
+           (grave). ¿Cuándo sube a <strong>S</strong> (severa)? ¿No es cuando algún reactor
+           del ciclo acumula 2 o más causas, es decir, hay más de un camino entre dos nodos
+           del ciclo?</p>
+        <p class="q">Y los emisores "después", ¿no son los sumideros que cuelgan de ese
+           ciclo (los que descienden de un nodo que sigue inestable)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Caso general: contar "causas" (subtarea 5)</summary>
+      <div class="body">
+        <p class="q">¿Cómo detectar ciclos sin tener que hallarlos explícitamente?
+           ¿Y si <em>simulas</em> la falla propagando la inestabilidad y cuentas, por cada
+           reactor, cuántas <em>causas</em> (aristas entrantes desde nodos inestables)
+           acumula?</p>
+        <p class="q">¿Notaste que un reactor con 2 o más causas es "inicio" de un ciclo,
+           porque la propagación llegó a él dos o más veces?</p>
+        <p class="q">Después <em>reparas</em>: quitas una causa a \(R\) y propagas la
+           estabilidad mientras algún reactor llegue a \(0\) causas. ¿No es cierto que lo
+           que sobrevive con causas \(&gt; 0\) es justo lo que sigue inestable?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Modelado.</strong> Grafo dirigido con lista de adyacencia de salida
+           <code>salientes[u]</code>. Un reactor emite al ambiente exactamente cuando es un
+           <em>sumidero</em> (no tiene aristas de salida) y está inestable.</p>
+
+        <p><strong>Fase 1 — Simular la falla.</strong> Marca <code>causas[R] = 1</code> (la
+           propia falla) y propaga: desde \(R\), por cada arista \(u \rightarrow v\)
+           incrementa <code>causas[v]</code>; la <em>primera</em> vez que
+           <code>causas[v]</code> llega a \(1\), el reactor \(v\) se volvió inestable, así
+           que ahora hay que propagar desde \(v\) (procesa sus salientes una sola vez). Al
+           terminar, <code>causas[v]</code> es el número de aristas entrantes desde nodos
+           inestables (\(+1\) si \(v = R\)). El conjunto inestable durante la falla son los
+           alcanzables desde \(R\).</p>
+
+        <p><strong>Fase 2 — Reparar la falla.</strong> Quita la causa de la falla:
+           <code>causas[R] -= 1</code>. Cuando un reactor llega a \(0\) causas deja de
+           radiar, por lo que cada uno de sus hijos pierde una causa (efecto cascada):
+           propaga decrementando. Esto es un "pelado" topológico: van cayendo a estable los
+           nodos que no están sostenidos por un ciclo. Al terminar, <code>causas[v]</code>
+           es el número de causas que <em>permanecen</em>; los reactores con
+           <code>causas &gt; 0</code> son los que siguen inestables (están en un ciclo
+           alcanzable desde \(R\), o aguas abajo de él).</p>
+
+        <p><strong>Tipo de crisis</strong> (50% de los puntos): mira los valores de
+           <code>causas</code> tras reparar.</p>
+        <ul>
+          <li>Si <em>ningún</em> reactor quedó con <code>causas &gt; 0</code> ⇒
+              <strong>B</strong> (bajo nivel).</li>
+          <li>Si el máximo de causas remanentes es exactamente \(1\) ⇒ <strong>G</strong>
+              (grave): hay inestabilidad simple persistente.</li>
+          <li>Si algún reactor quedó con <code>causas \(\ge 2\)</code> ⇒ <strong>S</strong>
+              (severa): inestabilidad compuesta persistente.</li>
+        </ul>
+
+        <p><strong>Emisiones al ambiente</strong> (el otro 50%):</p>
+        <ul>
+          <li><em>Durante</em> la falla: cuenta los sumideros alcanzables desde \(R\).</li>
+          <li><em>Después</em> de reparar: cuenta los sumideros con <code>causas &gt; 0</code>
+              (siguen recibiendo radiación de algún nodo aún inestable).</li>
+        </ul>
+
+        <p><strong>Por qué es correcto.</strong> La propagación de inestabilidad alcanza
+           exactamente los nodos accesibles desde \(R\). Al reparar, un nodo deja de ser
+           inestable sólo cuando <em>todas</em> sus causas desaparecen; el pelado (quitar
+           los nodos que llegan a \(0\)) deja vivos únicamente a los nodos sostenidos por un
+           ciclo y a sus descendientes. Un nodo con \(\ge 2\) causas remanentes recibe
+           radiación de dos fuentes que se sostienen mutuamente ⇒ inestabilidad compuesta ⇒
+           severa.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, M, R
+para cada arista (a, b): agregar b a salientes[a]
+
+// Fase 1: simular la falla (propagar inestabilidad)
+causas[R] = 1;  alcanzable[R] = verdadero
+pila = { R }
+mientras pila no vacía:
+    u = sacar(pila)
+    para cada v en salientes[u]:
+        causas[v] += 1
+        si causas[v] == 1:            // primera vez inestable
+            alcanzable[v] = verdadero
+            meter(pila, v)
+
+// Fase 2: reparar la falla (propagar estabilidad)
+causas[R] -= 1
+pila = { }
+si causas[R] == 0: meter(pila, R)
+mientras pila no vacía:
+    u = sacar(pila)
+    para cada v en salientes[u]:
+        causas[v] -= 1
+        si causas[v] == 0: meter(pila, v)
+
+// Tipo de crisis
+hayCompuesta = (existe i con causas[i] >= 2)
+haySimple    = (existe i con causas[i] == 1)
+si hayCompuesta: tipo = 'S'
+sino si haySimple: tipo = 'G'
+sino: tipo = 'B'
+
+// Emisiones (sumidero = sin salientes)
+durante = cuenta de i con salientes[i] vacío y alcanzable[i]
+despues = cuenta de i con salientes[i] vacío y causas[i] > 0
+
+imprimir tipo
+imprimir durante, despues</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N + M)\) en tiempo y memoria (cada nodo y cada
+           arista se procesa un número constante de veces).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Con N hasta 10^5, una DFS recursiva para propagar
+puede desbordar la pila de llamadas. Usa una pila
+explícita (versión iterativa, como arriba) o amplía
+el tamaño de pila del sistema.</pre>
+          <p class="note">Es sólo una nota de implementación; la idea algorítmica no
+             cambia.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

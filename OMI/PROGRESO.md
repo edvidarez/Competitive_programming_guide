@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **30 / 190**
+Total de problemas: **190** · Completados: **38 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -292,18 +292,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 5 | Día 2 | Ovejas | `2020/05 Ovejas/index.html` |
 | [ ] | 6 | Día 2 | Ciudad Rectángulo | `2020/06 Ciudad Rectángulo/index.html` |
 
-## 26ª OMI · 2021 — 0 / 8
+## 26ª OMI · 2021 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Encuentra Extremos | `2021/01 Encuentra Extremos/index.html` |
-| [ ] | 2 | Día 1 | Marconacci | `2021/02 Marconacci/index.html` |
-| [ ] | 3 | Día 1 | Fotones | `2021/03 Fotones/index.html` |
-| [ ] | 4 | Día 1 | Capa de Invisibilidad | `2021/04 Capa de Invisibilidad/index.html` |
-| [ ] | 5 | Día 2 | Virus de Computadora | `2021/05 Virus de Computadora/index.html` |
-| [ ] | 6 | Día 2 | Juego de Fichas | `2021/06 Juego de Fichas/index.html` |
-| [ ] | 7 | Día 2 | Reactor | `2021/07 Reactor/index.html` |
-| [ ] | 8 | Día 2 | Restauración de pirámide | `2021/08 Restauración de pirámide/index.html` |
+| [x] | 1 | Día 1 | Encuentra Extremos | `2021/01 Encuentra Extremos/index.html` |
+| [x] | 2 | Día 1 | Marconacci | `2021/02 Marconacci/index.html` |
+| [x] | 3 | Día 1 | Fotones | `2021/03 Fotones/index.html` |
+| [x] | 4 | Día 1 | Capa de Invisibilidad | `2021/04 Capa de Invisibilidad/index.html` |
+| [x] | 5 | Día 2 | Virus de Computadora | `2021/05 Virus de Computadora/index.html` |
+| [x] | 6 | Día 2 | Juego de Fichas | `2021/06 Juego de Fichas/index.html` |
+| [x] | 7 | Día 2 | Reactor | `2021/07 Reactor/index.html` |
+| [x] | 8 | Día 2 | Restauración de pirámide | `2021/08 Restauración de pirámide/index.html` |
 
 ## 27ª OMI · 2022 — 8 / 8
 

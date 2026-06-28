@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2021 · Problema 04 — Capa de Invisibilidad</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">26ª OMI · 2021 · Día 1</div>
+    <h1>Problema <span class="num">04</span> — Capa de Invisibilidad</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2021-invisibilidad/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Harry anda de turista en la ciudad de Yakarta previo a la IOI 2022.</p>
+
+    <p>Yakarta puede representarse como un rectángulo de \(F\) filas por \(C\)
+       columnas. Harry desea recorrer toda la ciudad. Para eso Harry comienza en
+       algún lugar de la fila \(1\) y quiere llegar a la fila \(F\). Como cualquier
+       turista, Harry puede desplazarse en 4 direcciones: norte, sur, este u oeste.</p>
+
+    <p>Yakarta tiene \(N\) zonas peligrosas en las que Harry debe usar su capa de
+       invisibilidad para pasar sin peligro. Sin embargo, sacar la capa es riesgoso
+       (no debe usar artefactos mágicos en presencia de la gente), por lo que Harry
+       quiere minimizar las veces que usa su capa. Además, Harry quiere comprar
+       <em>recuerditos</em> (y con la capa no puede interactuar con la gente), por lo
+       que sólo piensa usar la capa en las zonas peligrosas.</p>
+
+    <p>Cuando usa la capa, Harry no requiere respetar las reglas de tránsito, por lo
+       que puede moverse a cualquiera de las 8 casillas circundantes. Además, Harry
+       puede pasar de una zona peligrosa a otra sin quitarse la capa siempre y cuando
+       ambas zonas peligrosas estén contiguas (tengan un lado o una esquina en común).</p>
+
+    <p>Cada zona peligrosa se representa como un rectángulo dentro de la ciudad.</p>
+
+    <p>Escribe un programa que dadas las dimensiones de la ciudad y las ubicaciones
+       de las zonas peligrosas determine: ¿cuál es el menor número de veces que Harry
+       debe usar su capa para moverse desde la fila \(1\) hasta la fila \(F\)?</p>
+
+    <h2>Entrada</h2>
+    <ul>
+      <li>En la primera línea, los números \(N\), \(F\) y \(C\): la cantidad de zonas
+          peligrosas, la cantidad total de filas y la cantidad total de columnas en
+          la ciudad.</li>
+      <li>En las siguientes \(N\) líneas habrá cuatro enteros \(f_{i_1}\),
+          \(c_{i_1}\), \(f_{i_2}\) y \(c_{i_2}\) que corresponden a la fila y columna
+          de la esquina superior-izquierda y la fila y columna de la esquina
+          inferior-derecha de la <em>i-ésima</em> zona peligrosa.</li>
+    </ul>
+    <p><strong>Se asegura que no hay zonas peligrosas ni en la fila \(1\) ni en la
+       fila \(F\).</strong></p>
+    <p><strong>Se asegura que las zonas peligrosas no se traslapan entre sí.</strong></p>
+
+    <h2>Salida</h2>
+    <p>Un número que indique la cantidad mínima de veces que Harry debe usar la capa
+       para moverse de la fila \(1\) a la fila \(F\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s (valor por defecto de omegaUp; el enunciado no lo precisa)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Zonas peligrosas</td><td><span class="badge">\(1 \le N \le 50{,}000\)</span></td></tr>
+        <tr><td>Dimensiones de la ciudad</td><td><span class="badge">\(1 \le F, C \le 10^9\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">6</td><td>\(F = 3\), \(N = 1\)</td></tr>
+          <tr><td>2</td><td class="pts">10</td><td>\(F = 3\), \(C \le 1000\)</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>\(F = 3\)</td></tr>
+          <tr><td>4</td><td class="pts">9</td><td>\(C = 1\)</td></tr>
+          <tr><td>5</td><td class="pts">20</td><td>\(F, C \le 500\), \(N \le 100\)</td></tr>
+          <tr><td>6</td><td class="pts">20</td><td>\(N \le 2000\)</td></tr>
+          <tr><td>7</td><td class="pts">23</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2 5 5
+2 4 3 5
+3 1 4 2</pre></div>
+      <div class="io"><h4>Salida</h4><pre>0</pre></div>
+    </div>
+    <p class="note">El mapa de la ciudad se ve así. La letra <strong>X</strong>
+       representa una zona peligrosa:</p>
+    <div class="io"><pre>.....
+...XX
+XX.XX
+XX...
+.....</pre></div>
+    <p class="note">Si Harry se mueve de forma óptima, no es necesario usar la capa.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2 5 5
+2 4 3 5
+4 1 4 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1</pre></div>
+    </div>
+    <div class="io"><pre>.....
+...XX
+...XX
+XXX..
+.....</pre></div>
+    <p class="note">Aunque hay dos zonas peligrosas, Harry puede pasar de una a otra
+       sin quitarse la capa, por lo que sólo tiene que ponérsela \(1\) vez.</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2 5 1
+2 1 2 1
+4 1 4 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2</pre></div>
+    </div>
+    <p class="note">El enunciado no incluye descripción para este ejemplo.</p>
+
+    <h3>Ejemplo 4</h3>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6 6 3
+2 2 2 2
+3 1 3 1
+3 3 3 3
+4 2 4 2
+5 1 5 1
+5 3 5 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1</pre></div>
+    </div>
+    <p class="note">El enunciado no incluye descripción para este ejemplo.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Geometría en rejilla</span>
+      <span class="ptag">DSU (Union-Find)</span>
+      <span class="ptag">Línea de barrido</span>
+      <span class="ptag">Conectividad</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En una rejilla de \(F\times C\) hay \(N\) zonas peligrosas rectangulares que no
+       se traslapan (y nunca tocan la fila \(1\) ni la fila \(F\)). Harry cruza de la
+       fila \(1\) a la fila \(F\) moviéndose en 4 direcciones por casillas seguras;
+       sólo dentro de zonas peligrosas usa la capa (y entonces puede moverse en las 8
+       direcciones). Dos zonas que se tocan por un lado o por una esquina se recorren
+       con una sola activación. Hay que hallar el mínimo de activaciones de la capa
+       para cruzar.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(F, C \le 10^9\) impide construir la rejilla casilla por casilla: hay
+                que trabajar con los \(N \le 50{,}000\) rectángulos directamente. La
+                subtarea con \(F = 3\) reduce todo a una sola fila intermedia;
+                \(C = 1\) a una sola columna; \(N \le 2000\) admite comparar todas las
+                parejas en \(O(N^2)\); el caso general pide \(O(N\log N)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué obliga a Harry a usar la capa?</summary>
+      <div class="body">
+        <p class="q">Harry se mueve gratis por casillas seguras (en 4 direcciones) y
+           sólo "paga" al entrar a una zona peligrosa. ¿Cuándo es <em>imposible</em>
+           rodear las zonas peligrosas y bajar de la fila \(1\) a la fila \(F\) sin
+           tocarlas?</p>
+        <p>Piensa en las zonas peligrosas como obstáculos. Si forman una "pared" que
+           va de un borde lateral al otro (de la columna \(1\) a la columna \(C\)),
+           Harry queda atrapado arriba de ella: no hay pasillo seguro que la rodee y
+           tendrá que cruzarla con la capa. ¿Y si la pared no llega de pared a pared?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtarea por subtarea)</summary>
+      <div class="body">
+        <p class="q">¿Qué idea regala cada bloque de puntos antes de atacar el caso
+           general?</p>
+        <ul>
+          <li><strong>Subtarea 1 (\(F=3\), \(N=1\)):</strong> como no hay zonas en la
+              fila \(1\) ni en la \(F=3\), la única zona vive en la fila \(2\).
+              ¿Cuándo te obliga a usar la capa? Sólo si ocupa todo el ancho, es decir
+              \(c_1 = 1\) y \(c_2 = C\). Respuesta \(0\) o \(1\).</li>
+          <li><strong>Subtarea 2 (\(F=3\), \(C\le 1000\)):</strong> varias zonas en la
+              fila \(2\). ¿Está cubierta por completo esa fila? Marca cada columna
+              ocupada y revisa si se llenan las \(C\) columnas.</li>
+          <li><strong>Subtarea 3 (\(F=3\), \(C\) grande):</strong> ya no cabe marcar
+              columna por columna. Ordena las zonas por columna inicial y verifica que
+              sus intervalos \([c_1, c_2]\) cubran \([1, C]\) sin dejar huecos.</li>
+          <li><strong>Subtarea 4 (\(C=1\)):</strong> una sola columna. Toda zona ocupa
+              el ancho completo, así que la respuesta es cuántos grupos de zonas
+              separadas por filas hay (cuenta los huecos verticales).</li>
+          <li><strong>Subtarea 5 (\(F, C\le 500\), \(N\le 100\)):</strong> cabe la
+              matriz. Haz un BFS 0-1 (o Dijkstra con pesos \(0/1\)): moverte de una
+              casilla segura a otra cuesta \(0\) (sólo 4 direcciones); <em>activar</em>
+              la capa al entrar a una zona peligrosa cuesta \(1\); ya dentro de zonas
+              peligrosas te mueves gratis en las 8 direcciones. La distancia mínima de
+              la fila \(1\) a la \(F\) es la respuesta.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave (generalización)</summary>
+      <div class="body">
+        <p class="q">¿Notaste que "usar la capa una vez" equivale a cruzar <em>un</em>
+           bloque de zonas peligrosas contiguas? Una vez dentro del bloque te mueves
+           libre por todo él. Entonces, ¿cuántos bloques <em>tiene</em> que cruzar
+           Harry sí o sí?</p>
+        <p>Llama <strong>bloque</strong> a un conjunto maximal de zonas peligrosas
+           contiguas (que se tocan por lado o por esquina). Harry sólo está obligado a
+           cruzar los bloques que van de la columna \(1\) a la columna \(C\): son las
+           barreras de pared a pared. Cada barrera de ancho total cuesta exactamente
+           \(1\) activación; los bloques que no llegan de pared a pared siempre se
+           pueden rodear por casillas seguras. Si hubiera dos barreras de pared a
+           pared distintas, entre ellas hay forzosamente un pasillo seguro (si no,
+           serían el mismo bloque), pero Harry igual debe cruzar <em>cada</em> una.</p>
+        <p class="q">¿Y por qué cuentan las <em>esquinas</em> para unir dos zonas?</p>
+        <p>Porque sin la capa Harry NO puede moverse en diagonal. Si dos zonas se
+           tocan sólo por una esquina, el "huequito" diagonal entre ellas está sellado
+           para él: no puede colarse por ahí, así que ese contacto sí bloquea el paso.
+           Por eso dos zonas que comparten una esquina pertenecen al mismo bloque.
+           Míralo en el Ejemplo 4 (\(F=6\), \(C=3\)): seis zonas de \(1\times 1\) en
+           zigzag, conectadas sólo por esquinas, forman un único bloque que va de la
+           columna \(1\) a la \(3\) → respuesta \(1\):</p>
+        <div class="io"><pre>...
+.X.
+X.X
+.X.
+X.X
+...</pre></div>
+        <p>Y en el Ejemplo 3 (\(C=1\)) las dos zonas no se tocan, así que son dos
+           barreras de ancho total → respuesta \(2\):</p>
+        <div class="io"><pre>.
+X
+.
+X
+.</pre></div>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La respuesta es el <strong>número de bloques que cubren todo el ancho</strong>
+           (su columna mínima es \(1\) y su columna máxima es \(C\)). Para hallarlos:</p>
+        <ol>
+          <li>Modela cada zona como rectángulo \([f_1, f_2]\times[c_1, c_2]\). Dos
+              zonas son del mismo bloque si están a distancia \(\le 1\) en <em>ambos</em>
+              ejes (se tocan por lado o por esquina).
+              <br><em>Truco útil:</em> expande cada rectángulo a
+              \([f_1, f_2+1]\times[c_1, c_2+1]\); entonces "contiguas" equivale a
+              "los rectángulos expandidos se traslapan" (intervalos cerrados).</li>
+          <li>Usa <strong>DSU (Union-Find)</strong> para agrupar las zonas contiguas en
+              bloques. Para cada bloque guarda su <em>columna mínima</em> y su
+              <em>columna máxima</em>, fusionándolas al unir.</li>
+          <li>Cuenta los bloques con columna mínima \(=1\) y columna máxima \(=C\).</li>
+        </ol>
+        <p><strong>¿Cómo encontrar las parejas contiguas?</strong></p>
+        <ul>
+          <li><strong>\(O(N^2)\) (subtarea 6, \(N\le 2000\)):</strong> compara todas
+              las parejas con la prueba de contigüidad.</li>
+          <li><strong>\(O(N\log N)\) (subtarea 7, caso general):</strong> línea de
+              barrido. Ordena las zonas por fila inicial y barre de arriba hacia
+              abajo manteniendo un conjunto ordenado (por columnas) de las zonas
+              <em>activas</em>, las que cruzan la línea de barrido. Al "abrir" una
+              zona, busca en ese conjunto las zonas que la tocan vertical u
+              horizontalmente (basta consultar las vecinas inmediatas, en
+              \(O(\log N)\)) y únelas; al "cerrar" una zona, quítala del conjunto.
+              Aprovecha que las zonas no se traslapan: por eso revisar las vecinas
+              inmediatas es suficiente.</li>
+        </ul>
+
+        <p><strong>¿Por qué es correcta?</strong> Sin capa, Harry se mueve en
+           4-conectividad por casillas seguras; un conjunto de zonas peligrosas que
+           "sella" el paso de la fila \(1\) a la \(F\) es justamente una pared
+           8-conectada de la columna \(1\) a la \(C\) (por eso las esquinas cuentan).
+           Cada una de esas paredes lo obliga a una activación, y nunca conviene
+           entrar a otra zona, así que el mínimo es exactamente cuántas paredes de
+           ancho total existen.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, F, C
+para i en 1..N:
+    leer f1[i], c1[i], f2[i], c2[i]
+    padre[i] ← i
+    minCol[i] ← c1[i]
+    maxCol[i] ← c2[i]
+
+# agrupar zonas contiguas (lado o esquina) en bloques con DSU
+para cada par de zonas (a, b):          # O(N^2), o barrido en O(N log N)
+    si contiguas(a, b):
+        unir(a, b)                      # al unir, fusiona minCol y maxCol del bloque
+
+# contar barreras de pared a pared
+respuesta ← 0
+para cada bloque raiz r:
+    si minCol[r] = 1 y maxCol[r] = C:
+        respuesta ← respuesta + 1
+imprimir respuesta
+
+funcion contiguas(a, b):
+    filasTocan    ← (f1[a] ≤ f2[b] + 1) y (f1[b] ≤ f2[a] + 1)
+    columnasTocan ← (c1[a] ≤ c2[b] + 1) y (c1[b] ≤ c2[a] + 1)
+    regresar filasTocan y columnasTocan</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> con barrido, \(O(N\log N)\) en tiempo y
+           \(O(N)\) en memoria (las operaciones de DSU son casi constantes). La
+           versión que compara todas las parejas es \(O(N^2)\) y alcanza para la
+           subtarea \(6\).</p>
+        <p class="note">Las coordenadas llegan hasta \(10^9 < 2^{31}\), así que caben
+           en enteros de 32 bits; no hace falta ningún truco de tipos.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

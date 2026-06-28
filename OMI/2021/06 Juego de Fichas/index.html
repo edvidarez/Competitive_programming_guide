@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2021 · Problema 06 — Juego de Fichas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">26ª OMI · 2021 · Día 2</div>
+    <h1>Problema <span class="num">06</span> — Juego de Fichas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2021-fichas/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>En un tablero de \(N\) filas por \(M\) columnas se colocan al azar fichas de
+       \(N\) colores distintos, \(M\) fichas de cada color, todas en casillas
+       distintas, de modo que el tablero queda completamente ocupado.</p>
+    <p>Un <strong>movimiento válido</strong> consta de elegir cualesquiera dos
+       fichas de una misma fila e intercambiarlas de lugar. Nota que luego de un
+       movimiento válido ambas fichas siguen en su fila original.</p>
+    <p>Una <em>columna completa</em> es aquella que tiene fichas de los \(N\)
+       colores distintos.</p>
+    <p>Un jugador puede realizar tantos movimientos como quiera antes de terminar
+       el juego. Una vez terminado el juego el jugador recibirá puntos por cada
+       <em>columna completa</em> que haya logrado.</p>
+    <p>Dadas las dimensiones \(N\) y \(M\) del tablero y la colocación inicial de
+       las fichas, realiza movimientos válidos para obtener un tablero final que
+       te dé el mayor puntaje posible.</p>
+
+    <h2>Entrada</h2>
+    <ul>
+      <li>La primera línea contiene dos números \(N\) y \(M\): las filas y columnas
+          del tablero.</li>
+      <li>Las siguientes \(N\) líneas contienen \(M\) enteros en el rango
+          \([1, N]\) cada una, que indican el color de la ficha en la casilla
+          correspondiente del tablero.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <ul>
+      <li>Escribe \(N\) líneas, cada una con \(M\) enteros en el rango \([1, N]\)
+          que indiquen el estado final del tablero luego de los movimientos que
+          hayas realizado.</li>
+    </ul>
+
+    <h2>Evaluación</h2>
+    <ul>
+      <li>Si el tablero final que entregues no se puede construir usando
+          movimientos válidos, obtendrás \(0\) puntos.</li>
+      <li>Si tu tablero es válido, el número de puntos que obtengas para cada caso
+          dependerá de la cantidad de <em>columnas completas</em> que tenga tu
+          solución.</li>
+    </ul>
+    <p class="note">Este es un problema mixto: puedes enviar tu código normalmente
+       o subirlo como un problema de <strong>sólo salida</strong> (un
+       <code>.out</code> por cada <code>.in</code>, comprimidos en un zip). Si
+       envías código, será evaluado con esos mismos casos de prueba.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en la fuente (omegaUp)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en la fuente (omegaUp)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Filas</td><td><span class="badge">\(2 \le N \le 50\)</span></td></tr>
+        <tr><td>Columnas</td><td><span class="badge">\(2 \le M \le 10\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas formales. En total existen <strong>20 casos</strong>,
+       cada uno con valor de <strong>5 puntos</strong>; el puntaje de cada caso es
+       proporcional al número de <em>columnas completas</em> que logres en él. Los
+       límites de cada caso son:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Caso</th><th>\(N\)</th><th>\(M\)</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>3</td><td>6</td><td class="pts">5</td></tr>
+          <tr><td>2</td><td>5</td><td>10</td><td class="pts">5</td></tr>
+          <tr><td>3</td><td>10</td><td>20</td><td class="pts">5</td></tr>
+          <tr><td>4</td><td>12</td><td>30</td><td class="pts">5</td></tr>
+          <tr><td>5</td><td>15</td><td>50</td><td class="pts">5</td></tr>
+          <tr><td>6</td><td>2</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>7</td><td>3</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>8</td><td>5</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>9</td><td>8</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>10</td><td>10</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>11</td><td>12</td><td>1000</td><td class="pts">5</td></tr>
+          <tr><td>12</td><td>15</td><td>1000</td><td class="pts">5</td></tr>
+          <tr><td>13</td><td>17</td><td>1000</td><td class="pts">5</td></tr>
+          <tr><td>14</td><td>19</td><td>1000</td><td class="pts">5</td></tr>
+          <tr><td>15</td><td>21</td><td>1000</td><td class="pts">5</td></tr>
+          <tr><td>16</td><td>20</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>17</td><td>25</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>18</td><td>35</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>19</td><td>40</td><td>10000</td><td class="pts">5</td></tr>
+          <tr><td>20</td><td>50</td><td>10000</td><td class="pts">5</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 3
+1 2 3
+1 2 3
+1 2 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1 2 3
+2 3 1
+3 1 2</pre></div>
+    </div>
+    <p class="note">La primera fila se deja sin cambios. En la segunda fila se
+       intercambian la primera ficha con la segunda y luego la segunda con la
+       tercera. En la tercera fila se intercambian la tercera ficha con la segunda
+       y luego la segunda con la primera. El tablero que se obtiene tiene \(3\)
+       <em>columnas completas</em> y obtendría el 100% de los puntos. (Cualquier
+       otro tablero válido con \(3\) columnas completas también vale: la
+       calificación es por número de columnas completas, no por coincidencia
+       exacta.)</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Emparejamiento bipartito</span>
+      <span class="ptag">Teorema de Hall</span>
+      <span class="ptag">Constructivo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes un tablero \(N \times M\) con \(M\) fichas de cada uno de \(N\)
+       colores. Un movimiento intercambia dos fichas de una misma fila, así que en
+       realidad puedes reordenar libremente las fichas dentro de cada fila. Una
+       columna es <em>completa</em> si tiene los \(N\) colores distintos. Maximiza
+       el número de columnas completas e imprime un tablero final válido.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 50\) es chico, pero \(M \le 10\,000\) es grande. Como puedes
+                permutar cada fila a tu gusto, lo único que importa de una fila es
+                <strong>cuántas fichas de cada color tiene</strong>: el problema se
+                reduce a una matriz de frecuencias \(N \times N\). El gran tamaño de
+                \(M\) descarta probar \(N!\) permutaciones por columna en los casos
+                grandes.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué te permite de verdad un movimiento?</summary>
+      <div class="body">
+        <p class="q">Si puedes intercambiar cualesquiera dos fichas de una misma
+           fila, y repetirlo cuantas veces quieras, ¿qué arreglos de esa fila
+           puedes alcanzar? ¿Importa para nada el orden actual dentro de la fila?</p>
+        <p>Con intercambios dentro de una fila puedes lograr <em>cualquier</em>
+           permutación de las fichas de esa fila. Por lo tanto el orden inicial es
+           irrelevante: lo único fijo es el <strong>multiconjunto</strong> de
+           colores de cada fila. ¿Qué estructura compacta guarda esa información?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Qué es exactamente una columna completa?</summary>
+      <div class="body">
+        <p class="q">Para llenar una columna necesitas un color distinto por fila,
+           y la ficha que pongas en la fila \(i\) debe ser de un color del que esa
+           fila aún tenga existencias. ¿No te recuerda eso a asignar parejas entre
+           dos conjuntos?</p>
+        <p>Piensa en un grafo bipartito: de un lado los \(N\) colores, del otro las
+           \(N\) filas; hay arista color–fila si esa fila todavía tiene una ficha de
+           ese color. Una columna completa es un <strong>emparejamiento perfecto</strong>
+           (cada color asignado a una fila distinta). Para \(N\) chica podrías probar
+           las \(N!\) permutaciones por columna y armar las primeras columnas, pero
+           eso no escala a \(M = 10\,000\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cuál es el máximo posible? (la observación clave)</summary>
+      <div class="body">
+        <p class="q">Antes de optimizar, ¿cuántas columnas completas se pueden
+           lograr en el mejor de los casos? Cuenta: ¿cuántas fichas tiene cada
+           color en total? ¿Y cada fila? ¿Notas algo "balanceado"?</p>
+        <p>Cada color aparece exactamente \(M\) veces y cada fila tiene exactamente
+           \(M\) fichas. El grafo bipartito fila–color con multiplicidades (las
+           frecuencias) es <strong>\(M\)-regular</strong>: todos sus vértices tienen
+           grado \(M\). ¿Qué garantiza Hall sobre un grafo bipartito regular?
+           Siempre existe un emparejamiento perfecto. Y al quitar una columna
+           completa, restas \(1\) al grado de cada fila y de cada color, dejando un
+           tablero \((M-1)\)-regular con la misma propiedad. ¿Qué concluyes por
+           inducción?</p>
+        <p>Conclusión: <strong>siempre puedes dejar las \(M\) columnas completas</strong>.
+           El óptimo es el 100% para cualquier tablero inicial. El reto no es
+           "cuántas", sino <em>construirlas a tiempo</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Construir cada columna eficientemente</summary>
+      <div class="body">
+        <p class="q">Si por cada columna necesitas un emparejamiento perfecto en un
+           grafo de \(N\) por \(N\), ¿qué algoritmo clásico lo encuentra sin probar
+           todas las permutaciones? ¿Y cómo aprovechas que de una columna a la
+           siguiente casi nada cambia?</p>
+        <p>Usa emparejamiento bipartito con <strong>caminos de aumento</strong>
+           (algoritmo de Kuhn): para cada color busca una fila libre; si no hay,
+           intenta reubicar al ocupante por un camino de aumento. Como el grafo
+           siempre es regular, el emparejamiento perfecto siempre se completa.
+           Truco de eficiencia: <em>reutiliza</em> la asignación de la columna
+           anterior y solo vuelve a buscar para las filas cuyo color se agotó.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Reduce el tablero a una matriz de frecuencias
+           \(frec[i][c]\) = cuántas fichas de color \(c\) hay en la fila \(i\). El
+           grafo bipartito fila–color con esas multiplicidades es \(M\)-regular, así
+           que por el teorema de Hall (equivalentemente, por König / Birkhoff–von
+           Neumann: un grafo bipartito \(M\)-regular se descompone en \(M\)
+           emparejamientos perfectos) <strong>siempre</strong> se pueden lograr las
+           \(M\) columnas completas. La respuesta óptima es el 100% en todos los
+           casos; basta construir una asignación.</p>
+        <p><strong>Construcción.</strong> Procesa columna por columna. Para cada
+           columna arma un emparejamiento perfecto color↔fila respetando que solo
+           usas colores con frecuencia restante positiva; al fijar la columna,
+           descuenta una ficha de cada par usado. Cada emparejamiento se obtiene con
+           caminos de aumento (Kuhn). Como el grafo restante sigue siendo regular,
+           el emparejamiento perfecto nunca falla.</p>
+        <p><strong>Por qué es correcto.</strong> Cada columna construida es un
+           emparejamiento perfecto ⇒ tiene los \(N\) colores ⇒ es completa. Cada
+           fila consume exactamente una ficha por columna y al final usa sus \(M\)
+           fichas; como cada fila imprime exactamente \(frec[i][c]\) fichas de cada
+           color, el tablero final es alcanzable con intercambios dentro de filas
+           (es válido).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, M
+frec[i][c] = número de fichas de color c en la fila i   # matriz N×N
+asig[i]   = 0   # color asignado actualmente a la fila i
+dueno[c]  = 0   # fila que tiene asignado el color c (0 = libre)
+
+para j = 1 .. M:                       # construir la columna j
+    # 1) invalidar asignaciones cuyo color ya se agotó en su fila
+    para cada fila i con asig[i] != 0 y frec[i][asig[i]] == 0:
+        dueno[asig[i]] = 0;  asig[i] = 0
+    # 2) completar el emparejamiento perfecto
+    para cada fila i con asig[i] == 0:
+        visitado[] = falso
+        aumentar(i)                    # siempre tiene éxito (grafo regular)
+    # 3) fijar la columna y consumir una ficha por fila
+    para cada fila i:
+        tablero[i][j] = asig[i]
+        frec[i][asig[i]] -= 1
+
+imprimir tablero
+
+funcion aumentar(fila r):              # camino de aumento de Kuhn
+    para cada color c con frec[r][c] > 0 y no visitado[c]:
+        visitado[c] = verdadero
+        si dueno[c] == 0  o  aumentar(dueno[c]):
+            asig[r] = c;  dueno[c] = r
+            regresa éxito
+    regresa fracaso</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> El enfoque directo (rehacer el
+           emparejamiento desde cero en cada columna) es \(O(N^3 M)\): \(M\)
+           columnas \(\times\) un emparejamiento de costo \(O(N^3)\); para el caso
+           mayor eso es \(50^3 \times 10^4 = 1.25\times 10^9\), que corre en pocos
+           segundos. Con el arranque tibio (reutilizar el emparejamiento previo) el
+           número total de aumentos se acota por la cantidad de pares
+           \((fila, color)\) con frecuencia positiva, a lo más \(N^2\), dando
+           \(O(N^2\,(N^2 + M))\) en total. Memoria \(O(N^2 + N M)\) (la matriz de
+           frecuencias y el tablero de salida).</p>
+        <p class="note">Nota de evaluación: es un problema con juez especial
+           (acepta varias salidas válidas). La salida del ejemplo no tiene que
+           coincidir letra por letra con la del enunciado; basta que el tablero sea
+           alcanzable con movimientos válidos y tenga el máximo de columnas
+           completas.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

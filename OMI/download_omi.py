@@ -66,20 +66,24 @@ def is_github_tree(url):
 
 def github_tree_files(url):
     """Lista (name, download_url) de los archivos de una carpeta del repo
-    (un nivel; las carpetas cases/ y solutions/ del archivo son planas)."""
+    (un nivel; las carpetas cases/ y solutions/ del archivo son planas).
+    Las ediciones viejas enlazan a la rama 'master' (renombrada a 'main'):
+    probamos la rama del enlace y luego 'main' como respaldo."""
     m = re.match(r"https://github\.com/([^/]+)/([^/]+)/tree/([^/]+)/(.+)", url)
     if not m:
         return []
     owner, repo, branch, path = m.groups()
-    api = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref={branch}"
-    try:
-        items = fetch_json(api)
-    except Exception:                                 # noqa: BLE001
-        return []
-    if not isinstance(items, list):
-        return []
-    return [(it["name"], it.get("download_url")) for it in items
-            if it.get("type") == "file" and it.get("download_url")]
+    refs = [branch] + [r for r in ("main", "master") if r != branch]
+    for ref in refs:
+        api = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref={ref}"
+        try:
+            items = fetch_json(api)
+        except Exception:                             # noqa: BLE001
+            continue
+        if isinstance(items, list) and items:
+            return [(it["name"], it.get("download_url")) for it in items
+                    if it.get("type") == "file" and it.get("download_url")]
+    return []
 
 
 def download_github_dir(url, dstdir, force, limit=None):
