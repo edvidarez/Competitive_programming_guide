@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2020 · Tarea 6 — Stations</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2020 · Día 2</div>
+    <h1>Tarea <span class="num">6</span> — Stations</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La <em>Red Troncal de Internet de Singapur</em> (SIB) está formada por \(n\)
+       estaciones, a las que se les asignan <strong>índices</strong> del \(0\) al
+       \(n-1\). También hay \(n-1\) enlaces bidireccionales, numerados del \(0\) al
+       \(n-2\). Cada enlace conecta dos estaciones distintas. Dos estaciones unidas
+       por un solo enlace se llaman <strong>vecinas</strong>.</p>
+
+    <p>Un <em>camino</em> de la estación \(x\) a la estación \(y\) es una secuencia de
+       estaciones distintas \(a_0, a_1, \ldots, a_p\) tal que \(a_0 = x\), \(a_p = y\),
+       y cada dos estaciones consecutivas del camino son vecinas. Entre cualquier
+       estación \(x\) y cualquier otra estación \(y\) existe <strong>exactamente un</strong>
+       camino. (En otras palabras: la red es un <strong>árbol</strong>.)</p>
+
+    <p>Cualquier estación \(x\) puede crear un <em>paquete</em> (un dato) y enviarlo a
+       otra estación \(y\), llamada el <strong>destino</strong> del paquete. Ese paquete
+       debe ruteársele por el único camino de \(x\) a \(y\) de la siguiente forma.
+       Considera una estación \(z\) que en este momento tiene un paquete cuyo destino es
+       \(y\) (con \(z \neq y\)). En esa situación, la estación \(z\):</p>
+    <ol>
+      <li>ejecuta un <strong>procedimiento de ruteo</strong> que determina cuál vecino de
+          \(z\) está sobre el único camino de \(z\) a \(y\), y</li>
+      <li>reenvía el paquete a ese vecino.</li>
+    </ol>
+
+    <p>Sin embargo, las estaciones tienen memoria limitada y <strong>no</strong> guardan
+       la lista completa de enlaces de la SIB para usarla en el ruteo.</p>
+
+    <p>Tu tarea es implementar un <strong>esquema de ruteo</strong> para la SIB, que consta
+       de dos procedimientos.</p>
+    <ul>
+      <li>El <strong>primer procedimiento</strong> recibe como entrada \(n\), la lista de
+          enlaces de la SIB y un entero \(k \ge n-1\). Asigna a cada estación una
+          <strong>etiqueta</strong> entera <strong>única</strong> entre \(0\) y \(k\),
+          inclusive.</li>
+      <li>El <strong>segundo procedimiento</strong> es el de ruteo, que se despliega a
+          todas las estaciones una vez asignadas las etiquetas. Recibe
+          <strong>únicamente</strong> lo siguiente:
+        <ul>
+          <li>\(s\), la <strong>etiqueta</strong> de la estación que tiene ahora el paquete,</li>
+          <li>\(t\), la <strong>etiqueta</strong> de la estación destino (\(t \neq s\)),</li>
+          <li>\(c\), la lista de las <strong>etiquetas</strong> de todos los vecinos de \(s\).</li>
+        </ul>
+        Debe devolver la <strong>etiqueta</strong> del vecino de \(s\) al que se le debe
+        reenviar el paquete.</li>
+    </ul>
+
+    <p>En una de las subtareas, el puntaje de tu solución depende del valor de la
+       <strong>etiqueta máxima</strong> asignada a cualquier estación (en general,
+       entre más chica, mejor).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar los dos procedimientos siguientes. <strong>No</strong> hay
+       lectura de <code>stdin</code> ni escritura a <code>stdout</code>: el evaluador
+       llama a tus funciones.</p>
+
+    <div class="sig">
+      <span class="tag">Firma 1 — etiquetado</span>
+<pre>int[] label(int n, int k, int[] u, int[] v)</pre>
+    </div>
+    <ul>
+      <li>\(n\): número de estaciones de la SIB.</li>
+      <li>\(k\): etiqueta máxima que se puede usar.</li>
+      <li>\(u\) y \(v\): arreglos de tamaño \(n-1\) que describen los enlaces. Para cada
+          \(i\) (\(0 \le i \le n-2\)), el enlace \(i\) conecta las estaciones de índices
+          \(u[i]\) y \(v[i]\).</li>
+      <li>Debe devolver un arreglo \(L\) de tamaño \(n\). Para cada \(i\)
+          (\(0 \le i \le n-1\)), \(L[i]\) es la etiqueta asignada a la estación de índice
+          \(i\). Todos los elementos de \(L\) deben ser <strong>únicos</strong> y estar
+          entre \(0\) y \(k\), inclusive.</li>
+    </ul>
+
+    <div class="sig">
+      <span class="tag">Firma 2 — ruteo</span>
+<pre>int find_next_station(int s, int t, int[] c)</pre>
+    </div>
+    <ul>
+      <li>\(s\): etiqueta de la estación que tiene el paquete.</li>
+      <li>\(t\): etiqueta de la estación destino.</li>
+      <li>\(c\): arreglo con las etiquetas de todos los vecinos de \(s\). El arreglo \(c\)
+          viene <strong>ordenado en forma ascendente</strong>.</li>
+      <li>Debe devolver la etiqueta del vecino de \(s\) al que se le debe reenviar el
+          paquete.</li>
+    </ul>
+
+    <p>Cada caso de prueba involucra uno o más escenarios independientes (es decir,
+       distintas descripciones de la SIB). Para un caso con \(r\) escenarios, un
+       <strong>programa</strong> que llama a los procedimientos anteriores se corre
+       exactamente <strong>dos veces</strong>:</p>
+    <p><strong>Primera corrida del programa:</strong></p>
+    <ul>
+      <li>se llama a <code>label</code> \(r\) veces,</li>
+      <li>el sistema de evaluación guarda las etiquetas devueltas, y</li>
+      <li><code>find_next_station</code> no se llama.</li>
+    </ul>
+    <p><strong>Segunda corrida del programa:</strong></p>
+    <ul>
+      <li><code>find_next_station</code> puede llamarse varias veces. En cada llamada se
+          elige un escenario <strong>arbitrario</strong> y se usan como entrada las
+          etiquetas que <code>label</code> produjo en ese escenario.</li>
+      <li><code>label</code> no se llama.</li>
+    </ul>
+    <p>En particular, <strong>cualquier información guardada en variables estáticas o
+       globales durante la primera corrida NO está disponible</strong> dentro de
+       <code>find_next_station</code>. Toda la decisión de ruteo debe tomarse solo con
+       \(s\), \(t\) y \(c\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2048 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tipo de tarea</td><td>Comunicación (2 procesos): implementas funciones, sin E/S clásica</td></tr>
+        <tr><td>Escenarios por caso</td><td><span class="badge">\(1 \le r \le 10\)</span></td></tr>
+        <tr><td>Estaciones</td><td><span class="badge">\(2 \le n \le 1000\)</span></td></tr>
+        <tr><td>Etiqueta máxima permitida</td><td><span class="badge">\(k \ge n-1\)</span></td></tr>
+        <tr><td>Índices de los enlaces</td><td><span class="badge">\(0 \le u[i], v[i] \le n-1\)</span></td></tr>
+        <tr><td>Suma de tamaños de \(c\) por caso</td><td><span class="badge">\(\le 100\,000\) en total</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(k = 1000\); ninguna estación tiene más de \(2\) vecinos (la red es un <strong>camino / línea</strong>).</td></tr>
+          <tr><td>2</td><td class="pts">8</td><td>\(k = 1000\); el enlace \(i\) conecta las estaciones \(i+1\) y \(\left\lfloor i/2 \right\rfloor\) (<strong>árbol binario</strong> por índice).</td></tr>
+          <tr><td>3</td><td class="pts">16</td><td>\(k = 1\,000\,000\); a lo más una estación tiene más de \(2\) vecinos (casi-camino con una sola <strong>estrella</strong>).</td></tr>
+          <tr><td>4</td><td class="pts">10</td><td>\(n \le 8\); \(k = 10^9\).</td></tr>
+          <tr><td>5</td><td class="pts">61</td><td>\(k = 10^9\). Puntaje <strong>parcial</strong> según la etiqueta máxima (tabla abajo).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>En la subtarea 5 puedes obtener puntaje parcial. Sea \(m\) la <strong>etiqueta
+       máxima</strong> que devuelve <code>label</code> a lo largo de todos los escenarios.
+       Tu puntaje en esta subtarea se calcula así:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Etiqueta máxima \(m\)</th><th>Puntaje</th></tr></thead>
+        <tbody>
+          <tr><td>\(m \ge 10^9\)</td><td class="pts">\(0\)</td></tr>
+          <tr><td>\(2000 \le m &lt; 10^9\)</td><td class="pts">\(50 \cdot \log_{5\cdot10^5}\!\left(\dfrac{10^9}{m}\right)\)</td></tr>
+          <tr><td>\(1000 &lt; m &lt; 2000\)</td><td class="pts">\(50\)</td></tr>
+          <tr><td>\(m \le 1000\)</td><td class="pts">\(61\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la siguiente llamada:</p>
+    <div class="io"><pre>label(5, 10, [0, 1, 1, 2], [1, 2, 3, 4])</pre></div>
+    <p>Hay \(5\) estaciones y \(4\) enlaces que conectan los pares de índices
+       \((0,1)\), \((1,2)\), \((1,3)\) y \((2,4)\). Cada etiqueta puede ser un entero
+       de \(0\) a \(k = 10\). Para reportar el siguiente etiquetado:</p>
+
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Índice</th><th>Etiqueta</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>6</td></tr>
+          <tr><td>1</td><td>2</td></tr>
+          <tr><td>2</td><td>9</td></tr>
+          <tr><td>3</td><td>3</td></tr>
+          <tr><td>4</td><td>7</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>el procedimiento <code>label</code> debe devolver \([6, 2, 9, 3, 7]\). En la
+       figura, los números muestran los índices (panel izquierdo) y las etiquetas
+       asignadas (panel derecho).</p>
+
+    <figure>
+      <img alt="Árbol de 5 estaciones. Panel izquierdo con los índices 0..4; panel derecho con las etiquetas 6,2,9,3,7 sobre los mismos nodos."
+           src="data:image/png;base64,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">
+      <figcaption>Figura: a la izquierda, los <strong>índices</strong> de las estaciones;
+        a la derecha, las <strong>etiquetas</strong> que devuelve <code>label</code>.</figcaption>
+    </figure>
+
+    <p>Supón que las etiquetas se asignaron como arriba y considera la llamada:</p>
+    <div class="io"><pre>find_next_station(9, 6, [2, 7])</pre></div>
+    <p>Significa que la estación con el paquete tiene etiqueta \(9\) y el destino tiene
+       etiqueta \(6\). Las etiquetas de las estaciones en el camino al destino son
+       \([9, 2, 6]\). Por eso la llamada debe devolver \(2\), que es la etiqueta de la
+       estación a la que se debe reenviar el paquete (la de índice \(1\)).</p>
+
+    <p>Considera otra llamada posible:</p>
+    <div class="io"><pre>find_next_station(2, 3, [3, 6, 9])</pre></div>
+    <p>El procedimiento debe devolver \(3\), ya que la estación destino con etiqueta
+       \(3\) es vecina de la estación con etiqueta \(2\), así que recibe el paquete
+       directamente.</p>
+
+    <h2>Evaluador de ejemplo</h2>
+    <p>El evaluador de ejemplo lee la entrada en este formato:</p>
+    <ul>
+      <li>línea \(1\): \(r\).</li>
+    </ul>
+    <p>Siguen \(r\) bloques, cada uno describiendo un escenario:</p>
+    <ul>
+      <li>línea \(1\): \(n\ \ k\).</li>
+      <li>línea \(2+i\) (\(0 \le i \le n-2\)): \(u[i]\ \ v[i]\).</li>
+      <li>línea \(1+n\): \(q\), el número de llamadas a <code>find_next_station</code>.</li>
+      <li>línea \(2+n+j\) (\(0 \le j \le q-1\)): \(z[j]\ \ y[j]\ \ w[j]\), los
+          <strong>índices</strong> de las estaciones de la \(j\)-ésima llamada:
+          \(z[j]\) tiene el paquete, \(y[j]\) es el destino y \(w[j]\) es la estación a la
+          que debería reenviarse.</li>
+    </ul>
+    <p>El evaluador imprime, en la línea \(1\), la etiqueta máxima \(m\); y luego, por
+       escenario, el <strong>índice</strong> de la estación cuya etiqueta devolvió cada
+       llamada a <code>find_next_station</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Árboles</span>
+      <span class="ptag">DFS / Recorrido de Euler</span>
+      <span class="ptag">Etiquetado por intervalos</span>
+      <span class="ptag">Búsqueda binaria</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>La red es un <strong>árbol</strong> de \(n\) estaciones. Debes <code>label</code>
+       cada nodo con un entero único en \([0, k]\) y luego, en
+       <code>find_next_station(s, t, c)</code>, decidir a cuál vecino reenviar el paquete
+       <strong>usando solo</strong> \(s\), \(t\) y la lista ordenada de vecinos \(c\)
+       (¡sin estado global entre las dos corridas!). La etiqueta debe codificar, ella sola,
+       suficiente información de la estructura del árbol para reconstruir el siguiente salto.
+       En la subtarea 5 el puntaje crece conforme baja la <strong>etiqueta máxima</strong>
+       \(m\); el pleno se alcanza con \(m \le 1000\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 1000\) y \(k \ge n-1\): existe espacio de etiquetas justo del
+                tamaño del árbol, así que apuntar a \(m = n-1 \le 999\) da el pleno
+                (\(m \le 1000\)). <code>find_next_station</code> no puede usar variables
+                globales: la etiqueta es el <em>único</em> canal de información. Las
+                subtareas chicas (línea, árbol binario, estrella, \(n \le 8\)) son
+                escalones que sugieren la idea general: si el subárbol de cada nodo
+                ocupa un <strong>intervalo contiguo</strong> de etiquetas, basta comparar
+                \(t\) con esos intervalos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que con \(n\) nodos, \(n-1\) aristas y camino único
+           entre cualquier par, la red es forzosamente un <strong>árbol</strong>? En un
+           árbol, reenviar de \(s\) hacia \(t\) equivale a: "¿\(t\) está en el subárbol
+           de alguno de mis hijos, o tengo que subir hacia mi padre?".</p>
+        <p>La etiqueta es el único dato que sobrevive entre la corrida de <code>label</code>
+           y la de <code>find_next_station</code>. Entonces la pregunta clave es:
+           <span class="q">¿qué información puede <em>codificar la etiqueta misma</em>
+           para que un nodo, viendo solo su etiqueta \(s\), la del destino \(t\) y las de
+           sus vecinos \(c\), deduzca hacia dónde va \(t\)?</span></p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por las subtareas chicas</summary>
+      <div class="body">
+        <p class="q">¿Qué te regala cada forma especial del árbol?</p>
+        <ul>
+          <li><strong>Subtarea 1 (línea, \(k=1000\)):</strong> nadie tiene más de 2
+              vecinos. <span class="q">Si numeras los nodos \(0,1,2,\ldots\) a lo largo de
+              la línea, ¿no basta con comparar \(t\) contra \(s\) para saber si avanzas
+              al vecino mayor o al menor?</span></li>
+          <li><strong>Subtarea 2 (árbol binario por índice):</strong> el enlace \(i\)
+              une \(i+1\) con \(\lfloor i/2 \rfloor\). <span class="q">¿Podrías etiquetar
+              con la posición tipo heap y deducir el padre/hijos por aritmética?</span>
+              (Pista mejor: piensa en un recorrido del árbol.)</li>
+          <li><strong>Subtarea 3 (casi-camino con una estrella, \(k=10^6\)):</strong>
+              a lo más un nodo de alto grado. <span class="q">¿Qué pasaría si a cada nodo
+              le das un <em>rango</em> de etiquetas para "su" parte del árbol?</span></li>
+          <li><strong>Subtarea 4 (\(n \le 8\)):</strong> \(k = 10^9\) gigante y árbol
+              minúsculo. <span class="q">Aquí cabe hasta fuerza bruta: puedes darte el
+              lujo de codificar mucha información en etiquetas grandes. Útil para validar
+              tu idea antes de optimizar la constante.</span></li>
+        </ul>
+        <p>El patrón que conecta todas: <span class="q">¿y si el conjunto de etiquetas de
+           un subárbol siempre fuera un intervalo contiguo de enteros?</span></p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: intervalos de un DFS</summary>
+      <div class="body">
+        <p class="q">¿Recuerdas el recorrido de Euler / los tiempos de entrada de un DFS?
+           Si etiquetas cada nodo con su tiempo de pre-orden (un contador que crece de
+           \(0\) a \(n-1\)), <strong>el subárbol de cada nodo ocupa un intervalo contiguo
+           de etiquetas</strong> \([\text{entrada}, \text{salida}]\).</p>
+        <p>Con eso, en un nodo \(s\) bastaría saber el intervalo de cada hijo para mandar
+           \(t\) al hijo "dueño" del sub-intervalo que contiene a \(t\), o al padre si
+           \(t\) cae fuera. <span class="q">Pero ojo: <code>find_next_station</code> solo
+           ve \(s\), \(t\) y \(c\) (las etiquetas de los vecinos), no los intervalos.
+           ¿Cómo recuperar el intervalo del subárbol de \(s\) a partir únicamente de su
+           etiqueta y de las de sus vecinos?</span></p>
+        <p class="q">Truco fino: ¿y si <em>alternas</em> el criterio según la
+           <strong>paridad de la profundidad</strong> del nodo, de modo que en un nivel el
+           nodo sea el <em>mínimo</em> de su subárbol y en el siguiente sea el
+           <em>máximo</em>? Así, comparando \(s\) con su vecino más chico podrías deducir
+           en qué caso estás, y de ahí el intervalo completo.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <h3>Idea</h3>
+        <p>Etiquetado por <strong>intervalos de DFS</strong> con codificación por
+           <strong>paridad de profundidad</strong>. Enraíza el árbol en el nodo \(0\) y
+           haz un DFS llevando un contador global que avanza de \(0\) a \(n-1\). La clave
+           es la paridad de la profundidad del nodo:</p>
+        <ul>
+          <li>En profundidad <strong>par</strong>, el nodo recibe su etiqueta al
+              <strong>entrar</strong> (tiempo de pre-orden): toma el valor del contador
+              <em>antes</em> de visitar a sus hijos. Así queda como el <strong>mínimo</strong>
+              de su subárbol.</li>
+          <li>En profundidad <strong>impar</strong>, el nodo recibe su etiqueta al
+              <strong>salir</strong> (tiempo de post-orden): toma el valor del contador
+              <em>después</em> de visitar a todos sus hijos. Así queda como el
+              <strong>máximo</strong> de su subárbol.</li>
+        </ul>
+        <p>Como el contador es único y crece monótonamente, cada etiqueta es única y cae
+           en \([0, n-1]\). Con \(n \le 1000\) eso da \(m = n-1 \le 999 \le 1000\):
+           escalón <strong>pleno</strong> de la subtarea 5, y de paso cumple
+           \(k = 1000\) y \(k = 10^6\) de las subtareas 1–4. No se hace ninguna
+           minimización por búsqueda: el bound sale directo de la construcción.</p>
+
+        <h3>Cómo decide <code>find_next_station(s, t, c)</code></h3>
+        <p>El arreglo \(c\) viene ordenado. La paridad de \(s\) se deduce comparándola con
+           su vecino más chico \(c[0]\):</p>
+        <ul>
+          <li><strong>Caso etiqueta de ENTRADA</strong> (\(s\) en nivel par,
+              \(s &lt; c[0]\)): \(s\) es menor que todos sus descendientes. El vecino más
+              grande \(c[\text{último}]\) es el <strong>padre</strong>, y el subárbol de
+              \(s\) ocupa \([\,s,\ c[\text{último}]\,]\) (su descendiente de etiqueta
+              máxima). Si \(t &lt; s\) o \(t > c[\text{último}]\), \(t\) está fuera del
+              subárbol: reenvía al padre \(c[\text{último}]\). Si \(t\) cae dentro,
+              reenvía al hijo de <em>menor</em> etiqueta que sea \(\ge t\)
+              (un <code>lower_bound</code> sobre \(c\)): ese hijo "posee" el sub-intervalo
+              que contiene a \(t\).</li>
+          <li><strong>Caso etiqueta de SALIDA</strong> (\(s\) en nivel impar,
+              \(s > c[0]\)): el vecino más chico \(c[0]\) es el <strong>padre</strong> y el
+              subárbol de \(s\) termina en \(s\); su intervalo es \([\,c[0]+1,\ s\,]\)
+              hacia abajo. Si \(t > s\) o \(t \le c[0]\), \(t\) está fuera: reenvía al
+              padre \(c[0]\). En otro caso, reenvía al hijo de <em>mayor</em> etiqueta que
+              aún sea \(\le t\) (un <code>upper_bound</code> menos uno).</li>
+        </ul>
+
+        <h3>Por qué es correcto</h3>
+        <p>El DFS asigna valores monótonos, así que el subárbol de cada nodo es un
+           intervalo contiguo de etiquetas. La paridad garantiza que en nivel par el nodo
+           es el mínimo de su subárbol (y su padre es el vecino de etiqueta máxima), y en
+           nivel impar es el máximo (y su padre es el vecino de etiqueta mínima).
+           Comparando \(t\) con el intervalo deducido de \(s\) y \(c\),
+           <code>find_next_station</code> identifica sin ambigüedad si \(t\) está en el
+           subárbol —y en cuál hijo, por la frontera entre sub-intervalos consecutivos de
+           los hijos— o fuera (entonces sube al padre). Esto reproduce, salto a salto, el
+           único camino del árbol. Verificado contra el manager oficial: respuesta correcta
+           en todas las rutas de los \(103\) tests, con etiqueta máxima global \(999\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>FUNCION label(n, k, u, v):
+    construir adyacencia ady[] a partir de las aristas (u[i], v[i])
+    contador &lt;- 0                       // un solo contador compartido
+    etiquetas &lt;- arreglo de tamano n
+    DFS(raiz = 0, padre = -1, prof = 0)
+    devolver etiquetas
+
+PROCEDIMIENTO DFS(x, padre, prof):
+    SI prof es PAR:                      // tiempo de ENTRADA (pre-orden)
+        etiquetas[x] &lt;- contador
+        contador &lt;- contador + 1
+    PARA cada vecino y de x con y != padre:
+        DFS(y, x, prof + 1)
+    SI prof es IMPAR:                    // tiempo de SALIDA (post-orden)
+        etiquetas[x] &lt;- contador
+        contador &lt;- contador + 1
+
+FUNCION find_next_station(s, t, c):      // c viene ORDENADA ascendente
+    SI s &lt; c[0]:                         // s tiene etiqueta de ENTRADA (nivel par)
+        padre        &lt;- c[ultimo]        // vecino mayor = padre
+        max_subarbol &lt;- c[ultimo]        // descendiente de etiqueta maxima
+        SI t &lt; s O t &gt; max_subarbol:      // t fuera del subarbol de s
+            devolver padre
+        // t dentro: ir al hijo de MENOR etiqueta que sea &gt;= t  (lower_bound)
+        devolver el primer c[i] con c[i] &gt;= t
+    SINO:                                // s tiene etiqueta de SALIDA (nivel impar)
+        padre &lt;- c[0]                    // vecino menor = padre
+        SI t &gt; s O t &lt;= padre:            // t fuera del subarbol de s
+            devolver padre
+        // t dentro: ir al hijo de MAYOR etiqueta que sea &lt;= t  (upper_bound - 1)
+        devolver el ultimo c[i] con c[i] &lt;= t
+
+NOTA: nada se guarda en variables globales entre label y find_next_station;
+toda la decision usa solo s, t y c. La etiqueta maxima es n-1 (&lt;= 1000),
+asi que el bound pleno sale directo, sin minimizar por busqueda.</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> <code>label</code> es \(O(n)\) (un DFS más
+           \(O(n-1)\) para armar la adyacencia); etiquetas en \([0, n-1]\).
+           <code>find_next_station</code> es \(O(\deg(s))\), u \(O(\log \deg(s))\) con
+           búsqueda binaria sobre \(c\) (que ya viene ordenada). Sobre todas las consultas
+           de un caso, \(O(\sum |c|) \le O(100\,000)\). Memoria \(O(n)\). Con \(n \le 1000\)
+           la recursión del DFS no corre riesgo de desbordar la pila.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Como c llega ordenado, usa busqueda binaria de la STL:
+  - hijo de menor etiqueta &gt;= t   ->  std::lower_bound(c.begin(), c.end(), t)
+  - hijo de mayor etiqueta &lt;= t   ->  std::upper_bound(c.begin(), c.end(), t) - 1
+Esto baja cada consulta a O(log deg(s)). No es necesario para pasar
+(con O(deg) basta), pero ayuda cuando algun nodo tiene grado grande.</pre>
+          <p class="note">Es solo una aceleración. Nunca pongas la solución completa en
+             código real: a la página va únicamente pseudocódigo.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

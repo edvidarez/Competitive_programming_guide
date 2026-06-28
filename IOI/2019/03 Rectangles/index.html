@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2019 · Tarea 3 — Rectangles</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2019 · Día 1</div>
+    <h1>Tarea <span class="num">3</span> — Rectangles</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>A principios del siglo XIX, el gobernante Hoseyngulu Khan Sardar ordenó construir
+       un palacio sobre una meseta que dominaba un hermoso río. La meseta se modela como
+       una cuadrícula de \(n \times m\) celdas cuadradas. Las filas se numeran de \(0\) a
+       \(n-1\) y las columnas de \(0\) a \(m-1\). A la celda en la fila \(i\) y la columna
+       \(j\) (con \(0 \le i \le n-1\) y \(0 \le j \le m-1\)) la llamamos celda \((i,j)\).
+       Cada celda \((i,j)\) tiene una altura específica, denotada por \(a[i][j]\).</p>
+
+    <p>Hoseyngulu Khan Sardar les pidió a sus arquitectos que eligieran un <strong>área</strong>
+       rectangular para construir el palacio. El área no debe contener ninguna celda del borde
+       de la cuadrícula (ni la fila \(0\), ni la fila \(n-1\), ni la columna \(0\), ni la
+       columna \(m-1\)). Por lo tanto, los arquitectos deben elegir cuatro enteros
+       \(r_1\), \(r_2\), \(c_1\) y \(c_2\) (con \(1 \le r_1 \le r_2 \le n-2\) y
+       \(1 \le c_1 \le c_2 \le m-2\)), que definen un área formada por todas las celdas
+       \((i,j)\) tales que \(r_1 \le i \le r_2\) y \(c_1 \le j \le c_2\).</p>
+
+    <p>Además, un área se considera <strong>válida</strong> si y solo si para toda celda
+       \((i,j)\) dentro del área se cumple la siguiente condición:</p>
+
+    <ul>
+      <li>Considera las dos celdas adyacentes al área en la fila \(i\) (la celda \((i, c_1-1)\)
+          y la celda \((i, c_2+1)\)) y las dos celdas adyacentes al área en la columna \(j\)
+          (la celda \((r_1-1, j)\) y la celda \((r_2+1, j)\)). La altura de la celda \((i,j)\)
+          debe ser <strong>estrictamente menor</strong> que las alturas de esas cuatro celdas.</li>
+    </ul>
+
+    <p>Tu tarea es ayudar a los arquitectos a encontrar el número de áreas válidas para el
+       palacio (es decir, el número de elecciones de \(r_1\), \(r_2\), \(c_1\) y \(c_2\) que
+       definen un área válida).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar ni escribes
+       a la salida estándar. Debes implementar el siguiente procedimiento, que el evaluador
+       llamará una sola vez:</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int64 count_rectangles(int[][] a)</pre>
+    </div>
+    <ul>
+      <li><code>a</code>: un arreglo bidimensional de enteros de tamaño \(n\) por \(m\) que
+          representa las alturas de las celdas.</li>
+      <li>El procedimiento debe regresar el número de áreas válidas para el palacio.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>5.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>1024 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño de la cuadrícula</td><td><span class="badge">\(1 \le n, m \le 2500\)</span></td></tr>
+        <tr><td>Alturas</td><td><span class="badge">\(0 \le a[i][j] \le 7\,000\,000\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). Una fila por subtarea. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">8</td><td>\(n, m \le 30\)</td></tr>
+          <tr><td>2</td><td class="pts">7</td><td>\(n, m \le 80\)</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>\(n, m \le 200\)</td></tr>
+          <tr><td>4</td><td class="pts">22</td><td>\(n, m \le 700\)</td></tr>
+          <tr><td>5</td><td class="pts">10</td><td>\(n \le 3\)</td></tr>
+          <tr><td>6</td><td class="pts">13</td><td>\(0 \le a[i][j] \le 1\) (cuadrícula binaria), para toda celda</td></tr>
+          <tr><td>7</td><td class="pts">28</td><td>Sin restricciones adicionales</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la siguiente llamada:</p>
+    <div class="io"><pre>count_rectangles([[4,  8,  7,  5,  6],
+                  [7,  4,  10, 3,  5],
+                  [9,  7,  20, 14, 2],
+                  [9,  14, 7,  3,  6],
+                  [5,  7,  5,  2,  7],
+                  [4,  5,  13, 5,  6]])</pre></div>
+
+    <figure>
+      <img alt="Cuadrícula 6 por 5 de alturas con seis áreas válidas resaltadas con recuadros."
+           src="data:image/png;base64,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">
+      <figcaption>La cuadrícula \(6 \times 5\) del ejemplo: cada recuadro resalta una de las
+        seis áreas válidas (algunas son de una sola celda y otras de dos celdas).</figcaption>
+    </figure>
+
+    <p>Hay \(6\) áreas válidas, que se listan a continuación:</p>
+    <ul>
+      <li>\(r_1 = r_2 = c_1 = c_2 = 1\)</li>
+      <li>\(r_1 = 1,\; r_2 = 2,\; c_1 = c_2 = 1\)</li>
+      <li>\(r_1 = r_2 = 1,\; c_1 = c_2 = 3\)</li>
+      <li>\(r_1 = r_2 = 4,\; c_1 = 2,\; c_2 = 3\)</li>
+      <li>\(r_1 = r_2 = 4,\; c_1 = c_2 = 3\)</li>
+      <li>\(r_1 = 3,\; r_2 = 4,\; c_1 = c_2 = 3\)</li>
+    </ul>
+
+    <p>Por ejemplo, \(r_1 = 1,\; r_2 = 2,\; c_1 = c_2 = 1\) es un área válida porque se cumplen
+       las dos condiciones siguientes:</p>
+    <ul>
+      <li>\(a[1][1]=4\) es estrictamente menor que \(a[0][1]=8\), \(a[3][1]=14\), \(a[1][0]=7\)
+          y \(a[1][2]=10\).</li>
+      <li>\(a[2][1]=7\) es estrictamente menor que \(a[0][1]=8\), \(a[3][1]=14\), \(a[2][0]=9\)
+          y \(a[2][2]=20\).</li>
+    </ul>
+
+    <h3>Evaluador de muestra</h3>
+    <p>El evaluador de muestra lee la entrada con el siguiente formato:</p>
+    <ul>
+      <li>Línea \(1\): \(\;n\; m\)</li>
+      <li>Línea \(2+i\) (para \(0 \le i \le n-1\)): \(\;a[i][0]\;\; a[i][1]\;\ldots\; a[i][m-1]\)</li>
+    </ul>
+    <p>El evaluador de muestra imprime una sola línea con el valor de retorno de
+       <code>count_rectangles</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Pilas monótonas</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Programación dinámica</span>
+      <span class="ptag">Combinatoria</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una cuadrícula \(n \times m\) de alturas. Debes contar cuántos sub-rectángulos
+       del <em>interior</em> (que no tocan la fila/columna del borde) son <strong>válidos</strong>:
+       cada celda del rectángulo debe ser estrictamente menor que las cuatro celdas que rodean
+       al rectángulo en su misma fila (columnas \(c_1-1\) y \(c_2+1\)) y en su misma columna
+       (filas \(r_1-1\) y \(r_2+1\)). Implementa <code>int64 count_rectangles(int[][] a)</code>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n, m \le 2500\) descarta cualquier cosa peor que \(O(n\,m\,\log)\); el objetivo
+                de oro es \(O(n\,m)\). Las subtareas son una escalera por tamaño: la #1 (\(n,m\le 30\))
+                admite fuerza bruta \(O(n^6)\); la #5 (\(n\le 3\)) y la #6 (binaria) esconden ideas
+                aisladas más simples; la #4 (\(n,m\le 700\)) acepta \(O(n^3)\); la #7 exige
+                \(O(n\,m)\) u \(O(n\,m\,\log)\) con estructuras ligeras.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué define a un rectángulo válido?</summary>
+      <div class="body">
+        <p class="q">¿Ya tradujiste la condición a algo manejable? Para un rectángulo
+           \([r_1,r_2]\times[c_1,c_2]\), ¿qué celdas de afuera importan exactamente?</p>
+        <p>Fíjate en que la condición es "fila por fila" y "columna por columna" a la vez:
+           cada celda \((i,j)\) del rectángulo debe ser menor que sus dos "guardianes" de fila
+           (\((i,c_1-1)\) y \((i,c_2+1)\)) y sus dos "guardianes" de columna (\((r_1-1,j)\) y
+           \((r_2+1,j)\)). Equivale a decir: en cada fila del rectángulo, el bloque
+           \([c_1,c_2]\) está "dominado" por las columnas \(c_1-1\) y \(c_2+1\); y en cada
+           columna, el bloque \([r_1,r_2]\) está dominado por las filas \(r_1-1\) y \(r_2+1\).
+           ¿Cómo se relaciona "dominado por el vecino más cercano mayor" con ese requisito?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1 a 3: fuerza bruta (\(n,m \le 200\))</summary>
+      <div class="body">
+        <p class="q">¿Cuántos rectángulos hay y cuánto cuesta verificar uno? ¿Te alcanza para
+           \(n,m \le 30\), \(\le 80\) y \(\le 200\)?</p>
+        <p>Hay \(O(n^2 m^2)\) rectángulos (elegir \(r_1\le r_2\) y \(c_1\le c_2\)). Verificar uno
+           celda por celda cuesta \(O(n\,m)\), dando \(O(n^6)\) trivial: pasa la subtarea 1.
+           Si al verificar usas <em>cortes</em> (sales en cuanto falla la condición), en la
+           práctica pasas las subtareas 1, 2 y 3. También existe un \(O(n^5)\) (subtareas 1-2)
+           y un \(O(n^4)\) (subtareas 1-3) más cuidadosos. ¿Puedes precomputar, por fila, hasta
+           dónde un bloque \([c_1,c_2]\) sigue siendo válido para no recorrerlo entero cada vez?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 5: \(n \le 3\)</summary>
+      <div class="body">
+        <p class="q">Si solo hay a lo más \(3\) filas, ¿cuántas filas <em>interiores</em> quedan?
+           ¿Qué forma tienen forzosamente los rectángulos válidos?</p>
+        <p>Con \(n \le 3\) hay a lo sumo una fila interior, así que todo rectángulo válido vive en
+           esa fila central y es simplemente un intervalo de columnas consecutivas. Basta probar
+           todos los intervalos \([c_1,c_2]\) de esa fila y verificar la condición, en \(O(m^2)\).
+           Es una subtarea "regalo" para asegurar puntos sin la maquinaria general.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 6: cuadrícula binaria (\(a[i][j]\in\{0,1\}\))</summary>
+      <div class="body">
+        <p class="q">Si todo es \(0\) o \(1\), "estrictamente menor" solo puede significar
+           \(0 \lt 1\). ¿En qué se convierte entonces un rectángulo válido?</p>
+        <p>Con valores en \(\{0,1\}\), un rectángulo válido es exactamente un bloque de
+           <strong>ceros</strong> cuyo borde exterior inmediato (los guardianes de fila y de
+           columna, salvo las esquinas diagonales, que no se exigen) son todos <strong>unos</strong>.
+           Es decir: rectángulo de \(0\)s rodeado de \(1\)s. Ese es un problema clásico de
+           programación dinámica que se resuelve en \(O(n\,m)\) (por ejemplo, contando
+           rectángulos maximales de ceros con histogramas/pilas y verificando el marco de unos).
+           Muchas soluciones \(O(n^3)\) o \(O(n^2\log n)\) terminan corriendo en \(O(n^2)\) aquí.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 4 (\(n,m\le 700\)): "pares buenos" con pila</summary>
+      <div class="body">
+        <p class="q">Para un lado del rectángulo en una fila, ¿quién obliga a que el bloque
+           \([c_1,c_2]\) esté dominado? ¿No es siempre el "siguiente mayor más cercano"?</p>
+        <p>Define un <strong>par bueno</strong> (good pair) como un par de celdas en una misma
+           fila (o columna) que pueden ser los dos extremos exteriores que dominan un bloque
+           válido. Con una <strong>pila monótona</strong> (siguiente/anterior estrictamente mayor)
+           recorriendo cada fila y cada columna, el número total de pares buenos está acotado por
+           \(O(n\,m)\). Con eso obtienes los posibles lados izquierdo/derecho y superior/inferior;
+           luego pruebas cada celda como esquina inferior-derecha y emparejas lados. El
+           emparejamiento ingenuo da \(O(n^3)\), suficiente para la subtarea 4 pero no para la 7.
+           ¿Cómo acelerar el emparejamiento? (Pista: un Fenwick lo baja a \(O(n\,m\,\log)\); y
+           hay una observación que lo deja en \(O(n\,m)\).)</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 6 — La observación clave: el par bueno es único al fijar el menor</summary>
+      <div class="body">
+        <p class="q">En un par bueno, si miras el <em>elemento más pequeño</em> de los dos
+           extremos, ¿no queda el otro extremo completamente determinado en cada dirección?</p>
+        <p>Sí. Fijando el menor de un par bueno, el par es <strong>único</strong> hacia la izquierda
+           y único hacia la derecha (e igual arriba/abajo). Eso te permite cambiar las estructuras
+           pesadas de "pares buenos" por simples arreglos: para cada celda guardas su vecino mayor
+           más cercano en las cuatro direcciones (\(L,R,U,D\)). Con esos punteros, validar un
+           rectángulo candidato se vuelve \(O(1)\). El reto restante es <em>enumerar</em> solo
+           \(O(n\,m)\) candidatos sin repetir; la última pista lo cierra con las "esquinas de
+           bloque".</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea (Solución 2 del editorial, esquinas de bloque, \(O(n\,m)\)).</strong>
+           El algoritmo cuenta los sub-rectángulos válidos del interior tales que cada celda
+           interior es estrictamente menor que las cuatro celdas que rodean al rectángulo en su
+           misma fila (columnas \(c_1-1\) y \(c_2+1\)) y en su misma columna (filas \(r_1-1\) y
+           \(r_2+1\)). Se apoya en tres ingredientes:</p>
+        <ol>
+          <li><strong>Vecino mayor más cercano con pilas monótonas.</strong> Para cada celda se
+              calculan cuatro punteros: \(L\)/\(R\) (vecino estrictamente mayor más cercano a la
+              izquierda/derecha en la fila) y \(U\)/\(D\) (arriba/abajo en la columna). Definen
+              hasta dónde se extiende un "tramo dominado" (todas las celdas del tramo son menores
+              que el extremo).</li>
+          <li><strong>Pares buenos únicos.</strong> Un par bueno es un par de celdas en una fila o
+              columna que pueden ser los dos extremos exteriores de un rectángulo válido. El total
+              de pares buenos es \(O(n\,m)\); al fijar el elemento menor del par, este es único en
+              cada dirección, así que se guardan en arreglos simples (\(L,R,U,D\)) en lugar de
+              estructuras pesadas.</li>
+          <li><strong>Esquinas de bloque.</strong> Una "esquina de bloque" es un cuadrado \(2\times2\)
+              del cual exactamente una celda está dentro del rectángulo. Todo rectángulo válido
+              tiene exactamente cuatro esquinas de bloque. Con arreglos de propagación
+              (\(UL\)/\(DL\) por columnas, \(LU\)/\(RU\) por filas) que registran hasta qué
+              fila/columna se mantiene la consistencia de los tramos coincidentes, cada rectángulo
+              válido queda determinado de forma única por una de sus esquinas (a lo más
+              \(2^4=16\) "estructuras" posibles).</li>
+        </ol>
+        <p>Recorriendo cada celda interior \((i,j)\) como esquina inferior-derecha de un bloque, se
+           generan \(O(1)\) rectángulos candidatos por celda (en la implementación, \(6\)
+           combinaciones de \(U\)/\(D\) con \(L\)/\(R\)), y cada candidato se valida en \(O(1)\)
+           con los punteros y los arreglos de propagación. Los válidos se empaquetan en un entero
+           \((i_1,i_2,j_1,j_2)\) y se deduplican con ordenar + único. En total: \(O(n\,m)\)
+           candidatos verificados en \(O(1)\) tras el preprocesamiento.</p>
+
+        <p><strong>Por qué es correcto.</strong> Todo rectángulo válido tiene exactamente cuatro
+           esquinas de bloque y, fijado el elemento menor de cada par exterior, el par es único;
+           por eso cada rectángulo válido se identifica de forma única por una esquina, lo que
+           acota los candidatos a \(O(n\,m)\) y permite el conteo exacto sin omitir ni duplicar
+           (el ordenar + único elimina recuentos repetidos de la misma estructura). La validación
+           \(O(1)\) reproduce exactamente la condición "estrictamente menor que los cuatro vecinos
+           exteriores" usando los punteros de vecino-mayor-más-cercano.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>FUNC count_rectangles(a):          // a es n x m
+  n ← filas(a) ; m ← columnas(a)
+
+  // --- PASO 1: vecino mayor más cercano con PILAS MONÓTONAS ---
+  para cada fila i, j de izquierda a derecha (pila):
+      L[i][j] ← índice del anterior estrictamente mayor en la fila (o -1)
+  para cada fila i, j de derecha a izquierda:
+      R[i][j] ← índice del siguiente estrictamente mayor en la fila (o -1)
+  para cada columna j, i de arriba a abajo:
+      U[i][j] ← índice del anterior estrictamente mayor en la columna (o -1)
+  para cada columna j, i de abajo a arriba:
+      D[i][j] ← índice del siguiente estrictamente mayor en la columna (o -1)
+
+  // --- PASO 2: ARREGLOS DE PROPAGACIÓN (consistencia de tramos coincidentes) ---
+  // UL/DL propagan por columnas; LU/RU propagan por filas.
+  para cada columna j, cada fila i:
+      si el tramo (U/D) coincide con el de la columna vecina:
+          UL[i][j] hereda del vecino ; DL[i][j] hereda del vecino
+      si no:
+          UL[i][j] ← j   (inicia un tramo nuevo) ;  análogamente DL
+  para cada fila i, cada columna j:
+      propagar LU usando L y la fila de arriba (simétrico)
+      propagar RU usando R y la fila de arriba (simétrico)
+
+  // --- PASO 3: ENUMERAR CANDIDATOS por ESQUINAS DE BLOQUE ---
+  lista V ← vacía
+  para i de 1 a n-2, para j de 1 a m-2:     // (i,j) = esquina inferior-derecha del bloque 2x2
+      generar (a lo sumo 6) candidatos combinando los extremos dados por
+          U[i+1][j], D[i-1][j]   (límite vertical superior/inferior) con
+          L[i][j+1], R[i][j-1]   (límite horizontal izquierdo/derecho),
+          incluidas las variantes con R/L del extremo opuesto
+      para cada candidato (i1,i2,j1,j2):
+          si VALIDAR(i1,i2,j1,j2): agregar código empaquetado a V
+
+  ordenar V ; quitar duplicados (único)
+  devolver tamaño(V) como int64
+
+FUNC VALIDAR(i1,i2,j1,j2):
+  si i2 &lt; i1  o  j2 &lt; j1: rechazar
+  // borde horizontal dominado: por la derecha desde j1-1 o por la izquierda desde j2+1,
+  // y la propagación vertical (RU/LU) debe alcanzar hasta i1
+  si NO ( (R[i2][j1-1]-1 == j2  y  RU[i2][j1-1] ≤ i1)
+       o  (L[i2][j2+1]+1 == j1  y  LU[i2][j2+1] ≤ i1) ): rechazar
+  // borde vertical dominado: por abajo desde i1-1 o por arriba desde i2+1,
+  // y la propagación horizontal (DL/UL) debe alcanzar hasta j1
+  si NO ( (D[i1-1][j2]-1 == i2  y  DL[i1-1][j2] ≤ j1)
+       o  (U[i2+1][j2]+1 == i1  y  UL[i2+1][j2] ≤ j1) ): rechazar
+  aceptar     // rectángulo válido determinado de forma única por esta esquina</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Tiempo \(O(n\,m)\) en preprocesamiento (pilas monótonas)
+           más \(O(1)\) por celda al generar y validar candidatos; el ordenar + único de la
+           deduplicación añade \(O(n\,m\,\log(n\,m))\). Memoria \(O(n\,m)\) (varias matrices de
+           enteros cortos). Empíricamente el peor caso \(2500\times2500\) corre en
+           \(\approx 0.71\) s bajo el límite de \(5\) s. La <strong>Solución 1</strong>
+           alternativa del editorial usa pares buenos + árbol de Fenwick para el emparejamiento en
+           \(O(n\,m\,\log)\); cuida no usar estructuras lentas tipo <code>std::map</code> para la
+           subtarea 7.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Nota de implementación (solo C++)</span>
+<pre>// El retorno es int64 (long long) por contrato. En esta cuadrícula
+// el conteo cabe en 32 bits, pero declara siempre el retorno como
+// long long para evitar comportamiento indefinido en otras entradas.
+// Empaca el candidato (i1,i2,j1,j2) en un solo entero de 64 bits
+// (cada coordenada en su propio bloque de bits) para ordenar y
+// deduplicar con sort + unique en O(n*m*log(n*m)).</pre>
+          <p class="note">El truco es solo el empaquetado de coordenadas para deduplicar; el
+             algoritmo no depende del lenguaje.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

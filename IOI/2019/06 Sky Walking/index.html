@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2019 · Tarea 6 — Sky Walking</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2019 · Día 2</div>
+    <h1>Tarea <span class="num">6</span> — Sky Walking</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Kenan dibujó un plano de los edificios y las pasarelas (puentes peatonales
+       elevados) que hay a un costado de la avenida principal de Bakú. Hay \(n\)
+       edificios, numerados de \(0\) a \(n-1\), y \(m\) pasarelas, numeradas de
+       \(0\) a \(m-1\). El plano está en un plano de dos dimensiones, donde los
+       edificios son segmentos <strong>verticales</strong> y las pasarelas son
+       segmentos <strong>horizontales</strong>.</p>
+
+    <p>El pie del edificio \(i\) (con \(0 \le i \le n-1\)) está en el punto
+       \((x[i], 0)\) y el edificio tiene altura \(h[i]\). Es decir, es el segmento
+       que une los puntos \((x[i], 0)\) y \((x[i], h[i])\).</p>
+
+    <p>La pasarela \(j\) (con \(0 \le j \le m-1\)) tiene sus extremos en los
+       edificios \(l[j]\) y \(r[j]\), y está a una altura positiva \(y[j]\). Es
+       decir, es el segmento que une los puntos \((x[l[j]], y[j])\) y
+       \((x[r[j]], y[j])\).</p>
+
+    <p>Una pasarela y un edificio <strong>se intersecan</strong> si comparten algún
+       punto. Así, una pasarela interseca a los dos edificios de sus extremos, y
+       también puede intersecar a otros edificios que queden en medio (siempre que
+       sean al menos tan altos como la pasarela).</p>
+
+    <p>Kenan quiere encontrar la longitud del camino más corto desde el pie del
+       edificio \(s\) hasta el pie del edificio \(g\), suponiendo que solo se puede
+       caminar a lo largo de los edificios y de las pasarelas; o bien determinar que
+       no existe tal camino. Importante: <strong>no</strong> se permite caminar por
+       el suelo, es decir, sobre la línea horizontal de altura \(y = 0\).</p>
+
+    <p>Se puede pasar de una pasarela a un edificio (o al revés) en cualquier punto
+       de intersección. Si los extremos de dos pasarelas coinciden en el mismo punto,
+       se puede pasar de una pasarela a la otra.</p>
+
+    <p>Tu tarea es ayudar a Kenan a responder su pregunta.</p>
+
+    <!-- FIGURA CLAVE: Ejemplo 1 (extraída del PDF oficial). -->
+    <figure>
+      <img alt="Ejemplo 1: edificios como segmentos verticales numerados 0 a 6, pasarelas como segmentos horizontales, y en azul el camino más corto del pie del edificio 1 al pie del edificio 5."
+           src="data:image/png;base64,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atRj06ZNVUPDjz/++OGHHy5ZsuT999838yPU0j4UJyen9PT0SZMmJSYm6h+KiYnZvHlzSEjI3r1727VrR4SqXUFBgXSnrk+Zjo6O0h1OoQHToNVqp0+fXllZqVAo1q1bJ31hAkeOHKl2HsK2bdt+8803o0aNYiKUEbp///6HH34ohFi9ejXn7auHu7t79+7d27RpI52s5+zZs1lZWUVFRR9++OGDBw/039ozT9JMaGtr69GjRz98+DAgIODVV19t3bp1amrqrl27Hjx48K9//evFF1+8cuXK01+rwLwiVFFRkXSnrlPn6Zfrnwk0X+Xl5VOnTr19+7YQYuHChSNHjqQm/zvwKZXSi106zYH0Jq1Wq5ctWzZjxgzqY2xmzZqVn5//u9/9bubMmVSjVr169Tpy5MjQoUOVyv//tl5aWvr111+///77ZWVl33333fDhwydNmmS2JZL2jGRnZwshJkyYsGvXLv07/vLly6dOnXrgwIG0tLRFixZt2bLlKddpXtPJbW1t9R2r1ieUlJRUeybQTFVWVv7hD384duyYEOKVV1757LPPqIne3Llzi4uLi4uLCwoKbt68uWbNmlatWiUnJ8+cOfNPf/oT9TEqf//7348fP25raxsZGck+wrr06dNn5MiRVfOTEMLa2nrBggX6Q58rV6405xLpA5Onp+fWrVur7kmxtbXdunWru7u7EGLHjh1Pf8pW84pQ+uN3hYWFtT5Bv1x/RA9ojnQ63axZs3744QchxLhx47Zv384hvFrZ2dl16tRp4cKFN27ckL5N8umnn168eJHKGInU1NR3331XCLF06dIXXniBgjSASqUKDAwUQsTFxUlXFzVP+rf1qVOntmjRotqjTk5Or7zyihCivLw8KirqKddpXgfy9Od9SUtLq/UbCqmpqdWeCTTH/DR79uwNGzYIIYYPH75nz556TikJiaur68cffzxt2jQhxPbt2/v27UtNjMGaNWseP37s6uoaFBRU7Sq5+pOcZWZmSg95e3v37t2bolWjUCgGDx4szZ6+e/eul5eXedbBx8cnLS1NCBESElLrE7p27SrdSUpKIkLVolOnTtKdO3fudOvWreYTEhISqj0TaHb5ac6cOdJZ+MPCwvbt28dFc5/SgAEDpDvS7DEYA+nIQE5OzsSJE+t6Tmxs7EsvvSSEmDBhwr59+yhaTfqdLvrvVJmhzp07S2d8tLOzq/UJ+uVPPxnavA7k6T9Znjt3rtYnSLvvFAoFH2XQTM2dO1f63k1oaOjBgwft7e2pyVMqLy+X7lhbW1MNmBL9F/g9PDzMtgj9+vWT7qSnp9f6BP1yaVIUEaq68PBwKYz/4x//0A+XepmZmadOnRJC9OnTR7qEO9C8zJs375tvvpEGi8OHDzOl75lIL38hxDOdGHe4TIsAABKsSURBVAaNau3atTl1iIuLk54zcuRIacn27dupWK3JQOrb9vb2wcHBZluHl19+WTpz5vHjx2t9wsmTJ6U7T3/5F/OKUDY2NtI3lh8+fPjll19We/Sjjz4qKysTQuivyQo0IwsWLJCukN27d++jR49yBYxqysrK6jll7oMHD5YuXaofaimXkbCzs3Opg/7glFKplJaY7WnlHz16VNcRuqKiojfffFM6MjVx4kRzPqzv7e0tndPh2LFjp0+frvkJ6sSJE0KIoKCguiZL1aQ0tyIuXrx427Ztjx49ev/9962trdVqtZWVVW5u7ooVK/7+978LIUJCQqZPn87IZWyOHz9+//596b7+3BMZGRnr16/XP2fQoEFBQUHmWZ/Vq1evW7dO+pzw6quv7t69u9anBQQEDB061DxLVFBQ0L59+0mTJo0fP753796+vr62traFhYXx8fEHDx6U9nYIIV566aUXX3yRVxyakdjY2DfeeGPatGkjR47s3r27t7e3paVlRkbGL7/8smrVKums3M7OzitWrDDzQn366aeHDx8uKCiYOHFiZGTkpEmTLC0ty8vLf/zxR7VaLZ0ibtWqVc9w7gxd8/Q8/8vp06f1Sdze3t7f318/9cHLy+vevXvP2TaVSmVs5WrKJglhyJve01wV69tvvzWBrdawvv36668/zet98uTJJtC3GzaaSQmpqpoDZVhYWG5uromNAM29b9flzp070hrGjh1r5oPk4cOH6+/bHh4eZ8+epSPpdLr9+/frz57VokWLwMDAqic4+J//+Z9naomFGebQsLCw2NjY0NBQIURhYeGDBw9KS0stLS0nTZp09erVtm3b8pkGMD0ODg6LFi2qup+y6ljcrVu3iIiIkydP1jxhDGDkAgMDx48f7+bmVrNvOzk5zZ079/r164MHD6ZQQojx48efP39euuB6Xl5eYmJiXl6eECI4OHj//v2LFy9+prUpzbOIXbt2jYqKSkhIuH79ular9fT07NOnj9meLaNZ4LvK9du2bdu2bduoQz2srKxWr169evVqjUbz73//Ozk5ubCw0N7e3sPDo1u3blx5rdlp3759PbskzUqHDh3279+v0+ni4+NTUlKk6+I5Ozu3a9eua9eunFa3ml69esXExCQmJl6/fv3Ro0ctWrTo2rVrwyaBKM38Fdi+fXv6E2BW3NzcmO0E06NQKIKCgsx2PuizCgwMlE7a/jwsqCMAAMCzMvBeqMrKyujo6CtXrhQXF7du3XrYsGEcHQMAAKbHwHuhvv/++61bt+p0utatW1+7dm3lypUPHjygygAAgAhVp6tXr166dGnUqFFvv/3266+/vnjxYisrK6a4AgAAIlR9oqOjLS0tR40aJf3o7Ow8ePDgpKSklJQUCg0AAIhQtbt7966vr2/VayB36NBBVLnAIQAAABHq/ygtLc3Pz696ai/xn8sdZ2dnU2gAAECEqoV02TIrK6uqC6XrqOivaAYAAECE+j+k859WO1dsRUWF/iEAAACToTDUCfIrKyvnzp3bsWPH+fPn6xfev3//008/ffnll0ePHl3t+Wq1muoDAADZRURENOTXDHjx5I8//vjdd9+tuuTcuXMqlerq1avmcBFymsTV7GkSTaJv0yQ6kvk0yZDfyOvWrdvjx4/j4+P1Sy5cuGBtbc0lewAAgIkxZIQKDw93dHTcvHnzrVu3MjIy9uzZEx8fP3LkSGlSOQAAgMkw5DXyHB0d58+f//33369bt04IYWlpOWzYsDFjxlBlAABAhKqPn5/f8uXL09PTi4uLW7ZsaW9vT4kBAAAR6ql4e3tTWQAAYMIsKAEAAAARCgAAgAgFAABAhAIAACBCAQAAEKEAAABAhAIAACBCAQAAEKEAAACIUAAAAEQoAAAAEKEAAACIUAAAAEQoAAAAIhQAAAARCgAAAEQoAACAhlPodLpm/Q9UVFRYWlrSJJpEiWgSTaJENIkSEaEAAACMGgfyAAAAiFAAAACNT9msW5+RkXH8+PG0tDRbW9sePXqEhoZaWMgZCnNzc5OSkpKSkvLy8gIDA/v06SNvfbRa7bVr1xISEjQaTYsWLQICAsLCwmxtbWVsUmpq6tWrV1NSUnJzc21sbFq1ahUWFtayZUsj6VGxsbGJiYmtWrV68cUXZWzGTz/9VFhYWHWJm5vb8OHD5S1OeXn5uXPnbty4kZ+f7+Tk1K5du/DwcKVSnjHk8OHDubm5NZcPGTJExu708OHDM2fOpKenCyG8vb3DwsJatWol71aLi4uLjY3VarXOzs59+/bt2bNn07chKysrKSkpOTm5pKSkf//+/v7+8o7hFRUVaWlpSUlJDx8+rKioGD9+vJ2dnbxjeElJSXJyclJSUnZ2tqOj45gxY2Qfw+sqhYxjeD0dSa4xvBlHqAcPHnzxxRe2trbdu3fXaDRbt269devWrFmzZMxP7777btWXhOwRauXKlXl5eX5+fu7u7hqN5sqVKydOnPjjH//o5eUlV5NiYmLOnj3r5+fn5ORUWFh4+vTpEydOqFQqWUb2atLT0zdt2lReXh4cHCxvhDp37lxhYaGzs7N+iY+Pj7wRKi8vb926dSkpKQEBAa6uro8fP963b19oaKijo6Ms7bl9+3ZWVlbVJRqNpqKiYtiwYXKV6NKlS+vXr3dwcOjatatCoYiNjT19+vSsWbN69eolV5N27tx56tSpNm3aBAQEpKSkREREjBgxYvLkyU38sWT9+vX6H/39/fXvfHKN4Tt37jx79qz+xxEjRkgRSsYx/JNPPpGStxDC09NTH6HkGsPrKYVcY3g9HUnGMbwZR6itW7daWVl99NFH0jvN/v37f/755759+3br1k2W9lhZWU2YMKFt27bu7u5LliwxhhKFh4f379/f1dVV+vHixYvff//93r17Z8+eLVeThg0b9vLLL+t3XWRnZ69cuXLXrl2yR6jKysrNmzf36tXr4sWLxrDtOnfu/NZbbxnPy23jxo0ZGRnz588PDg6WluTn5+s/uze9+fPnV/2xoKDgvffeCwoKcnd3l6tJe/futbOzW7JkiTQi5ebmLlu27J///KdcESohIeHUqVPdu3dXq9XSrp0ffvjh2LFjvXr1atu2bZM1w8vLa+rUqf7+/llZWRs3bjSGMTw4ODggIMDf3//06dNVs5SMY3hYWJiLi4u/v/9XX31VXl4u+xheTynkGsPr6UgyjuHNdS5UcnJycnLyoEGD9J/UR44cqVQqo6Oj5WqSnZ3dmDFjgoODHRwcjKRKo0eP1r/2hBB9+/b19PRMTEyUsUkuLi5VD/14eHi0b99eq9WWlZXJW6uTJ09mZma++uqrAjXcvXv3xo0bI0aM0OcnIYSjo6PxfMP5woUL5eXlAwcOlDGCazSagIAA/Yjk5OQUGBj46NEjuZp09epVIcSoUaP0h8ZGjRolhDh37lxTNsPPzy88PLxdu3ZWVlZGMoZLRwx9fHyqHTSUcQwPDw/v2bNnzQ8Aco3h9ZRCrjG8ro4k7xjeXPdC3b17VwjRoUMH/RJbW1s/Pz9584HxKy8vl3cuVDVlZWUPHz708fGp61XRNLKysvbv3//GG2/IdViq1i2VkJBQVlbm4eHh6ekpb2OkN+N+/foVFBQkJydbWVn5+vpaW1sbT0eKioqyt7fv0aOHXA2wsLDw8fFJT08vLy+X3mAqKirS09N9fHzkalJ+fr4Qws3Nreqbn7R3ijGcMZwx3KwjlPTZruroIIRwd3dPTEwsKyuTd1sarbi4uJycnLFjxxpDSx4/fpyXlxcXF1dWVibjDDYhhE6n27JlywsvvNCvXz/j2VjXr1+/fv26/uPXH/7whzZt2sjVmNTUVKVSeePGjT179lRUVEgfUqdMmTJo0CBjqNX9+/dTUlJ+97vfyfvCnz59+ldfffXXv/514MCBOp0uJiamsLBw5syZcrWnRYsW0lCp382j0WikNxvGcMZwxnCzjlAlJSVCiGovMxsbG+khXn41ZWZmbt261dvbW9qZL6+TJ08mJCTodDpLS8uRI0fK+62lM2fO3L9/f9myZcazsfr37x8QENCyZcvi4uLr168fO3Zs7dq1S5cudXJykqU9hYWFFRUVe/fu/f3vf9+1a9dHjx7t2LFj69at7u7unTp1kr1c0qEfGY/iSfz9/V966aU9e/bcvn1bCKFUKidPntyUs46q6dq167Fjx37++efZs2dbWlrqdLqff/5Z2o1hDKeZZgxnDDeBMby5Rijp9V9ZWVl1ofT52NjOQG8McnJy1q1bZ21tPW/ePGM4/rJo0SIhRG5u7uXLl3fv3n337t2FCxfK9VF47969EyZMkHEack0TJ07U3w8MDHR2dt6xY8evv/4q16dP6Q146NChgwcPFkK4uLio1eo///nPJ0+elD1ClZaWXrx40dfX18/PT96WbN26NTo6esqUKdL88bi4uH/84x9JSUn/9V//JUt7OnToEBYWdubMmeXLl/v7+6empmo0Gm9v76ysLGMYJBnDGcNNYAxvrtPJpeOd0sF+vfz8fKVSaVTHiY2BVqv9y1/+UlpaumDBAg8PD+NpmJOT05AhQ8LDw+Pj4+/fvy9LG37++WcLCws7O7vo/5AqFh0dnZSUZCSF6t27txAiOTlZrgZIh4SCgoL0Szw9PV1dXVNTU2UvTlxcXFFRkey7oDIyMqKiogYMGDBs2DBXV1dXV9ehQ4cOGjQoJiYmMzNTrla99tprarXa39+/oKCgY8eOixcvViqV1Y6dMYYzhjOGN1hz3QslTdJMTU1t166dfmFKSkrr1q0VCgUvOb3Hjx+vWbOmsLBw4cKF3t7eRthC6QQnWq1Wlr9eXFxcVFS0ZcuWqgvT0tI2b948evRo2XdsSGS/kGWbNm2uXLlSbYdBZWWlMRxtiYqKUiqVffv2lbcZ0gSj1q1b1xymMjMzZTzbZ8+ePfXfNs/NzU1NTR0wYABjOGM4Y7hZR6igoCBra+uLFy/qT591586dnJwc2T+MGpXc3Nw1a9bk5+cvXLhQxm8G1e/GjRtCCLneY2bMmFHtOMu8efOCgoLmzJkj75nuq4qJiRFCyDirpnv37j/99NONGzc6d+6sH6G0Wq20e0ze4HL79u0+ffrIfiYRaZragwcPqi68d++eEKLqKVLldfDgQZ1OJ+9pYxnDGcNNaQxvrhHK1tZ2xIgRBw8e3L1794svviid2dbR0XHIkCEytur8+fNFRUXSNMmHDx+eOnVKCNGxY8dqn02bzLp16zIyMkJDQxMSEqp+k1nGKq1atapHjx4+Pj4ODg45OTkXLly4evVqSEiIXCWytLSsOfFCoVDIuH/l3Llz8fHxXbt2dXNzKykp+fe//3369GkXFxdpHpIs2rRp07t371OnTjk7O4eEhGg0ml27dknTSOUdB6KiooQRTCQXQvj6+vr7+8fGxrq7u/fp00en0126dOnChQv+/v4yfpVyz549bdq08fT0LCkpiYmJuXjx4tChQwMCApqyDSUlJdKxFelI9K1bt4qKioQQ/fv3l2sMz8jIuHnzphBCOhIdHR1tb29vY2MTGhoq1xgeHx+flpYm/vPVDenvenl57dmzR64xvK5SbNmyRZYxvJ6OVPMcv002hjfjs5OPHTu2uLj41KlTx48fF0J4e3u/9dZb8p7X5+DBg/ovDCcmJkonOJk+fbpc+UB6TeoPDxtDhHJ0dDxw4ID+9Ls2Njbh4eFVZ0/DwcHh5s2b+hPsKhSKLl26TJs2Td4dLW+++aaFhcU///nPvXv3CiHc3NzmzJkj74HOysrKmJgYd3f3qpO05KJQKObOnbtnz56jR48eOXJEWtK3b98pU6bIeFgqLS3tl19+ke7b29tPnDix6VNvYWHhzp07q74xnz9/XgjRuXNnucbwe/fuVW3SgQMHhBAuLi6hoaFyjeEXLlyQPg9IpOb17dtXxjG8rlLINYbX05FkvEyCQvZpFs9f1szMTFtbW+M8SIyaysrKNBpNYWGhjY2Nl5cX376p1aNHj/Ly8iwsLDw9PWUcIKrJz8/Pzs62sbHx9vZmwkqtSktLs7KyFAqFh4eHMXxzKi8vT6PRKJVKb29v43ytMYYzhjdfzT5CAQAAND0LSgAAAECEAgAAIEIBAAAQoQAAAIhQAAAARCgAAAAQoQAAAIhQAAAARCgAAAAiFAAAABEKAAAARCgAAAAiFAAAABEKAACACAUAAECEAgAAABEKAACACAUAAECEAgAAIEIBAAAQoQAAAIhQAAAAIEIBAAAQoQAAAIhQAAAARCgAAAAiFAAAAIhQAAAARCgAAAAiFAAAABEKAACACAUAAAAiFAAAABEKAACACAUAAECEAgAAIEIBAACACAUAAECEAgAAIEIBAAAQoQAAAIhQAAAAZuz/AezUXVAzbr07AAAAAElFTkSuQmCC">
+      <figcaption>Figura 1: corresponde al <em>Ejemplo 1</em>. En negro, los
+        edificios (verticales, numerados \(0\)–\(6\)) y las pasarelas
+        (horizontales). En azul, el camino más corto del pie del edificio
+        \(s=1\) al pie del edificio \(g=5\), de longitud \(27\).</figcaption>
+    </figure>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar
+       ni escribes en la salida estándar. Debes implementar el siguiente
+       procedimiento, al cual el evaluador llama una vez por cada caso de prueba.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int64 min_distance(int[] x, int[] h, int[] l, int[] r, int[] y,
+                   int s, int g)</pre>
+    </div>
+    <ul>
+      <li>\(x\) y \(h\): arreglos de enteros de longitud \(n\).</li>
+      <li>\(l\), \(r\) y \(y\): arreglos de enteros de longitud \(m\).</li>
+      <li>\(s\) y \(g\): dos enteros.</li>
+      <li>El procedimiento debe regresar la longitud del camino más corto entre el
+          pie del edificio \(s\) y el pie del edificio \(g\), si tal camino existe.
+          En caso contrario, debe regresar \(-1\).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>4.0 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>1024 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Edificios y pasarelas</td><td><span class="badge">\(1 \le n, m \le 100\,000\)</span></td></tr>
+        <tr><td>Posiciones (estrictamente crecientes)</td><td><span class="badge">\(0 \le x[0] &lt; x[1] &lt; \ldots &lt; x[n-1] \le 10^9\)</span></td></tr>
+        <tr><td>Alturas de edificios</td><td><span class="badge">\(1 \le h[i] \le 10^9\)</span> (para todo \(0 \le i \le n-1\))</td></tr>
+        <tr><td>Extremos de pasarelas</td><td><span class="badge">\(0 \le l[j] &lt; r[j] \le n-1\)</span> (para todo \(0 \le j \le m-1\))</td></tr>
+        <tr><td>Altura de pasarelas</td><td><span class="badge">\(1 \le y[j] \le \min(h[l[j]],\, h[r[j]])\)</span></td></tr>
+        <tr><td>Origen y destino</td><td><span class="badge">\(0 \le s, g \le n-1\)</span>, con <span class="badge">\(s \ne g\)</span></td></tr>
+        <tr><td>Sin cruces de pasarelas</td><td>No hay dos pasarelas que compartan un punto, salvo quizá en sus extremos.</td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (tabla exacta del PDF oficial) -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">10</td><td>\(n, m \le 50\).</td></tr>
+          <tr><td>2</td><td class="pts">14</td><td>Cada pasarela interseca a lo más \(10\) edificios.</td></tr>
+          <tr><td>3</td><td class="pts">15</td><td>\(s = 0\), \(g = n-1\), y todos los edificios tienen la misma altura.</td></tr>
+          <tr><td>4</td><td class="pts">18</td><td>\(s = 0\), \(g = n-1\).</td></tr>
+          <tr><td>5</td><td class="pts">43</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>min_distance([0, 3, 5, 7, 10, 12, 14],
+             [8, 7, 9, 7, 6, 6, 9],
+             [0, 0, 0, 2, 2, 3, 4],
+             [1, 2, 6, 3, 6, 4, 6],
+             [1, 6, 8, 1, 7, 2, 5],
+             1, 5)</pre></div>
+      <div class="io"><h4>Valor de retorno</h4><pre>27</pre></div>
+    </div>
+    <p class="note">La respuesta correcta es \(27\). La Figura 1 (arriba) ilustra
+       este ejemplo: en azul se traza el camino óptimo del pie del edificio
+       \(s=1\) al pie del edificio \(g=5\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>min_distance([0, 4, 5, 6, 9],
+             [6, 6, 6, 6, 6],
+             [3, 1, 0],
+             [4, 3, 2],
+             [1, 3, 6],
+             0, 4)</pre></div>
+      <div class="io"><h4>Valor de retorno</h4><pre>21</pre></div>
+    </div>
+    <p class="note">La respuesta correcta es \(21\). Aquí todos los edificios miden
+       lo mismo (\(h = 6\)) y se pide ir del pie del edificio \(0\) al del \(4\).</p>
+
+    <h2>Evaluador de ejemplo</h2>
+    <p>El evaluador de ejemplo lee la entrada con este formato:</p>
+    <ul>
+      <li>Línea \(1\): \(\;n\;\;m\)</li>
+      <li>Línea \(2+i\) (con \(0 \le i \le n-1\)): \(\;x[i]\;\;h[i]\)</li>
+      <li>Línea \(n+2+j\) (con \(0 \le j \le m-1\)): \(\;l[j]\;\;r[j]\;\;y[j]\)</li>
+      <li>Línea \(n+m+2\): \(\;s\;\;g\)</li>
+    </ul>
+    <p>El evaluador de ejemplo imprime una sola línea con el valor que regresa
+       <code>min_distance</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Camino más corto (Dijkstra)</span>
+      <span class="ptag">Barrido + BST</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(n\) edificios (segmentos verticales) y \(m\) pasarelas (segmentos
+       horizontales). Implementa <code>min_distance</code>, que regrese la longitud
+       del camino más corto del pie del edificio \(s\) al pie del edificio \(g\),
+       caminando <strong>solo</strong> por edificios y pasarelas (nunca por el suelo
+       \(y=0\)), o \(-1\) si no existe. Las distancias se miden con longitud real
+       (suma de \(|\Delta x|\) horizontales y \(|\Delta y|\) verticales).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n, m \le 10^5\) y coordenadas hasta \(10^9\): hace falta una
+                solución \(O((n+m)\log(n+m))\) y un resultado de \(64\) bits
+                (<code>int64</code> / <code>long long</code>). La subtarea 1
+                (\(n,m\le 50\)) admite el grafo ingenuo; las subtareas 3 y 4
+                (\(s=0,\,g=n-1\)) regalan una <em>monotonía</em> clave; la
+                subtarea 5 la generaliza.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en esto como un <em>grafo</em>? ¿Qué sería un
+           vértice y qué sería una arista?</p>
+        <p>Caminas únicamente por edificios (verticales) y pasarelas
+           (horizontales), y solo cambias entre ellos en los puntos donde una
+           pasarela toca un edificio. Coloca un vértice en cada intersección
+           pasarela–edificio (más uno en el pie de \(s\) y otro en el de \(g\)).
+           Pon una arista <strong>horizontal</strong> entre dos contactos
+           consecutivos de una misma pasarela (peso \(=\Delta x\)) y una arista
+           <strong>vertical</strong> entre dos contactos consecutivos de un mismo
+           edificio (peso \(=\Delta y\)). Como ningún peso es negativo,
+           <strong>Dijkstra</strong> da el camino más corto. ¿Cómo entras a la red
+           desde el pie de \(s\), si no puedes pisar el suelo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(n,m \le 50\)): el grafo ingenuo</summary>
+      <div class="body">
+        <p class="q">¿Y si pruebas <em>todas</em> las parejas pasarela–edificio?
+           Con \(n,m \le 50\) hay a lo más \(2500\) edificios por revisar por cada
+           pasarela. ¿Te alcanza?</p>
+        <p>Por cada pasarela \(j\) y cada edificio \(i\), verifica si se intersecan
+           (\(l[j] \le i \le r[j]\) y \(h[i] \ge y[j]\)) y, de ser así, crea un
+           vértice. Une los vértices consecutivos de cada edificio y los de cada
+           pasarela, agrega el pie de \(s\) y el de \(g\), y corre Dijkstra. Son
+           \(O(NM)\) vértices y aristas, \(O(NM \log(NM))\) en total: suficiente
+           para los primeros \(10\) puntos. La única forma de entrar desde el pie de
+           \(s\) es <em>subir</em> por el edificio hasta la pasarela más baja que lo
+           toca (y bajar análogamente en \(g\)); si ninguna pasarela toca a \(s\) o
+           a \(g\), la respuesta es \(-1\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (cada pasarela toca \(\le 10\) edificios): construir el grafo por barrido</summary>
+      <div class="body">
+        <p class="q">El grafo es el mismo, pero ya no puedes probar todas las
+           parejas. ¿Cómo encuentras solo los edificios que una pasarela <em>sí</em>
+           toca, sin recorrer todos?</p>
+        <p>Barre las alturas de menor a mayor (las que tienen una pasarela o el tope
+           de un edificio) y mantén una lista (o BST) de los edificios que siguen
+           siendo al menos tan altos como la altura actual. Para cada pasarela,
+           arranca en su extremo izquierdo y avanza por esa lista: cada elemento es
+           una intersección, y como toca a lo más \(10\) edificios, visitas pocos
+           antes de llegar a su extremo derecho. El resto (unir contactos
+           consecutivos y Dijkstra) es igual. Conforme subes de altura, quita los
+           edificios cuyo tope quedó por debajo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3 (\(s=0,\,g=n-1\), misma altura): aparece la monotonía</summary>
+      <div class="body">
+        <p class="q">Con \(s=0\) y \(g=n-1\), ¿en qué <em>dirección</em> conviene
+           recorrer cada pasarela? ¿Notaste que nunca hace falta ir hacia la
+           izquierda?</p>
+        <p>Cuando \(s=0\) y \(g=n-1\) se puede probar que las pasarelas siempre se
+           recorren de izquierda a derecha. Si además todos los edificios miden lo
+           mismo, existe un camino óptimo en el que cada pasarela o no se usa, o se
+           recorre completa hasta su extremo derecho (aunque puedas haber entrado a
+           ella sin pasar por su extremo izquierdo). Eso permite una
+           <strong>DP</strong>: recorre las pasarelas en orden creciente de su
+           extremo derecho (desempatando por la más baja) y mantén el costo mínimo
+           para llegar al extremo derecho de cada una; al procesar una pasarela,
+           actualiza con su valor a las pasarelas justo encima y justo debajo de su
+           extremo derecho. La respuesta es el mínimo para llegar al extremo derecho
+           de una pasarela que termina en \(n-1\), más bajar al pie del edificio
+           \(n-1\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 4 (\(s=0,\,g=n-1\), alturas cualesquiera): aristas irrelevantes</summary>
+      <div class="body">
+        <p class="q">Vuelve al grafo. De todas las aristas verticales, ¿cuáles
+           jamás necesita un camino óptimo? ¿Qué tienen de especial las que sí?</p>
+        <p>Llama <em>irrelevante</em> a una arista vertical cuyo extremo
+           <strong>superior</strong> cae estrictamente <em>dentro</em> de una
+           pasarela (no en su extremo). Con \(s=0\) y \(g=n-1\) se prueba que existe
+           un camino más corto que no usa ninguna arista irrelevante: en lugar de
+           subir a media pasarela, puedes entrar por su extremo. Al descartarlas, el
+           tope de toda arista vertical que queda es el <em>extremo</em> de alguna
+           pasarela, así que solo sobreviven \(O(M)\) aristas y \(O(M)\) vértices
+           con grado positivo. Construye el grafo reducido y corre Dijkstra:
+           \(O((N+M)\log(N+M))\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Es un camino más corto sobre el grafo de
+           intersecciones edificio–pasarela, pero construido de forma eficiente.
+           Las aristas horizontales son caminar sobre una pasarela entre dos
+           contactos consecutivos (peso \(\Delta x\)); las verticales son subir o
+           bajar por un edificio entre dos pasarelas verticalmente adyacentes en ese
+           mismo \(x\) (peso \(\Delta y\)); y desde el pie de \(s\) (o de \(g\)) la
+           única manera de entrar a la red es subir hasta la pasarela más baja que
+           toca ese edificio.</p>
+
+        <p><strong>De la subtarea 4 a la 5.</strong> El teorema de las aristas
+           irrelevantes (Pista 5) solo vale cuando \(s=0\) y \(g=n-1\). Para
+           \(s,g\) arbitrarios, antes de construir el grafo se <em>parten</em> las
+           pasarelas que pasan por encima de \(s\) (y, por separado, las que pasan
+           por encima de \(g\)). Para una pasarela con \(l &lt; s &lt; r\): sea \(a\)
+           el último edificio en posición \(\le s\) tan alto como la pasarela, y
+           \(b\) el primer edificio en posición \(\ge s\) tan alto como ella;
+           reemplaza la pasarela por tres tramos \(l\!\ldots\!a\), \(a\!\ldots\!b\),
+           \(b\!\ldots\!r\). Esto fuerza un punto de paso justo sobre \(s\) (lo
+           mismo para \(g\)) y restablece la monotonía, así que el teorema vuelve a
+           aplicar. Cada partición añade \(O(1)\) pasarelas.</p>
+
+        <p><strong>Construcción por barrido.</strong> Recorre los edificios
+           \(i=0,\ldots,n-1\) en orden de \(x\). Mantén un conjunto ordenado
+           balanceado (un BST / <code>std::set</code>) de las pasarelas
+           <em>activas</em> en \(x[i]\), ordenadas por su altura \(y\). Al llegar a
+           \(x[i]\), inserta las pasarelas que empiezan ahí (\(l=i\)) y elimina las
+           que terminan (\(r=i\)). En cada inserción o eliminación crea (de forma
+           perezosa) el vértice de esa pasarela en \(x[i]\), lígalo con el vértice
+           previo de la misma pasarela mediante una arista horizontal de peso
+           \(\Delta x\), y conéctalo con su pasarela vecina inferior del conjunto
+           mediante una arista vertical de peso \(|\Delta y|\) (eso es recorrer el
+           edificio \(i\)). El pie de \(s\) (y de \(g\)) se enlaza con la pasarela
+           activa más baja en ese edificio, sumando su altura \(y\) como costo de
+           subir desde el suelo.</p>
+
+        <p><strong>Por qué es correcto.</strong> El grafo reducido modela
+           exactamente los movimientos posibles. Con \(s=0,\,g=n-1\) las pasarelas
+           se cruzan siempre de izquierda a derecha, y un tramo vertical cuyo tope
+           cae estrictamente dentro de una pasarela nunca hace falta en un óptimo
+           (se sustituye entrando por el extremo de la pasarela); así bastan los
+           topes que son extremos de pasarela, \(O(M)\) vértices. Partir las
+           pasarelas sobre \(s\) y \(g\) introduce vértices justo en los puntos por
+           los que un camino óptimo debe pasar al salir de \(s\) o entrar a \(g\),
+           generalizando la propiedad a \(s,g\) cualesquiera. El conjunto ordenado
+           por altura garantiza que la vecina inferior en cada punto es justo la
+           siguiente pasarela con la que el edificio puede conectarse en vertical,
+           sin omitir conexiones. Como \(s \ne g\) y no se pisa el suelo, si el pie
+           de \(s\) o de \(g\) no toca ninguna pasarela (o todas las activas quedan
+           por encima de la altura del edificio) la respuesta es \(-1\). Dijkstra da
+           el óptimo porque todos los pesos son \(\ge 0\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion min_distance(x, h, l, r, y, s, g):
+    si s == g: regresa 0
+    n = longitud(x)
+    partir_pasarelas(l, r, y, s, h)      // ancla un paso forzado sobre s
+    partir_pasarelas(l, r, y, g, h)      // ancla un paso forzado sobre g
+    m = longitud(l)
+    para cada pasarela j:
+        agenda j en el edificio l[j] como "entra"  (adds[l[j]])
+        agenda j en el edificio r[j] como "sale"   (removes[r[j]])
+
+    activas = conjunto_ordenado_por_altura()   // BST balanceado (std::set)
+    res = 0;  sv = gv = nulo
+
+    para i de 0 hasta n-1:
+        ordena adds[i] por altura ascendente
+        para cada (yj, j) en adds[i]:
+            v = vertice(j, x[i])               // perezoso; liga con el vertice
+                                               //   previo de j (arista horizontal, peso Δx)
+            vecina = pasarela justo por debajo de (yj, j) en activas
+            si vecina existe:
+                agrega_arista( vertice(vecina, x[i]), v, peso = yj - altura(vecina) )  // vertical
+            inserta (yj, j) en activas
+
+        si i == s:
+            si activas vacio o la mas baja tiene altura mayor que h[i]: regresa -1
+            sv = vertice(mas_baja(activas), x[i])
+            res += altura(mas_baja(activas))   // subir desde el pie de s
+        si i == g:
+            // simetrico: define gv y suma a res la subida desde el pie de g
+            si activas vacio o la mas baja tiene altura mayor que h[i]: regresa -1
+            gv = vertice(mas_baja(activas), x[i])
+            res += altura(mas_baja(activas))
+
+        ordena removes[i] por altura descendente
+        para cada (yj, j) en removes[i]:
+            v = vertice(j, x[i])
+            vecina = pasarela justo por debajo de (yj, j) en activas
+            si vecina existe:
+                agrega_arista( vertice(vecina, x[i]), v, peso = yj - altura(vecina) )
+            borra (yj, j) de activas
+
+    d = dijkstra(sv, gv)                        // todos los pesos son no negativos
+    si d == infinito: regresa -1
+    regresa res + d
+
+
+funcion partir_pasarelas(l, r, y, s, h):
+    // para cada pasarela que pasa por encima de s, fuerza un punto de paso sobre s
+    para cada pasarela i con l[i] &lt; s &lt; r[i]:
+        a = ultimo  edificio en posicion ≤ s tan alto como y[i]
+        b = primer edificio en posicion ≥ s tan alto como y[i]
+        reemplaza la pasarela i por los tramos  l..a,  a..b,  b..r
+        // (omite los tramos degenerados, de longitud 0)
+
+// vertice(j, x): si ya existe un vertice de la pasarela j en x, lo reutiliza;
+//   si no, crea uno nuevo y, si j ya tenia un vertice previo, los une con una
+//   arista horizontal de peso (x - x_previo).</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Tras la reducción hay \(O(N+M)\) vértices
+           y aristas (partir sobre \(s\) y \(g\) solo añade \(O(M)\)). El barrido
+           con <code>std::set</code> cuesta \(O((N+M)\log(N+M))\) y el Dijkstra con
+           montículo, lo mismo. Total \(O((N+M)\log(N+M))\) en tiempo y \(O(N+M)\)
+           en memoria. Para \(n=m=100\,000\) corre en \(\approx 0.44\) s, muy por
+           debajo del límite de \(4\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Notas de C++ (opcional)</span>
+<pre>· El resultado puede llegar al orden de 1e9 por arista, con O(n+m)
+  aristas: acumúlalo en long long (int64), no en int.
+· Para "activas" usa std::set ordenado por altura: pasarela vecina
+  inferior = el elemento anterior con set::lower_bound.</pre>
+          <p class="note">Solo son detalles de implementación en C++; la solución
+             completa va en pseudocódigo, nunca en código real.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

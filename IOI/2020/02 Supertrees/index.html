@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2020 · Tarea 2 — Connecting Supertrees</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2020 · Día 1</div>
+    <h1>Tarea <span class="num">2</span> — Connecting Supertrees</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p><em>Gardens by the Bay</em> es un gran parque natural en Singapur. En el
+       parque hay \(n\) torres, llamadas <strong>supertrees</strong>. Las torres
+       están etiquetadas de \(0\) a \(n-1\). Queremos construir un conjunto de
+       <strong>cero o más</strong> puentes. Cada puente conecta un par de torres
+       <strong>distintas</strong> y se puede cruzar en <strong>cualquiera de las
+       dos direcciones</strong>. No puede haber dos puentes que conecten el mismo
+       par de torres.</p>
+
+    <p>Un <strong>camino</strong> de la torre \(x\) a la torre \(y\) es una
+       sucesión de una o más torres tal que:</p>
+    <ul>
+      <li>el primer elemento de la sucesión es \(x\),</li>
+      <li>el último elemento de la sucesión es \(y\),</li>
+      <li>todos los elementos de la sucesión son <strong>distintos</strong>, y</li>
+      <li>cada dos torres consecutivas en la sucesión están conectadas por un puente.</li>
+    </ul>
+
+    <p>Nota que, por definición, hay exactamente un camino de una torre a sí
+       misma, y el número de caminos distintos de la torre \(i\) a la torre \(j\)
+       es el mismo que el número de caminos distintos de la torre \(j\) a la
+       torre \(i\).</p>
+
+    <p>El arquitecto líder del diseño quiere que los puentes se construyan de modo
+       que, para todo \(0 \le i, j \le n-1\), haya <strong>exactamente</strong>
+       \(p[i][j]\) caminos distintos de la torre \(i\) a la torre \(j\), donde
+       \(0 \le p[i][j] \le 3\).</p>
+
+    <p>Construye un conjunto de puentes que cumpla los requisitos del arquitecto,
+       o determina que es imposible.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea de <strong>construcción</strong>: no lees de la entrada
+       estándar ni escribes a la salida estándar. Implementas la siguiente
+       función, a la que el evaluador llama exactamente una vez:</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int construct(int[][] p)</pre>
+    </div>
+    <ul>
+      <li>\(p\): una matriz \(n \times n\) que representa los requisitos del arquitecto.</li>
+      <li>Si una construcción es posible, esta función debe hacer
+          <strong>exactamente una</strong> llamada a <code>build</code> (ver
+          abajo) para reportar la construcción, y luego devolver \(1\).</li>
+      <li>En caso contrario, la función debe devolver \(0\) <strong>sin</strong>
+          hacer ninguna llamada a <code>build</code>.</li>
+    </ul>
+
+    <p>La función <code>build</code> está definida así:</p>
+    <div class="sig">
+      <span class="tag">Función que te provee el evaluador</span>
+<pre>void build(int[][] b)</pre>
+    </div>
+    <ul>
+      <li>\(b\): una matriz \(n \times n\), con \(b[i][j]=1\) si hay un puente que
+          conecta la torre \(i\) y la torre \(j\), o \(b[i][j]=0\) en caso contrario.</li>
+      <li>La matriz debe cumplir \(b[i][j]=b[j][i]\) para todo \(0 \le i,j \le n-1\)
+          y \(b[i][i]=0\) para todo \(0 \le i \le n-1\).</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2048 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de torres</td><td><span class="badge">\(1 \le n \le 1000\)</span></td></tr>
+        <tr><td>Diagonal</td><td><span class="badge">\(p[i][i]=1\) para todo \(i\)</span></td></tr>
+        <tr><td>Simetría</td><td><span class="badge">\(p[i][j]=p[j][i]\)</span></td></tr>
+        <tr><td>Valores permitidos</td><td><span class="badge">\(0 \le p[i][j] \le 3\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">11</td><td>\(p[i][j]=1\) para todo \(0 \le i, j \le n-1\)</td></tr>
+          <tr><td>2</td><td class="pts">10</td><td>\(p[i][j]=0\) o \(1\) para todo \(0 \le i, j \le n-1\)</td></tr>
+          <tr><td>3</td><td class="pts">19</td><td>\(p[i][j]=0\) o \(2\) para todo \(i \neq j\), \(0 \le i, j \le n-1\)</td></tr>
+          <tr><td>4</td><td class="pts">35</td><td>\(0 \le p[i][j] \le 2\) para todo \(0 \le i, j \le n-1\) y existe al menos una construcción que cumple los requisitos.</td></tr>
+          <tr><td>5</td><td class="pts">21</td><td>\(0 \le p[i][j] \le 2\) para todo \(0 \le i, j \le n-1\)</td></tr>
+          <tr><td>6</td><td class="pts">4</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <p>Considera la siguiente llamada:</p>
+    <div class="io"><pre>construct([[1, 1, 2, 2],
+           [1, 1, 2, 2],
+           [2, 2, 1, 2],
+           [2, 2, 2, 1]])</pre></div>
+    <p>Esto significa que debe haber exactamente un camino de la torre \(0\) a la
+       torre \(1\). Para todos los demás pares de torres \((x, y)\), tales que
+       \(0 \le x \lt y \le 3\), debe haber exactamente dos caminos de la torre
+       \(x\) a la torre \(y\). Esto se puede lograr con \(4\) puentes, que conectan
+       los pares de torres \((0,1)\), \((1,2)\), \((1,3)\) y \((2,3)\).</p>
+    <p>Para reportar esta solución, la función <code>construct</code> debe hacer
+       la llamada:</p>
+    <div class="io"><pre>build([[0, 1, 0, 0],
+       [1, 0, 1, 1],
+       [0, 1, 0, 1],
+       [0, 1, 1, 0]])</pre></div>
+    <p>y después devolver \(1\).</p>
+
+    <figure>
+      <img alt="Cuatro torres etiquetadas 0, 1, 2 y 3. Hay puentes entre 0-1, 1-2, 1-3 y 2-3; las torres 1, 2 y 3 forman un triángulo y la torre 0 cuelga de la torre 1."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 1: una construcción válida para el Ejemplo 1 (las torres \(1\), \(2\) y \(3\) forman un ciclo; la torre \(0\) cuelga de la \(1\)). Hay varias construcciones correctas.</figcaption>
+    </figure>
+    <p class="note">En este caso hay múltiples construcciones que cumplen los
+       requisitos; todas se consideran correctas.</p>
+
+    <h3>Ejemplo 2</h3>
+    <p>Considera la siguiente llamada:</p>
+    <div class="io"><pre>construct([[1, 0],
+           [0, 1]])</pre></div>
+    <p>Esto significa que no debe haber forma de viajar entre las dos torres. La
+       única manera de cumplirlo es no poner puentes. Por lo tanto,
+       <code>construct</code> debe llamar a:</p>
+    <div class="io"><pre>build([[0, 0],
+       [0, 0]])</pre></div>
+    <p>y después devolver \(1\).</p>
+
+    <h3>Ejemplo 3</h3>
+    <p>Considera la siguiente llamada:</p>
+    <div class="io"><pre>construct([[1, 3],
+           [3, 1]])</pre></div>
+    <p>Esto significa que debe haber exactamente \(3\) caminos de la torre \(0\) a
+       la torre \(1\). Este conjunto de requisitos <strong>no</strong> se puede
+       satisfacer. Por lo tanto, <code>construct</code> debe devolver \(0\) sin
+       hacer ninguna llamada a <code>build</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Union-Find (DSU)</span>
+      <span class="ptag">Relaciones de equivalencia</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una matriz \(p\) de \(n \times n\) con \(p[i][j] \in \{0,1,2,3\}\),
+       \(p[i][i]=1\) y simétrica. Debes decidir si existe un grafo simple no
+       dirigido tal que el número <strong>exacto</strong> de caminos simples entre
+       \(i\) y \(j\) sea \(p[i][j]\); si existe, construye los puentes y repórtalos
+       con <code>build</code>; si no, devuelve \(0\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n \le 1000\) permite trabajar con la matriz completa en
+                \(O(n^2)\). Las subtareas son una escalera por los valores
+                permitidos de \(p\): solo \(1\); luego \(\{0,1\}\); luego
+                \(\{0,2\}\); luego \(\le 2\) (con y sin garantía de que sea
+                posible); y finalmente aparece el \(3\). Cada peldaño revela una
+                pieza nueva de la estructura.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que cada torre es un vértice de un grafo y cada
+           puente es una arista? Entonces \(p[i][j]\) es el número de caminos
+           simples (sin repetir vértices) entre dos vértices.</p>
+        <p>La pregunta clave es: ¿qué estructuras de grafo producen exactamente
+           \(0\), \(1\) o \(2\) caminos entre un par de vértices? Empieza por
+           caracterizar esas tres situaciones; el \(3\) lo dejamos para el final.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1: todo es \(1\)</summary>
+      <div class="body">
+        <p class="q">Si \(p[i][j]=1\) para <em>todo</em> par, ¿qué grafo conexo da
+           exactamente un camino entre cualquier par de vértices?</p>
+        <p>Un grafo en el que hay <strong>exactamente un</strong> camino simple
+           entre cualquier par es un <strong>árbol</strong>. Cualquier árbol sobre
+           las \(n\) torres sirve; el más cómodo de construir es una
+           <strong>cadena</strong> (línea) \(0 - 1 - 2 - \dots - (n-1)\). Eso ya te
+           da los \(11\) puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2: valores \(\{0,1\}\)</summary>
+      <div class="body">
+        <p class="q">Ahora aparece el \(0\). ¿Qué significa que \(p[i][j]=0\)?
+           ¿Y notaste que "estar conectado" (\(p\gt 0\)) debería comportarse como
+           una relación de equivalencia?</p>
+        <p>\(p[i][j]=0\) significa que \(i\) y \(j\) están en
+           <strong>componentes</strong> distintas (sin camino entre ellas).
+           \(p[i][j]=1\) significa misma componente y, además, exactamente un
+           camino. La relación \(p\gt 0\) parte el conjunto en componentes; dentro
+           de cada componente todo vale \(1\), así que cada componente es un árbol
+           (una cadena). Si la relación no es consistente (por ejemplo \(i\) con
+           \(j\) y \(j\) con \(k\) en la misma componente, pero \(p[i][k]=0\)),
+           es imposible. Esto da otros \(10\) puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3: valores \(\{0,2\}\)</summary>
+      <div class="body">
+        <p class="q">¿Qué estructura simple da exactamente <strong>dos</strong>
+           caminos entre cada par de vértices de una misma componente? Y si es un
+           ciclo, ¿de qué longitud tiene que ser?</p>
+        <p>Un <strong>ciclo</strong> de longitud \(k\) da exactamente dos caminos
+           entre cualquier par de sus vértices (puedes ir por un lado o por el
+           otro del ciclo). Para que sea un grafo simple sin aristas repetidas
+           necesitas \(k \ge 3\): un ciclo de \(3\) o más. Con \(k=2\) no hay
+           ciclo simple posible. Así que cada componente cuyos pares valen \(2\)
+           se construye como un único ciclo de tamaño \(\ge 3\). Esto da \(19\)
+           puntos más.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtareas 4 y 5: mezclar \(0,1,2\)</summary>
+      <div class="body">
+        <p class="q">¿Y si combinas las dos ideas? Dentro de una componente,
+           agrupa primero las torres con \(p=1\) entre sí (llámalos
+           <em>bloques</em>). ¿Cómo enlazas los bloques para que entre torres de
+           bloques distintos haya exactamente \(2\) caminos?</p>
+        <p>Define dos niveles de agrupación:</p>
+        <ul>
+          <li><strong>Bloques</strong>: la relación \(p=1\) (también de
+              equivalencia) agrupa torres que deben tener exactamente \(1\) camino
+              entre sí. Cada bloque se arma como un árbol/cadena.</li>
+          <li><strong>Componentes</strong>: la relación \(p\gt 0\) agrupa torres
+              conectadas. Dentro de una componente, los bloques deben enlazarse
+              entre sí con \(p=2\).</li>
+        </ul>
+        <p>Para que entre cualquier par de bloques distintos de una misma
+           componente haya \(2\) caminos, toma un <strong>representante</strong>
+           de cada bloque y conéctalos en un <strong>ciclo</strong>. Un ciclo de
+           \(k \ge 3\) bloques da \(2\) caminos entre torres de bloques distintos.
+           ¿Qué pasa si la componente tiene exactamente \(2\) bloques? No hay ciclo
+           simple de tamaño \(2\): esa configuración es <strong>imposible</strong>
+           (devuelve \(0\)). Una componente con un solo bloque es un árbol puro
+           (sin \(p=2\)) y es válida.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 6 — Subtarea 6: el \(3\) y los imposibles</summary>
+      <div class="body">
+        <p class="q">¿Algún grafo simple produce exactamente <strong>tres</strong>
+           caminos entre dos vértices? ¿Y qué otras configuraciones debes rechazar?</p>
+        <p>Con un grafo simple <strong>no</strong> puedes lograr exactamente
+           \(3\) caminos: un árbol da \(1\), cerrar un ciclo da \(2\), y para
+           subir a \(3\) harían falta multiaristas u otras estructuras que
+           también disparan el conteo de otros pares. Por eso, en cuanto veas
+           algún \(p[i][j]=3\), la respuesta es \(0\). Este es el único añadido de
+           la subtarea 6 (\(4\) puntos). El resto de imposibles ya los detectas
+           validando que \(p=1\) y \(p\gt 0\) sean relaciones de equivalencia
+           consistentes y que ninguna componente tenga exactamente \(2\) bloques.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <h3>Idea</h3>
+        <p>Trabaja con dos estructuras Union-Find (DSU):</p>
+        <ul>
+          <li><code>d1</code> une \(i\) con \(j\) cuando \(p[i][j]=1\) → forma los
+              <strong>bloques</strong>.</li>
+          <li><code>d2</code> une \(i\) con \(j\) cuando \(p[i][j]\ge 1\) → forma
+              las <strong>componentes</strong>.</li>
+        </ul>
+        <p>Primero, si aparece cualquier \(p[i][j]=3\), es imposible: devuelve
+           \(0\). Después construye los dos DSU y haz una
+           <strong>validación cruzada</strong> que cubre simetría, transitividad y
+           consistencia de un solo golpe: para todo par \((i,j)\),
+           "misma raíz en <code>d1</code>" debe equivaler a \(p[i][j]=1\), y
+           "misma raíz en <code>d2</code>" debe equivaler a \(p[i][j]\neq 0\).
+           Cualquier desviación ⇒ devuelve \(0\).</p>
+        <p>Si todo es consistente, construye la matriz de adyacencia \(b\):</p>
+        <ol>
+          <li>Cada bloque (grupo de <code>d1</code>) se conecta como una
+              <strong>cadena</strong> de sus miembros ⇒ árbol ⇒ \(1\) camino interno.</li>
+          <li>En cada componente (grupo de <code>d2</code>), toma los
+              representantes de bloque. Si hay \(k \ge 3\), ciérralos en un
+              <strong>ciclo</strong>. Si hay exactamente \(k=2\), es imposible:
+              devuelve \(0\). Si \(k=1\), no agregas nada (árbol puro).</li>
+        </ol>
+        <p>Finalmente llama a <code>build(b)</code> y devuelve \(1\).</p>
+
+        <h3>Por qué es correcto</h3>
+        <p><strong>Suficiencia.</strong> Dentro de un bloque, la cadena es un árbol
+           ⇒ exactamente \(1\) camino entre cualquier par (\(p=1\)). Entre dos
+           bloques distintos de la misma componente, sus representantes están en un
+           ciclo de longitud \(k \ge 3\) ⇒ exactamente \(2\) caminos (los dos
+           sentidos del ciclo); como cada bloque por dentro es un árbol, el conteo
+           total entre torres de bloques distintos sigue siendo \(2\) (\(p=2\)).
+           Entre componentes distintas no hay arista ⇒ \(0\) caminos (\(p=0\)).</p>
+        <p><strong>Necesidad.</strong> (a) \(p=3\) es imposible en un grafo simple.
+           (b) Si \(p\gt 0\) o \(p=1\) no son relaciones de equivalencia, o si dos
+           torres de la misma componente pero distinto bloque no valen \(2\), o si
+           torres de distinta componente valen \(\neq 0\), la validación cruzada
+           "misma raíz en <code>d1</code> \(\Leftrightarrow p=1\)" y
+           "misma raíz en <code>d2</code> \(\Leftrightarrow p\neq 0\)" lo detecta.
+           (c) Una componente con exactamente \(2\) bloques no admite \(2\) caminos
+           sin multiarista. (d) Una componente con un solo bloque es un árbol
+           válido.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion construct(p):
+    n &lt;- tamaño(p)
+    para todo i, j:
+        si p[i][j] = 3: devolver 0        # 3 caminos: imposible
+
+    crear DSU d1 (bloques), DSU d2 (componentes)
+    para todo i, j:
+        si p[i][j] = 1: unir(d1, i, j)
+        si p[i][j] &gt;= 1: unir(d2, i, j)
+
+    # Validacion cruzada (cubre simetria/transitividad/consistencia)
+    para todo i, j:
+        mismo1 &lt;- (raiz_d1(i) = raiz_d1(j))
+        mismo2 &lt;- (raiz_d2(i) = raiz_d2(j))
+        si mismo1      y p[i][j] != 1: devolver 0
+        si (no mismo1) y p[i][j] =  1: devolver 0
+        si mismo2      y p[i][j] =  0: devolver 0
+        si (no mismo2) y p[i][j] != 0: devolver 0
+
+    b &lt;- matriz n x n de ceros
+
+    # 1) cada bloque (grupo d1) como cadena -> arbol, 1 camino interno
+    agrupar miembros por raiz_d1
+    para cada grupo G:
+        conectar G[0]-G[1]-...-G[fin] como aristas consecutivas en b
+
+    # 2) en cada componente d2, los representantes de bloque -> ciclo
+    agrupar representantes_de_bloque por raiz_d2
+    para cada componente C:
+        reps &lt;- representantes de bloque en C ;  k &lt;- |reps|
+        si k = 2: devolver 0                       # 2 bloques no dan 2 caminos
+        si k &gt;= 3: conectar reps[0]-reps[1]-...-reps[k-1]-reps[0] (ciclo) en b
+        si k = 1: nada (arbol puro)
+
+    build(b)
+    devolver 1</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> tiempo \(O(n^2)\), dominado por leer y
+           validar la matriz \(n \times n\) (las uniones del DSU con compresión de
+           caminos son casi \(O(1)\) amortizado, y armar las aristas es \(O(n)\)).
+           Memoria \(O(n^2)\) por las matrices \(p\) y \(b\). Con \(n \le 1000\)
+           son del orden de \(10^6\) operaciones; el peor caso (\(n=1000\)) corre
+           muy por debajo del límite de \(1.0\) s.</p>
+
+        <p class="note">El juez es <strong>especial</strong> (special judge):
+           acepta <em>cualquier</em> construcción válida. Un verificador cuenta los
+           caminos simples con un DFS desde cada torre y compara contra \(p\)
+           exacto, además de exigir \(b\) simétrica, diagonal \(0\) y
+           \(b[i][j] \in \{0,1\}\). Por eso no se compara con un <code>.out</code>
+           de referencia.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
