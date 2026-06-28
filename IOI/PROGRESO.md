@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **92 / 142**
+Total de tareas: **142** · Completadas: **93 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -173,7 +173,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Unscrambling a Messy Bug | `2016/05 Unscrambling a Messy Bug/index.html` |
 | [x] | 6 | Aliens | `2016/06 Aliens/index.html` |
 
-## IOI 2017 — 4 / 6
+## IOI 2017 — 5 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
@@ -181,7 +181,7 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 2 | Wiring | `2017/02 Wiring/index.html` |
 | [x] | 3 | Toy Train | `2017/03 Toy Train/index.html` |
 | [x] | 4 | The Big Prize | `2017/04 The Big Prize/index.html` |
-| [ ] | 5 | Simurgh | `2017/05 Simurgh/index.html` |
+| [x] | 5 | Simurgh | `2017/05 Simurgh/index.html` |
 | [ ] | 6 | Ancient Books | `2017/06 Ancient Books/index.html` |
 
 ## IOI 2018 — 0 / 6
