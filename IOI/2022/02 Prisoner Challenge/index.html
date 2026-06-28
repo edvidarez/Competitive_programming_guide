@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2022 · Tarea 2 — Prisoner Challenge</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2022 · Día 1</div>
+    <h1>Tarea <span class="num">2</span> — Prisoner Challenge</h1>
+    <p class="note">Desafío de los prisioneros · PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>En una prisión hay 500 prisioneros. Un día, el alcaide les ofrece una oportunidad de
+       liberarse. Coloca en una sala dos bolsas con dinero, la <strong>bolsa A</strong> y la
+       <strong>bolsa B</strong>. Cada bolsa contiene entre \(1\) y \(N\) monedas, inclusive. La
+       cantidad de monedas de la bolsa A es <strong>distinta</strong> de la cantidad de la bolsa B.
+       El alcaide les plantea un reto: el objetivo de los prisioneros es <strong>identificar la
+       bolsa que tiene menos monedas</strong>.</p>
+
+    <p>Además de las bolsas, la sala tiene un <strong>pizarrón</strong>. En todo momento debe haber
+       escrito en él un único número. Al inicio, el número del pizarrón es \(0\).</p>
+
+    <p>El alcaide pide a los prisioneros que entren a la sala, uno por uno. El prisionero que entra
+       <strong>no sabe</strong> cuáles ni cuántos prisioneros entraron antes que él. Cada vez que un
+       prisionero entra, lee el número escrito en el pizarrón. Después de leerlo, debe elegir la
+       bolsa A o la bolsa B, inspeccionarla y así enterarse de cuántas monedas tiene. Entonces debe
+       realizar <strong>una</strong> de estas dos acciones:</p>
+    <ul>
+      <li><strong>Sobrescribir</strong> el número del pizarrón con un entero no negativo y salir de
+          la sala. Puede cambiarlo o dejarlo igual. El reto continúa después de eso (a menos que ya
+          hayan entrado los 500 prisioneros).</li>
+      <li><strong>Identificar</strong> una bolsa como la que tiene menos monedas. Esto termina el
+          reto de inmediato.</li>
+    </ul>
+
+    <p>El alcaide nunca vuelve a llamar a un prisionero que ya salió de la sala.</p>
+
+    <p>Los prisioneros <strong>ganan</strong> si uno de ellos identifica correctamente la bolsa con
+       menos monedas. <strong>Pierden</strong> si alguno identifica la bolsa equivocada, o si los
+       500 entran sin que ninguno haya intentado identificar la bolsa con menos monedas.</p>
+
+    <p>Antes de empezar, los prisioneros se reúnen en el salón de la prisión y deciden una
+       <strong>estrategia común</strong> en tres pasos:</p>
+    <ul>
+      <li>Eligen un entero no negativo \(x\), que es el número más grande que podrían llegar a
+          escribir en el pizarrón.</li>
+      <li>Deciden, para cada número \(i\) que pueda estar escrito en el pizarrón
+          (\(0 \le i \le x\)), <strong>qué bolsa</strong> debe inspeccionar el prisionero que lea
+          ese número \(i\) al entrar.</li>
+      <li>Deciden qué acción debe realizar el prisionero después de conocer la cantidad de monedas
+          de la bolsa elegida. En concreto, para cada número \(i\) del pizarrón
+          (\(0 \le i \le x\)) y cada cantidad de monedas \(j\) vista en la bolsa inspeccionada
+          (\(1 \le j \le N\)), deciden:
+          <ul>
+            <li>qué número entre \(0\) y \(x\) (inclusive) debe escribirse en el pizarrón, o</li>
+            <li>cuál bolsa debe identificarse como la que tiene menos monedas.</li>
+          </ul>
+      </li>
+    </ul>
+
+    <p>Al ganar el reto, el alcaide libera a los prisioneros tras servir \(x\) días más de condena.</p>
+
+    <p>Tu tarea es <strong>diseñar una estrategia</strong> que garantice que los prisioneros ganen
+       el reto, <em>sin importar</em> cuántas monedas tengan las bolsas A y B. El puntaje de tu
+       solución depende del valor de \(x\) (ve la sección de Subtareas).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento, que se llama <strong>exactamente una vez</strong>.</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int[][] devise_strategy(int N)</pre>
+    </div>
+    <ul>
+      <li><code>N</code>: la cantidad máxima posible de monedas en cada bolsa.</li>
+      <li>El procedimiento debe devolver un arreglo <code>s</code> de arreglos de \(N+1\) enteros que
+          representa tu estrategia. El valor de \(x\) es la longitud de <code>s</code>
+          <strong>menos uno</strong>. Para cada \(i\) con \(0 \le i \le x\), el arreglo
+          <code>s[i]</code> describe qué debe hacer un prisionero que lee el número \(i\) del
+          pizarrón al entrar:
+        <ol>
+          <li><code>s[i][0]</code> vale \(0\) si el prisionero debe inspeccionar la bolsa A, o
+              \(1\) si debe inspeccionar la bolsa B.</li>
+          <li>Sea \(j\) la cantidad de monedas vista en la bolsa elegida. Entonces el prisionero
+              actúa así:
+            <ul>
+              <li>Si <code>s[i][j]</code> es \(-1\), identifica la <strong>bolsa A</strong> como la
+                  que tiene menos monedas.</li>
+              <li>Si <code>s[i][j]</code> es \(-2\), identifica la <strong>bolsa B</strong> como la
+                  que tiene menos monedas.</li>
+              <li>Si <code>s[i][j]</code> es un número no negativo, lo escribe en el pizarrón
+                  (debe ser a lo más \(x\)).</li>
+            </ul>
+          </li>
+        </ol>
+      </li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2048 MB (2 GB)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Monedas por bolsa</td><td><span class="badge">\(2 \le N \le 5000\)</span></td></tr>
+        <tr><td>Prisioneros</td><td><span class="badge">500 (cota dura de turnos)</span></td></tr>
+        <tr><td>Métrica de puntaje</td><td><span class="badge">\(x\) = máximo número escrito</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). Una fila por subtarea. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(N \le 500\); el valor de \(x\) no debe ser mayor que \(500\).</td></tr>
+          <tr><td>2</td><td class="pts">5</td><td>\(N \le 500\); el valor de \(x\) no debe ser mayor que \(70\).</td></tr>
+          <tr><td>3</td><td class="pts">90</td><td>El valor de \(x\) no debe ser mayor que \(60\). Admite <strong>puntaje parcial</strong> (ver tabla abajo).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Si en cualquier caso de prueba el arreglo devuelto por <code>devise_strategy</code> no
+       representa una estrategia correcta, el puntaje de tu solución en esa subtarea es \(0\).</p>
+
+    <p>En la subtarea 3 puedes obtener puntaje parcial. Sea \(m\) el <strong>máximo</strong> valor de
+       \(x\) entre todos los casos de prueba de esa subtarea. El puntaje se calcula con esta tabla:</p>
+
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Condición</th><th>Puntos</th></tr></thead>
+        <tbody>
+          <tr><td>\(40 \le m \le 60\)</td><td class="pts">20</td></tr>
+          <tr><td>\(26 \le m \le 39\)</td><td class="pts">\(25 + 1.5 \times (40 - m)\)</td></tr>
+          <tr><td>\(m = 25\)</td><td class="pts">50</td></tr>
+          <tr><td>\(m = 24\)</td><td class="pts">55</td></tr>
+          <tr><td>\(m = 23\)</td><td class="pts">62</td></tr>
+          <tr><td>\(m = 22\)</td><td class="pts">70</td></tr>
+          <tr><td>\(m = 21\)</td><td class="pts">80</td></tr>
+          <tr><td>\(m \le 20\)</td><td class="pts">90</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la llamada <code>devise_strategy(3)</code>. Sea \(v\) el número que el prisionero
+       lee del pizarrón al entrar. Una estrategia correcta es:</p>
+    <ul>
+      <li>Si \(v = 0\) (incluido el número inicial), inspecciona la <strong>bolsa A</strong>:
+        <ul>
+          <li>Si tiene \(1\) moneda, identifica la bolsa A como la de menos monedas.</li>
+          <li>Si tiene \(3\) monedas, identifica la bolsa B como la de menos monedas.</li>
+          <li>Si tiene \(2\) monedas, escribe \(1\) en el pizarrón (sobrescribe el \(0\)).</li>
+        </ul>
+      </li>
+      <li>Si \(v = 1\), inspecciona la <strong>bolsa B</strong>:
+        <ul>
+          <li>Si tiene \(1\) moneda, identifica la bolsa B como la de menos monedas.</li>
+          <li>Si tiene \(3\) monedas, identifica la bolsa A como la de menos monedas.</li>
+          <li>Si tiene \(2\) monedas, escribe \(0\) en el pizarrón. Este caso nunca puede ocurrir,
+              porque implicaría que ambas bolsas tienen \(2\) monedas, lo cual no está permitido.</li>
+        </ul>
+      </li>
+    </ul>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>devise_strategy(3)</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[[0, -1, 1, -2],
+ [1, -2, 0, -1]]</pre></div>
+    </div>
+    <p class="note">La longitud del arreglo devuelto es \(2\), así que para este retorno
+       \(x = 2 - 1 = 1\).</p>
+
+    <h3>Evaluador de muestra</h3>
+    <p>El evaluador de muestra lee la entrada en este formato:</p>
+    <div class="io">
+<pre>línea 1: N
+línea 2 + k (0 &le; k): A[k] B[k]
+última línea: -1</pre>
+    </div>
+    <p>Cada línea (salvo la primera y la última) describe un <em>escenario</em> \(k\): en él la
+       bolsa A tiene \(A[k]\) monedas y la B tiene \(B[k]\). El evaluador llama una vez a
+       <code>devise_strategy(N)</code>, valida el arreglo y luego, para cada escenario, imprime
+       <code>A</code>, <code>B</code> o <code>X</code> según qué bolsa identifique la estrategia
+       (o <code>X</code> si ninguno identifica). También escribe un archivo <code>log.txt</code> con
+       la sucesión de números que se fueron escribiendo en el pizarrón en cada escenario.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Máquina de estados</span>
+      <span class="ptag">Comparación de dígitos (base variable)</span>
+      <span class="ptag">Búsqueda ternaria generalizada</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes dos bolsas con cantidades distintas en \(\{1,\dots,N\}\). Una sucesión de prisioneros
+       entra de uno en uno; cada uno solo ve un número \(i \in \{0,\dots,x\}\) en el pizarrón,
+       inspecciona una bolsa y, o bien sobrescribe el número, o bien declara cuál bolsa es la menor.
+       Debes construir (de una sola llamada a <code>devise_strategy(N)</code>) una
+       <strong>máquina de estados</strong> que siempre acierte la bolsa con menos monedas. Tu
+       puntaje depende solo de \(x\) (cuántos estados usas), no del tiempo. Pleno requiere
+       \(x \le 20\) para \(N \le 5000\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El pizarrón es la <strong>única memoria compartida</strong>: el número \(i\) es el
+                estado. Como solo hay \(500\) turnos pero las bolsas pueden valer hasta \(5000\), una
+                idea lineal (un estado por valor) no cabe en el límite de \(x\) bueno. La métrica es
+                \(x\), no el tiempo: minimizar estados es \(\approx\) comparar las dos cantidades en
+                pocos «dígitos». El umbral de pleno \(x \le 20\) sugiere algo como \(\log N\) niveles
+                con ramificación cuidada.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelar el pizarrón?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que el único canal de información entre prisioneros es el número
+           del pizarrón? ¿Qué pasa si piensas en ese número como el <em>estado</em> de una máquina, y
+           en cada estado decides qué bolsa mirar y qué hacer con lo que veas?</p>
+        <p>Nadie sabe quién entró antes. Lo único que «recuerda» el sistema es el número \(i\). Así
+           que tu estrategia es, literalmente, una tabla: para cada estado \(i\), qué bolsa
+           inspeccionar y, según las \(j\) monedas vistas, qué número escribir o qué bolsa declarar.
+           Diseñar la estrategia es diseñar esa máquina de estados.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(x \le 500\)): lo más simple que funciona</summary>
+      <div class="body">
+        <p class="q">¿Y si recorres los valores posibles uno por uno? Con \(N \le 500\) y permiso de
+           \(x \le 500\), ¿puedes gastar un estado por cada posible «umbral» de comparación?</p>
+        <p>Una idea lineal: el estado guarda «hasta dónde ya descartamos». En el estado \(i\)
+           inspeccionas una bolsa; si ves exactamente el valor mínimo todavía vivo, esa bolsa es la
+           menor; si ves el máximo vivo, la otra es la menor; si no, avanzas al siguiente estado que
+           estrecha el rango por un valor. Esto da \(x\) del orden de \(N\): suficiente para los
+           \(5\) puntos de la subtarea 1, pero demasiados estados para las demás.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (\(x \le 70\)): pásate a bloques (\(\sqrt N\))</summary>
+      <div class="body">
+        <p class="q">Avanzar de uno en uno gasta demasiados estados. ¿Y si en vez de un valor a la
+           vez comparas <em>bloques</em>? Si partes \(1..N\) en \(\sqrt N\) bloques, ¿cuántos niveles
+           necesitas para localizar y decidir?</p>
+        <p>Con bloques de tamaño \(\approx \sqrt N\): un primer nivel mira en qué bloque cae la bolsa
+           inspeccionada; si los bloques de A y B difieren, ya sabes quién es menor; si caen en el
+           mismo bloque, un segundo nivel los compara dentro del bloque. Eso son \(\approx 2\sqrt N\)
+           estados (de ahí el nombre interno «square-root» de la subtarea), que para \(N \le 500\)
+           queda holgadamente por debajo de \(70\). ¿Notas que esto es comparar las dos cantidades
+           «dígito por dígito» en base \(\sqrt N\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 3: comparar dígitos en una base chica</summary>
+      <div class="body">
+        <p class="q">Si dos niveles en base \(\sqrt N\) bastan, ¿por qué no más niveles en una base
+           más chica? ¿Qué pasa si comparas las cantidades dígito a dígito, del más significativo al
+           menos, alternando cuál bolsa toca inspeccionar en cada nivel?</p>
+        <p>Idea central: mantén un <strong>intervalo de candidatos</strong> que con seguridad
+           contiene a la cantidad menor. En cada nivel partes ese intervalo en varios sub-bloques.
+           El estado \(i\) codifica dos cosas: (a) el <strong>nivel</strong> \(s\) (que dicta qué
+           bolsa mirar: A en niveles pares, B en impares) y (b) el <strong>sub-bloque \(t\)</strong>
+           que vio el prisionero anterior al mirar la <em>otra</em> bolsa. Cuando entras, lees \(i\),
+           inspeccionas tu bolsa y ves \(j\):</p>
+        <ul>
+          <li>si \(j\) cae en la frontera <strong>inferior</strong> del bloque vigente, tu bolsa es
+              la menor; si cae en la frontera <strong>superior</strong>, la otra es la menor;</li>
+          <li>si el sub-bloque de \(j\) es <strong>menor</strong> que el recordado \(t\), declaras la
+              menor según la paridad del nivel; si es <strong>mayor</strong>, declaras la otra;</li>
+          <li>si <strong>coincide</strong> con \(t\), ambas están en el mismo sub-bloque: escribes el
+              estado del <em>siguiente</em> nivel para ese sub-bloque, pasando el turno a inspeccionar
+              la otra bolsa y afinar la comparación.</li>
+        </ul>
+        <p>Con base \(3\) uniforme esto da \(x \approx 2\log_3 N \approx 24\) para \(N = 5000\): te
+           coloca en el rango de puntaje parcial (\(m = 24 \Rightarrow 55/90\)). Para el pleno hace
+           falta algo más fino (siguiente pista).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> La estrategia es una máquina de estados que compara las dos
+           cantidades por «dígitos» de mayor a menor significancia, <em>alternando</em> qué bolsa se
+           inspecciona en cada nivel. Se mantiene implícitamente un intervalo de candidatos que
+           contiene con seguridad a la cantidad menor; en cada nivel ese intervalo se reparte en
+           varios sub-bloques más dos casos frontera (extremo inferior y superior). El estado del
+           pizarrón codifica el par \((\text{nivel } s,\ \text{sub-bloque recordado } t)\): el nivel
+           dice qué bolsa mirar (par \(\to\) A, impar \(\to\) B) y \(t\) es el sub-bloque que el
+           prisionero anterior vio en la otra bolsa.</p>
+
+        <p><strong>La clave del pleno (\(x \le 20\)).</strong> No uses una base fija. La base \(3\)
+           uniforme da \(x = 24\) y la base \(2\) da \(x = 26\). En vez de eso, una
+           <strong>programación dinámica</strong> elige el tamaño de ramificación (cuántos
+           sub-bloques) en cada nivel para <strong>maximizar el \(N\) cubierto</strong> con el menor
+           número total de estados. La intuición: conviene ramificar <em>más</em> en los niveles
+           cercanos a las hojas (donde quedan pocos candidatos) y <em>menos</em> cerca de la raíz.
+           La recurrencia es:</p>
+
+        <div class="pseudo">
+          <span class="tag">Recurrencia de la DP</span>
+<pre>dp[0] = 2
+dp[i] = max sobre j en 0..i-1 de ( (i - j) * dp[j] + 2 )</pre>
+        </div>
+
+        <p>Aquí \(dp[i]\) es el mayor \(N\) cubrible usando \(i\) estados «de un lado», y se
+           reconstruye la lista <code>splits[]</code> de tamaños de ramificación por nivel. El
+           total de estados \(x\) es la suma de los <code>splits</code>; para \(N \le 5000\) esto
+           alcanza \(x = 20\) (pleno).</p>
+
+        <p><strong>Por qué es correcta.</strong> (1) El intervalo de candidatos escrito en cada
+           estado siempre contiene la cantidad menor. (2) Al comparar sub-bloques: si difieren, se
+           decide correctamente quién es menor por la paridad del nivel; si coinciden, el intervalo
+           se reduce <em>estrictamente</em>, así que no hay ciclos y el proceso termina. (3) Las
+           fronteras inferior y superior resuelven los extremos. Como las dos cantidades son
+           distintas, en algún nivel sus sub-bloques difieren y la comparación se resuelve; el número
+           de niveles es finito (\(O(\log N)\)), muy por debajo de los \(500\) turnos. El checker
+           oficial simula todas las parejas \((A,B)\) con \(A \ne B\) (o un muestreo masivo cuando
+           \(N(N-1)\) es enorme), exige que siempre se declare la bolsa correcta y detecta ciclos
+           (estado repetido) como fallo.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion idear_estrategia(N):
+    # 1) Planear la estructura de bloques con DP (minimizar estados)
+    dp[0] = 2
+    i = 0
+    mientras dp[i] &lt; N:
+        i = i + 1
+        dp[i] = maximo sobre j en 0..i-1 de ( (i - j) * dp[j] + 2 )
+        guardar el j* que maximiza   # para reconstruir
+    splits = lista de ramificaciones por nivel (reconstruida de dp/j*)
+    b = numero de niveles = longitud(splits)
+
+    # 2) Enumerar estados: estado 0 = inicio; luego, por cada nivel s
+    #    y cada sub-bloque t de ese nivel, un estado que recuerda (s, t)
+    asignar a cada valor de pizarron i un par (nivel s, indice t)
+
+    # 3) Rellenar la tabla de estrategia
+    para cada estado con (nivel s, recordado t):
+        s_tabla[i][0] = ( s par -> inspeccionar A ; s impar -> inspeccionar B )
+        para cada cantidad j en 1..N:
+            ubicar j en la jerarquia de bloques segun splits hasta el nivel s
+            si j esta en el extremo inferior del bloque vigente:
+                accion = declarar la bolsa inspeccionada como la menor
+            sino si j esta en el extremo superior:
+                accion = declarar la OTRA bolsa como la menor
+            sino:
+                d = indice del sub-bloque de j en el nivel s
+                si   d &lt; t: accion = declarar (segun paridad) la menor
+                sino si d &gt; t: accion = declarar la otra
+                sino:        # mismo sub-bloque -> profundizar
+                    accion = escribir el estado del nivel s+1 para ese sub-bloque
+            s_tabla[i][j] = accion   # -1 = A menor, -2 = B menor, &gt;=0 = escribir
+    devolver s_tabla
+
+# Nota: splits = [3,3,...] (base 3 uniforme) es un caso particular y da x=24;
+#       la DP de splits variables baja a x=20 para N&lt;=5000 (pleno).</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> <code>devise_strategy</code> se llama una sola vez. La DP que
+           planea los splits es \(O(\text{niveles}^2)\) con niveles \(= O(\log N)\) (trivial).
+           Construir la tabla cuesta \(O(x \cdot N)\) en tiempo y memoria, con \(x = O(\log N)\)
+           (concretamente \(x \le 20\) para \(N \le 5000\)). En total \(O(N \log N)\) tiempo y
+           memoria, holgado dentro de \(1\) s y \(2\) GB. Recuerda: la métrica de puntaje es \(x\),
+           no el tiempo.</p>
+
+        <p><strong>Escalera de referencia a \(N = 5000\)</strong> (solo para situarte, no para
+           perseguir el mínimo absoluto): base \(2 \Rightarrow x = 26\); base \(3 \Rightarrow
+           x = 24\); variantes intermedias \(\Rightarrow x = 21\); y solo la DP de splits variables
+           llega a \(x = 20 = \) pleno (\(m \le 20 \Rightarrow 90/90\)).</p>
+
+        <p class="note">Verificación: con la referencia de la DP, el checker oficial reporta «Output
+           is correct» en los \(11\) casos de la subtarea 3 (\(N\) hasta \(5000\)) y en las
+           subtareas 0–2; el \(x\) máximo reportado es \(20\).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
