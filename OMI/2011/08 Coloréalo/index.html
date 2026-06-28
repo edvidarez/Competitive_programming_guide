@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2011 · Problema 08 — Coloréalo</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">16ª OMI · 2011 · Lenguaje</div>
+    <h1>Problema <span class="num">08</span> — Coloréalo</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.pdf">statement.pdf</a>
+       · Casos oficiales: <a class="pdf" href="https://www.olimpiadadeinformatica.org.mx/OMI/OMI/archivos/problemas/lenguaje2011/colorealo.zip">colorealo.zip (OMI)</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Coloréalo es un juego de tablero para una persona. El juego se desarrolla sobre
+       una cuadrícula de \(M\) filas por \(N\) columnas. Cada casilla del tablero está
+       pintada de uno de \(C\) colores distintos. Si dos casillas contiguas, ya sea de
+       manera vertical u horizontal, tienen el mismo color, se considera que ambas
+       casillas están <em>unidas</em>. El objetivo del juego es colorear todo el tablero
+       del mismo color.</p>
+    <p>En cada turno el jugador selecciona un color, cualquiera que él desee, y colorea
+       de ese color la casilla superior izquierda y todas las que estén unidas a ella.</p>
+
+    <figure>
+      <img alt="Ocho estados de un tablero de 8×8: el tablero inicial con cuatro colores y los siete estados intermedios hasta quedar todo de un solo color."
+           src="data:image/png;base64,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">
+      <figcaption>El tablero inicial tiene 4 colores. El jugador lo termina en una secuencia
+        de siete turnos: \(2,\,1,\,0,\,2,\,1,\,0,\,3\) (los estados se leen de izquierda a
+        derecha y de arriba a abajo, hasta dejar todo el tablero de un solo color).</figcaption>
+    </figure>
+
+    <h3>Problema (solo salida)</h3>
+    <p>Este problema es distinto de los tres anteriores: aquí debes descargar del sistema
+       de evaluación los <strong>10 casos de entrada</strong> del problema. Cada uno de
+       estos casos contiene un tablero de Coloréalo en el formato que se describe más abajo.</p>
+    <p>Para cada caso deberás generar un archivo, utilizando cualquier método que desees,
+       que contenga la secuencia de colores que se deben usar en cada turno para colorear
+       completamente el tablero de un mismo color.</p>
+    <p>Mientras menos turnos uses para lograr el objetivo del juego, mejor será tu calificación.</p>
+
+    <h2>Evaluación</h2>
+    <p>Para cada uno de los casos tu resultado será calificado con el siguiente criterio:</p>
+    <ul>
+      <li>Si tu secuencia de colores no colorea el tablero completamente de un color,
+          obtendrá <strong>0 puntos</strong> para ese caso.</li>
+      <li>Si tu secuencia colorea correctamente el tablero pero usa un número de turnos
+          mayor a <u>la peor</u> solución del comité científico, obtendrás
+          <strong>0 puntos</strong> para ese caso. Del sistema de evaluación podrás
+          descargar un archivo con el número de turnos que usa la peor solución del comité
+          científico para cada caso.</li>
+      <li>Si tu secuencia no cae en los puntos anteriores, se comparará con las del resto
+          de los concursantes que tengan una respuesta válida y contra las respuestas del
+          comité, procediendo como sigue:
+        <ul>
+          <li>Por tener una respuesta válida que no cae en los puntos anteriores ganas el
+              <strong>20%</strong> de los puntos del caso.</li>
+          <li>El <strong>80%</strong> restante dependerá de cuántos turnos uses. La mejor
+              solución (aquella que use menos turnos) obtendrá el <strong>100%</strong> de
+              los puntos del caso.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>Entrada</h2>
+    <p>Los archivos de casos contienen los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, los números \(M\), \(N\) y \(C\) que indican respectivamente
+          el número de filas y columnas del tablero y el número de colores distintos
+          disponibles.</li>
+      <li>En cada una de las siguientes \(M\) líneas hay \(N\) enteros entre \(0\) y
+          \(C-1\) separados por un espacio que indican el color del que está coloreada esa
+          casilla.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Para cada caso deberás entregar un archivo que contenga una línea con enteros entre
+       \(0\) y \(C-1\) separados por un espacio que indique la secuencia de colores para
+       colorear el tablero.</p>
+    <p>Si tu secuencia tiene más de \(M\cdot N\) números, será rechazada por el evaluador.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No aplica (problema de solo salida)</td></tr>
+        <tr><td>Límite de memoria</td><td>No aplica (problema de solo salida)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span> · 10 casos</td></tr>
+        <tr><td>Filas y columnas</td><td><span class="badge">\(1 \le M,\,N \le 100\)</span></td></tr>
+        <tr><td>Colores distintos</td><td><span class="badge">\(1 \le C \le 10\)</span></td></tr>
+        <tr><td>Longitud de la salida</td><td>a lo más \(M\cdot N\) números por caso</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es <strong>por caso</strong> (10 casos) y es
+       <strong>parcial y comparativo</strong>, no de "todo o nada". Una secuencia válida que
+       no exceda la peor solución del comité ya gana el 20% del caso, y el 80% restante crece
+       conforme usas menos turnos (la mejor solución del concurso obtiene el 100%). Véase la
+       sección «Evaluación».</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6 6 4
+0 1 0 2 2 2
+2 1 1 3 1 0
+2 2 0 0 3 2
+0 1 1 1 0 2
+2 0 3 0 1 0
+0 2 2 0 0 3</pre></div>
+      <div class="io"><h4>Salida</h4><pre>2 1 0 2 1 0 3</pre></div>
+    </div>
+    <p class="note">El ejemplo representa el tablero mostrado en la figura: un tablero de
+       \(6\times 6\) con 4 colores que se resuelve en 7 turnos con la secuencia
+       \(2,\,1,\,0,\,2,\,1,\,0,\,3\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Flood fill</span>
+      <span class="ptag">BFS</span>
+      <span class="ptag">Optimización</span>
+      <span class="ptag">Solo salida</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan 10 tableros de \(M\times N\) con \(C\) colores. En cada turno recoloreas la
+       <strong>región conectada a la esquina superior izquierda</strong> al color que elijas;
+       al hacerlo, esa región absorbe a todas las regiones vecinas que ya tengan ese color
+       (esto es el juego <em>Flood-It</em>). El objetivo es dejar todo el tablero de un solo
+       color usando la <strong>menor cantidad de turnos posible</strong>. Es un problema de
+       <strong>solo salida</strong>: entregas, por cada caso, una secuencia de colores de
+       longitud \(\le M\cdot N\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(M,N\le 100\) (hasta \(10^4\) celdas) y \(C\le 10\). Hallar el mínimo
+                exacto de turnos en Flood-It es <strong>NP-difícil</strong>, así que no
+                busques el óptimo: el puntaje es <strong>parcial</strong> (20% por una
+                respuesta válida, y más cuanto menos turnos), por lo que una buena heurística
+                <em>greedy</em> califica bien. El tope de \(M\cdot N\) números está pensado
+                justo para que una estrategia sensata siempre quepa.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en ver el tablero no como casillas sueltas sino como
+           <em>regiones</em> (componentes conexas del mismo color)? ¿Qué casillas
+           «controlas» tú al inicio?</p>
+        <p>Tú dominas la región conectada a \((0,0)\). Cuando eliges un color \(k\), toda
+           esa región se vuelve \(k\) y se fusiona con cualquier región vecina que ya fuera
+           de color \(k\). Así, tu región controlada solo <strong>crece</strong>, nunca
+           encoge. El juego termina cuando tu región abarca todo el tablero.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Primero asegura una respuesta VÁLIDA</summary>
+      <div class="body">
+        <p class="q">Antes de optimizar, ¿cómo garantizas que tu secuencia
+           <strong>siempre</strong> termina por colorear todo y que <strong>nunca</strong>
+           pasa de \(M\cdot N\) números?</p>
+        <p>Mientras el tablero no sea monocromático, tu región tiene al menos una región
+           vecina de otro color. Si en cada turno eliges el color de alguna vecina, absorbes
+           <strong>al menos una región nueva</strong> por turno. Como hay a lo más \(M\cdot N\)
+           regiones, terminas en \(\le M\cdot N\) turnos: tu salida siempre cabe en el límite.
+           Eso ya te da el 20% de cada caso.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La heurística para bajar turnos</summary>
+      <div class="body">
+        <p class="q">De entre los colores disponibles cada turno, ¿cuál conviene elegir si
+           quieres acabar pronto? ¿El que te haga ganar <em>más terreno</em>?</p>
+        <p>Una heurística simple y efectiva es <strong>greedy por celdas ganadas</strong>:
+           en cada turno prueba los \(C\) colores y quédate con el que absorbe la
+           <strong>mayor cantidad de celdas nuevas</strong> a tu región. No es óptima, pero
+           reduce mucho los turnos respecto a elegir al azar. (Variantes: maximizar la nueva
+           <em>frontera</em> en vez de las celdas, o un pequeño <em>lookahead</em> de 2 turnos.)</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿Y el óptimo exacto?</summary>
+      <div class="body">
+        <p class="q">¿Vale la pena programar una búsqueda del mínimo exacto de turnos para
+           \(N=100\)?</p>
+        <p>No. Flood-It con 3 o más colores es NP-difícil, y con \(10^4\) celdas una búsqueda
+           exacta es inviable. Como el puntaje es comparativo y parcial, conviene invertir el
+           esfuerzo en una buena heurística (y quizá correr varias y quedarte con la mejor por
+           caso). Una <strong>cota inferior</strong> útil para saber qué tan bien vas: el
+           número de capas de un BFS sobre el grafo de regiones, partiendo de la región de
+           \((0,0)\) (la <em>excentricidad</em> de esa región).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (greedy por celdas ganadas)</summary>
+      <div class="body">
+        <p>Modela el tablero por regiones implícitamente con un BFS. Mantén un conjunto
+           <code>propia</code> = todas las casillas conectadas a \((0,0)\) que ya controlas
+           (inicialmente, la componente conexa del color de \((0,0)\)). En cada turno, para
+           cada color \(k \ne\) color actual, calcula cuántas celdas <strong>nuevas</strong>
+           se unirían a <code>propia</code> si pintaras de \(k\): son las casillas de color
+           \(k\) que tocan tu frontera, más todas las casillas de color \(k\) conectadas a
+           ellas (otro BFS, solo por casillas de color \(k\) que aún no son tuyas). Elige el
+           \(k\) con la mayor ganancia, absorbe esas celdas a <code>propia</code> y agrega
+           \(k\) a la secuencia. Repite hasta que <code>propia</code> sea todo el tablero.</p>
+        <p>Es correcto porque cada turno absorbe \(\ge 1\) región nueva mientras el tablero no
+           sea de un solo color, así que termina en \(\le M\cdot N\) turnos (la salida siempre
+           cabe) y deja todo monocromático. Verifiqué que produce secuencias válidas para los
+           10 casos oficiales (con conteos de turnos del orden de decenas a unos cientos,
+           muy por debajo del tope \(M\cdot N\)).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Resolver(tablero M×N, C):
+    propia      &#8592; BFS desde (0,0) por casillas del color de (0,0)
+    colorActual &#8592; color de (0,0)
+    secuencia   &#8592; []
+
+    mientras |propia| &lt; M*N:
+        mejorColor &#8592; -1 ; mejorGanancia &#8592; -1
+        para cada color k en 0..C-1, k &#8800; colorActual:
+            # celdas de color k pegadas a la frontera de 'propia',
+            # mas su expansion conexa entre celdas de color k no-propias
+            ganancia &#8592; tamano( BFS_por_color(k, frontera de propia) )
+            si ganancia &gt; mejorGanancia:
+                mejorGanancia &#8592; ganancia ; mejorColor &#8592; k
+
+        # aplicar el turno elegido
+        absorber a 'propia' todas las celdas de mejorColor
+                 conectadas a su frontera (BFS por color mejorColor)
+        colorActual &#8592; mejorColor
+        agrega mejorColor a secuencia
+
+    regresa secuencia        # longitud &#8804; M*N
+
+# Repite por cada uno de los 10 casos y escribe un archivo de salida por caso.</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> cada turno hace hasta \(C\) recorridos del tablero,
+           \(O(C\cdot M\cdot N)\); con \(T\) turnos da \(O(T\cdot C\cdot M\cdot N)\). En la
+           práctica \(T\) es de unos cientos como máximo, así que para \(M\cdot N\le 10^4\) y
+           \(C\le 10\) corre de sobra (y es de solo salida: lo ejecutas <em>offline</em>).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Nota de implementación (C++)</span>
+<pre>Los 10 archivos de casos oficiales ponen "M N" en la primera linea y "C"
+en la segunda (no los tres juntos como en el ejemplo del enunciado).
+Si lees con cin/scanf token por token —leer M, luego N, luego C, luego
+M*N enteros— funciona en AMBOS formatos, porque ignora los saltos de linea.</pre>
+          <p class="note">Es solo una observación de formato, no la solución; nunca pegues
+             código de la solución en la página.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **106 / 190**
+Total de problemas: **190** · Completados: **114 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -166,18 +166,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Lenguaje | Espias | `2010/07 Espias/index.html` |
 | [ ] | 8 | Lenguaje | Antenas | `2010/08 Antenas/index.html` |
 
-## 16ª OMI · 2011 — 0 / 8
+## 16ª OMI · 2011 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Karel Mosby, arquitecto | `2011/01 Karel Mosby, arquitecto/index.html` |
-| [ ] | 2 | Karel | Kareleseo | `2011/02 Kareleseo/index.html` |
-| [ ] | 3 | Karel | Kareloscopio | `2011/03 Kareloscopio/index.html` |
-| [ ] | 4 | Karel | Kill Karel | `2011/04 Kill Karel/index.html` |
-| [ ] | 5 | Lenguaje | Dementores a la puerta | `2011/05 Dementores a la puerta/index.html` |
-| [ ] | 6 | Lenguaje | Capturando al gato | `2011/06 Capturando al gato/index.html` |
-| [ ] | 7 | Lenguaje | La guardia negra | `2011/07 La guardia negra/index.html` |
-| [ ] | 8 | Lenguaje | Coloréalo | `2011/08 Coloréalo/index.html` |
+| [x] | 1 | Karel | Karel Mosby, arquitecto | `2011/01 Karel Mosby, arquitecto/index.html` |
+| [x] | 2 | Karel | Kareleseo | `2011/02 Kareleseo/index.html` |
+| [x] | 3 | Karel | Kareloscopio | `2011/03 Kareloscopio/index.html` |
+| [x] | 4 | Karel | Kill Karel | `2011/04 Kill Karel/index.html` |
+| [x] | 5 | Lenguaje | Dementores a la puerta | `2011/05 Dementores a la puerta/index.html` |
+| [x] | 6 | Lenguaje | Capturando al gato | `2011/06 Capturando al gato/index.html` |
+| [x] | 7 | Lenguaje | La guardia negra | `2011/07 La guardia negra/index.html` |
+| [x] | 8 | Lenguaje | Coloréalo | `2011/08 Coloréalo/index.html` |
 
 ## 17ª OMI · 2012 — 8 / 8
 

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2011 · Problema 06 — Capturando al gato</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">16ª OMI · 2011 · Lenguaje</div>
+    <h1>Problema <span class="num">06</span> — Capturando al gato</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/L-OMI2011-Capturando-al-gato">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Homero Simpson y su equipo de zorros (agentes secretos) se han dado a la tarea
+       de capturar al criminal internacional conocido como <em>el gato</em>. El plan
+       de Homero es crear un cerco de vigilancia alrededor del Museo de Springfield,
+       próximo objetivo del criminal.</p>
+
+    <p>Si se traza un círculo alrededor del museo existen \(N\) lugares adecuados para
+       que un zorro ponga su puesto de vigilancia. Homero quiere poner el máximo
+       número de zorros posibles alrededor del Museo; sin embargo, hay una limitante.
+       El método de comunicación entre los zorros (inventado por el mismo Homero) es
+       el teléfono de hilo. Este teléfono consta de dos vasos unidos por un hilo, el
+       cual debe estar tenso para que funcione. El círculo de zorros estará comunicado
+       por teléfonos de la siguiente forma: cada zorro tendrá dos teléfonos, uno para
+       comunicarse con el zorro a su derecha y otro para comunicarse con el zorro a su
+       izquierda. Para que la comunicación sea funcional, el círculo deberá estar
+       cerrado.</p>
+
+    <p>Homero no es un buen ingeniero y, aunque puede hacer muchos teléfonos, requiere
+       que el hilo de todos tenga la misma longitud.</p>
+
+    <p>Ayuda a Homero a determinar cuál es el máximo número de zorros que puede colocar
+       alrededor del Museo de modo que todos estén comunicados por teléfonos cuyo hilo
+       sea de la misma longitud.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea, el número \(N\), la cantidad de posiciones posibles para
+       zorros. En las siguientes \(N\) líneas, un entero \(d_i\) que representa la
+       distancia que hay entre el puesto \(i\) y el puesto \(i+1\). El entero en la
+       última de estas líneas representa la distancia del último puesto hacia el
+       primero, para cerrar el círculo.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa debe escribir a la pantalla un único número entero que representa
+       la cantidad máxima de zorros que se pueden colocar.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en la fuente oficial</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en la fuente oficial</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Posiciones</td><td><span class="badge">\(1 \le N \le 5000\)</span></td></tr>
+        <tr><td>Perímetro</td><td><span class="badge">\(\displaystyle 1 \le \sum_{i=1}^{N} d_i \le 2 \cdot 10^9\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">75</td><td>\(0 < N \le 10^3\). Los casos no están agrupados (cada caso se califica por separado).</td></tr>
+          <tr><td>2</td><td class="pts">25</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6
+3
+2
+1
+4
+5
+5</pre></div>
+      <div class="io"><h4>Salida</h4><pre>4</pre></div>
+    </div>
+    <p class="note">Hay 6 posiciones posibles (los puntos negros del círculo). Entre
+       puntos se muestran las distancias de un punto al siguiente avanzando en sentido
+       horario: \(3, 2, 1, 4, 5, 5\), que suman un perímetro de \(20\). Una posibilidad
+       es utilizar dos zorros (el de la primera y la quinta posición); sin embargo, el
+       máximo número de zorros que se pueden poner en el círculo es \(4\), usando las
+       posiciones \(1, 3, 5\) y \(6\). La distancia entre cada par de zorros vecinos es
+       de \(5\) (\(3{+}2\), \(1{+}4\), \(5\) y \(5\)), por lo que todos los hilos miden
+       lo mismo.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Teoría de números</span>
+      <span class="ptag">Divisores</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En un círculo de perímetro \(S=\sum_i d_i\) hay \(N\) posiciones marcadas en las
+       distancias acumuladas \(0,\ d_1,\ d_1{+}d_2,\ \dots\) Hay que colocar el máximo
+       número \(k\) de zorros sobre esas marcas de modo que cualquier par de zorros
+       vecinos quede separado por la misma distancia de arco (todos los hilos miden lo
+       mismo). Devuelve ese \(k\) máximo.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 5000\) es chico, pero \(S\) llega a \(2\cdot 10^9\): usa
+                <code>long long</code> para las sumas. La clave no es \(S\) en sí, sino
+                sus <strong>divisores</strong>: como verás, tanto el número de zorros
+                \(k\) como la brecha \(L\) deben dividir a \(S\), y además \(k\le N\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Y si "desenrollas" el círculo en una recta de longitud \(S\)?
+           ¿Dónde queda cada una de las \(N\) posiciones posibles?</p>
+        <p>Coloca la posición \(1\) en el punto \(0\). La posición \(i\) queda a la
+           distancia acumulada \(\text{pref}[i] = d_1 + d_2 + \dots + d_{i-1}\) (una
+           suma prefija). El círculo entero mide \(S = \sum_i d_i\) y, al cerrarse, el
+           punto \(S\) coincide con el \(0\). Así, "colocar zorros" es elegir un
+           subconjunto de esos puntos marcados.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Qué obliga "todos los hilos iguales"?</summary>
+      <div class="body">
+        <p class="q">Si pones \(k\) zorros vecino con vecino alrededor del círculo y
+           todos los hilos miden \(L\), ¿cuánto suman todos los hilos al dar la vuelta
+           completa? ¿Qué te dice eso de \(k\) y \(L\)?</p>
+        <p>Al recorrer el círculo pasas por los \(k\) hilos y regresas al inicio, así
+           que \(k\cdot L = S\). Como cada \(L\) es una suma de algunos \(d_i\)
+           consecutivos, \(L\) es entero. Por lo tanto, <strong>tanto \(k\) como
+           \(L=S/k\) son divisores de \(S\)</strong>. Además necesitas \(k\) posiciones
+           distintas, así que \(k \le N\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Para una brecha fija, ¿cómo verificar rápido?</summary>
+      <div class="body">
+        <p class="q">Fija una brecha \(L\) (divisor de \(S\)). Los zorros caerían en
+           \(p,\ p{+}L,\ p{+}2L,\ \dots\) (mod \(S\)). ¿Qué tienen en común todos esos
+           puntos respecto a \(L\)?</p>
+        <p>Todos son congruentes entre sí módulo \(L\): forman exactamente los
+           \(k=S/L\) valores de \([0,S)\) que dejan el mismo residuo \(r\) al dividir
+           entre \(L\). Entonces, colocar \(k\) zorros con brecha \(L\) es posible
+           <em>si y solo si</em> alguna clase de residuo módulo \(L\) está
+           completamente cubierta por posiciones marcadas; es decir, hay un residuo
+           \(r\) con <strong>exactamente \(k\) posiciones</strong> tales que
+           \(\text{pref}[i] \equiv r \pmod{L}\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea por subtarea</summary>
+      <div class="body">
+        <p class="q">Con \(N\le 10^3\) (subtarea 1, 75%), ¿te alcanza una idea más
+           directa, aunque sea lenta?</p>
+        <p><strong>Subtarea 1 (75%):</strong> con \(N\) chico puedes probar candidatos
+           de brecha (por ejemplo, cada divisor de \(S\), o cada distancia entre dos
+           posiciones) y, para cada uno, simular el recorrido desde un inicio
+           consultando un conjunto/hash de posiciones. Una verificación de orden
+           \(O(N^2)\) (o con un factor \(\log\)) entra de sobra.</p>
+        <p><strong>Subtarea 2 (25%, hasta 100):</strong> usa el criterio de la Pista 3.
+           Recorre solo los divisores de \(S\) y, para cada uno, agrupa las \(N\)
+           posiciones por su residuo módulo \(L\) en \(O(N)\). Eso evita simular y hace
+           todo eficiente sin importar el tamaño de \(S\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Sea \(S=\sum_i d_i\) el perímetro y \(\text{pref}[1..N]\) las distancias
+           acumuladas (con \(\text{pref}[1]=0\)), todas distintas porque \(d_i\ge 1\).</p>
+        <p>Un acomodo válido de \(k\) zorros equiespaciados tiene brecha \(L=S/k\), con
+           \(k\) y \(L\) divisores de \(S\) (Pista 2). Por la Pista 3, ese acomodo
+           existe si y solo si <strong>alguna clase de residuo módulo \(L\) contiene
+           exactamente \(k\) de las posiciones</strong> (no puede contener más: solo
+           hay \(k\) valores de \([0,S)\) con ese residuo). Por lo tanto:</p>
+        <ol>
+          <li>Calcula \(S\) y las sumas prefijas.</li>
+          <li>Enumera los divisores de \(S\) (factorización por prueba hasta
+              \(\sqrt{S}\)). Quédate con los que sean \(\le N\); cada uno es un
+              candidato a número de zorros \(k\).</li>
+          <li>Para cada \(k\) (de mayor a menor, o guardando el máximo), pon \(L=S/k\),
+              cuenta cuántas posiciones caen en cada residuo módulo \(L\) y comprueba si
+              algún residuo llega a \(k\). Si sí, \(k\) es alcanzable.</li>
+          <li>La respuesta es el mayor \(k\) alcanzable (siempre existe al menos
+              \(k=1\)).</li>
+        </ol>
+        <p><strong>Por qué es correcto:</strong> un conjunto equiespaciado con brecha
+           \(L\) es justo una clase de residuo módulo \(L\) (todos sus puntos, a paso
+           \(L\), cierran el círculo en \(k=S/L\) pasos). Cubrirla por completo con
+           posiciones marcadas es necesario y suficiente para que cada hilo mida \(L\).
+           Maximizar \(k\) equivale a minimizar la brecha \(L\) que sí se puede cubrir.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N
+S = 0
+para i = 1..N:
+    pref[i] = S            # posición i en distancia acumulada
+    S += d[i]
+
+divisores = todos los d con d | S            # prueba hasta raíz(S)
+mejor = 1
+para cada k en divisores con k <= N:
+    L = S / k
+    limpiar conteo (mapa hash: residuo -> cantidad)
+    para i = 1..N:
+        r = pref[i] mod L
+        conteo[r] += 1
+        si conteo[r] == k:
+            mejor = max(mejor, k)
+            terminar este k     # k ya es alcanzable
+imprimir mejor</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> factorizar \(S\) en \(O(\sqrt{S})\); luego, por
+           cada divisor \(\le N\), un barrido \(O(N)\). En total
+           \(O\!\left(\sqrt{S} + d(S)\cdot N\right)\) en tiempo y \(O(N)\) en memoria,
+           donde \(d(S)\) es el número de divisores de \(S\) (a lo más unos cuantos
+           miles para \(S\le 2\cdot 10^9\)). De sobra para los límites.</p>
+
+        <p class="note">Verificado contra el ejemplo del enunciado y los 21 casos de
+           prueba oficiales (<code>p0</code> y <code>r0</code>–<code>r19</code>): 21/21
+           correctos.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

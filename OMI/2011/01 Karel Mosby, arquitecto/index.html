@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2011 · Problema 01 — Karel Mosby, arquitecto</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">16ª OMI · 2011 · Karel</div>
+    <h1>Problema <span class="num">01</span> — Karel Mosby, arquitecto</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/K-OMI2011-Karel-Mosby">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Karel Mosby está por terminar la carrera de arquitectura; como proyecto
+       terminal debe dibujar el <strong>panorama urbano</strong> de la ciudad de
+       Cuernavaca. El panorama urbano de una ciudad es la silueta que dibujan los
+       edificios de la misma con el horizonte. Probablemente has visto en pósters
+       panoramas urbanos de ciudades como la Ciudad de México, Chicago o Nueva
+       York.</p>
+    <p>Para dibujar el panorama urbano, Karel utiliza una <strong>vista superior</strong>
+       de la ciudad. En la mitad superior del mundo de Karel hay montones de
+       zumbadores que representan la vista de la ciudad desde arriba: la cantidad
+       de zumbadores en cada montón representa la altura del edificio que hay en
+       esa coordenada. En la mitad inferior, Karel debe dibujar el panorama urbano
+       utilizando montones de 1 zumbador.</p>
+
+    <h3>Problema</h3>
+    <p>Ayuda a Karel a realizar su proyecto terminal.</p>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El mundo es un rectángulo de ancho \(A\) y alto \(H\) (las dimensiones
+         cambian de un caso a otro y <em>no</em> se le dan a Karel como números:
+         hay que descubrirlas con las paredes). Imagina el mundo partido a la
+         mitad:</p>
+      <ul>
+        <li><strong>Mitad superior</strong> — la vista cenital (desde arriba) de
+           la ciudad. En cada coordenada hay un montón de zumbadores; el número de
+           zumbadores del montón es la <em>altura del edificio</em> en ese punto.</li>
+        <li><strong>Mitad inferior</strong> — empieza vacía. Aquí Karel debe
+           dibujar el panorama: para cada columna, una barra vertical pegada al
+           piso, hecha con montones de <strong>exactamente 1</strong> zumbador.</li>
+      </ul>
+      <p>Karel arranca en la posición \((1,1)\) mirando al <strong>norte</strong> y
+         con la <strong>mochila vacía</strong> (0 zumbadores). Se considera resuelto
+         si en la mitad inferior queda dibujada la silueta correcta; la posición y
+         orientación final de Karel no importan.</p>
+    </div>
+
+    <h3>Consideraciones</h3>
+    <ul>
+      <li>Karel inicia en la posición \((1,1)\) con dirección norte.</li>
+      <li>Karel inicia con 0 zumbadores en su mochila.</li>
+      <li>El mundo de Karel siempre será rectangular.</li>
+      <li>La altura de los edificios será menor o igual a la mitad de la altura del
+          mundo.</li>
+      <li>El panorama urbano debe ser dibujado con montones de sólo 1 zumbador.</li>
+      <li>No importa la posición ni la orientación final de Karel, sólo los lugares,
+          en la mitad inferior del mundo, donde dejaste zumbadores.</li>
+    </ul>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por teclado: toda la información viene en el <strong>mundo</strong>
+       de Karel. El mundo trae sus paredes (que lo delimitan) y, en la mitad
+       superior, los montones de zumbadores que codifican la altura de cada
+       edificio de la vista cenital. Karel comienza en \((1,1)\), mirando al norte
+       y con la mochila vacía.</p>
+
+    <h2>Salida</h2>
+    <p>El <strong>estado final del mundo</strong>. En la mitad inferior debe quedar
+       dibujado el panorama urbano: para cada columna, una barra vertical pegada al
+       piso, formada por montones de exactamente 1 zumbador, cuya altura es la
+       silueta de esa columna. Sólo se califica la mitad inferior; lo que quede en
+       la mitad superior y la posición/orientación final de Karel no se evalúan.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Día</td><td>Karel</td></tr>
+        <tr><td>Límite de tiempo</td><td>No especificado en los metadatos
+            (problema de Karel: el juez limita el número de instrucciones
+            ejecutadas)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en los metadatos</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Mundo</td><td><span class="badge">rectangular; \(A\) y \(H\) varían
+            por caso</span></td></tr>
+        <tr><td>Altura de cada edificio</td><td><span class="badge">\(\le H/2\)
+            (la mitad de la altura del mundo)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <p>El enunciado oficial ilustra el ejemplo con tres figuras:</p>
+    <ul>
+      <li><strong>Mundo inicial</strong> — la vista superior de la ciudad (los
+          montones de la mitad superior, cada uno con tantos zumbadores como la
+          altura del edificio en esa coordenada).</li>
+      <li><strong>Mundo final</strong> — el panorama urbano dibujado por Karel en
+          la mitad inferior, con montones de 1 zumbador.</li>
+    </ul>
+    <p class="note"><strong>Nota:</strong> en este ejemplo no hay ningún edificio
+       que toque la pared superior del mundo, pero en los casos de prueba sí puede
+       haber (un montón puede estar pegado a la pared de arriba).</p>
+    <p class="note">Las imágenes del ejemplo (<code>mundoinicial.png</code>,
+       <code>mundofinal.png</code>, <code>imagenejemplo.png</code>) forman parte del
+       enunciado oficial; consúltalas en
+       <a class="pdf" href="https://omegaup.com/arena/problem/K-OMI2011-Karel-Mosby">omegaUp</a>.
+       En la pestaña <em>Upsolving</em> incluimos un esquema ilustrativo equivalente
+       (no es la figura oficial).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Recursión</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En la mitad de arriba del mundo tienes la <em>vista cenital</em> de una
+       ciudad: cada celda guarda un montón cuya cantidad de zumbadores es la altura
+       del edificio en esa coordenada. Debes dibujar, en la mitad de abajo, la
+       <em>silueta vista de frente</em>: para cada columna, una barra (montones de
+       1 zumbador) cuya altura es la del <strong>edificio más alto</strong> de esa
+       columna.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>La restricción <em>«altura \(\le H/2\)»</em> es la llave: garantiza
+                que la barra que dibujas abajo nunca alcanza la ciudad de arriba, así
+                que <strong>siempre queda un hueco vacío</strong> entre ambas y Karel
+                puede distinguirlas. Además, Karel no conoce \(A\) ni \(H\) como
+                números (¡cambian por caso!): todo se descubre con las
+                <em>paredes</em> y los <em>zumbadores</em>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">Cuando miras la ciudad de frente, para una columna fija, ¿qué
+           edificio decide la silueta: el más alto, el más bajo o la suma de
+           todos?</p>
+        <p>Fija una columna \(x\) de la vista cenital y recórrela en profundidad
+           (todas las celdas de esa columna en la mitad superior). De frente solo
+           se ve el contorno del más alto: el que tape a los demás. Entonces la
+           altura de la silueta en la columna \(x\) es</p>
+        <p>\[ \text{panorama}(x) \;=\; \max_{y}\ \text{altura}(x,y). \]</p>
+        <p>El problema se reduce a, columna por columna, calcular ese máximo y
+           dibujarlo abajo como una barra pegada al piso.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Karel no tiene números</summary>
+      <div class="body">
+        <p class="q">¿Cómo «mides» o «guardas» una altura si Karel no tiene
+           variables ni enteros, solo puede avanzar, girar, coger/dejar zumbador y
+           preguntar <code>junto-a-zumbador</code> / <code>frente-despejado</code>?</p>
+        <p>La cantidad tiene que vivir <strong>físicamente</strong>: como zumbadores
+           en las celdas o en la mochila, y el «conteo» se hace recorriendo. Como no
+           hay ciclos contados (no existe «repite \(K\) veces» con \(K\) numérico),
+           el patrón natural es la <strong>recursión</strong> con
+           <code>define-nueva-instruccion</code>: una instrucción que se llama a sí
+           misma mientras siga habiendo trabajo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Separar la ciudad del panorama</summary>
+      <div class="body">
+        <p class="q">Si subes por una columna desde el piso, te vas a topar con dos
+           cosas que tienen zumbadores: el panorama que ya dibujaste (abajo) y la
+           ciudad (arriba). ¿Cómo evitas confundirlos?</p>
+        <p>El panorama que construyes es un <strong>bloque pegado al piso</strong>
+           (filas \(1,2,3,\dots\) sin huecos). La ciudad vive en la mitad superior.
+           Como cada edificio mide \(\le H/2\), la barra nunca llega tan arriba como
+           para tocar la ciudad: <strong>entre el panorama y la ciudad siempre hay
+           al menos una celda vacía</strong>. Así, para llegar a la ciudad: <em>salta
+           el bloque pegado al piso</em> (avanza mientras <code>junto-a-zumbador</code>),
+           luego <em>cruza el hueco</em> (avanza mientras <code>no-junto-a-zumbador</code>)
+           hasta toparte con la ciudad o con la pared.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Recorrer columnas y saber cuándo parar</summary>
+      <div class="body">
+        <p class="q">¿Cómo pasas de una columna a la siguiente, y cómo sabes que ya
+           no queda ciudad en la columna actual ni más columnas en el mundo?</p>
+        <p>Dentro de una columna: si al subir llegas hasta la pared de arriba sin
+           toparte con ningún zumbador, esa columna ya quedó vacía → terminaste con
+           ella. Para cambiar de columna: gira al este; si
+           <code>frente-despejado</code>, avanza una casilla a la derecha y sigue;
+           si no hay paso, era la última columna → apaga. Todo el control se basa en
+           las preguntas de Karel (<code>frente-despejado</code>,
+           <code>junto-a-zumbador</code>), nunca en números.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La idea constructiva (pelar capas)</summary>
+      <div class="body">
+        <p class="q">¿Y si en vez de «calcular el máximo» lo construyes pelando la
+           ciudad capa por capa?</p>
+        <p>Una pasada (capa) significa: subir por la columna y quitar <strong>un</strong>
+           zumbador de cada montón que aún tenga. Si en esa pasada quitaste al menos
+           uno, la columna todavía tenía ciudad, así que el panorama crece 1. Repite
+           hasta que una pasada no encuentre nada. El número de pasadas productivas
+           es exactamente \(\max_y \text{altura}(x,y)\): el montón más alto es el
+           último en vaciarse. ¡Eso es justo la altura de la silueta!</p>
+        <p>Como en cada pasada quitas \(\ge 1\) zumbador y solo dejas 1 en el
+           panorama, la mochila nunca se queda sin zumbadores para dibujar.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> La silueta de cada columna es el máximo de las
+           alturas de esa columna (Pista 1). Construimos ese máximo «pelando capas»:
+           cada pasada hacia arriba quita un zumbador de cada montón de la ciudad de
+           la columna; cada pasada que sí quitó algo aporta un zumbador al panorama
+           pegado al piso. Cuando una pasada no encuentra ciudad, la columna está
+           lista; pasamos a la siguiente. La restricción <em>altura \(\le H/2\)</em>
+           garantiza el hueco que separa el panorama (abajo) de la ciudad (arriba),
+           así que Karel siempre distingue uno de otro saltando el bloque pegado al
+           piso y cruzando el hueco.</p>
+
+        <p><strong>Por qué es correcto.</strong> En la columna \(x\), si los montones
+           tienen alturas \(a_1,\dots,a_k\), tras la pasada \(i\) cada montón vale
+           \(\max(a_j-i,\,0)\). La ciudad de la columna se vacía después de
+           exactamente \(\max_j a_j\) pasadas, y son justo esas pasadas las que
+           «encuentran algo» y hacen crecer el panorama. Por lo tanto la barra final
+           mide \(\max_j a_j\), la silueta correcta. Los edificios pegados a la pared
+           de arriba se manejan solos: al pelar usamos la pared como tope superior y
+           no suponemos que arriba haya una celda vacía.</p>
+
+        <h3>Esquema ilustrativo (no es la figura oficial)</h3>
+        <p>Vista cenital de 4 columnas (la celda guarda la altura del edificio) y la
+           silueta que se dibuja abajo:</p>
+        <div class="pseudo">
+          <span class="tag">Ejemplo chico</span>
+<pre>vista cenital (mitad superior)      silueta (mitad inferior)
+col:   1  2  3  4                    col:   1  2  3  4
+       2  3  1  2   (profundidad)           .  #  .  #     fila 3
+       1  3  1  3                           #  #  .  #     fila 2
+       1  1  1  2                           #  #  #  #     fila 1
+max =  2  3  1  3                    altura: 2  3  1  3</pre>
+        </div>
+
+        <h3>Pseudocódigo con primitivas de Karel</h3>
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel</span>
+<pre>// Auxiliares
+define media-vuelta { gira-izquierda; gira-izquierda }
+define gira-derecha { gira-izquierda; gira-izquierda; gira-izquierda }
+define baja-al-piso {            // termina al piso, mirando al norte
+    media-vuelta
+    mientras (frente-despejado) avanza
+    media-vuelta
+}
+define salta-panorama {          // cruza el bloque de zumbadores pegado al piso
+    mientras (junto-a-zumbador y frente-despejado) avanza
+}
+
+// --- Una pasada: pela una capa y, si peló algo, hace crecer el panorama ---
+define pela-y-construye {     // Karel en el hueco, encima del panorama, mira al norte
+    mientras (no-junto-a-zumbador y frente-despejado) avanza   // cruza el hueco
+    si (junto-a-zumbador) {                 // hay ciudad: la capa es productiva
+        coge-zumbador                       //   pela esta celda
+        pela-resto                          //   sube quitando 1 de cada montón hasta la pared
+        crece-el-panorama                   //   baja y deja 1 encima del panorama
+        baja-al-piso ; salta-panorama       //   vuelve al hueco
+        pela-y-construye                    //   siguiente capa (recursión)
+    }
+    // si no: subiste hasta la pared sin ciudad -> la columna terminó
+}
+
+define pela-resto {                         // sube quitando 1 de cada montón
+    mientras (frente-despejado) {
+        avanza
+        si (junto-a-zumbador) coge-zumbador
+    }
+}
+
+define crece-el-panorama {                  // sube al tope del panorama y deja 1
+    baja-al-piso
+    salta-panorama                          // se detiene en la 1a celda vacía del bloque
+    deja-zumbador                           // (la mochila tiene >=1 por la pasada actual)
+}
+
+// --- Recorre todas las columnas, de izquierda a derecha ---
+define procesa-columna {                    // Karel al piso de la columna, mira al norte
+    salta-panorama
+    pela-y-construye
+}
+define recorre-columnas {
+    procesa-columna
+    gira-derecha                            // mira al este
+    si (frente-despejado) {
+        avanza                              // pásate a la columna de la derecha
+        baja-al-piso                        // regresa al piso mirando al norte
+        recorre-columnas
+    }
+    // si no hay paso al este: era la última columna
+}
+
+define programa {                           // inicio: (1,1), norte, mochila vacía
+    recorre-columnas
+    apaga-te
+}</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Cada pasada por una columna cuesta
+           \(O(H)\) movimientos y hay a lo más \(\max_y \text{altura} \le H/2\)
+           pasadas por columna, así que una columna cuesta \(O(H^2)\) y todo el
+           mundo \(O(A\,H^2)\) movimientos, con \(A\) el ancho y \(H\) el alto. Es
+           de sobra para los límites de un mundo de Karel.</p>
+
+        <p class="note">Verificado a mano contra el caso de prueba <code>r0</code>
+           (mundo \(15\times 12\)): la silueta por columna queda
+           \(1,1,3,4,3,6,5,4,4,3,4,2,5,5,1\), que coincide celda por celda con la
+           salida esperada de las 6 filas de la mitad inferior.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

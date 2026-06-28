@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2011 · Problema 07 — La guardia negra</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">16ª OMI · 2011 · Lenguaje</div>
+    <h1>Problema <span class="num">07</span> — La guardia negra</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/L-OMI2011-La-guardia-negra">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Según <em>la canción del fuego y el hielo</em>, la guardia de los centinelas
+       negros ha defendido al reino de Westeros de las amenazas del norte durante los
+       últimos 8,000 años. A últimas fechas un gran número de huestes enemigas se ha
+       venido concentrando en la frontera norte de Westeros. El comandante de la
+       guardia, Lord Snow, ha mandado llamar por ti para que le ayudes a planear la
+       defensa.</p>
+    <p>La guardia tiene representado el campamento enemigo como una cuadrícula de
+       \(M\) filas por \(N\) columnas; en cada casilla de la cuadrícula hay un número
+       \(s_{i,j}\) que representa la cantidad de soldados enemigos en esa casilla.</p>
+    <p>La guardia cuenta con una catapulta capaz de lanzar un proyectil explosivo a
+       cualquier lugar de esta cuadrícula. Al explotar, el proyectil eliminará a
+       todos los soldados enemigos que se encuentren a una distancia menor o igual a
+       un número \(d_i\) que depende del proyectil en cuestión. La distancia entre dos
+       casillas se define como la suma del valor absoluto de la diferencia de sus
+       columnas más el valor absoluto de la diferencia de sus filas (distancia de
+       Manhattan).</p>
+    <p>El comandante de la guardia quiere que desarrolles un programa para calcular la
+       cantidad de soldados que eliminaría un proyectil específico si fuera lanzado en
+       una cierta casilla.</p>
+    <p>Escribe un programa que, dada la cuadrícula del campamento, el número de
+       soldados en cada casilla, el número de proyectiles, la distancia de alcance de
+       cada uno y el lugar donde quieres lanzarlo, calcule el número de enemigos que
+       serán eliminados con cada proyectil.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer del teclado la siguiente información:</p>
+    <ul>
+      <li>En la primer línea los números \(M\) y \(N\) que representan el número de
+          filas y columnas del campamento.</li>
+      <li>En cada una de las siguientes \(M\) líneas hay \(N\) números enteros
+          (\(s_{i,j}\)) separados por un espacio que representan los soldados en cada
+          casilla del campamento.</li>
+      <li>En la siguiente línea el número \(P\) de proyectiles que tiene la guardia.</li>
+      <li>En las últimas \(P\) líneas hay 3 enteros separados por espacios en cada una
+          que representan la fila y columna donde se lanzará un proyectil y la
+          distancia de alcance del mismo.</li>
+    </ul>
+    <p>Tanto las filas como las columnas inician numeradas a partir del 0 y hasta
+       \(M-1\) y \(N-1\) respectivamente. La fila 0 es la fila superior y la columna 0
+       es la columna hasta la izquierda.</p>
+    <p>Puedes estar seguro de que los proyectiles serán lanzados de tal forma que su
+       alcance no exceda el campamento, es decir, ninguna explosión llegará a una
+       casilla que esté fuera de la cuadrícula.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la pantalla \(P\) líneas con un número cada una.
+       La <strong>\(i\)-ésima</strong> línea debe contener la cantidad de enemigos que
+       serían eliminados al lanzar el proyectil \(i\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en la fuente</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en la fuente</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Filas y columnas</td><td><span class="badge">\(1 \le M, N \le 10^3\)</span></td></tr>
+        <tr><td>Soldados por casilla</td><td><span class="badge">\(0 \le s_{i,j} \le 10^9\)</span></td></tr>
+        <tr><td>Número de proyectiles</td><td><span class="badge">\(1 \le P \le 10^5\)</span></td></tr>
+        <tr><td>Alcance de un proyectil</td><td><span class="badge">\(0 \le d_i \le 500\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p>Los casos de prueba se agrupan en 3 grupos distintos. Para obtener los puntos
+       de un grupo es necesario que tu programa resuelva correctamente <strong>todos</strong>
+       los casos de ese grupo; de otra forma obtendrás 0 puntos por ese grupo, aun
+       cuando hayas resuelto correctamente algunos de los casos.</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Grupo</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">25</td><td>\(1 \le M, N \le 100\), \(\;1 \le P \le 100\), \(\;0 \le s_{i,j} \le 10^5\), \(\;0 \le d_i \le 50\)</td></tr>
+          <tr><td>2</td><td class="pts">50</td><td>\(1 \le M, N \le 10^3\), \(\;1 \le P \le 10^3\), \(\;0 \le s_{i,j} \le 10^6\), \(\;0 \le d_i \le 500\)</td></tr>
+          <tr><td>3</td><td class="pts">25</td><td>Las restricciones generales (la primera sección de Límites): \(1 \le M, N \le 10^3\), \(\;1 \le P \le 10^5\), \(\;0 \le s_{i,j} \le 10^9\), \(\;0 \le d_i \le 500\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5 5
+1 2 3 4 5
+5 4 3 2 1
+1 1 1 1 1
+2 3 4 3 0
+7 8 9 6 5
+3
+1 0 0
+2 2 2
+3 1 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>5
+36
+18</pre></div>
+    </div>
+    <p class="note">El primer proyectil, lanzado en la fila 1, columna 0 y con alcance
+       0, sólo elimina a los soldados de esa casilla (el valor \(s_{1,0}=5\)).</p>
+    <p class="note">El proyectil 2 se lanza en la casilla \((2,2)\) y elimina todos los
+       soldados a distancia menor o igual que 2; la suma de ese rombo es 36.</p>
+    <p class="note">El tercer proyectil se lanza en \((3,1)\) con alcance 1: cubre las
+       casillas \((3,1),(2,1),(4,1),(3,0),(3,2)\), cuya suma es \(3+1+8+2+4=18\).</p>
+    <p class="note"><strong>Nota:</strong> observa que los proyectiles no se lanzan
+       realmente, de modo que al calcular la cantidad de enemigos que podrías eliminar,
+       debes considerar todas las casillas sin importar si se intersectan con el
+       alcance de algún proyectil previo. (El enunciado oficial acompaña este ejemplo
+       con una figura ilustrativa que no se incluye aquí.)</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Prefijos 2D</span>
+      <span class="ptag">Distancia Manhattan</span>
+      <span class="ptag">Rotación de coordenadas</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una rejilla \(M\times N\) con un valor entero \(s_{i,j}\) en cada casilla.
+       Debes responder \(P\) consultas; cada consulta da un centro \((r,c)\) y un radio
+       \(d\), y pide la <strong>suma de los valores de todas las casillas a distancia
+       de Manhattan \(\le d\)</strong> del centro (es decir, la suma sobre un "rombo"
+       centrado en \((r,c)\)).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(M,N \le 10^3\) son hasta \(10^6\) casillas y \(P \le 10^5\)
+                consultas: hay que <strong>precalcular</strong> para responder cada
+                consulta muy rápido. La suma puede llegar a \(10^6 \cdot 10^9 = 10^{15}\),
+                así que necesitas enteros de 64 bits (<code>long long</code>). El
+                Grupo 1 (\(M,N,P\) chicos) admite fuerza bruta.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué forma tiene lo que sumas?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué conjunto de casillas cubre una explosión? Con
+           distancia de Manhattan, ¿qué figura forman todas las casillas a distancia
+           \(\le d\) de un centro?</p>
+        <p>No es un cuadrado ni un círculo: es un <strong>rombo</strong> (un diamante)
+           centrado en \((r,c)\). En cada renglón a \(k\) filas del centro, el rombo
+           cubre las columnas que cumplen \(|j-c| \le d-k\). Cada consulta te pide la
+           suma de los \(s_{i,j}\) dentro de ese rombo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Grupo 1: lo más directo (25 pts)</summary>
+      <div class="body">
+        <p class="q">Con \(M,N \le 100\) y \(P \le 100\), ¿qué tan caro es, por cada
+           consulta, recorrer las casillas del rombo y sumar?</p>
+        <p>Para cada consulta puedes recorrer las casillas del rombo (o incluso toda la
+           rejilla verificando la distancia) y acumular. Eso cuesta \(O(P\cdot M\cdot N)\)
+           o \(O(P\cdot d^2)\); con los límites chicos del Grupo 1 es rapidísimo y te
+           da esos primeros 25 puntos. ¿Pero qué pasa cuando \(M,N\) y \(P\) crecen?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Grupos 2 y 3: suma cada renglón de un golpe</summary>
+      <div class="body">
+        <p class="q">Si en cada renglón el rombo cubre un <em>segmento contiguo</em> de
+           columnas, ¿cómo sumarías un segmento de una fila en \(O(1)\)?</p>
+        <p>Precalcula <strong>sumas prefijas por renglón</strong>: \(\text{pref}[i][j]\)
+           = suma de \(s_{i,0}+\dots+s_{i,j}\). Entonces el aporte del renglón
+           \(i=r+k\) es la suma del segmento de columnas
+           \([c-(d-|k|),\, c+(d-|k|)]\), obtenida con una resta de prefijos. Recorres
+           los \(2d+1\) renglones del rombo y sumas cada uno en \(O(1)\): cada consulta
+           cuesta \(O(d)\). En total \(O(M\cdot N + P\cdot d)\), que con \(P\le 10^5\) y
+           \(d\le 500\) son \(\sim 5\times 10^7\) operaciones: alcanza para el 100. ¿Se
+           puede aún más fino, en \(O(1)\) por consulta?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La idea elegante es <strong>rotar el plano 45°</strong> para que el rombo se
+           convierta en un rectángulo alineado a los ejes; entonces un arreglo de
+           <strong>sumas prefijas 2D</strong> responde cada consulta en \(O(1)\).</p>
+        <p>Define para cada casilla \((i,j)\) las coordenadas rotadas
+           \(u=i+j\) y \(v=i-j\). La clave es que, para dos casillas con centros
+           \(U=r+c,\;V=r-c\), se cumple</p>
+        <p>\[ |i-r|+|j-c| \;=\; \max\big(|u-U|,\;|v-V|\big). \]</p>
+        <p>O sea: la distancia de Manhattan en el plano original es la distancia de
+           Chebyshev en el plano rotado. Por lo tanto, "estar a distancia de Manhattan
+           \(\le d\)" equivale a \(|u-U|\le d\) <em>y</em> \(|v-V|\le d\): ¡un cuadrado
+           alineado a los ejes en \((u,v)\)!</p>
+        <p>Construye un arreglo \(A[u][v]\) donde colocas \(s_{i,j}\) en su posición
+           rotada (desplaza \(v\) sumando \(N-1\) para que sea \(\ge 0\); así
+           \(u\in[0,M+N-2]\) y \(v\in[0,M+N-2]\)). Saca sus sumas prefijas 2D. Cada
+           consulta es la suma del rectángulo \([U-d,U+d]\times[V-d,V+d]\) (recortado a
+           los bordes del arreglo rotado), que se obtiene con la fórmula de
+           inclusión-exclusión de prefijos en \(O(1)\). Las posiciones rotadas que no
+           corresponden a ninguna casilla original valen 0, así que no estorban.</p>
+        <p>Esto es correcto porque cada \((i,j)\) cae en una posición rotada única, y el
+           rectángulo en \((u,v)\) contiene exactamente las casillas del rombo. Usa
+           <code>long long</code> para las sumas.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer M, N
+leer s[0..M-1][0..N-1]
+
+L = M + N - 1                  # lado del arreglo rotado
+A = matriz (L x L) en 0
+para i en 0..M-1:
+    para j en 0..N-1:
+        u = i + j
+        v = i - j + (N-1)
+        A[u][v] += s[i][j]
+
+pre = sumas prefijas 2D de A   # pre[u][v] = suma del rectángulo [0..u-1][0..v-1]
+
+funcion sumaRect(u1, v1, u2, v2):
+    recortar [u1,u2] y [v1,v2] al rango [0, L-1]
+    si rango vacío: regresar 0
+    regresar pre[u2+1][v2+1] - pre[u1][v2+1] - pre[u2+1][v1] + pre[u1][v1]
+
+leer P
+repetir P veces:
+    leer r, c, d
+    U = r + c
+    V = r - c + (N-1)
+    imprimir sumaRect(U-d, V-d, U+d, V+d)</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(M\cdot N)\) de preprocesamiento y \(O(1)\)
+           por consulta, total \(O(M\cdot N + P)\). Memoria \(O((M+N)^2)\) para el
+           arreglo rotado (con \(M=N=10^3\) son \(\approx 4\times 10^6\) enteros de 64
+           bits, manejable). La alternativa de la Pista 3, con prefijos por renglón y
+           \(O(d)\) por consulta, también alcanza el 100.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa long long para A, pre y las respuestas (la suma llega a ~10^15).
+Con P hasta 10^5 y rejilla de 10^6, conviene E/S rápida:
+ios::sync_with_stdio(false); cin.tie(nullptr);
+y acumular la salida en un buffer antes de imprimir.</pre>
+          <p class="note">Es solo una nota de implementación; nunca pongas la solución
+             completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

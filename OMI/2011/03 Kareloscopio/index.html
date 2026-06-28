@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2011 · Problema 03 — Kareloscopio</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">16ª OMI · 2011 · Karel</div>
+    <h1>Problema <span class="num">03</span> — Kareloscopio</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/K-OMI2011-Kareloscopio">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Descripción</h2>
+    <p>Kareleo Karelei se ha propuesto inventar un aparato para ampliar imágenes
+       al que llamará <em>kareloscopio</em>. Para poder desarrollarlo necesita
+       hacer varios experimentos en los cuales tú serás su asistente. Kareleo te
+       pondrá en un mundo que contiene una imagen; la imagen está formada por
+       espacios que tienen exactamente \(N\) zumbadores (que representan puntos
+       negros) y espacios sin zumbadores (que representan puntos blancos).</p>
+
+    <p>Tu tarea como asistente consiste en ampliar la imagen de modo que cada
+       espacio se amplíe por un factor de \(N\) tanto horizontal como
+       verticalmente. Por ejemplo, si en la imagen inicial había un espacio con 2
+       (\(N=2\)) zumbadores, deberás convertirlo en un cuadro de 4 montones
+       (\(2 \times 2\)) de <strong>1</strong> zumbador cada uno (al ampliar la
+       imagen basta dejar un zumbador por cada punto negro). Igualmente, si en esa
+       imagen hay un espacio sin zumbadores, deberás convertirlo en un cuadro de
+       \(2 \times 2\) espacios sin zumbadores.</p>
+
+    <p>Al ampliar deberás hacerlo partiendo de la <strong>esquina inferior
+       izquierda</strong>, y ampliar la imagen <strong>hacia arriba y hacia la
+       derecha</strong>.</p>
+
+    <h3>Problema</h3>
+    <p>Escribe un programa que, dada la imagen inicial en un mundo, genere la
+       ampliación solicitada.</p>
+
+    <h3>Consideraciones</h3>
+    <ul>
+      <li>Karel inicia siempre en la posición \((1,1)\) con dirección norte.</li>
+      <li>Karel lleva un número infinito de zumbadores en su mochila.</li>
+      <li>Para obtener los puntos de este problema, los únicos zumbadores que
+          deben quedar en el mundo son aquellos que representan la imagen
+          ampliada.</li>
+      <li>Te aseguramos que en todos los casos de prueba será posible ampliar la
+          imagen sin que ningún punto negro salga del mundo al ser ampliado.</li>
+      <li>No importa la posición ni la orientación final de Karel.</li>
+      <li>\(N\) es menor o igual a 10; todos los puntos negros del mapa tendrán
+          exactamente \(N\) zumbadores.</li>
+    </ul>
+
+    <!-- ===== BLOQUE KAREL: descripción del mundo del robot ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El mundo es una cuadrícula (en los casos oficiales, de \(100 \times 100\)).
+         La <strong>imagen de entrada</strong> está dibujada con montones de
+         zumbadores: cada celda con un montón de exactamente \(N\) zumbadores es un
+         <strong>punto negro</strong> y cada celda vacía es un <strong>punto
+         blanco</strong>. Karel arranca en \((1,1)\) mirando al <strong>norte</strong>,
+         con una mochila <strong>infinita</strong> de zumbadores. No se mencionan
+         paredes. Se considera <strong>resuelto</strong> cuando, al terminar, en el
+         mundo solo quedan los zumbadores de la imagen ampliada: cada punto negro
+         original se vuelve un bloque de \(N \times N\) celdas con <strong>un</strong>
+         zumbador cada una, anclado en la esquina inferior izquierda y creciendo
+         hacia arriba y a la derecha; los puntos blancos se vuelven bloques de
+         \(N \times N\) celdas vacías. La posición y orientación finales de Karel no
+         importan.</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por <code>stdin</code>: la información viene <strong>en el
+       mundo</strong>. Cada celda con un montón de \(N\) zumbadores es un punto
+       negro de la imagen; cada celda sin zumbadores es un punto blanco. Karel
+       inicia en \((1,1)\) mirando al norte y trae mochila infinita.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por <code>stdout</code>: lo que se evalúa es el <strong>estado
+       final del mundo</strong>. Al terminar deben quedar únicamente los
+       zumbadores de la imagen ampliada (un zumbador por cada celda de cada bloque
+       negro \(N \times N\)); cualquier otro zumbador del mundo debe haber sido
+       retirado.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (evaluador de Karel)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (evaluador de Karel)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Factor de ampliación</td><td><span class="badge">\(N \le 10\)</span></td></tr>
+        <tr><td>Zumbadores por punto negro</td><td><span class="badge">exactamente \(N\)</span></td></tr>
+        <tr><td>Mundo (casos oficiales)</td><td><span class="badge">\(100 \times 100\)</span></td></tr>
+        <tr><td>Mochila de Karel</td><td><span class="badge">infinita</span></td></tr>
+        <tr><td>Garantía</td><td>La imagen ampliada siempre cabe en el mundo</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o
+       nada). Para obtener los puntos, al terminar el mundo debe contener
+       exactamente los zumbadores de la imagen ampliada.</p>
+
+    <h2>Ejemplo</h2>
+    <p>El enunciado oficial ilustra el ejemplo con dos figuras de mundos
+       (<em>Mundo inicial</em> y <em>Mundo final</em>). Esas imágenes no están
+       disponibles en este archivo, así que reproducimos la <strong>regla</strong>
+       con el caso \(N=2\) que el propio enunciado describe. Considera una imagen
+       de \(2 \times 2\) puntos: negro–blanco arriba y blanco–negro abajo (cada
+       punto negro es un montón de \(N=2\) zumbadores).</p>
+
+    <div class="example">
+      <div class="io">
+        <h4>Mundo inicial (\(N=2\))</h4>
+        <table style="border-collapse:collapse;margin:6px auto;background:#0b0e18">
+          <tr>
+            <td style="width:34px;height:34px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#fbbf24;font-weight:700">2</td>
+            <td style="width:34px;height:34px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+          </tr>
+          <tr>
+            <td style="width:34px;height:34px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+            <td style="width:34px;height:34px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#fbbf24;font-weight:700">2</td>
+          </tr>
+        </table>
+        <p class="note" style="text-align:center">El número es la cantidad de
+           zumbadores (\(N=2\)) del punto negro.</p>
+      </div>
+      <div class="io">
+        <h4>Mundo final (ampliado \(\times 2\))</h4>
+        <table style="border-collapse:collapse;margin:6px auto;background:#0b0e18">
+          <tr>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+          </tr>
+          <tr>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+          </tr>
+          <tr>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+          </tr>
+          <tr>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#0b0e18"></td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+            <td style="width:24px;height:24px;text-align:center;border:1px solid #2a3252;background:#1f2540;color:#34d399">●</td>
+          </tr>
+        </table>
+        <p class="note" style="text-align:center">Cada ● es <strong>un</strong>
+           zumbador. Cada punto se volvió un bloque \(2 \times 2\).</p>
+      </div>
+    </div>
+    <p class="note">El punto negro de la esquina inferior izquierda \((1,1)\) se
+       queda anclado ahí y crece hacia arriba y a la derecha; por eso el bloque del
+       punto \((2,2)\) original termina en la esquina superior derecha. (En el caso
+       oficial <code>r0</code>, con \(N=8\), el punto negro de la columna \(7\) cae
+       en las columnas \(49\)–\(56\) del mundo final: justamente \(8\,(7-1)+1=49\)
+       hasta \(8 \cdot 7=56\).)</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Recursión</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>El mundo trae una imagen: celdas con un montón de \(N\) zumbadores (puntos
+       negros) y celdas vacías (blancos). Hay que ampliarla por un factor \(N\):
+       cada punto se vuelve un bloque de \(N \times N\) celdas, anclado en la
+       esquina inferior izquierda y creciendo hacia arriba y a la derecha; cada
+       celda de un bloque negro lleva <strong>un</strong> zumbador, las del blanco
+       quedan vacías. Al final solo deben quedar los zumbadores de la imagen
+       ampliada.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El factor \(N\) es el <strong>mismo</strong> para toda la imagen y
+                \(N \le 10\): lo lees una sola vez contando los zumbadores del
+                primer punto negro. El reto no es el tamaño, sino el <strong>orden
+                </strong> en que amplías: como cada celda se mueve hacia arriba y a
+                la derecha, ampliar "en su lugar" pisaría puntos que aún no has
+                leído.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Quién es \(N\)?</summary>
+      <div class="body">
+        <p class="q">El factor de ampliación \(N\) no te lo dan por escrito:
+           ¿de dónde lo sacas? ¿No es justo el número de zumbadores que tiene
+           cualquier punto negro?</p>
+        <p>Todos los puntos negros tienen <em>exactamente</em> \(N\) zumbadores.
+           Si recorres el mundo hasta encontrar el primer montón y lo levantas
+           contando (<code>mientras junto-a-zumbador hacer coge-zumbador</code>),
+           ya conoces \(N\). ¿Cómo "recuerda" un robot un número en Karel? Pista:
+           con <strong>recursión</strong> contando profundidad, o dejando \(N\)
+           zumbadores como marca temporal.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿A dónde va cada punto?</summary>
+      <div class="body">
+        <p class="q">Si una celda original está en la columna \(x\) y la fila
+           \(y\), ¿en qué rango de columnas y filas cae su bloque de \(N \times N\)
+           después de ampliar?</p>
+        <p>Como anclas en la esquina inferior izquierda y creces hacia arriba y a
+           la derecha, el punto \((x,y)\) ocupa las columnas \(N(x-1)+1 \ldots Nx\)
+           y las filas \(N(y-1)+1 \ldots Ny\). Verifícalo con el caso \(N=8\): la
+           columna \(7\) cae en \(49 \ldots 56\). El punto \((1,1)\) se queda
+           pegado al origen; los demás se "abren" hacia afuera.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — El peligro de pisar lo que aún no leíste</summary>
+      <div class="body">
+        <p class="q">Si empiezas a ampliar por el punto \((1,1)\) y rellenas su
+           bloque, ¿qué pasa con el punto original que vivía en la columna \(9\)?
+           ¿No quedó justo encima de tu bloque nuevo antes de que lo leyeras?</p>
+        <p>El bloque de \((x,y)\) solo se traslapa con celdas originales cuyas
+           coordenadas son <strong>mayores o iguales</strong> a \((x,y)\) (porque
+           \(N(x-1)+1 \ge x\) y \(N(y-1)+1 \ge y\)). ¿Y si procesas los puntos en
+           orden <strong>decreciente</strong>, del extremo superior derecho hacia
+           el inferior izquierdo? Así, cuando amplías \((x,y)\), todo lo que
+           pudiera estorbar ya fue leído y movido lejos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Pintar un bloque y recorrer en serpentina</summary>
+      <div class="body">
+        <p class="q">¿Cómo dejas exactamente \(N \times N\) zumbadores (uno por
+           celda) sin salirte ni dejar huecos? ¿Y cómo barres toda la imagen sin
+           perderte?</p>
+        <p>Para el bloque: \(N\) filas; en cada fila avanzas \(N\) celdas dejando
+           un zumbador en cada una, y al cambiar de fila inviertes el sentido
+           (serpentina / <em>boustrophedon</em>) para no perder pasos. Para barrer
+           la imagen: el mismo zig-zag a lo grande, pero arrancando desde el
+           extremo superior derecho del mundo y avanzando hacia abajo y a la
+           izquierda (el orden seguro de la Pista 3).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La solución junta cuatro ideas:</p>
+        <ol>
+          <li><strong>Leer \(N\).</strong> Recorre el mundo hasta el primer montón
+              y levántalo contando: \(N\) = cuántos zumbadores tenía. Como todos
+              los puntos negros tienen \(N\), con uno basta. Guarda \(N\) (en
+              Karel, pasándolo como parámetro recursivo de aquí en adelante).</li>
+          <li><strong>Mapeo.</strong> El punto original \((x,y)\) se convierte en el
+              bloque de columnas \(N(x-1)+1 \ldots Nx\) y filas \(N(y-1)+1 \ldots
+              Ny\), con un zumbador por celda si era negro, vacío si era blanco.</li>
+          <li><strong>Orden seguro.</strong> Procesa los puntos del extremo
+              <strong>superior derecho hacia el inferior izquierdo</strong>. Como
+              el bloque de \((x,y)\) cae en coordenadas \(\ge (x,y)\), al ir en
+              orden decreciente todo lo que un bloque podría pisar ya fue leído y
+              reubicado; y los bloques caen en la zona ya recorrida, así que nunca
+              vuelves a "leer" un zumbador que tú mismo pusiste.</li>
+          <li><strong>Pintar.</strong> Cada punto negro se vuelve un bloque
+              \(N \times N\) recorrido en serpentina, dejando un zumbador por
+              celda.</li>
+        </ol>
+        <p><strong>¿Por qué es correcta?</strong> El mapeo cumple la definición de
+           ampliar por factor \(N\) anclando en la esquina inferior izquierda. El
+           orden decreciente garantiza que ningún punto original se destruye antes
+           de leerlo (el traslape solo ocurre con celdas de coordenadas mayores o
+           iguales, ya procesadas) y que los bloques recién pintados no se
+           reinterpretan como puntos de entrada. Al final el mundo queda solo con
+           los zumbadores de la imagen ampliada.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel)</span>
+<pre>define dejaFila(N):          // deja N zumbadores avanzando
+    repetir N veces:
+        deja-zumbador
+        si no es la última: avanza
+
+define pintaBloque(N):       // bloque N×N en serpentina (1 zumbador/celda)
+    repetir N veces (fila):
+        dejaFila(N)
+        subir una fila e invertir el sentido del recorrido
+
+define leeN():               // cuenta los zumbadores del primer punto negro
+    ir-al-primer-monton      // zig-zag por el mundo hasta junto-a-zumbador
+    N <- 0
+    mientras junto-a-zumbador:
+        coge-zumbador
+        N <- N + 1
+    regresa N                // (en Karel, se acarrea por recursión)
+
+define resuelve(N):
+    // recorre la imagen del extremo superior derecho al inferior izquierdo
+    para cada punto original (x,y) en ese orden decreciente:
+        si junto-a-zumbador:           // era punto negro
+            cogeTodos                  // vacía la celda original
+            ir-a la base del bloque: columna N(x-1)+1, fila N(y-1)+1
+            pintaBloque(N)
+        // si era blanco, su bloque queda vacío: nada que hacer
+
+inicia-ejecucion:
+    N <- leeN()
+    resuelve(N)
+    apagate
+termina-ejecucion</pre>
+        </div>
+
+        <p class="note">En Karel puro, "recordar \(N\)" y "el punto \((x,y)\)" se
+           logra con recursión y con <code>frente-libre</code> /
+           <code>orientado-al-norte</code> para detectar bordes y esquinas; las
+           cuentas de coordenadas se vuelven "avanza hasta la pared / repite \(N\)
+           veces". La idea algorítmica es la de arriba.</p>
+
+        <p><strong>Complejidad:</strong> recorres el mundo una vez y pintas
+           \(N \times N\) celdas por punto negro, así que el trabajo es lineal en
+           el número de celdas del mundo final, \(O(\text{ancho} \times
+           \text{alto})\) (con el mundo \(100 \times 100\), holgadísimo). Memoria:
+           \(O(1)\) (Karel no guarda la imagen; la transforma en el lugar, en
+           orden seguro).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
