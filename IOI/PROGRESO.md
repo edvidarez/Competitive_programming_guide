@@ -1,6 +1,6 @@
 # Progreso de traducción y upsolving — IOI
 
-Total de tareas: **142** · Completadas: **130 / 142**
+Total de tareas: **142** · Completadas: **136 / 142**
 
 Marca `[x]` cuando el `index.html` de la tarea esté terminado y revisado.
 Avanza por años; cada tarea vive en `IOI/<año>/<NN Título>/` junto a su
@@ -250,16 +250,16 @@ vistas (enunciado traducido + upsolving socrático).
 | [x] | 5 | Overtaking | `2023/05 Overtaking/index.html` |
 | [x] | 6 | Robot Contest | `2023/06 Robot Contest/index.html` |
 
-## IOI 2024 — 0 / 6
+## IOI 2024 — 6 / 6
 
 | ✓ | # | Título | Archivo |
 |---|---|--------|---------|
-| [ ] | 1 | Nile | `2024/01 Nile/index.html` |
-| [ ] | 2 | Message | `2024/02 Message/index.html` |
-| [ ] | 3 | Tree | `2024/03 Tree/index.html` |
-| [ ] | 4 | Hieroglyphs | `2024/04 Hieroglyphs/index.html` |
-| [ ] | 5 | Mosaic | `2024/05 Mosaic/index.html` |
-| [ ] | 6 | Sphinx's Riddle | `2024/06 Sphinx's Riddle/index.html` |
+| [x] | 1 | Nile | `2024/01 Nile/index.html` |
+| [x] | 2 | Message | `2024/02 Message/index.html` |
+| [x] | 3 | Tree | `2024/03 Tree/index.html` |
+| [x] | 4 | Hieroglyphs | `2024/04 Hieroglyphs/index.html` |
+| [x] | 5 | Mosaic | `2024/05 Mosaic/index.html` |
+| [x] | 6 | Sphinx's Riddle | `2024/06 Sphinx's Riddle/index.html` |
 
 ## IOI 2025 — 0 / 6
 
