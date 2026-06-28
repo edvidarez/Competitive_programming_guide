@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **22 / 190**
+Total de problemas: **190** · Completados: **30 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -305,18 +305,18 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Día 2 | Reactor | `2021/07 Reactor/index.html` |
 | [ ] | 8 | Día 2 | Restauración de pirámide | `2021/08 Restauración de pirámide/index.html` |
 
-## 27ª OMI · 2022 — 0 / 8
+## 27ª OMI · 2022 — 8 / 8
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | 5-5 Feliz encuentro | `2022/01 5-5 Feliz encuentro/index.html` |
-| [ ] | 2 | Día 1 | La vida de las personas | `2022/02 La vida de las personas/index.html` |
-| [ ] | 3 | Día 1 | El jardín de las fuentes | `2022/03 El jardín de las fuentes/index.html` |
-| [ ] | 4 | Día 1 | Transporte público | `2022/04 Transporte público/index.html` |
-| [ ] | 5 | Día 2 | Frase oculta | `2022/05 Frase oculta/index.html` |
-| [ ] | 6 | Día 2 | Rango máximo | `2022/06 Rango máximo/index.html` |
-| [ ] | 7 | Día 2 | Bruxismo | `2022/07 Bruxismo/index.html` |
-| [ ] | 8 | Día 2 | Serpientes y escaleras | `2022/08 Serpientes y escaleras/index.html` |
+| [x] | 1 | Día 1 | 5-5 Feliz encuentro | `2022/01 5-5 Feliz encuentro/index.html` |
+| [x] | 2 | Día 1 | La vida de las personas | `2022/02 La vida de las personas/index.html` |
+| [x] | 3 | Día 1 | El jardín de las fuentes | `2022/03 El jardín de las fuentes/index.html` |
+| [x] | 4 | Día 1 | Transporte público | `2022/04 Transporte público/index.html` |
+| [x] | 5 | Día 2 | Frase oculta | `2022/05 Frase oculta/index.html` |
+| [x] | 6 | Día 2 | Rango máximo | `2022/06 Rango máximo/index.html` |
+| [x] | 7 | Día 2 | Bruxismo | `2022/07 Bruxismo/index.html` |
+| [x] | 8 | Día 2 | Serpientes y escaleras | `2022/08 Serpientes y escaleras/index.html` |
 
 ## 28ª OMI · 2023 — 7 / 7
 

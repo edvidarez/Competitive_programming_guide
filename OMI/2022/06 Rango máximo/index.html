@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2022 · Problema 06 — Rango máximo</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">27ª OMI · 2022 · Día 2</div>
+    <h1>Problema <span class="num">06</span> — Rango máximo</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2022-rango-maximo">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Luego de consagrarse como beta-tester de Codeforces, Juan quiere crear una
+       plataforma de programación competitiva con concursos diarios. Juan tiene
+       \(N\) amigos que serán sus usuarios iniciales; cada amigo tiene un puntaje
+       asignado según su capacidad. Juan quiere que los concursos sean
+       <em>equilibrados</em>: esto quiere decir que si un concurso está calibrado
+       para gente con puntaje \(X\), entonces en ese concurso sólo deben poder
+       participar aquellos usuarios cuyo puntaje esté en el rango
+       \([X - d,\ X + d]\), donde \(d\) es un parámetro de la plataforma.</p>
+
+    <p>Juan no tiene mucho presupuesto y le preocupa la cantidad de servidores que
+       necesitará. El número de servidores depende de la cantidad de usuarios que
+       pueden presentar un examen al mismo tiempo. Juan te compartirá el puntaje de
+       todos sus amigos y el parámetro \(d\), y quiere que le ayudes a calcular
+       cuál es el máximo número de usuarios que pueden presentar un examen al mismo
+       tiempo. <strong>Considera que Juan no ha hecho los exámenes y no sabe para
+       qué puntaje \(X\) quedarán calibrados, así que tu programa debe contemplar
+       todos los posibles puntajes \(X\) para un examen.</strong></p>
+
+    <p><strong>Noticia de último momento:</strong> Juan ya inauguró su plataforma y
+       tuvo sus primeros exámenes. Luego de cada examen hay cambios en los puntajes
+       de sus amigos: algunos suben su puntaje y otros lo bajan. Para cada examen
+       que haga, Juan te dará los cambios de puntaje y, luego de recibirlos, deberás
+       volver a decirle: ¿cuál es el máximo de usuarios que pueden presentar un
+       examen de forma simultánea?</p>
+
+    <h3>Lo que debes calcular</h3>
+    <p>Escribe un programa que reciba el listado de puntajes y el valor de \(d\) y
+       responda el número máximo de usuarios que pueden participar en un examen de
+       forma simultánea.</p>
+    <p><strong>Para las últimas subtareas de este problema, además, tu programa
+       debe recibir los cambios de puntaje luego de cada examen y responder
+       nuevamente la cantidad de usuarios que pueden presentar un examen de forma
+       simultánea.</strong></p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar:</p>
+    <ul>
+      <li>En la primera línea, los números \(N\) y \(d\): el número de usuarios y
+          el parámetro de la plataforma.</li>
+      <li>En la segunda línea, \(N\) números separados por un espacio que
+          representan los puntajes de cada usuario de la plataforma.
+          <strong>Los puntajes estarán ordenados de menor a mayor.</strong></li>
+      <li>En la tercera línea, el número \(E\): la cantidad de exámenes que ha
+          hecho Juan. <strong>Para las primeras subtareas del problema este número
+          será igual a \(0\).</strong></li>
+      <li>Por cada examen que se ha llevado a cabo en la plataforma debes leer el
+          siguiente bloque de líneas:
+        <ul>
+          <li>En la primera línea del bloque, el número \(C\): la cantidad de
+              usuarios que cambiaron de puntaje.</li>
+          <li>En las siguientes \(C\) líneas, dos números enteros \(i\) y \(P_i\)
+              que representan que el \(i\)-ésimo usuario cambió su puntaje a
+              \(P_i\) puntos.</li>
+          <li><strong>Para la línea anterior, considera que los usuarios están
+              numerados de \(1\) a \(N\).</strong></li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la salida estándar una línea con el número
+       máximo de usuarios que pueden participar en un examen de forma simultánea
+       tomando en cuenta los puntajes iniciales.</p>
+    <p>Si en la plataforma se han llevado a cabo exámenes, tu programa deberá
+       escribir, por cada examen, una línea con el número máximo de usuarios que
+       pueden participar de forma simultánea tomando en cuenta los nuevos
+       puntajes.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>500 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de usuarios</td><td><span class="badge">\(1 \le N \le 10^5\)</span></td></tr>
+        <tr><td>Parámetro de la plataforma</td><td><span class="badge">\(0 \le d \le 10^9\)</span></td></tr>
+        <tr><td>Puntaje de cada competidor</td><td><span class="badge">\(1 \le p_i \le 10^9\)</span></td></tr>
+        <tr><td>Cantidad de exámenes</td><td><span class="badge">\(0 \le E \le 10^5\)</span></td></tr>
+        <tr><td>Cambios por examen</td><td><span class="badge">\(1 \le C \le N\)</span></td></tr>
+        <tr><td>Total de cambios</td><td><span class="badge">\(\sum C \le 10^5\)</span> entre todos los exámenes</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(p_i = p_j\) y \(E = 0\). Todos los usuarios inician con el mismo puntaje.</td></tr>
+          <tr><td>2</td><td class="pts">18</td><td>\(N, p_i \le 1000\) y \(E = 0\).</td></tr>
+          <tr><td>3</td><td class="pts">19</td><td>\(N \le 1000\) y \(E = 0\).</td></tr>
+          <tr><td>4</td><td class="pts">19</td><td>\(N, E \le 1000\).</td></tr>
+          <tr><td>5</td><td class="pts">20</td><td>\(E \le 10\).</td></tr>
+          <tr><td>6</td><td class="pts">19</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo 1</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10 3
+1 2 2 2 3 3 5 6 10 10
+0</pre></div>
+      <div class="io"><h4>Salida</h4><pre>8</pre></div>
+    </div>
+    <p class="note">Si, por ejemplo, el examen está calibrado para un puntaje
+       \(X = 4\), entonces —dado que \(d = 3\)— pueden participar usuarios con
+       puntaje en el rango \([(4 - 3),\ (4 + 3)] = [1, 7]\). Hay ocho competidores
+       con puntajes en ese rango, por lo tanto la respuesta es \(8\). En este caso
+       se realizan cero exámenes extras.</p>
+
+    <h2>Ejemplo 2</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>10 3
+1 2 2 2 3 3 5 6 10 10
+2
+2
+3 8
+4 1
+1
+5 11</pre></div>
+      <div class="io"><h4>Salida</h4><pre>8
+7
+6</pre></div>
+    </div>
+    <ul class="note">
+      <li>Para los puntajes iniciales, la respuesta es \(8\), ya que es el mismo
+          caso que en el ejemplo anterior.</li>
+      <li>Luego del primer examen, los puntajes de los usuarios \(3\) y \(4\)
+          cambian. De modo que los nuevos puntajes son
+          \([1, 2, 8, 1, 3, 3, 5, 6, 10, 10]\); para un puntaje \(X = 4\) tenemos
+          \(7\) posibles usuarios.</li>
+      <li>Luego del segundo examen, el puntaje del usuario \(5\) cambia.
+          <strong>Observa que los puntajes de los usuarios \(3\) y \(4\) conservan
+          sus cambios del primer examen.</strong> La nueva lista de puntajes queda
+          \([1, 2, 8, 1, 11, 3, 5, 6, 10, 10]\). Para un puntaje de \(X = 4\) ahora
+          hay \(6\) competidores, lo mismo que para un puntaje de \(X = 8\).</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Two pointers</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Segment tree (lazy)</span>
+      <span class="ptag">Compresión de coordenadas</span>
+      <span class="ptag">Estructuras de datos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(N\) puntajes ordenados y un valor \(d\). Una "ventana" cubre los
+       puntajes en \([X-d,\ X+d]\) para algún \(X\) que tú eliges; debes reportar
+       el máximo de puntajes que caben en una sola ventana. Luego llegan \(E\)
+       exámenes: cada examen cambia algunos puntajes (en total a lo más \(10^5\)
+       cambios) y, tras cada uno, hay que volver a reportar ese máximo.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El ancho de la ventana es fijo: \(2d\). Con \(E = 0\)
+                (subtareas 1–3) es una sola consulta estática → ordena y desliza,
+                \(O(N\log N)\). Con \(E \le 10\) o \(E \le 1000\) (subtareas 4–5)
+                puedes recalcular desde cero por examen. En el caso general
+                \(E\) y \(\sum C\) llegan a \(10^5\): necesitas actualizar sin
+                reprocesar todo, en \(O((N+\sum C)\log)\). Como \(p_i, d \le 10^9\),
+                comprime coordenadas y usa enteros de 64 bits.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es realmente una ventana?</summary>
+      <div class="body">
+        <p class="q">¿Notaste que el rango \([X-d,\ X+d]\) siempre mide lo mismo,
+           \(2d\), sin importar \(X\)? Como \(X\) lo eliges libremente, ¿no
+           equivale la pregunta a "cuántos puntajes caben en algún intervalo de
+           longitud \(2d\) que coloco donde yo quiera sobre la recta"?</p>
+        <p>El centro \(X\) es una distracción: lo único que importa es una ventana
+           de ancho fijo \(2d\). Olvídate del centro y piensa en deslizar esa
+           ventana para que abarque la mayor cantidad posible de puntos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1–3 (\(E = 0\)): el caso estático</summary>
+      <div class="body">
+        <p class="q">Con los puntajes <em>ya ordenados</em>, si fijas al
+           competidor más bajo de la ventana en la posición \(i\), ¿hasta qué
+           \(j\) puedes llegar sin pasarte? Es decir, ¿cuál es el último \(j\) con
+           \(p_j \le p_i + 2d\)?</p>
+        <p>Subtarea 1 (\(p_i\) todos iguales): la ventana cabe a todos, la
+           respuesta es \(N\); buen caso de borde. Subtareas 2–3 (\(N \le 1000\)):
+           hasta un \(O(N^2)\) probando cada par \((i,j)\) basta. ¿Puedes hacerlo
+           mejor aprovechando el orden? Por cada \(i\), una <strong>búsqueda
+           binaria</strong> del último \(j\) da \(O(N\log N)\); o con
+           <strong>dos apuntadores</strong> que sólo avanzan, \(O(N)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas 4–5: hay exámenes, pero pocos</summary>
+      <div class="body">
+        <p class="q">Si después de cada examen cambian algunos puntajes, ¿qué te
+           impide simplemente volver a ordenar y rehacer la ventana deslizante
+           desde cero? ¿Cuánto cuesta eso?</p>
+        <p>Copiar el arreglo, ordenarlo y aplicar dos apuntadores cuesta
+           \(O(N\log N)\) por examen. Con \(E \le 10\) (subtarea 5) o
+           \(N, E \le 1000\) (subtarea 4) eso entra de sobra. Recalcular desde
+           cero te da las subtareas 1–5 (84 puntos). El problema es la subtarea 6,
+           donde \(E\) y \(\sum C\) llegan a \(10^5\): rehacer todo por examen sería
+           \(O(E\cdot N)\) y revienta el tiempo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave para el caso general</summary>
+      <div class="body">
+        <p class="q">En cada examen sólo cambian unos pocos puntajes (en total a lo
+           más \(10^5\)). ¿Puedes <em>actualizar</em> la respuesta sin tocar a los
+           competidores que no se movieron?</p>
+        <p class="q">Llama \(a\) a la posición del extremo izquierdo de la ventana
+           \([a,\ a+2d]\). Un competidor con puntaje \(p\) queda cubierto
+           exactamente cuando \(a \in [\,p-2d,\ p\,]\). Entonces cada competidor
+           "pinta" un intervalo de posiciones \(a\): ¿no será la respuesta el
+           <strong>máximo número de intervalos que se traslapan</strong> en un
+           mismo punto?</p>
+        <p>Máximo traslape de intervalos es un clásico de barrido. Con cambios
+           puntuales (meter/sacar intervalos), se mantiene con un <strong>segment
+           tree</strong> que haga <em>suma en rango</em> (\(+1\) al meter el
+           intervalo \([p-2d, p]\), \(-1\) al sacarlo) y que guarde el
+           <em>máximo</em> de cada nodo. El máximo global vive en la raíz. Como los
+           valores llegan a \(10^9\), comprime coordenadas leyendo todos los
+           exámenes <em>antes</em> (offline).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Reformulación.</strong> Sea \(L = 2d\). El centro \(X\) no
+           importa: cuenta puntos en una ventana de ancho \(L\). Un punto \(p\)
+           queda cubierto por la ventana \([a,\ a+L]\) si y sólo si su extremo
+           izquierdo \(a\) cumple \(a \in [\,p-L,\ p\,]\). Por lo tanto, la
+           respuesta es el <strong>máximo número de intervalos \([p_i - L,\ p_i]\)
+           que se traslapan</strong> en un mismo punto \(a\).</p>
+
+        <p><strong>Caso estático (\(E = 0\)).</strong> Con los puntajes ordenados,
+           dos apuntadores o búsqueda binaria por cada \(i\) dan el máximo en
+           \(O(N\log N)\) (o \(O(N)\)).</p>
+
+        <p><strong>Caso dinámico.</strong> Cada competidor \(i\) tiene un intervalo
+           actual \([p_i - L,\ p_i]\). Mantén un segment tree de suma en rango (con
+           propagación perezosa) que guarde el máximo por nodo:</p>
+        <ol>
+          <li><strong>Compresión offline.</strong> Lee \(N\), \(d\), los \(N\)
+              puntajes, \(E\) y <em>todos</em> los cambios. Junta cada valor \(v\)
+              que llegará a existir (puntajes iniciales y cada \(P_i\)) y forma el
+              conjunto de coordenadas \(\{v\} \cup \{v - L\}\); ordénalo y elimina
+              repetidos. \(\text{idx}(v)\) = posición comprimida (búsqueda binaria).</li>
+          <li><strong>Inserta el estado inicial.</strong> Por cada \(i\), suma
+              \(+1\) en el rango \([\text{idx}(p_i - L),\ \text{idx}(p_i)]\).
+              Imprime el máximo de la raíz (respuesta con puntajes iniciales).</li>
+          <li><strong>Procesa cada examen.</strong> Por cada cambio \((i, P)\):
+              resta \(-1\) en el rango del intervalo viejo de \(i\), actualiza
+              \(p_i = P\), suma \(+1\) en el rango del intervalo nuevo. Tras aplicar
+              los \(C\) cambios del examen, imprime el máximo de la raíz.</li>
+        </ol>
+
+        <p><strong>Por qué es correcto.</strong> El valor en la coordenada \(a\)
+           es la cantidad de intervalos que la contienen, es decir, cuántos
+           competidores cubre una ventana cuyo extremo izquierdo es \(a\).
+           Maximizar sobre todas las \(a\) (el máximo del segment tree) es
+           exactamente la respuesta. Sumar/restar \(1\) en un rango refleja
+           agregar/quitar un competidor.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>L = 2*d
+leer p[1..N]                       # puntajes iniciales
+leer E y TODOS los exámenes        # offline: lista de cambios (i, nuevoP)
+
+# --- compresión de coordenadas ---
+coords = conjunto vacío
+para cada valor v que aparecerá (p[i] y cada nuevoP):
+    agrega v        a coords
+    agrega v - L    a coords
+ordenar coords; quitar repetidos
+idx(v) = posición de v en coords      # búsqueda binaria
+
+# --- segment tree: suma en rango (lazy) + máximo por nodo ---
+segtree con |coords| hojas, todo en 0
+funcion meterIntervalo(valor, signo):
+    rangoAdd( idx(valor - L), idx(valor), signo )   # +1 = agregar, -1 = quitar
+
+# --- estado inicial ---
+para i en 1..N:
+    meterIntervalo(p[i], +1)
+imprimir maximoDeLaRaiz()           # respuesta con puntajes iniciales
+
+# --- exámenes ---
+para cada examen:
+    leer C
+    repetir C veces:
+        leer (i, nuevoP)
+        meterIntervalo(p[i], -1)    # quita intervalo viejo
+        p[i] = nuevoP
+        meterIntervalo(p[i], +1)    # mete intervalo nuevo
+    imprimir maximoDeLaRaiz()</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> tiempo \(O\big((N + \sum C)\log M\big)\),
+           donde \(M\) es el número de coordenadas comprimidas
+           (\(M \le 2(N + \sum C) \le 4\cdot 10^5\)); memoria \(O(M)\).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Cuidados de implementación (C++)</span>
+<pre>* Coordenadas en 64 bits: p - 2d puede ser negativo y 2d llega a 2·10^9 -> usa long long.
+* Lectura rápida: hasta ~3·10^5 enteros -> ios::sync_with_stdio(false); cin.tie(nullptr) (o scanf).</pre>
+          <p class="note">Son sólo detalles de implementación, no la solución. El
+             intervalo \([p-2d, p]\) siempre cabe en 64 bits.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

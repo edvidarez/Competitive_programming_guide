@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2022 · Problema 02 — La vida de las personas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">27ª OMI · 2022 · Día 1</div>
+    <h1>Problema <span class="num">02</span> — La vida de las personas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2022-vida-de-las-personas">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Tu maestra te solicitó realizar un censo de las personas que han vivido en
+       el territorio mexicano a lo largo de la historia. Por suerte, te dio un
+       listado de \(N\) personas, cada una con su año de nacimiento \(a_i\) y su
+       año de fallecimiento \(b_i\).</p>
+
+    <p>Tu maestra te dará una lista con \(Q\) años; para cada año deberás
+       responder:</p>
+    <ul>
+      <li>¿Cuántas personas había vivas en ese año?</li>
+      <li>¿Cuántos años tenía la persona viva más joven en ese año?</li>
+      <li>¿Cuántos años tenía la persona viva más anciana en ese año?</li>
+    </ul>
+
+    <p>Para responder las preguntas debes considerar que las personas nacen al
+       inicio del año \(a_i\) y mueren al final del año \(b_i\).</p>
+
+    <p>Escribe un programa que reciba el listado de personas y conteste las
+       preguntas de la maestra.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar:</p>
+    <ul>
+      <li>En la primera línea los números \(N\) y \(Q\), la cantidad de personas
+          y la cantidad de preguntas de la maestra.</li>
+      <li>En las siguientes \(N\) líneas los enteros \(a_i\) y \(b_i\), la fecha
+          de nacimiento y fallecimiento de la \(i\)-ésima persona.</li>
+      <li>En las últimas \(Q\) líneas el número \(x_j\) que representa el año de
+          la \(j\)-ésima pregunta.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la salida estándar una línea por cada
+       pregunta de la maestra con tres números: la cantidad de personas vivas en
+       ese año, la edad de la persona viva más joven (o \(0\) en caso de que no
+       haya personas vivas) y la de la persona viva más anciana (o \(0\) en caso
+       de que no haya personas vivas).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Personas y preguntas</td><td><span class="badge">\(1 \le N, Q \le 10^5\)</span></td></tr>
+        <tr><td>Años de nacimiento y fallecimiento</td><td><span class="badge">\(1 \le a_i, b_i \le 10^9\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>\(N, Q = 100\), \(a_i = b_i\), \(a_i, b_i \le 100\). Cada persona muere al final del año en el que nace.</td></tr>
+          <tr><td>2</td><td class="pts">10</td><td>\(N, Q, a_i, b_i \le 1000\).</td></tr>
+          <tr><td>3</td><td class="pts">23</td><td>\(N \le 1000\), \(a_i, b_i \le 50000\).</td></tr>
+          <tr><td>4</td><td class="pts">26</td><td>\(a_i, b_i \le 10^6\).</td></tr>
+          <tr><td>5</td><td class="pts">36</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>6 6
+2000 2012
+2001 2042
+1960 2000
+1990 2040
+1930 2010
+1972 2037
+1940
+1980
+1999
+2000
+2010
+2050</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1 10 10
+3 8 50
+4 9 69
+5 0 70
+5 9 80
+0 0 0</pre></div>
+    </div>
+    <p class="note">Las personas vivas en cada año de interés de la maestra son
+       (se listan sus años de nacimiento):</p>
+    <ul>
+      <li>En 1940 estaban vivos los nacidos en [1930].</li>
+      <li>En 1980 estaban vivos los nacidos en [1930, 1960, 1972].</li>
+      <li>En 1999 estaban vivos los nacidos en [1930, 1960, 1972, 1990].</li>
+      <li>En 2000 estaban vivos los nacidos en [1930, 1960, 1972, 1990, 2000].</li>
+      <li>En 2010 estaban vivos los nacidos en [1930, 1972, 1990, 2000, 2001].</li>
+      <li>En 2050 no había nadie vivo.</li>
+    </ul>
+    <p class="note">Por ejemplo, en 1980 hay 3 personas vivas; la más joven nació
+       en 1972 (edad \(1980-1972=8\)) y la más anciana nació en 1930 (edad
+       \(1980-1930=50\)), de ahí la línea <code>3 8 50</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Línea de barrido</span>
+      <span class="ptag">Ordenamiento</span>
+      <span class="ptag">Eventos offline</span>
+      <span class="ptag">Compresión de coordenadas</span>
+      <span class="ptag">Estructuras de datos</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(N\) intervalos \([a_i, b_i]\) (una persona está viva en el año
+       \(y\) si \(a_i \le y \le b_i\)). Para cada uno de \(Q\) años \(x\) responde:
+       cuántos intervalos lo contienen, la edad mínima \(x - \max a_i\) y la edad
+       máxima \(x - \min a_i\) entre las personas vivas (o <code>0 0 0</code> si no
+       hay nadie vivo).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, Q \le 10^5\) pide algo cercano a \(O((N+Q)\log(N+Q))\); las
+                primeras subtareas con \(N, Q \le 1000\) o años pequeños admiten
+                soluciones cuadráticas o un arreglo indexado por año. Los años
+                llegan a \(10^9\), así que un arreglo del tamaño del año solo sirve
+                cuando están acotados (subtareas 1–4).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué te están preguntando en realidad?</summary>
+      <div class="body">
+        <p class="q">¿Notaste que la "edad de la más joven" y la "edad de la más
+           anciana" dependen solo del año de nacimiento? Si todos los vivos
+           nacieron en años \(a\), ¿quién es el más joven y quién el más anciano?</p>
+        <p>En el año \(x\), una persona con nacimiento \(a\) tiene edad \(x-a\).
+           Entonces el más joven es el que nació más <em>tarde</em> (mayor \(a\)) y
+           el más anciano el que nació más <em>temprano</em> (menor \(a\)). Las tres
+           respuestas se reducen a: ¿cuántos vivos hay, cuál es el mayor \(a\) entre
+           los vivos y cuál es el menor \(a\) entre los vivos?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtareas 1–4)</summary>
+      <div class="body">
+        <p class="q">Con \(N, Q \le 1000\), ¿qué pasa si para cada pregunta
+           recorres a las \(N\) personas y revisas si \(a_i \le x \le b_i\)?</p>
+        <p>Eso es \(O(N\cdot Q)\) y te da las subtareas 2 y 3 directo: para cada año
+           cuentas vivos y llevas el mínimo y máximo de \(a_i\). La subtarea 1
+           (\(a_i=b_i\)) es un caso particular del mismo recorrido.</p>
+        <p class="q">¿Y si los años están acotados (\(\le 10^6\), subtarea 4)?
+           ¿Puedes precalcular, para cada año posible, las respuestas de un solo
+           barrido en lugar de repetir el conteo por pregunta?</p>
+        <p>Con años pequeños cabe un arreglo indexado por año. Una técnica clásica
+           para "cuántos intervalos cubren cada punto" es la <strong>suma de
+           prefijos por diferencias</strong>: suma \(+1\) en \(a_i\) y \(-1\) en
+           \(b_i+1\), y al acumular obtienes los vivos por año. El mín/máx \(a_i\)
+           por año necesita un poco más de cuidado, pero la idea es la misma:
+           preprocesar una vez y responder cada pregunta en \(O(1)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave para el caso general</summary>
+      <div class="body">
+        <p class="q">Los años llegan a \(10^9\), así que no puedes indexar por año.
+           ¿Y si solo te importan los <em>momentos</em> en que el conjunto de vivos
+           cambia, es decir, los nacimientos y las muertes?</p>
+        <p>Convierte cada persona en dos <strong>eventos</strong>: un nacimiento en
+           el año \(a_i\) (entra al conjunto de vivos) y una muerte en el año \(b_i\)
+           (sale del conjunto, pero <em>después</em> de terminar ese año). Las
+           preguntas también son eventos. Si ordenas todos los eventos por año y
+           barres de izquierda a derecha, mantienes el conjunto de personas vivas y
+           contestas cada pregunta cuando la encuentras.</p>
+        <p class="q">¿Qué orden deben tener los eventos del <em>mismo</em> año para
+           respetar que se nace al inicio y se muere al final?</p>
+        <p>Dentro de un mismo año: primero los nacimientos, luego las preguntas y al
+           final las muertes. Así, en una pregunta del año \(x\), ya entraron los
+           nacidos en \(x\) y todavía no salen los que mueren en \(x\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea: línea de barrido sobre eventos.</strong> Genera tres tipos
+           de eventos y ordénalos por año, y en empates por tipo en el orden
+           <em>nacimiento &lt; pregunta &lt; muerte</em>:</p>
+        <ul>
+          <li><strong>Nacimiento</strong> en \(a_i\): agrega el año de nacimiento
+              \(a_i\) al conjunto de vivos.</li>
+          <li><strong>Pregunta</strong> en \(x_j\): la respuesta es el tamaño actual
+              del conjunto, y con el mayor/menor \(a\) del conjunto calculas
+              \(x_j-\max a\) (más joven) y \(x_j-\min a\) (más anciano). Si el
+              conjunto está vacío, imprime <code>0 0 0</code>.</li>
+          <li><strong>Muerte</strong> en \(b_i\): quita el año de nacimiento \(a_i\)
+              de esa persona del conjunto.</li>
+        </ul>
+        <p>El conjunto de vivos debe soportar <em>insertar</em>, <em>borrar</em>,
+           conocer su <em>tamaño</em> y consultar el <em>mínimo</em> y el
+           <em>máximo</em>. Un multiconjunto balanceado (o un Fenwick/segment tree
+           sobre los años de nacimiento comprimidos) hace cada operación en
+           \(O(\log N)\). <strong>Por qué es correcto:</strong> al ordenar por año y
+           usar el desempate nacimiento → pregunta → muerte, en el instante de cada
+           pregunta el conjunto contiene exactamente a las personas con
+           \(a_i \le x \le b_i\); el mínimo y el máximo de sus años de nacimiento dan
+           directamente la edad máxima y la edad mínima.</p>
+        <p><strong>Cómo escala por subtareas:</strong> el recorrido \(O(N\cdot Q)\)
+           cubre 1–3; el arreglo de diferencias con años acotados cubre 4; el
+           barrido por eventos con multiconjunto/Fenwick cubre el caso general (5) y,
+           de hecho, también todas las anteriores.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, Q
+eventos = lista vacía
+para i en 1..N:
+    leer a_i, b_i
+    eventos.agregar( (anio = a_i, tipo = NACIMIENTO, dato = a_i) )
+    eventos.agregar( (anio = b_i, tipo = MUERTE,     dato = a_i) )
+para j en 1..Q:
+    leer x_j
+    eventos.agregar( (anio = x_j, tipo = PREGUNTA,   dato = j) )
+
+# NACIMIENTO=0, PREGUNTA=1, MUERTE=2  (este orden resuelve los empates)
+ordenar eventos por (anio, tipo)
+
+vivos = multiconjunto vacío        # guarda años de nacimiento
+para e en eventos:
+    si e.tipo == NACIMIENTO:
+        vivos.insertar(e.dato)
+    si e.tipo == MUERTE:
+        vivos.borrar_una_ocurrencia(e.dato)
+    si e.tipo == PREGUNTA:
+        si vivos.vacio():
+            respuesta[e.dato] = (0, 0, 0)
+        si no:
+            cnt     = vivos.tamano()
+            maxNac  = vivos.maximo()      # nació más tarde    -> más joven
+            minNac  = vivos.minimo()      # nació más temprano -> más anciano
+            respuesta[e.dato] = (cnt, e.anio - maxNac, e.anio - minNac)
+
+para j en 1..Q:
+    imprimir respuesta[j]   # tres números separados por espacio</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O((N+Q)\log(N+Q))\) en tiempo por el
+           ordenamiento y las operaciones del multiconjunto, y \(O(N+Q)\) en
+           memoria.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

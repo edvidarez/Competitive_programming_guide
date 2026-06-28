@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2022 · Problema 05 — Frase oculta</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">27ª OMI · 2022 · Día 2</div>
+    <h1>Problema <span class="num">05</span> — Frase oculta</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/omi-2022-frase-oculta">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Te interesa ser aceptado en la <strong>Organización de Mensajes
+       Indescifrables (OMI)</strong>. Para ser admitido, la organización te
+       solicitó desarrollar un programa que encuentre <em>"frases ocultas"</em>.</p>
+
+    <p>Una <em>frase oculta</em> es una palabra que aparece como
+       <strong>subsecuencia</strong> de un texto. Esto significa que si eliminas
+       algunas letras del texto, las letras que quedan forman la <em>frase
+       oculta</em>. Por ejemplo, en el texto <strong>"Hoy me fui a casa"</strong>
+       está oculta la palabra <strong>omi</strong> eliminando las siguientes
+       letras: <code>-o- m- --i - ----</code>. Observa que las letras de la frase
+       <strong>"omi"</strong> no tienen que estar juntas, pero sí deben aparecer
+       en el orden correcto. Debido a esto, la palabra <strong>amo</strong> no es
+       una <em>frase oculta</em> dentro del texto <strong>"Hoy me fui a casa"</strong>
+       a pesar de que sus letras sí aparecen en la secuencia.</p>
+
+    <p>Para ser aceptado en la OMI debes hacer un programa que, dado un texto
+       formado por letras minúsculas y una lista de \(N\) palabras, determine
+       cuáles son <em>frases ocultas</em>.</p>
+
+    <p>Escribe un programa que reciba un texto de longitud \(T\) formado por
+       letras minúsculas y una lista con \(N\) palabras. Para cada palabra de la
+       lista, tu programa deberá determinar si es una <em>frase oculta</em>
+       dentro de dicho texto.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa debe leer de la entrada estándar:</p>
+    <ul>
+      <li>En la primera línea, los números \(T\) y \(N\): el largo del texto y la
+          cantidad de palabras, respectivamente.</li>
+      <li>En la segunda línea, un texto de longitud \(T\) conformado únicamente
+          por letras minúsculas.</li>
+      <li>En cada una de las últimas \(N\) líneas habrá un número \(l_i\) seguido
+          de una palabra conformada únicamente por letras minúsculas. El número
+          \(l_i\) indica la longitud de dicha palabra.</li>
+    </ul>
+    <p><strong>Tanto el texto como las frases estarán formados exclusivamente por
+       letras minúsculas.</strong></p>
+
+    <h2>Salida</h2>
+    <p>Para cada una de las \(N\) palabras deberás mostrar, en su propia línea, un
+       \(1\) si la palabra recibida es una <em>frase oculta</em> o un \(0\) en
+       caso contrario.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>125 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Largo del texto</td><td><span class="badge">\(1 \le T \le 10^6\)</span></td></tr>
+        <tr><td>Número de palabras</td><td><span class="badge">\(1 \le N \le 10^5\)</span></td></tr>
+        <tr><td>Longitud total de las palabras</td><td><span class="badge">\(\sum l_i \le 10^6\)</span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (modernas ≈2017+). Si la tarea es "todo o nada", borra esta
+         tabla y deja la nota de abajo. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">5</td><td>Las palabras están formadas por letras iguales, por ejemplo <strong>"aaaa"</strong> o <strong>"ccc"</strong>.</td></tr>
+          <tr><td>2</td><td class="pts">15</td><td>Sólo hay una palabra en la lista y siempre será <strong>omi</strong>.</td></tr>
+          <tr><td>3</td><td class="pts">22</td><td>\(N \le 10\).</td></tr>
+          <tr><td>4</td><td class="pts">23</td><td>\(T, N \le 1000\).</td></tr>
+          <tr><td>5</td><td class="pts">35</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>15 5
+erqfaorfemaifmo
+3 omi
+4 fama
+3 oro
+5 plata
+6 bronce</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1
+1
+1
+0
+0</pre></div>
+    </div>
+    <p class="note">Las palabras <em>omi</em>, <em>fama</em> y <em>oro</em> se
+       encuentran como <em>frases ocultas</em> en el texto, como se muestra a
+       continuación (en mayúsculas las letras que forman cada frase):</p>
+    <ul>
+      <li>erqfa<b>O</b>rfe<b>M</b>a<b>I</b>fmo</li>
+      <li>erq<b>FA</b>orfe<b>MA</b>ifmo</li>
+      <li>erqfa<b>OR</b>femaifm<b>O</b></li>
+    </ul>
+    <p class="note">En cambio, <em>plata</em> y <em>bronce</em> no aparecen como
+       subsecuencia, por lo que su respuesta es \(0\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Strings</span>
+      <span class="ptag">Subsecuencias</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Two pointers</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un texto de \(T\) letras minúsculas y \(N\) palabras. Para cada
+       palabra debes decidir si es <strong>subsecuencia</strong> del texto (sus
+       letras aparecen en ese orden, no necesariamente contiguas) e imprimir
+       \(1\) si sí o \(0\) si no.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(T \le 10^6\), \(N \le 10^5\) y \(\sum l_i \le 10^6\). Recorrer
+                todo el texto por cada palabra cuesta \(O(N\cdot T)\): hasta
+                \(10^{11}\) operaciones, demasiado para 1 s. La subtarea #4 con
+                \(T,N \le 1000\) sí tolera esa fuerza bruta (\(\sim 10^6\)). Para
+                el 100 hace falta verificar cada palabra en tiempo proporcional a
+                su longitud (con un factor logarítmico), no a \(T\). Meta:
+                \(O\big(T + (\sum l_i)\log T\big)\).</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué significa exactamente que una palabra sea
+           "frase oculta"? ¿No es justo la definición de <em>subsecuencia</em>:
+           sus letras aparecen en el texto en el mismo orden, aunque con otras
+           letras en medio?</p>
+        <p>Olvida la historia: el problema es \(N\) preguntas independientes del
+           tipo "¿la palabra \(P\) es subsecuencia del texto \(S\)?". Si sabes
+           contestar una de forma eficiente, contestas todas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtarea por subtarea)</summary>
+      <div class="body">
+        <p class="q">¿Qué te regala cada bloque de puntos?</p>
+        <ul>
+          <li><strong>Subtarea 1 (5 pts, palabras de una sola letra repetida
+              \(k\) veces):</strong> ¿basta contar cuántas veces aparece esa letra
+              en el texto y ver si llega a \(k\)?</li>
+          <li><strong>Subtarea 2 (15 pts, la única palabra es "omi"):</strong>
+              ¿un solo recorrido del texto buscando 'o', luego 'm', luego 'i' no
+              resuelve el caso?</li>
+          <li><strong>Subtareas 3 y 4 (\(N\le 10\) y \(T,N\le 1000\)):</strong>
+              ¿puedes darte el lujo de recorrer el texto completo por cada
+              palabra? Eso es \(O(N\cdot T)\), que aquí cabe de sobra.</li>
+        </ul>
+        <p>La fuerza bruta de las subtareas pequeñas ya esconde el algoritmo
+           correcto; lo que falta para el 100 es <em>acelerarla</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La verificación greedy</summary>
+      <div class="body">
+        <p class="q">Para ver si \(P\) es subsecuencia de \(S\), ¿qué pasa si vas
+           letra por letra de \(P\) y, para cada una, tomas siempre la
+           <strong>primera</strong> aparición posible en \(S\) después de la
+           posición que ya usaste?</p>
+        <p class="q">¿Por qué tomar la primera nunca te perjudica?</p>
+        <p>Por un argumento de intercambio: si existe alguna forma de emparejar
+           las letras de \(P\) con posiciones crecientes en \(S\), entonces elegir
+           siempre la posición más temprana posible deja el mayor margen para las
+           letras siguientes. Si el greedy se atora (no hay aparición posterior de
+           la letra que toca), entonces ninguna asignación funciona. Esto da un
+           \(O(T)\) por palabra; suficiente para las subtareas 3 y 4.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Saltar en vez de recorrer</summary>
+      <div class="body">
+        <p class="q">El greedy recorre el texto entero por palabra. ¿Cómo
+           encuentras de un brinco "la siguiente aparición de la letra \(c\)
+           después de la posición \(p\)" sin volver a barrer todo el texto?</p>
+        <p class="q">¿Y si para cada una de las 26 letras guardas, de una vez, la
+           lista ordenada de las posiciones donde aparece en el texto?</p>
+        <p>Con esas listas, "la siguiente \(c\) después de \(p\)" es una
+           <strong>búsqueda binaria</strong> (la primera posición estrictamente
+           mayor que \(p\)). Así cada letra de cada palabra cuesta \(O(\log T)\)
+           en vez de recorrer el texto, y el total baja a
+           \(O\big(T + (\sum l_i)\log T\big)\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Junta las pistas anteriores: verificación greedy de subsecuencia,
+           acelerada con listas de posiciones por letra y búsqueda binaria.</p>
+
+        <p><strong>Preproceso.</strong> Recorre el texto una vez y, para cada
+           letra \(c \in \{a,\dots,z\}\), arma <code>pos[c]</code> = la lista de
+           índices donde aparece \(c\). Como recorres el texto de izquierda a
+           derecha, cada lista queda automáticamente ordenada de menor a mayor.</p>
+
+        <p><strong>Por cada palabra.</strong> Mantén un cursor <code>cur</code>
+           con la última posición usada del texto (empieza en \(-1\)). Para cada
+           letra \(c\) de la palabra, busca en <code>pos[c]</code> la primera
+           posición estrictamente mayor que <code>cur</code> (búsqueda binaria).
+           Si no existe, la palabra no es frase oculta; si existe, mueve
+           <code>cur</code> a esa posición y sigue. Si terminas la palabra sin
+           atorarte, sí es frase oculta.</p>
+
+        <p><strong>Por qué es correcto.</strong> Elegir siempre la aparición más
+           temprana posible es óptimo (argumento de intercambio): deja el mayor
+           rango disponible para las letras que faltan, así que si esta estrategia
+           falla, ninguna otra asignación de posiciones crecientes puede tener
+           éxito. Cubre todas las subtareas: la #1 (letras iguales) es solo
+           contar; la #2 (solo "omi") es un caso particular; las #3 y #4 también
+           pasan con el mismo método (incluso con el greedy lineal sin búsqueda
+           binaria); y el preproceso + binaria entrega el caso general.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer T, N
+leer texto S          // longitud T
+
+// listas de posiciones por letra
+para c en 'a'..'z':
+    pos[c] = lista vacia
+para i en 0..T-1:
+    agregar i al final de pos[ S[i] ]   // queda ordenada
+
+repetir N veces:
+    leer l, palabra P          // l = longitud (no se usa)
+    cur = -1
+    es_oculta = verdadero
+    para cada letra c en P:
+        // primera posicion en pos[c] estrictamente mayor que cur
+        idx = busqueda_binaria_mayor_que(pos[c], cur)
+        si idx no existe:
+            es_oculta = falso
+            terminar este ciclo
+        cur = idx
+    imprimir 1 si es_oculta, si no 0</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> preproceso \(O(T)\); cada palabra hace
+           una búsqueda binaria por letra, \(O(l_i \log T)\). En total
+           \(O\big(T + (\sum l_i)\log T\big)\) en tiempo y \(O(T)\) en memoria
+           (las listas suman \(T\) enteros). Con \(T,\sum l_i \le 10^6\) entra
+           cómodo en 1 s y 125 MiB.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// E/S rapida: hasta 10^5 lineas de salida y un texto de
+// 10^6 letras hacen lenta la E/S con cin/cout linea por linea.
+// - Lee con lectura por buffer (fread / getchar_unlocked).
+// - Acumula TODA la salida ('1'/'0' + saltos) en un solo
+//   string y haz un unico fwrite al final.
+// - Para "siguiente posicion > cur" usa std::upper_bound
+//   sobre un vector&lt;int&gt; ordenado (mas rapido y ligero que set).</pre>
+          <p class="note">Solo son detalles de rendimiento; el algoritmo es el de
+             arriba. Nunca pongas la solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
