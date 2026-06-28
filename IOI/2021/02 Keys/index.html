@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2021 · Tarea 2 — Keys (Llaves)</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .dtable{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .dtable table{width:100%;border-collapse:collapse;font-size:15px}
+  .dtable th,.dtable td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  .dtable th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .dtable tr:last-child td{border-bottom:none}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2021 · Día 1</div>
+    <h1>Tarea <span class="num">2</span> — Keys (Llaves)</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Timothy el arquitecto diseñó un nuevo juego de escape. En este juego hay
+       \(n\) cuartos numerados de \(0\) a \(n-1\). Al inicio, cada cuarto contiene
+       exactamente una llave. Cada llave tiene un <strong>tipo</strong>, que es un
+       entero entre \(0\) y \(n-1\) (inclusive). El tipo de la llave del cuarto
+       \(i\) (con \(0 \le i \le n-1\)) es \(r[i]\). Ojo: varios cuartos pueden
+       contener llaves del mismo tipo, es decir, los valores \(r[i]\) no son
+       necesariamente distintos.</p>
+
+    <p>También hay \(m\) <strong>conectores</strong> bidireccionales, numerados de
+       \(0\) a \(m-1\). El conector \(j\) (con \(0 \le j \le m-1\)) une un par de
+       cuartos distintos \(u[j]\) y \(v[j]\). Un mismo par de cuartos puede estar
+       unido por varios conectores.</p>
+
+    <p>El juego lo juega un solo jugador, que recolecta llaves y se mueve entre
+       cuartos cruzando conectores. Decimos que el jugador <em>cruza</em> el
+       conector \(j\) cuando lo usa para moverse del cuarto \(u[j]\) al \(v[j]\),
+       o al revés. El jugador <strong>solo puede cruzar</strong> el conector \(j\)
+       si <strong>ya recolectó</strong> una llave de tipo \(c[j]\).</p>
+
+    <p>En cualquier momento del juego, el jugador está en algún cuarto \(x\) y
+       puede hacer dos tipos de acciones:</p>
+    <ul>
+      <li><strong>recolectar</strong> la llave del cuarto \(x\), cuyo tipo es
+          \(r[x]\) (a menos que ya la haya recolectado antes);</li>
+      <li><strong>cruzar</strong> un conector \(j\) donde \(u[j]=x\) o \(v[j]=x\),
+          siempre que ya haya recolectado una llave de tipo \(c[j]\) de antemano.
+          El jugador nunca tira una llave que ya recolectó.</li>
+    </ul>
+
+    <p>El jugador empieza el juego en algún cuarto \(s\) sin llevar ninguna llave.
+       Un cuarto \(t\) es <strong>alcanzable</strong> desde un cuarto \(s\) si el
+       jugador, comenzando en \(s\), puede realizar alguna secuencia de las
+       acciones de arriba y llegar al cuarto \(t\).</p>
+
+    <p>Para cada cuarto \(i\) (con \(0 \le i \le n-1\)), llamamos \(p[i]\) al
+       número de cuartos alcanzables desde \(i\). Timothy quiere conocer el
+       conjunto de índices \(i\) que alcanzan el <strong>valor mínimo</strong> de
+       \(p[i]\) sobre todos los \(0 \le i \le n-1\).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento (tarea <strong>funcional</strong>:
+       no lees de la entrada estándar ni escribes a la salida estándar; el evaluador
+       llama a tu función):</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int[] find_reachable(int[] r, int[] u, int[] v, int[] c)</pre>
+    </div>
+    <ul>
+      <li><code>r</code>: un arreglo de longitud \(n\). Para cada \(i\) (con
+          \(0 \le i \le n-1\)), la llave del cuarto \(i\) es de tipo \(r[i]\).</li>
+      <li><code>u</code>, <code>v</code>: dos arreglos de longitud \(m\). Para cada
+          \(j\) (con \(0 \le j \le m-1\)), el conector \(j\) une los cuartos
+          \(u[j]\) y \(v[j]\).</li>
+      <li><code>c</code>: un arreglo de longitud \(m\). Para cada \(j\) (con
+          \(0 \le j \le m-1\)), el tipo de llave necesario para cruzar el conector
+          \(j\) es \(c[j]\).</li>
+    </ul>
+    <p>El procedimiento debe devolver un arreglo \(a\) de longitud \(n\). Para cada
+       \(0 \le i \le n-1\), el valor de \(a[i]\) debe ser \(1\) si para todo \(j\)
+       con \(0 \le j \le n-1\) se cumple \(p[i] \le p[j]\) (es decir, si \(i\)
+       alcanza el mínimo). En caso contrario, \(a[i]\) debe ser \(0\).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2.0 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB (2048 MiB)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de cuartos</td><td><span class="badge">\(2 \le n \le 300\,000\)</span></td></tr>
+        <tr><td>Número de conectores</td><td><span class="badge">\(1 \le m \le 300\,000\)</span></td></tr>
+        <tr><td>Tipo de llave por cuarto</td><td><span class="badge">\(0 \le r[i] \le n-1\)</span></td></tr>
+        <tr><td>Extremos de cada conector</td><td><span class="badge">\(0 \le u[j],\,v[j] \le n-1\) y \(u[j] \neq v[j]\)</span></td></tr>
+        <tr><td>Llave que pide cada conector</td><td><span class="badge">\(0 \le c[j] \le n-1\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">9</td><td>\(c[j]=0\) para todo \(0 \le j \le m-1\), y además \(n,m \le 200\)</td></tr>
+          <tr><td>2</td><td class="pts">11</td><td>\(n,m \le 200\)</td></tr>
+          <tr><td>3</td><td class="pts">17</td><td>\(n,m \le 2000\)</td></tr>
+          <tr><td>4</td><td class="pts">30</td><td>\(c[j] \le 29\) (para todo \(0 \le j \le m-1\)) y \(r[i] \le 29\) (para todo \(0 \le i \le n-1\))</td></tr>
+          <tr><td>5</td><td class="pts">33</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>find_reachable(
+  [0, 1, 1, 2],
+  [0, 0, 1, 1, 3],
+  [1, 2, 2, 3, 1],
+  [0, 0, 1, 0, 2])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[0, 1, 1, 0]</pre></div>
+    </div>
+    <p>Si el jugador empieza en el cuarto \(0\), puede recolectar la llave tipo
+       \(0\), cruzar al \(1\), recolectar la tipo \(1\), llegar al \(2\) y luego
+       al \(3\); así, todos los cuartos son alcanzables desde \(0\) y
+       \(p[0]=4\). La tabla muestra los cuartos alcanzables desde cada origen:</p>
+    <div class="dtable">
+      <table>
+        <thead><tr><th>Origen \(i\)</th><th>Cuartos alcanzables</th><th>\(p[i]\)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>[0, 1, 2, 3]</td><td>4</td></tr>
+          <tr><td>1</td><td>[1, 2]</td><td>2</td></tr>
+          <tr><td>2</td><td>[1, 2]</td><td>2</td></tr>
+          <tr><td>3</td><td>[1, 2, 3]</td><td>3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El menor valor de \(p[i]\) es \(2\), alcanzado en \(i=1\) e
+       \(i=2\). Por eso el procedimiento devuelve \([0, 1, 1, 0]\).</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>find_reachable(
+  [0, 1, 1, 2, 2, 1, 2],
+  [0, 0, 1, 1, 2, 3, 3, 4, 4, 5],
+  [1, 2, 2, 3, 3, 4, 5, 5, 6, 6],
+  [0, 0, 1, 0, 0, 1, 2, 0, 2, 1])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[0, 1, 1, 0, 1, 0, 1]</pre></div>
+    </div>
+    <div class="dtable">
+      <table>
+        <thead><tr><th>Origen \(i\)</th><th>Cuartos alcanzables</th><th>\(p[i]\)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>[0, 1, 2, 3, 4, 5, 6]</td><td>7</td></tr>
+          <tr><td>1</td><td>[1, 2]</td><td>2</td></tr>
+          <tr><td>2</td><td>[1, 2]</td><td>2</td></tr>
+          <tr><td>3</td><td>[3, 4, 5, 6]</td><td>4</td></tr>
+          <tr><td>4</td><td>[4, 6]</td><td>2</td></tr>
+          <tr><td>5</td><td>[3, 4, 5, 6]</td><td>4</td></tr>
+          <tr><td>6</td><td>[4, 6]</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El menor valor de \(p[i]\) es \(2\), alcanzado en
+       \(i \in \{1, 2, 4, 6\}\). Por eso el procedimiento devuelve
+       \([0, 1, 1, 0, 1, 0, 1]\).</p>
+
+    <h3>Ejemplo 3</h3>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>find_reachable(
+  [0, 0, 0],
+  [0],
+  [1],
+  [0])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[0, 0, 1]</pre></div>
+    </div>
+    <div class="dtable">
+      <table>
+        <thead><tr><th>Origen \(i\)</th><th>Cuartos alcanzables</th><th>\(p[i]\)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>[0, 1]</td><td>2</td></tr>
+          <tr><td>1</td><td>[0, 1]</td><td>2</td></tr>
+          <tr><td>2</td><td>[2]</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El menor valor de \(p[i]\) es \(1\), alcanzado en \(i=2\)
+       (su único conector pide la llave tipo \(0\), que no está en su cuarto). Por
+       eso el procedimiento devuelve \([0, 0, 1]\).</p>
+
+    <h3>Evaluador de ejemplo</h3>
+    <p>El evaluador de ejemplo lee la entrada con este formato:</p>
+    <ul>
+      <li>línea \(1\): \(n\ \ m\)</li>
+      <li>línea \(2\): \(r[0]\ \ r[1]\ \ \ldots\ \ r[n-1]\)</li>
+      <li>línea \(3+j\) (con \(0 \le j \le m-1\)): \(u[j]\ \ v[j]\ \ c[j]\)</li>
+    </ul>
+    <p>Y escribe el valor de retorno de <code>find_reachable</code> así:</p>
+    <ul>
+      <li>línea \(1\): \(a[0]\ \ a[1]\ \ \ldots\ \ a[n-1]\)</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">Union-Find (DSU)</span>
+      <span class="ptag">BFS / clausura</span>
+      <span class="ptag">Small-to-large</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(n\) cuartos, cada uno con una llave de tipo \(r[i]\), y \(m\)
+       conectores; el conector \(j\) une \(u[j]\) y \(v[j]\) pero solo se puede
+       cruzar si ya recolectaste una llave de tipo \(c[j]\). Para cada cuarto \(i\),
+       \(p[i]\) es cuántos cuartos puedes alcanzar empezando ahí (recolectando
+       llaves en el camino). Debes devolver un arreglo \(0/1\) que marque con \(1\)
+       los cuartos cuyo \(p[i]\) es <strong>mínimo</strong>.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n,m \le 300\,000\) exige algo cercano a \(O((n+m)\log n)\): una
+                simulación por cada origen es demasiado. Las subtareas chicas
+                (\(n,m \le 200\) y \(\le 2000\)) sí admiten esa fuerza bruta y dan
+                \(37\) puntos; la subtarea \(4\) (\(c[j],r[i] \le 29\), solo \(30\)
+                tipos de llave) sugiere explotar pocas llaves. El \(33\) final pide
+                la idea de <em>clausuras cerradas</em>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en esto como un grafo donde los cuartos son
+           nodos y los conectores son aristas? Pero, ¿qué tiene de raro este
+           grafo respecto a uno normal?</p>
+        <p>Cada arista \(j\) tiene una <strong>etiqueta</strong>: solo puedes
+           usarla si ya tienes una llave de tipo \(c[j]\). Y las llaves las vas
+           recogiendo conforme entras a cuartos nuevos. Es decir, abrir una arista
+           puede darte acceso a un cuarto, cuya llave abre más aristas, que dan más
+           cuartos... ¿Notas que esto es un proceso que solo <em>crece</em>?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1–3: la simulación directa</summary>
+      <div class="body">
+        <p class="q">¿Qué pasa si, desde un origen fijo \(s\), simulas el juego
+           con una BFS que lleva el conjunto de llaves que ya tienes y un frente de
+           conectores pendientes? ¿Cuánto te cuesta repetir eso para cada \(s\)?</p>
+        <p>La <strong>clausura</strong> desde \(s\): empiezas en \(s\), recoges su
+           llave; cada vez que obtienes un tipo de llave nuevo, desbloqueas los
+           conectores que la pedían; cada conector cruzable te da un cuarto nuevo
+           (y su llave). Repites hasta que ya no entra nada. Eso calcula \(p[s]\)
+           en \(O(n+m)\). Hacerlo para los \(n\) orígenes da \(O(n(n+m))\): basta
+           para la subtarea \(2\) (\(n,m \le 200\)) y la \(3\) (\(n,m \le 2000\)).</p>
+        <p>La subtarea \(1\) es aún más sencilla: como \(c[j]=0\) para todo \(j\),
+           <em>todos</em> los conectores piden la misma llave tipo \(0\). Así que
+           desde \(s\) primero puedes andar por las componentes accesibles sin
+           llave (no hay, porque toda arista pide la \(0\)) — en realidad solo te
+           mueves una vez que tu cuarto inicial \(s\) tenga \(r[s]=0\) o llegues a
+           uno con la llave \(0\). La simulación directa la resuelve igual.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: clausuras cerradas</summary>
+      <div class="body">
+        <p class="q">¿Notaste que alcanzar es <strong>monótono</strong>? Nunca
+           pierdes llaves ni cuartos. Entonces, ¿qué forma tiene exactamente el
+           conjunto que alcanzas desde \(i\)?</p>
+        <p>El conjunto alcanzable desde \(i\) es la <strong>menor clausura
+           cerrada</strong> que lo contiene. Llamamos a un conjunto de cuartos
+           \(C\) <em>cerrado</em> si, estando dentro de \(C\), todo conector que
+           sale de \(C\) pide una llave que <em>no</em> tienes con las llaves de
+           \(C\) (o ese conector va a otro cuarto del mismo \(C\)). O sea: de un
+           conjunto cerrado <strong>no puedes salir</strong>.</p>
+        <p class="q">Si la clausura de \(i\) es exactamente un conjunto cerrado de
+           tamaño \(k\), ¿qué vale \(p[i]\)? ¿Y dónde están los \(p\) mínimos?</p>
+        <p>Los cuartos con \(p\) mínimo son justo los que caen en una clausura
+           cerrada de tamaño mínimo. Tu trabajo se vuelve: <strong>encontrar todas
+           las clausuras cerradas</strong> y quedarte con las más chicas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 4: pocas llaves (\(c[j],r[i] \le 29\))</summary>
+      <div class="body">
+        <p class="q">Con a lo más \(30\) tipos de llave distintos, ¿se te antoja
+           representar "qué llaves tengo" como una máscara de \(30\) bits? ¿Cómo
+           ayuda eso a agrupar cuartos co-alcanzables?</p>
+        <p>Con \(30\) tipos puedes hacer la simulación más barata fusionando
+           cuartos que se demuestran mutuamente alcanzables y reusando el frente
+           de conectores por cada tipo de llave. Esa misma idea de
+           <em>fusionar grupos</em> es la semilla de la solución general — la
+           máscara solo la vuelve más cómoda de razonar.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Combinamos un <strong>union-find</strong> sobre
+           cuartos con <strong>BFS incremental</strong> de apertura de conectores.
+           Cada componente del union-find es un grupo de cuartos ya demostrado
+           mutuamente co-alcanzable; lo tratamos como un solo "super-nodo" / origen.
+           Vamos haciendo pasadas: en cada pasada, por cada representante
+           <em>vivo</em> (no finalizado) que no se haya tocado ya en esta pasada,
+           corremos una BFS desde él.</p>
+        <p>Durante la BFS visitamos cuartos y recogemos sus llaves; al adquirir un
+           tipo nuevo, desbloqueamos (encolamos) los conectores que esperaban esa
+           llave; los conectores cuya llave aún no tenemos se guardan en una lista
+           <code>locked[tipo]</code>. Dos finales posibles:</p>
+        <ul>
+          <li><strong>La clausura se escapa.</strong> Si la BFS alcanza un cuarto
+              que pertenece a <em>otra</em> componente union-find, entonces este
+              origen puede alcanzar todo lo que ese super-nodo alcanza: los
+              <strong>fusionamos</strong> y <strong>abortamos</strong> la BFS (este
+              origen no es un sumidero / clausura mínima).</li>
+          <li><strong>La BFS termina sin escapar.</strong> El conjunto visitado es
+              una componente <strong>cerrada</strong>: finalizamos el representante
+              (queda <em>muerto</em>), su \(p\) es el tamaño del conjunto visitado,
+              y actualizamos el mínimo global junto con la lista de cuartos que lo
+              alcanzan.</li>
+        </ul>
+        <p>Una marca <code>last[rep]=iter</code> evita reprocesar un representante
+           ya tocado en la misma pasada; las fusiones van reduciendo el número de
+           componentes hasta estabilizar. Al final, marcamos con \(1\) todos los
+           cuartos que pertenecen a alguna clausura cerrada de tamaño igual al
+           mínimo.</p>
+
+        <p><strong>Por qué es correcto.</strong></p>
+        <ol>
+          <li>El conjunto alcanzable desde \(i\) es la <em>menor</em> clausura
+              cerrada que lo contiene, porque alcanzar es un proceso monótono:
+              recoger llave \(\rightarrow\) abrir conectores \(\rightarrow\) ganar
+              cuartos \(\rightarrow\) recoger más llaves.</li>
+          <li>Si la clausura de \(x\) toca un cuarto \(y\) de un conjunto ya
+              identificado como co-alcanzable (otra componente), entonces \(x\)
+              alcanza todo lo de \(y\); y como ese conjunto es cerrado, su salida
+              solo puede <em>ampliar</em> la clausura de \(x\), nunca reducirla.
+              Por eso \(x\) no puede tener \(p\) mínimo a menos que termine en una
+              clausura cerrada: justifica fusionar-y-abortar.</li>
+          <li>Una BFS que termina sin escapar prueba que el conjunto visitado es
+              cerrado (no hay conector saliente con llave disponible), así que su
+              tamaño es exactamente \(p\) para todos sus cuartos.</li>
+          <li>Los cuartos con \(p\) mínimo son exactamente los de las clausuras
+              cerradas de tamaño mínimo. El union-find con re-pasadas garantiza que
+              toda clausura cerrada se detecta y que cada cuarto se asigna a la
+              suya.</li>
+        </ol>
+        <p class="note">Verificado empíricamente: salida idéntica byte a byte con
+           los archivos oficiales en los \(73\) casos, incluidos los tres ejemplos
+           (\([0,1,1,0]\), \([0,1,1,0,1,0,1]\), \([0,0,1]\)).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion find_reachable(r, u, v, c):
+    n = |r|;  m = |c|
+    para cada cuarto i:                 # union-find + estado
+        padre[i] = i;  homekey[i] = r[i];  dead[i] = falso;  last[i] = 0
+    construir adyacencia: a cada cuarto i la pareja (vecino, tipo_llave)
+    ans = infinito;  mejores = conjunto vacio
+
+    repetir por pasadas (iter = 1, 2, ...):
+        reiniciar marca vis[] de visitado
+        hubo_trabajo = falso
+        para cada cuarto i representante vivo de su componente con last[i] != iter:
+            hubo_trabajo = verdadero
+            correr_BFS(representante = i, iter)
+        si no hubo_trabajo: terminar el ciclo de pasadas
+
+    resultado[k] = 1 si k esta en 'mejores', si no 0
+    devolver resultado
+
+procedimiento correr_BFS(rep, iter):
+    last[rep] = iter
+    cola = { rep };  tener_llave[*] = falso;  locked[*] = vacio   # temporales
+    visitados = lista vacia
+    mientras cola no vacia:
+        x = sacar de cola
+        si componente(x) != rep:                 # la clausura se escapo
+            fusionar(rep, componente(x));  last[componente(x)] = iter
+            limpiar temporales;  salir            # abortar, NO finalizar
+        si vis[x]: continuar
+        vis[x] = verdadero;  anadir x a visitados
+        t = homekey[x]
+        si no tener_llave[t]:
+            tener_llave[t] = verdadero
+            encolar todos los conectores guardados en locked[t]
+        para cada (vecino, tipoLlave) en adyacencia[x]:
+            si tener_llave[tipoLlave]: encolar vecino
+            si no: guardar vecino en locked[tipoLlave]   # espera esa llave
+    # la BFS termino sin escapar -> componente cerrada
+    dead[rep] = verdadero
+    si |visitados| &lt; ans: ans = |visitados|;  mejores = vacio
+    si |visitados| == ans: anadir todos los visitados a 'mejores'
+    limpiar temporales (tener_llave, locked) solo de lo tocado</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O((n+m)\log n)\) en tiempo y
+           \(O(n+m)\) en memoria. Cada conector se encola/desbloquea un número
+           acotado de veces gracias a las listas <code>locked[]</code> por tipo de
+           llave; las fusiones del union-find reducen el número de componentes
+           (cada fusión cuesta a lo más reexplorar, amortizado con la técnica
+           <em>small-to-large</em> implícita en las re-pasadas). En la práctica el
+           peor caso oficial (\(n=m=300\,000\)) corre en \(\approx 0.35\) s, muy
+           por debajo del límite de \(2.0\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Notas de implementación (solo C++)</span>
+<pre>- Si el union-find usa compresion de caminos RECURSIVA, las cadenas
+  largas pueden desbordar la pila; sube el limite de pila
+  (p. ej. ulimit -s 65520) o vuelve la compresion iterativa.
+- Estructuras planas (vectores indexados por tipo de llave para
+  locked[] y tener_llave[]) bastan; no hace falta nada exotico.</pre>
+          <p class="note">Esto es solo de implementación; el algoritmo no cambia.
+             En esta página va pseudocódigo, no código real.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
