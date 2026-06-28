@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **128 / 190**
+Total de problemas: **190** · Completados: **134 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -131,16 +131,16 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 5 | Lenguaje | Triminos | `2007/05 Triminos/index.html` |
 | [ ] | 6 | Lenguaje | Camiones | `2007/06 Camiones/index.html` |
 
-## 13ª OMI · 2008 — 0 / 6
+## 13ª OMI · 2008 — 6 / 6
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Erosión | `2008/01 Erosión/index.html` |
-| [ ] | 2 | Karel | Camino de primos | `2008/02 Camino de primos/index.html` |
-| [ ] | 3 | Karel | Súper-Karelman | `2008/03 Súper-Karelman/index.html` |
-| [ ] | 4 | Lenguaje | Sumas Adyacentes | `2008/04 Sumas Adyacentes/index.html` |
-| [ ] | 5 | Lenguaje | Espirales | `2008/05 Espirales/index.html` |
-| [ ] | 6 | Lenguaje | Serpientes y escaleras | `2008/06 Serpientes y escaleras/index.html` |
+| [x] | 1 | Karel | Erosión | `2008/01 Erosión/index.html` |
+| [x] | 2 | Karel | Camino de primos | `2008/02 Camino de primos/index.html` |
+| [x] | 3 | Karel | Súper-Karelman | `2008/03 Súper-Karelman/index.html` |
+| [x] | 4 | Lenguaje | Sumas Adyacentes | `2008/04 Sumas Adyacentes/index.html` |
+| [x] | 5 | Lenguaje | Espirales | `2008/05 Espirales/index.html` |
+| [x] | 6 | Lenguaje | Serpientes y escaleras | `2008/06 Serpientes y escaleras/index.html` |
 
 ## 14ª OMI · 2009 — 6 / 6
 

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2008 · Problema 05 — Espirales</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">13ª OMI · 2008 · Lenguaje</div>
+    <h1>Problema <span class="num">05</span> — Espirales</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/L-OMI2008-Espirales/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Tenemos una cuadrícula de números enteros sobre la que deseamos formar
+       <strong>espirales</strong>. Las reglas para formar una espiral sobre la
+       cuadrícula son las siguientes:</p>
+    <ul>
+      <li>La espiral puede iniciar en cualquier casilla de la cuadrícula.</li>
+      <li>La espiral puede girar hacia la izquierda o hacia la derecha.</li>
+      <li>A partir de la posición de inicio de la espiral, ésta puede iniciar con
+          dirección norte, este, sur u oeste.</li>
+      <li>No debe quedar ningún espacio vacío en la espiral.</li>
+      <li>La espiral sólo puede continuar si la siguiente casilla contiene un
+          número <strong>mayor</strong> que el contenido en la última casilla de la
+          espiral hasta ese momento.</li>
+    </ul>
+
+    <figure>
+      <img alt="Espiral cuadrada válida: desde el punto central se avanza 1, 1, 2, 2, 3, 3, ... casillas girando siempre hacia el mismo lado."
+           src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABcAHADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD6of7p+lc/8O/+Sf8Ahn/sGWv/AKKWmt4M0Paf9Gn6f8/k3/xdYfgLwjo0/gXw5LJbzmSTTbZmIu5hyYlJ4DYFAHfVz3gr/Uax/wBhS6/9Do/4QzQ/+faf/wADJv8A4usHwh4R0aWHVS9vOdupXKDF1MOA/HRqAPQK52x/5KHrf/YLsP8A0deUv/CGaH/z7T/+Bk3/AMXWBZeEdGPjzWITbz+Wmm2Lgfapupluwed2f4RQB6BXO63/AMjh4a+l1/6AKX/hDND/AOfaf/wMm/8Ai6wNY8I6Mnizw9GtvPscXO4fapuyDHO6gD0Cud8ef8gO2/7Cmm/+lsFL/wAIZof/AD7T/wDgZN/8XWB428I6NDo1u0dvOGOpaenN1MeGvIQerehNAHoFUdf/AOQFqP8A17Sf+gmsz/hDND/59p//AAMm/wDi6o654O0RNF1Bltp9y28hH+lzf3T/ALdAG54X/wCRZ0j/AK84f/QBWnXGeG/B+iyeHdLd7acs1rET/pcw52D/AG62tP8ADOlafeR3VpBKs0edpa5lcDIIPDMQeDQBsP8Acb6VgfDv/kn/AIZ/7Bdr/wCilpj+H9S2n/ir9d6f88bL/wCR6w/AWhahJ4F8OOnirWolbTbZhGkVmVQGJeBmAnA9yT70AY2t+Gfiudav5NB8cadBpcszSW8N3ZJJJGp/hLbOg7e1c14a8O/F+SLUfsXjfRogt9OsgbTlO6QN8zD5OhPavXP+Ef1L/ob9d/782X/yPWB4Q0LUHh1Xb4q1qPGpXKnbFZ/MQ/U5gPJ9uPagDmv+EZ+NX/Q/aH/4LU/+IrHtfDvxfPi/U44/G+jC+WxtGllOnLtaMyXGxQNnBBEhJ77h6V65/wAI/qX/AEN+u/8Afmy/+R6wLLQtQPjzWEHirWgy6bYsZBFZ7mBlu8A/uMYGDjAz8xyTxgA5r/hGfjV/0P2h/wDgtT/4isfU/DvxfXxFoqT+N9Ge6cT+RINOUBMKN2Rs5yMV65/wj+pf9Dfrv/fmy/8AkesDWNC1BfFnh5D4q1pmYXOHMVnlMIOmIMc+4NAHNf8ACM/Gr/oftD/8Fqf/ABFY/irw78X4tMga/wDG+jTQm+s1VU05VIkNzEI2+50DlWI7gEV65/wj+pf9Dfrv/fmy/wDkesDxtoWoR6Nbl/FWtSg6lp67Xis8Am8hAPEA5BOR2yBkEZFAHl/xHvPi34H0ix1PVfGWm3drLqEFu0VtYojnc2euwcfLgjuDX0Fr/wDyAtR/69pP/QTXiH7TWk3tp4D015/EOqXqnWLZRHcR2wUE7vmGyFTkfXHtXp2uaDqK6LqDHxbrjAW8hKmKywflPHFvQBueF/8AkWdI/wCvOH/0AVp1xnhvQdRbw7pbL4s1tAbWIhVis8L8g4Gbcn862tP0e+tbyOafxHq17GucwTx2oR8gjkpCrcdeCOnpxQBsP9xvpWB8O/8Akn/hn/sF2v8A6KWmMvizaf3uhdP+eUv/AMVWH4CXxR/wgvhzyJdFEX9m22zfHLu2+UuM4brQB39c74L/ANRrH/YUuv8A0Ol2+LP+e2hf9+pf/iqwPCC+KPJ1bypdFx/aVzu3Ry/e384+bpQBxsvjP4meI/H3izR/BMPhmOx0K4jgY6iJd7bgcHKnB+6ewxx1qpa/8Ls/4S/U/L/4Qr+0PsNp52fP8vy/MuPLx33Z83Ptt96PhCuv/wDC0Pir9kk0sXH2+388ypIVJ2yY2YOQOvWu9sl8Uf8ACeaxiXRfO/s2x3Zjl27fNu8Y+brndn8KAOa/4vx/1In/AJMVj6n/AMLs/wCEi0Xz/wDhCvteJ/s+3z9n3Ru3fhjFeubfFn/PbQv+/Uv/AMVWBrC+KP8AhLPD2+XRfMxc7MRy4+4M5+agDjm8afErwn4r8MWvjy28NT6Zrd8mnJ/ZhlEiO5ADEtxgZ6d69P8AHn/IDtv+wppv/pbBXknx0XXx4k+GX22TSy//AAkUHkeSkgAfcuN2T0+ld742XxR/Y1v50uilf7S0/GyOXO77ZDt/i6Zxn2zQBzX7Vf8AyTzS/wDsNWv/ALPXq+v/APIC1H/r2k/9BNeIftNLr48B6b/aUmltD/bFtt+zpIG3fNjOSeK9O1xfFX9i6hvl0Pb9nkziKXONp/2qANzwv/yLOkf9ecP/AKAK064zw2vir/hHdL8uXRNn2WLbuilzjYMZ+atrT18Qi8j/ALRk0lrXneII5A/Q4wSxHXFAGu/3T9KwPh3/AMk/8M/9gu1/9FLTG17VNp/4pLWOn/Pez/8Aj9YfgLW9Sj8DeHUTwvq0qLptsBIs1qA48peRmYHB9wDQB3+a57wX/qNY/wCwpdf+h0f29qn/AEKWsf8Af+z/APj9YHhDW9SSHVdvhfVZM6lck7ZrUbTv6HMw5H5UAc18F/8AkrPxe/7CNt/6DLXodj/yULW/+wXYf+jryvJPhDqt9D8UPipJFoGo3Ekt/bl4o5bcNCdsnDFpQCT/ALJPSu9stb1IePNYceF9VLnTbIGMTWuVAlu8E/vsYOT0OeDnHGQD5Y+PXxG8Xr8WNVit9U1bR4dPk8i2tobhogqgffwpwS2c55yCB0AA9Z0z45Rznwpdax4X8VSX9tbyC5aDT1KzO0YG6PLjI4z0HWu78UeD9B8Vav8A2pr/AMNL68vyioZjc2yFgvTdtuAG9MnnAA6AVoajq19D4l8NpF4T1OFIUuEjhWW0A2+WowoE2AAPp7UAeX+L/Gx+JHjT4eW2i+GPE9odP12C7nkv7ARIIwwLHIZugBPOOle4+PP+QJbf9hTTf/S2Cl/t7VP+hS1j/v8A2f8A8frA8ba3qUmjW4fwvqsQGpaedzTWpBIvISBxMeSRgdsnnA5oA5r9qr/knul/9hq1/wDZ69X1/wD5AWo/9e0n/oJrxD9pnVb668B6alxoGo2SDWLZhJNLbsCRu+X5JWOT9Me9ena5ruptouoA+FNXUG3kBYz2mB8p54moA3PC/wDyLWk/9ekP/oArUri/Deuamvh3S1Xwrq7gWsQDCe0wfkHIzNmtrTtWv7q8jhuPDupWcTZzPNLbMicE8hJWbnpwD1oA2G+6fpWB8O/+Sf8Ahn/sF2v/AKKWmN4x0naeNT6f9Aq6/wDjdYfgLxZpcPgbw7FINR3pptsrbdMuWGREo4IjwfqKAO/rnfBf+o1j/sKXX/odL/wmOk+mp/8Agquv/jdYHhDxZpcUOqhxqPzalcsNumXLcF/aPj6UAeceBPG3hzwh8W/ioviXVrfTjdahAYRLn59qybsYB6bh+ddTafF7wEnjXVbtvE9iLaXT7OJJPmwzpJclh07B0/Ouk1K48E6pdtdaloK3lywAaa48PzSOQBgZYwk1zVpB4D/4TXVQ3hq2Nt/Z9nsj/wCEekIVvMudx2+TxkbOcc4744AN3/hdPw7/AOhrsP8Ax/8A+JrD1X4veApfE+hXEfiexaGAXHmON2F3IAM8d62/s/w8/wChWtf/AAmpf/jNYeqweA/+Em0IR+GrZYSLjzE/4R6QbvkGPl8n5sfpQBu/8Lp+Hf8A0Ndh/wCP/wDxNYfjD4veArzSbeK18T2Mki6hYylRu4RLuJ2PTsqk/hW39n+Hn/QrWv8A4TUv/wAZrD8YQeAxpMH2bw1bRyf2hY5I8PSJlftcW4Z8kdVyMd845zigDkPj58QPC3jDwrpOleGNYg1PUn1i1dbe3Vi7AFhwMc8kfnXv+v8A/IC1H/r2k/8AQTXH2v8AwgVpcxXFr4bhguImDxyx+HJVZGHIIIhyCPWtDXPF+lPouoKo1LLW8gGdLugPunv5dAG54X/5FrSf+vSH/wBAFaYrjPDfi7So/Dulow1LctrEDjS7oj7g7iPmtrTvEunaheR21sL7zXzt83T7iJeATyzIFHTuaANhvun6VgfDv/kn/hn/ALBdr/6KWugIyCKqaNp0OkaPY6bbNI0FnBHbxtIQWKooUE4AGcD0oAt1zvgv/Uax/wBhS6/9Dro8VS0zTYdOW5WBpGE9xJcNvIOGc5IGB0oAuVztj/yULW/+wXYf+jbyujxVKLTYYtZutTVpPPuLeG2dSRtCxtIykcZzmVs89h+IBcrnda/5HDw39Lr/ANAFdHiqV1psNzqVjeu0gltPM8sAjad4AOePagC5XO+PP+QJbf8AYU03/wBLYK6PFUtW02HVLWO3uGkVEuILkFCAd0UqyqOQeNyAH2z060AXKoa//wAgLUf+vaT/ANBNaGKhu7dLq0mt5CwSVGjYr1AIxxQBR8L/APItaT/16Q/+gCtMVDYWqWVjb2sRYxwRrEpY8kKMDPvxU+KAP//Z">
+      <figcaption>Espiral válida (cuadrada). A partir del inicio avanzas en cada
+        dirección \(1,1,2,2,3,3,4,4,\dots\) casillas.</figcaption>
+    </figure>
+
+    <figure>
+      <img alt="Espiral rectangular inválida: en el primer tramo se avanzaron 2 casillas en la misma dirección, rompiendo el patrón."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Espiral <strong>NO VÁLIDA</strong> (rectangular). A partir del
+        inicio se avanzó 2 casillas en la misma dirección.</figcaption>
+    </figure>
+
+    <p>El largo de una espiral se mide como el número de casillas que contiene.</p>
+
+    <p>Dada una cuadrícula, determina cuál es la espiral más larga que se puede
+       formar.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer de la entrada estándar los siguientes datos:</p>
+    <ul>
+      <li>La primera línea contiene un número \(N\) entre 4 y 100 que determina el
+          lado de la cuadrícula.</li>
+      <li>Las siguientes \(N\) líneas contienen \(N\) números enteros \(a_i\) entre
+          0 y 30000 cada una, separados por espacios.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir a la salida estándar una línea que contenga un
+       único número \(L\) que indique la longitud de la espiral más grande que se
+       pueda dibujar en la cuadrícula.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>32 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Lado de la cuadrícula</td><td><span class="badge">\(4 \le N \le 100\)</span></td></tr>
+        <tr><td>Valor de cada casilla</td><td><span class="badge">\(0 \le a_i \le 30000\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5
+1 3 2 10 5
+2 4 3 9 2
+3 6 7 8 1
+8 9 6 5 2
+8 6 5 3 1</pre></div>
+      <div class="io"><h4>Salida</h4><pre>7</pre></div>
+    </div>
+    <p class="note">La espiral de largo 7 se logra iniciando en el 3 de la segunda
+       fila, tercera columna, arrancando hacia el oeste con el giro hacia la
+       derecha. De modo que la espiral queda formada por la sucesión
+       \(\{3,4,6,7,8,9,10\}\) y tiene un largo de 7.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Fuerza bruta</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una cuadrícula \(N\times N\) de enteros. Una espiral arranca en una
+       casilla, avanza \(1,1,2,2,3,3,\dots\) casillas girando <em>siempre hacia el
+       mismo lado</em>, y sólo puede extenderse a una casilla cuyo valor sea
+       <strong>estrictamente mayor</strong> que el de la casilla anterior. Hay que
+       hallar la longitud (número de casillas) de la espiral más larga posible.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 100\): hay a lo más \(10^4\) casillas de inicio. Probar las
+                4 direcciones iniciales y los 2 sentidos de giro da \(8\)
+                configuraciones por casilla. Simular cada espiral es muy barato
+                porque la condición de crecimiento estricto la corta pronto, así
+                que una fuerza bruta directa entra de sobra en 1 s.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué define exactamente una espiral?</summary>
+      <div class="body">
+        <p class="q">¿Ya te fijaste en que la forma de la espiral está
+           <em>completamente determinada</em> por sólo tres decisiones?</p>
+        <p>Mira las dos figuras: la válida y la inválida. ¿Qué hace inválida a la
+           segunda? Que en el primer tramo avanzó 2 casillas. La regla obliga a
+           que los tramos midan \(1,1,2,2,3,3,\dots\) casillas, sin excepción.
+           Entonces, una vez que eliges <strong>(a)</strong> la casilla de inicio,
+           <strong>(b)</strong> la dirección inicial (N, E, S u O) y
+           <strong>(c)</strong> el sentido de giro (izquierda o derecha), el camino
+           ya no tiene libertad: cada paso está dictado por el patrón. ¿No será que
+           el problema se reduce a <em>recorrer</em> ese camino fijo?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Y la condición de los números?</summary>
+      <div class="body">
+        <p class="q">¿Qué pasa cuando, siguiendo el camino, la siguiente casilla no
+           es mayor que la actual (o te sales de la cuadrícula)?</p>
+        <p>La espiral simplemente <strong>se detiene ahí</strong>. No puedes
+           saltarte casillas (no debe quedar espacio vacío), así que la longitud es
+           el número de casillas que alcanzaste a colocar antes del primer
+           tropiezo. Nota que el valor inicial cuenta como longitud 1. ¿Notaste que
+           como los valores crecen estrictamente y están acotados, ninguna espiral
+           puede ser absurdamente larga, y en la práctica la mayoría muere en
+           pocos pasos?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cómo generar el camino paso a paso?</summary>
+      <div class="body">
+        <p class="q">¿Cómo llevas la cuenta de cuántas casillas avanzar antes de
+           cada giro?</p>
+        <p>Lleva un contador de tramos. El tramo número \(k\) (empezando en
+           \(k=1\)) mide \(\lceil k/2 \rceil\) casillas: tramo 1 mide 1, tramo 2
+           mide 1, tramo 3 mide 2, tramo 4 mide 2, etc. Tras terminar cada tramo,
+           giras 90° hacia el lado elegido (siempre el mismo). Representa cada
+           dirección con un vector \((\Delta\text{fila},\Delta\text{col})\); girar a
+           la derecha o a la izquierda es rotar ese vector. ¿Te das cuenta de que
+           así un solo bucle genera toda la espiral?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La forma de una espiral queda fijada por la terna (casilla de inicio,
+           dirección inicial, sentido de giro). Por eso basta con
+           <strong>probar todas las ternas</strong> y, para cada una, recorrer el
+           camino mientras se cumplan dos condiciones: seguir dentro de la
+           cuadrícula y que cada nueva casilla sea estrictamente mayor que la
+           anterior. La respuesta es el máximo de las longitudes obtenidas.</p>
+        <p>Detalles que hacen que sea correcta:</p>
+        <ul>
+          <li><strong>Casillas de inicio:</strong> las \(N^2\) casillas.</li>
+          <li><strong>Direcciones iniciales:</strong> norte, este, sur, oeste.</li>
+          <li><strong>Sentido de giro:</strong> izquierda o derecha. (Sí hace falta
+              probar ambos: una espiral hacia la izquierda y una hacia la derecha
+              desde la misma casilla recorren caminos distintos.)</li>
+          <li><strong>Longitudes de tramo:</strong> \(1,1,2,2,3,3,\dots\); el tramo
+              \(k\) mide \(\lceil k/2\rceil\). Se gira 90° al terminar cada tramo.</li>
+          <li><strong>Paro:</strong> en cuanto un paso sale de la cuadrícula o cae
+              en una casilla con valor \(\le\) al actual, la espiral termina; su
+              longitud es la cantidad de casillas ya recorridas (el inicio cuenta
+              como 1).</li>
+        </ul>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N y la matriz g[N][N]
+direcciones = [N=(-1,0), E=(0,1), S=(1,0), O=(0,-1)]   // en orden horario
+
+funcion simular(fila, col, dir, sentido):   // sentido = +1 (derecha) o -1 (izquierda)
+    largo = 1
+    prev  = g[fila][col]
+    para k = 1, 2, 3, ...:
+        tramo = techo(k / 2)                 // 1,1,2,2,3,3,...
+        repetir tramo veces:
+            (df, dc) = direcciones[dir]
+            nf = fila + df ;  nc = col + dc
+            si (nf, nc) fuera de la cuadricula  ->  regresar largo
+            si g[nf][nc] <= prev                ->  regresar largo
+            largo = largo + 1
+            prev  = g[nf][nc]
+            fila  = nf ;  col = nc
+        dir = (dir + sentido) mod 4           // girar 90 grados
+
+respuesta = 1
+para cada casilla (i, j):
+    para cada dir en {0,1,2,3}:
+        respuesta = max(respuesta, simular(i, j, dir, +1))
+        respuesta = max(respuesta, simular(i, j, dir, -1))
+imprimir respuesta</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> hay \(8N^2\) configuraciones y cada
+           simulación cuesta \(O(\text{largo de su espiral})\). Como la espiral más
+           larga cabe en la cuadrícula, el tiempo total es \(O(N^2)\) por
+           configuración en el peor caso teórico, pero el crecimiento estricto de
+           los valores lo recorta muchísimo en la práctica; memoria \(O(N^2)\). Con
+           \(N \le 100\) corre en milisegundos.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
