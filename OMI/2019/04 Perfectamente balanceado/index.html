@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2019 · Problema 04 — Perfectamente balanceado</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">24ª OMI · 2019 · Día 2</div>
+    <h1>Problema <span class="num">04</span> — Perfectamente balanceado</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2019-Progresion">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Tras pelear con los Avengers para conseguir las gemas del infinito, Thanos
+       está agotado. Sin embargo, tiene una última tarea pendiente. Thanos tiene un
+       arreglo de \(N\) enteros que debe dejar <em>perfectamente balanceado</em>.
+       Un arreglo de números está <em>perfectamente balanceado</em> si la diferencia
+       entre un elemento y el siguiente siempre es la misma <strong>para todos</strong>
+       los elementos del arreglo.</p>
+    <p>Es decir: la diferencia entre cualquier elemento y el siguiente siempre debe
+       ser constante.</p>
+    <p>Para balancear el arreglo, Thanos sólo puede sumar o restar 1 a cada elemento.
+       Cada vez que Thanos sume o reste un 1 a algún elemento se considera que hizo
+       una <em>operación</em>. Sólo se puede hacer una operación por elemento.</p>
+    <p>Thanos ofreció salvarte cuando elimine a la mitad de la población a cambio de
+       tu ayuda. Imprime el menor número de <em>operaciones</em> que se necesitan para
+       que el arreglo quede <em>perfectamente balanceado</em>, o <code>-1</code> si no
+       es posible balancearlo.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea, el entero \(N\). En la segunda línea, \(N\) enteros
+       separados por un espacio que representan los números del arreglo.</p>
+
+    <h2>Salida</h2>
+    <p>Un entero que indica el menor número de <em>operaciones</em> necesarias para que
+       el arreglo quede <em>perfectamente balanceado</em>, o <code>-1</code> si no es
+       posible balancearlo.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s <span class="note">(estándar de omegaUp; el enunciado no lo especifica)</span></td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB <span class="note">(estándar de omegaUp; el enunciado no lo especifica)</span></td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño del arreglo</td><td><span class="badge">\(1 \le N \le 100000\)</span></td></tr>
+        <tr><td>Valor de cada elemento</td><td><span class="badge">\(1 \le n_i \le 10^9\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">17</td><td>Se asegura que siempre se puede balancear usando sólo la operación de suma.</td></tr>
+          <tr><td>2</td><td class="pts">21</td><td>El primer elemento no necesita que le apliques ninguna operación.</td></tr>
+          <tr><td>3</td><td class="pts">62</td><td>No hay consideraciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplos</h2>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>2
+500 500</pre></div>
+      <div class="io"><h4>Salida</h4><pre>0</pre></div>
+    </div>
+    <p class="note">El arreglo ya está <em>perfectamente balanceado</em> y no se requiere
+       hacer ninguna <em>operación</em>.</p>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5
+1 3 6 9 12</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1</pre></div>
+    </div>
+    <p class="note">Si restas 1 al primer elemento para convertirlo en 0, el arreglo queda
+       <em>perfectamente balanceado</em> (0, 3, 6, 9, 12 con diferencia constante 3) y en
+       total se realizó 1 <em>operación</em>.</p>
+
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>5
+1 3 6 3 6</pre></div>
+      <div class="io"><h4>Salida</h4><pre>-1</pre></div>
+    </div>
+    <p class="note">No hay manera de poder balancear el arreglo.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <!-- ETIQUETAS de tipo/técnicas (OBLIGATORIO). Pon 2-5 tags. Vocabulario
+         sugerido: Matemáticas, Teoría de números, Combinatoria, Geometría,
+         Grafos, Árboles, Programación dinámica (DP), Greedy, Búsqueda binaria,
+         Backtracking, BFS/DFS, Strings, Estructuras de datos, Bitmask,
+         Simulación, Fuerza bruta, Two pointers, Karel, Ad-hoc. -->
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Progresión aritmética</span>
+      <span class="ptag">Fuerza bruta acotada</span>
+      <span class="ptag">Matemáticas</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un arreglo de \(N\) enteros. A cada elemento puedes sumarle 1, restarle 1
+       o dejarlo igual (a lo más una operación por elemento). Quieres el mínimo número de
+       operaciones para que el arreglo sea una progresión aritmética (diferencia constante
+       entre elementos consecutivos), o \(-1\) si es imposible.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N\) hasta \(10^5\) pide una solución lineal o casi lineal: nada de probar
+                todas las diferencias posibles. Como cada elemento sólo cambia en
+                \(\{-1,0,+1\}\), el espacio de búsqueda real es minúsculo. Ojo con el
+                desbordamiento: un valor objetivo \(a_0 + i\cdot d\) puede llegar a
+                \(\sim 10^{14}\) (con \(i\) hasta \(10^5\) y \(d\) hasta \(\sim 10^9\)),
+                así que usa enteros de 64 bits.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué significa exactamente "perfectamente balanceado"?
+           ¿No es justo una progresión aritmética: el elemento final en la posición \(i\)
+           (contando desde 0) vale \(a_0 + i\cdot d\) para alguna diferencia común \(d\)?</p>
+        <p>Y la restricción más importante: cada elemento sólo puede moverse a lo más 1
+           (sumar 1, restar 1 o quedarse). ¿Cuánta libertad real tienes entonces sobre el
+           valor final de cada posición? ¿No son apenas tres valores posibles para cada una?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por lo chico (subtarea por subtarea)</summary>
+      <div class="body">
+        <p class="q">¿Qué te regala cada subtarea?</p>
+        <ul>
+          <li><strong>Subtarea 1</strong> (sólo se permite sumar para balancear): aquí cada
+             elemento sólo puede subir o quedarse igual. ¿Eso no reduce tus opciones por
+             posición a sólo dos?</li>
+          <li><strong>Subtarea 2</strong> (el primer elemento no se toca): si \(a_0\) queda
+             fijo, ¿qué te falta por decidir para conocer TODA la progresión?</li>
+        </ul>
+        <p class="q">Pregunta clave que une todo: una progresión aritmética queda totalmente
+           determinada por sus dos primeros valores. ¿Cuántos valores finales posibles tiene
+           el primer elemento? ¿Y el segundo? ¿Cuántas combinaciones hay en total?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave</summary>
+      <div class="body">
+        <p class="q">Como el valor final del primer elemento tiene 3 posibilidades y el del
+           segundo otras 3, ¿no son apenas \(3\times 3 = 9\) combinaciones para fijar
+           \(a_0\) y \(d = a_1 - a_0\)?</p>
+        <p>Una vez fijados esos dos, el valor objetivo de TODOS los demás está forzado:
+           la posición \(i\) debe terminar en \(a_0 + i\cdot d\). Para cada elemento restante,
+           ¿qué condición debe cumplir su valor original respecto a ese objetivo para que sea
+           alcanzable con a lo más una operación? Y si lo es, ¿cuánto cuesta exactamente?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La idea central es que cada elemento sólo puede moverse a lo más 1, así que su
+           valor final está a distancia \(\le 1\) de su valor original: tiene apenas 3 valores
+           posibles. Una progresión aritmética queda determinada por sus dos primeros
+           términos, y a partir de ahí todo lo demás está forzado.</p>
+
+        <p><strong>Caso base \(N \le 2\):</strong> cualquier arreglo de 1 o 2 elementos ya es
+           una progresión aritmética (con 0 o 1 diferencias, siempre constante), así que la
+           respuesta es \(0\) sin tocar nada.</p>
+
+        <p><strong>Caso general \(N \ge 3\):</strong> prueba las \(9\) combinaciones de
+           \((\delta_0, \delta_1) \in \{-1,0,1\}^2\) para los dos primeros elementos. Cada
+           combinación fija \(a_0 = \text{arr}[0]+\delta_0\), \(a_1 = \text{arr}[1]+\delta_1\)
+           y la diferencia común \(d = a_1 - a_0\); con eso queda determinada toda la
+           progresión. Recorre el resto del arreglo verificando que cada elemento esté a
+           distancia \(\le 1\) de su objetivo \(a_0 + i\cdot d\) (si no, esa combinación es
+           imposible) y acumulando el costo, que es la suma de esas distancias más
+           \(|\delta_0| + |\delta_1|\). La respuesta es el mínimo costo entre las
+           combinaciones válidas, o \(-1\) si ninguna lo fue.</p>
+
+        <p><strong>¿Por qué es correcto?</strong> El valor final de cada elemento sólo puede
+           ser su original \(\pm 1\) o igual. Para el primero y el segundo eso da \(3\times 3\)
+           opciones; cada par de valores finales fija por completo la progresión, de modo que
+           para cada posición posterior su objetivo está determinado y el costo es exactamente
+           \(|\text{objetivo}-\text{original}|\) (que sólo es factible si vale 0 o 1). No queda
+           ninguna decisión libre adicional, así que recorrer las 9 combinaciones cubre todas
+           las progresiones alcanzables. Cómo se sube de subtarea en subtarea: la subtarea 1
+           se resuelve restringiendo los deltas a \(\{0,+1\}\); la subtarea 2 se resuelve
+           fijando \(\delta_0=0\); y la subtarea 3 es justamente el barrido completo de las 9
+           combinaciones.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion Resolver(N, arr):
+    si N &lt;= 2:
+        regresa 0
+    mejor = INFINITO
+    para d0 en {-1, 0, 1}:
+        para d1 en {-1, 0, 1}:
+            a0 = arr[0] + d0
+            a1 = arr[1] + d1
+            dif = a1 - a0           # diferencia comun de la progresion
+            costo = |d0| + |d1|
+            valida = verdadero
+            para i de 2 hasta N-1:
+                objetivo = a0 + i * dif
+                e = |arr[i] - objetivo|
+                si e &gt; 1:           # un solo +-1 no alcanza
+                    valida = falso
+                    rompe
+                costo = costo + e
+            si valida:
+                mejor = min(mejor, costo)
+    si mejor == INFINITO:
+        regresa -1
+    regresa mejor</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(9\cdot N) = O(N)\) en tiempo y \(O(N)\) en memoria
+           (sólo para guardar el arreglo; el trabajo extra es \(O(1)\)).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (obligatorio aquí)</span>
+<pre>usa long long para 'objetivo' y 'dif'</pre>
+          <p class="note">El objetivo \(a_0 + i\cdot d\) puede alcanzar \(\sim 10^{14}\)
+             (\(i\) hasta \(10^5\), \(d\) hasta \(\sim 10^9\)); con <code>int</code> de 32 bits
+             se desborda y la comparación \(e \le 1\) puede dar resultados falsos por el
+             "wrap-around". Nunca pongas la solución completa en código.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2019 · Problema 03 — Ravangers</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">24ª OMI · 2019 · Día 1</div>
+    <h1>Problema <span class="num">03</span> — Ravangers</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/OMI-2019-Sumas">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Cuando Star-Lord era miembro de los Ravangers, Yondu le encomendó la misión de
+       recuperar una loza coloreada como tablero de ajedrez hecha de minerales caros,
+       misma que se encontraba entre los restos de una nave que se estrelló.</p>
+
+    <p>Star-Lord recuperó la loza, pero desafortunadamente le tiró pintura encima y ya no
+       tiene los colores originales.</p>
+
+    <p>La loza se puede representar como una cuadrícula con \(N\) filas (numeradas de \(0\) a
+       \(N-1\) de arriba hacia abajo) y \(M\) columnas (numeradas de \(0\) a \(M-1\) de
+       izquierda a derecha).</p>
+
+    <p>Cada casilla de la loza está pintada de un color que puede ser blanco o negro;
+       además, cada casilla está hecha de un mineral distinto y por tanto tiene un valor
+       diferente en el mercado negro. Además es posible, para las casillas que se dañaron
+       cuando se estrelló la nave, que el precio sea negativo.</p>
+
+    <p>Una cuadrícula está coloreada como un <strong>tablero de ajedrez</strong> si para toda
+       casilla su color es distinto que el de sus casillas vecinas con las que comparte una
+       arista; es decir, cada casilla puede tener a lo más 4 casillas vecinas.</p>
+
+    <p>En el mercado negro están de moda las lozas rectangulares coloreadas como tablero de
+       ajedrez, así que nadie comprará una loza con un coloreado diferente o que no sea
+       rectangular.</p>
+
+    <p>Por ejemplo, la siguiente cuadrícula está coloreada como un tablero de ajedrez:</p>
+    <figure>
+      <figcaption><strong>Cuadrícula 1.</strong> Una cuadrícula coloreada como tablero de
+        ajedrez: cada casilla tiene color distinto al de sus vecinas que comparten arista.</figcaption>
+    </figure>
+
+    <p>Esta segunda cuadrícula también está coloreada como tablero de ajedrez:</p>
+    <figure>
+      <figcaption><strong>Cuadrícula 2.</strong> Otro coloreado válido de tablero de ajedrez
+        (puede empezar con cualquiera de los dos colores en la esquina).</figcaption>
+    </figure>
+
+    <p>Pero esta tercera cuadrícula <strong>no</strong> está coloreada como tablero de ajedrez:</p>
+    <figure>
+      <figcaption><strong>Cuadrícula 3.</strong> Coloreado inválido: existen dos casillas
+        vecinas (que comparten una arista) con el mismo color.</figcaption>
+    </figure>
+
+    <p>Dado que los Ravangers no son buenos artistas pero les gusta cortar cosas, no están
+       dispuestos a pintar el tablero, pero están más que dispuestos a cortar un pedazo
+       rectangular del mismo cuyos colores tengan el patrón de un tablero de ajedrez.</p>
+
+    <p>Como eso de encontrar soluciones óptimas tampoco se les da bien, han exigido tu
+       cooperación para que cortes una sección de la loza original de manera que la sección
+       cortada sea <strong>rectangular</strong>, esté <strong>coloreada como tablero de
+       ajedrez</strong> y <strong>maximice su ganancia</strong>. La ganancia está dada por la
+       suma de los valores de cada una de sus casillas.</p>
+
+    <p>El rectángulo que cortes puede ser de cualquier parte de la loza, incluso del centro.
+       Y puede tener cualquier medida, incluso \(1 \times 1\).</p>
+
+    <p>Este es un ejemplo de un corte válido:</p>
+    <figure>
+      <figcaption><strong>Cuadrícula 4.</strong> Ejemplo de un corte rectangular válido
+        dentro de la loza: la región recortada cumple el patrón de tablero de ajedrez.</figcaption>
+    </figure>
+
+    <p>Si hay más de una solución que maximice su ganancia, cualquiera es igualmente aceptable.</p>
+
+    <p class="note">Nota de transcripción: el enunciado oficial incluye cinco figuras
+       (<code>grid1.png</code>–<code>grid4.png</code> y <code>sample.png</code>). No están
+       disponibles en este archivo; arriba se describe lo que ilustra cada una.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea, 2 enteros \(N\) y \(M\) separados por un único espacio: el número
+       de filas y columnas de la loza original.</p>
+    <p>En las siguientes \(N\) líneas hay \(M\) enteros, de manera que el \(j\)-ésimo entero
+       de la \(i\)-ésima línea representa el <em>valor</em> de la casilla \((i-1,\,j-1)\).</p>
+    <p>En las siguientes \(N\) líneas, \(M\) enteros separados por espacios, que representan
+       los <em>colores</em> de cada casilla: un \(0\) ó \(1\) que representa el color blanco o
+       negro respectivamente.</p>
+
+    <h2>Salida</h2>
+    <p>Cuatro enteros separados por espacios \(fil_1,\ col_1,\ fil_2\) y \(col_2\), donde
+       \((fil_1, col_1)\) es la casilla superior izquierda de la loza resultante y
+       \((fil_2, col_2)\) es la casilla inferior derecha de la loza resultante.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>128 MiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Filas y columnas</td><td><span class="badge">\(1 \le N, M \le 300\)</span></td></tr>
+        <tr><td>Valor de cada casilla</td><td><span class="badge">\(0 \le |a_{i,j}| \le 10^9\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">8</td><td>\(1 \le N \le 15\) y \(0 \le |a_{i,j}| \le 10^6\).</td></tr>
+          <tr><td>2</td><td class="pts">10</td><td>\(1 \le N \le 30\) y \(0 \le |a_{i,j}| \le 10^6\).</td></tr>
+          <tr><td>3</td><td class="pts">12</td><td>\(1 \le N \le 70\).</td></tr>
+          <tr><td>4</td><td class="pts">15</td><td>\(1 \le a_{i,j} \le 10^9\) (no hay números negativos en la loza original).</td></tr>
+          <tr><td>5</td><td class="pts">23</td><td>La loza original completa está coloreada como tablero de ajedrez.</td></tr>
+          <tr><td>6</td><td class="pts">32</td><td>Sin consideraciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>3 3
+1 2 3
+4 5 6
+3 2 1
+1 0 0
+0 1 0
+1 0 0</pre></div>
+      <div class="io"><h4>Salida</h4><pre>0 0
+2 1</pre></div>
+    </div>
+    <p class="note">La mayor ganancia posible se obtiene al cortar la loza
+       <strong>rectangular</strong> que contiene las casillas con valores 1, 2, 4, 5, 3 y 2
+       (filas \(0\) a \(2\), columnas \(0\) a \(1\); suma \(= 17\)). El enunciado acompaña
+       este ejemplo con la figura <code>sample.png</code> (no disponible aquí).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Sumas de prefijos</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Kadane (máximo subarreglo)</span>
+      <span class="ptag">Greedy</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan una cuadrícula de \(N \times M\) con un <em>valor</em> (posiblemente negativo) y
+       un <em>color</em> (\(0\)/\(1\)) por casilla. Debes elegir un subrectángulo cuyo coloreado
+       sea de tablero de ajedrez (casillas vecinas con colores distintos) y que maximice la
+       suma de sus valores. Imprime las esquinas \((fil_1,col_1)\) y \((fil_2,col_2)\) de un
+       rectángulo óptimo (cualquiera si hay empate).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, M \le 300\): caben algoritmos hasta \(O(N^2 M) \approx 2.7\times 10^7\).
+                Los valores llegan a \(10^9\) y el rectángulo puede ser de \(300\times 300\),
+                así que la suma cabe en \(\sim 9\times 10^{16}\): usa enteros de 64 bits.
+                Hay valores <strong>negativos</strong>, así que no basta con tomar el
+                rectángulo más grande; hay que maximizar de verdad.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuándo un rectángulo es tablero de ajedrez?</summary>
+      <div class="body">
+        <p class="q">¿Realmente tienes que revisar las 4 vecinas de cada casilla, o basta con
+           una condición más sencilla por filas y columnas?</p>
+        <p>Observa que un rectángulo es tablero de ajedrez si y solo si <em>cada fila</em>
+           alterna de color horizontalmente <strong>y</strong> <em>cada columna</em> alterna
+           de color verticalmente. Y hay un atajo todavía más fino: si todas las filas
+           alternan en su totalidad y <em>una sola</em> columna alterna verticalmente,
+           entonces todas las columnas alternan también. ¿Por qué? Si dos columnas vecinas
+           alternan verticalmente y difieren en la fila de arriba, difieren en
+           <em>todas</em> las filas (ambas cambian de paridad al mismo ritmo). Comparar cada
+           casilla solo con la de arriba y la de la izquierda ya es suficiente.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (8 pts): la fuerza bruta honesta</summary>
+      <div class="body">
+        <p class="q">Con \(N \le 15\), ¿puedes simplemente probar <em>todos</em> los
+           rectángulos posibles?</p>
+        <p>Hay \(O(N^2 M^2)\) pares de esquinas. Por cada par, verifica si es tablero de
+           ajedrez recorriendo sus casillas y, si lo es, suma sus valores. Eso da
+           \(O(N^3 M^3)\): lento, pero suficiente para entradas chiquitas. Quédate con el
+           rectángulo de mayor suma. ¿Notas cuáles son las dos operaciones caras que conviene
+           acelerar después: «¿es tablero?» y «suma de la región»?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtareas 2 y 3 (10 + 12 pts): precálculos que aceleran</summary>
+      <div class="body">
+        <p class="q">¿Qué tablas puedes precalcular para responder «¿es tablero?» y «suma de
+           región» mucho más rápido?</p>
+        <ul>
+          <li><strong>Racha alternante horizontal:</strong> \(L[f][c]\) = cuántas columnas
+             consecutivas terminando en \((f,c)\) alternan de color en esa fila. Se calcula en
+             \(O(NM)\). Un rectángulo \((f_1,c_1,f_2,c_2)\) tiene todas sus filas alternantes
+             si \(L[f][c_2] \ge c_2-c_1+1\) para cada fila \(f\) del rango.</li>
+          <li><strong>Sumas de prefijos 2D:</strong> permiten obtener la suma de cualquier
+             rectángulo en \(O(1)\) con inclusión–exclusión.</li>
+        </ul>
+        <p>Con esto, fija las columnas \(c_1, c_2\) (o las filas) e itera la otra esquina hacia
+           abajo, <em>rompiendo</em> el ciclo en cuanto la columna derecha deje de alternar
+           verticalmente. Cada verificación pasa a costar \(O(1)\). El costo baja a
+           \(\approx O(N^2 M^2)\), bueno para \(N \le 70\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 4 (15 pts): sin valores negativos</summary>
+      <div class="body">
+        <p class="q">Si <em>ningún</em> valor es negativo, ¿conviene alguna vez recortar el
+           rectángulo más angosto?</p>
+        <p>No: agregar columnas nunca empeora la suma cuando todo es \(\ge 0\). Para cada par
+           de filas \((f_1, f_2)\) y columna derecha \(c_2\), basta tomar el bloque de
+           columnas contiguas <strong>lo más ancho posible</strong> que siga siendo tablero;
+           no hace falta Kadane.</p>
+        <p class="q">¿Qué condiciones debe cumplir cada columna del bloque para que el
+           rectángulo sea tablero?</p>
+        <p>El patrón de tablero exige alternancia en <em>ambas</em> direcciones. Un bloque
+           de columnas \([c_1, c_2]\) con filas \([f_1, f_2]\) es válido si y solo si:</p>
+        <ul>
+          <li><strong>Alternancia vertical:</strong> cada columna \(c\) del bloque alterna
+              en todo \([f_1, f_2]\), es decir, \(up[f_2][c] \ge h\) donde
+              \(h = f_2 - f_1 + 1\). Esto debe cumplirse para <em>cada</em> columna del
+              bloque, no solo para \(c_2\).</li>
+          <li><strong>Alternancia horizontal:</strong> columnas vecinas del bloque difieren
+              de color en la fila \(f_1\) (por la Pista 1, eso garantiza que difieren en
+              todo el rango \([f_1, f_2]\)).</li>
+        </ul>
+        <p>La fórmula \(b = \min_{f_1 \le f \le f_2} L[f][c_2]\) es <strong>incorrecta</strong>:
+           solo captura la alternancia horizontal de la columna derecha y <strong>no verifica
+           la alternancia vertical de las columnas interiores</strong>. Una columna
+           \(c &lt; c_2\) con \(up[f_2][c] &lt; h\) rompe el patrón aunque
+           \(L[f][c_2]\) sea grande.</p>
+        <p>La forma correcta de calcular el ancho máximo válido es procesar las columnas de
+           izquierda a derecha. Para cada \(c_2\), mantén el ancho \(W[f_1][f_2]\) del mayor
+           bloque válido que termina en \(c_2 - 1\). Puedes extender ese ancho a
+           \(W[f_1][f_2] + 1\) (es decir, incluir \(c_2\)) si se cumplen
+           <em>dos</em> condiciones simultáneamente: la columna \(c_2\) alterna
+           verticalmente (\(up[f_2][c_2] \ge h\)) <em>y</em> la racha horizontal mínima en
+           el rango supera el ancho anterior
+           (\(\min_{f_1 \le f \le f_2} L[f][c_2] \gt W[f_1][f_2]\)). Juntas garantizan que
+           el nuevo bloque de ancho \(W[f_1][f_2] + 1\) es tablero. El resultado es un
+           algoritmo \(O(N^2 M)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 5 (23 pts): toda la loza ya es tablero</summary>
+      <div class="body">
+        <p class="q">Si la cuadrícula completa ya está coloreada como tablero, ¿qué problema
+           clásico queda?</p>
+        <p>La restricción de coloreado deja de importar: <em>cualquier</em> rectángulo es
+           válido. Queda el clásico <strong>rectángulo de suma máxima</strong>: fija el par de
+           filas \((f_1,f_2)\), colapsa cada columna a la suma de esa franja, y corre
+           <strong>Kadane</strong> (máximo subarreglo) sobre ese arreglo 1D. Eso es
+           \(O(N^2 M)\). ¿Notas que esta idea es justo el esqueleto de la solución general?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La solución general combina la pista 1 (caracterización del tablero) con la pista 5
+           (Kadane por pares de filas):</p>
+        <ol>
+          <li>Fija un par de filas \((f_1, f_2)\). Eso fija la altura \(h = f_2-f_1+1\).</li>
+          <li>Una columna \(c\) sirve para esa franja si alterna verticalmente en todo
+             \([f_1,f_2]\). Lo sabes en \(O(1)\) con una tabla de racha vertical
+             \(up[i][c]\) (longitud de la racha alternante vertical que termina en \((i,c)\)):
+             la columna es válida si \(up[f_2][c] \ge h\).</li>
+          <li>Dos columnas válidas <em>vecinas</em> \(c-1\) y \(c\) se pueden pegar en el mismo
+             rectángulo si difieren de color en la fila de arriba \(f_1\) (por la pista 1, eso
+             garantiza que difieren en toda la franja).</li>
+          <li>La suma de la franja de la columna \(c\) es
+             \(\text{pref}[f_2{+}1][c]-\text{pref}[f_1][c]\) con un prefijo vertical por
+             columna, en \(O(1)\).</li>
+          <li>Recorre las columnas de izquierda a derecha aplicando <strong>Kadane</strong>:
+             extiende el bloque actual mientras la columna sea válida y esté «pegada» a la
+             anterior; reinícialo cuando se rompa la validez o la liga de colores. El máximo de
+             todos los bloques, sobre todos los pares de filas, es la respuesta. Guarda las
+             esquinas del mejor bloque.</li>
+        </ol>
+        <p><strong>Por qué es correcto:</strong> para un par de filas fijo, los rectángulos
+           válidos son exactamente los segmentos contiguos de columnas «válidas y ligadas»;
+           Kadane encuentra el de suma máxima entre ellos (incluyendo el caso de una sola
+           columna, e incluso cuando todo es negativo, donde toma la mejor casilla suelta).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, M, valor[][], color[][]
+
+# racha vertical alternante que termina en (i,j)
+para cada columna j:
+    up[0][j] = 1
+    para i de 1 a N-1:
+        si color[i][j] != color[i-1][j]: up[i][j] = up[i-1][j] + 1
+        si no:                           up[i][j] = 1
+
+# prefijo vertical por columna: pref[i+1][j] = suma de valor[0..i][j]
+para cada columna j:
+    pref[0][j] = 0
+    para i de 0 a N-1: pref[i+1][j] = pref[i][j] + valor[i][j]
+
+mejor = -infinito; resp = (0,0,0,0)
+para f1 de 0 a N-1:
+    para f2 de f1 a N-1:
+        h = f2 - f1 + 1
+        activo = falso; suma = 0; izq = 0
+        para c de 0 a M-1:
+            buena = (up[f2][c] >= h)              # columna c alterna en [f1,f2]
+            si no buena: activo = falso; continuar
+            s = pref[f2+1][c] - pref[f1][c]       # suma de la franja de la columna c
+            ligada = activo y (color[f1][c-1] != color[f1][c])
+            si ligada y suma > 0:
+                suma = suma + s                   # extiende el bloque
+            si no:
+                suma = s; izq = c                 # arranca bloque nuevo en c
+            activo = verdadero
+            si suma > mejor:
+                mejor = suma; resp = (f1, izq, f2, c)
+
+imprimir resp</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N^2 M)\) en tiempo y \(O(N M)\) en memoria.
+           Con \(N=M=300\) son \(\sim 2.7\times 10^7\) operaciones, de sobra para 1 segundo.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Usa enteros de 64 bits (long long / int64_t) para las sumas:
+un rectángulo de 300x300 con valores de 10^9 llega a ~9x10^16,
+lo que desborda un int de 32 bits.</pre>
+          <p class="note">Es el único cuidado de implementación; el resto es aritmética y
+             arreglos normales.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

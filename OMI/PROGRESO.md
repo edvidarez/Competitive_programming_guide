@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **44 / 190**
+Total de problemas: **190** · Completados: **50 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -270,16 +270,16 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 7 | Día 2 | Guacamole | `2018/07 Guacamole/index.html` |
 | [ ] | 8 | Día 2 | Mapa de la CDMX | `2018/08 Mapa de la CDMX/index.html` |
 
-## 24ª OMI · 2019 — 0 / 6
+## 24ª OMI · 2019 — 6 / 6
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Spider-Man | `2019/01 Spider-Man/index.html` |
-| [ ] | 2 | Día 1 | Resistencia | `2019/02 Resistencia/index.html` |
-| [ ] | 3 | Día 1 | Ravangers | `2019/03 Ravangers/index.html` |
-| [ ] | 4 | Día 2 | Perfectamente balanceado | `2019/04 Perfectamente balanceado/index.html` |
-| [ ] | 5 | Día 2 | La calle de Möbius | `2019/05 La calle de Möbius/index.html` |
-| [ ] | 6 | Día 2 | Áreas Metropolitanas | `2019/06 Áreas Metropolitanas/index.html` |
+| [x] | 1 | Día 1 | Spider-Man | `2019/01 Spider-Man/index.html` |
+| [x] | 2 | Día 1 | Resistencia | `2019/02 Resistencia/index.html` |
+| [x] | 3 | Día 1 | Ravangers | `2019/03 Ravangers/index.html` |
+| [x] | 4 | Día 2 | Perfectamente balanceado | `2019/04 Perfectamente balanceado/index.html` |
+| [x] | 5 | Día 2 | La calle de Möbius | `2019/05 La calle de Möbius/index.html` |
+| [x] | 6 | Día 2 | Áreas Metropolitanas | `2019/06 Áreas Metropolitanas/index.html` |
 
 ## 25ª OMI · 2020 — 6 / 6
 
