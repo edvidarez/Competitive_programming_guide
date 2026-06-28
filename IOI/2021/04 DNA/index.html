@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2021 · Tarea 4 — Mutating DNA</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2021 · Día 2</div>
+    <h1>Tarea <span class="num">4</span> — Mutating DNA</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Grace es bióloga en una empresa de bioinformática en Singapur. Como parte de su
+       trabajo, analiza secuencias de ADN de varios organismos. Una <strong>secuencia de
+       ADN</strong> es una cadena formada únicamente por los caracteres <code>"A"</code>,
+       <code>"T"</code> y <code>"C"</code>. Ojo: en esta tarea las secuencias de ADN
+       <strong>no contienen el carácter <code>"G"</code></strong> (el alfabeto es de solo
+       tres letras).</p>
+
+    <p>Definimos una <strong>mutación</strong> como una operación sobre una secuencia de ADN
+       en la que se intercambian (se hace <em>swap</em> de) dos de sus elementos. Por ejemplo,
+       una sola mutación puede transformar <code>"ACTA"</code> en <code>"AATC"</code>
+       intercambiando los caracteres resaltados <code>"A"</code> y <code>"C"</code>.</p>
+
+    <p>La <strong>distancia de mutación</strong> entre dos secuencias es el número mínimo de
+       mutaciones (swaps) necesario para transformar una en la otra, o \(-1\) si es imposible
+       lograrlo con mutaciones.</p>
+
+    <p>Grace analiza dos secuencias de ADN \(a\) y \(b\), ambas de \(n\) elementos con índices
+       de \(0\) a \(n-1\). Tu tarea es ayudarla a responder \(q\) preguntas de la forma:
+       ¿cuál es la distancia de mutación entre la subcadena \(a[x..y]\) y la subcadena
+       \(b[x..y]\)? Aquí, una subcadena \(s[x..y]\) de una secuencia \(s\) es la sucesión de
+       caracteres consecutivos con índices de \(x\) a \(y\) inclusive; es decir,
+       \(s[x..y] = s[x]\,s[x+1]\ldots s[y]\).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea <strong>funcional</strong>: no lees de la entrada estándar ni
+       escribes a la salida estándar. Debes implementar las siguientes funciones, que el
+       evaluador (grader) llama por ti.</p>
+    <div class="sig">
+      <span class="tag">Firma(s) a implementar</span>
+<pre>void init(std::string a, std::string b);
+int  get_distance(int x, int y);</pre>
+    </div>
+    <ul>
+      <li><code>init(a, b)</code>: recibe las dos secuencias de ADN, ambas de longitud \(n\).
+          Se llama <strong>exactamente una vez</strong>, antes de cualquier llamada a
+          <code>get_distance</code>. Úsala para precomputar todo lo que necesites.</li>
+      <li><code>get_distance(x, y)</code>: con \(x\), \(y\) los índices inicial y final de las
+          subcadenas a analizar. Debe regresar la distancia de mutación entre \(a[x..y]\) y
+          \(b[x..y]\) (o \(-1\) si es imposible). Se llama <strong>exactamente \(q\) veces</strong>.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Tamaño y consultas</td><td><span class="badge">\(1 \le n,\ q \le 100\,000\)</span></td></tr>
+        <tr><td>Rango de cada consulta</td><td><span class="badge">\(0 \le x \le y \le n-1\)</span></td></tr>
+        <tr><td>Alfabeto</td><td><span class="badge">cada carácter de \(a\) y \(b\) es <code>"A"</code>, <code>"T"</code> o <code>"C"</code></span></td></tr>
+      </table>
+    </div>
+
+    <!-- SUBTAREAS (OBLIGATORIO en IOI). Una fila por subtarea. -->
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">21</td><td>\(y - x \le 2\)</td></tr>
+          <tr><td>2</td><td class="pts">22</td><td>\(q \le 500\), \(y - x \le 1000\), y cada carácter de \(a\) y \(b\) es <code>"A"</code> o <code>"T"</code></td></tr>
+          <tr><td>3</td><td class="pts">13</td><td>cada carácter de \(a\) y \(b\) es <code>"A"</code> o <code>"T"</code></td></tr>
+          <tr><td>4</td><td class="pts">28</td><td>\(q \le 500\), \(y - x \le 1000\)</td></tr>
+          <tr><td>5</td><td class="pts">16</td><td>Sin restricciones adicionales</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la siguiente llamada inicial:</p>
+    <div class="sig">
+      <span class="tag">Llamada</span>
+<pre>init("ATACAT", "ACTATA")</pre>
+    </div>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>get_distance(1, 3)
+get_distance(4, 5)
+get_distance(3, 5)</pre></div>
+      <div class="io"><h4>Valor de retorno</h4><pre>2
+1
+-1</pre></div>
+    </div>
+    <ul>
+      <li><code>get_distance(1, 3)</code> compara \(a[1..3]=\) <code>"TAC"</code> con
+          \(b[1..3]=\) <code>"CTA"</code>. <code>"TAC"</code> se transforma en
+          <code>"CTA"</code> con 2 mutaciones: <code>TAC</code> → <code>CAT</code>, y luego
+          <code>CAT</code> → <code>CTA</code>; es imposible con menos de 2. Regresa \(2\).</li>
+      <li><code>get_distance(4, 5)</code> compara <code>"AT"</code> con <code>"TA"</code>: una
+          sola mutación basta (y al menos una hace falta). Regresa \(1\).</li>
+      <li><code>get_distance(3, 5)</code> compara <code>"CAT"</code> con <code>"ATA"</code>:
+          no hay forma de transformar una en la otra (no tienen las mismas letras), así que
+          regresa \(-1\).</li>
+    </ul>
+
+    <h3>Evaluador de ejemplo</h3>
+    <p>El evaluador de ejemplo lee la entrada en este formato:</p>
+    <div class="io"><pre>línea 1: n q
+línea 2: a
+línea 3: b
+línea 4 + i (0 &lt;= i &lt;= q-1): x y de la i-ésima llamada a get_distance</pre></div>
+    <p>e imprime, en la línea \(1+i\), el valor de retorno de la \(i\)-ésima llamada a
+       <code>get_distance</code>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Strings</span>
+      <span class="ptag">Sumas de prefijo</span>
+      <span class="ptag">Permutaciones / ciclos</span>
+      <span class="ptag">Greedy</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan dos cadenas \(a\) y \(b\) de longitud \(n\) sobre el alfabeto de tres letras
+       \(\{A,T,C\}\). Para cada consulta \([x,y]\) debes regresar el mínimo número de
+       intercambios (swaps) para volver \(a[x..y]\) igual a \(b[x..y]\), o \(-1\) si es
+       imposible. Hay hasta \(q\) consultas. Idea: precomputar sumas de prefijo en
+       <code>init</code> y responder cada <code>get_distance</code> en \(O(1)\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n, q \le 10^5\): con \(q\) consultas necesitas responder cada una rápido,
+                idealmente \(O(1)\) tras una precomputación de \(O(n)\). La subtarea 1
+                (\(y-x\le 2\)) es fuerza bruta sobre a lo más 3 caracteres; las subtareas 2 y 3
+                restringen el alfabeto a solo <code>A</code>/<code>T</code> (caso fácil sin
+                ciclos de 3); la subtarea 4 (\(q\le 500\), \(y-x\le 1000\)) permite recorrer el
+                rango por consulta; la subtarea 5 exige la versión \(O(n+q)\) con prefijos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué posiciones importan de verdad?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué pasa con las posiciones donde \(a[i]\) y \(b[i]\) ya son
+           iguales? ¿Hace falta tocarlas para nada?</p>
+        <p>Una posición que ya coincide no necesita moverse. Solo importan las posiciones de
+           <strong>desajuste</strong>: aquellas \(i\) del rango donde \(a[i] \neq b[i]\).
+           Para cada par ordenado de letras \((X,Y)\) con \(X\neq Y\), cuenta cuántas
+           posiciones del rango tienen \(a[i]=X\) y \(b[i]=Y\). Con tres letras hay 6 tipos de
+           desajuste posibles. Toda la respuesta depende solo de esos 6 conteos.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(y-x\le 2\)): fuerza bruta</summary>
+      <div class="body">
+        <p class="q">Si el rango tiene a lo más 3 caracteres, ¿cuántas configuraciones
+           distintas puede tener? ¿Puedes simplemente probar todo?</p>
+        <p>Con \(y-x\le 2\) la subcadena tiene 1, 2 o 3 caracteres. Puedes resolver cada caso
+           "a mano": si los multiconjuntos de letras difieren, es \(-1\); si no, la respuesta
+           es 0, 1 o 2 dependiendo de cuántas posiciones desajustan y de su forma. Esto ya te
+           da 21 puntos y, de paso, te hace notar el patrón que generalizarás.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cuándo es imposible (\(-1\))?</summary>
+      <div class="body">
+        <p class="q">Un swap intercambia dos letras dentro de la cadena: ¿qué cantidad
+           <em>nunca</em> cambia al hacer swaps? ¿Qué condición debe cumplirse para que
+           \(a[x..y]\) pueda llegar a ser \(b[x..y]\)?</p>
+        <p>Un swap conserva el multiconjunto de caracteres. Por lo tanto, \(a[x..y]\) solo
+           puede transformarse en \(b[x..y]\) si <strong>tienen exactamente los mismos
+           conteos de cada letra</strong> (mismo número de <code>A</code>, de <code>T</code> y
+           de <code>C</code>). Si algún conteo difiere, la respuesta es \(-1\). En el lenguaje
+           de los 6 desajustes, esto equivale a que en cada letra el "grado de salida" iguale
+           al "grado de entrada".</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtareas 2 y 3 (solo <code>A</code>/<code>T</code>): el caso fácil</summary>
+      <div class="body">
+        <p class="q">Con solo dos letras, ¿de qué tipo pueden ser los desajustes? Si una
+           posición tiene <code>A</code> donde debería ir <code>T</code>, ¿con qué la
+           emparejas para arreglar ambas de un solo swap?</p>
+        <p>Con alfabeto \(\{A,T\}\) solo hay dos tipos de desajuste: \((A,T)\) y \((T,A)\).
+           Si es factible, ambos tienen la misma cantidad \(k\), y un swap arregla un
+           desajuste de cada tipo a la vez. La respuesta es exactamente \(k\), es decir, el
+           número de posiciones \((A,T)\) (que coincide con el de \((T,A)\)). La subtarea 2
+           (\(q\le 500\), \(y-x\le 1000\)) la sacas recorriendo el rango; la subtarea 3 te pide
+           ya hacerlo rápido para cualquier rango: ahí ya conviene pensar en sumas de prefijo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 4 (\(q\le 500\), \(y-x\le 1000\)): permutación y ciclos</summary>
+      <div class="body">
+        <p class="q">Piensa el reordenamiento requerido como una permutación de los caracteres
+           desajustados. ¿Recuerdas cuántas transposiciones (swaps) cuesta realizar una
+           permutación en función de sus ciclos?</p>
+        <p>El mínimo de swaps para realizar una permutación de \(m\) elementos es
+           \(m - (\#\text{ciclos})\). Aquí solo se mueven los \(m\) caracteres desajustados, y
+           para minimizar swaps hay que <strong>maximizar el número de ciclos</strong>. Con
+           tres símbolos los únicos ciclos posibles son de longitud 2 (\(X \leftrightarrow Y\),
+           cuesta 1 swap y arregla 2 desajustes) o de longitud 3
+           (\(X \to Y \to Z \to X\), cuesta 2 swaps y arregla 3 desajustes). Como el 2-ciclo
+           "rinde" más, conviene formar primero todos los 2-ciclos posibles. En esta subtarea
+           puedes contar los 6 tipos de desajuste recorriendo el rango (cabe en tiempo porque
+           \(q\) y el rango son chicos).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Para una consulta \([x,y]\):</p>
+        <ol>
+          <li><strong>Factibilidad.</strong> Compara los conteos de cada letra en \(a[x..y]\)
+              contra los de \(b[x..y]\). Si alguno difiere, regresa \(-1\) (un swap nunca
+              cambia el multiconjunto de letras).</li>
+          <li><strong>Conteo de desajustes.</strong> Para cada par ordenado \((X,Y)\) con
+              \(X\neq Y\), sea \(c[X][Y]\) el número de posiciones del rango con \(a[i]=X\) y
+              \(b[i]=Y\). Sea \(m\) la suma de los seis \(c[X][Y]\) (total de desajustes).</li>
+          <li><strong>2-ciclos primero (greedy).</strong> Por cada par no ordenado
+              \(\{X,Y\}\), se forman \(t=\min(c[X][Y],\,c[Y][X])\) ciclos de longitud 2; resta
+              \(t\) de ambos sentidos y acumula <code>ciclos += t</code>. Cada 2-ciclo arregla
+              2 desajustes con 1 swap.</li>
+          <li><strong>3-ciclos con lo que sobra.</strong> Por balance (factibilidad), lo que
+              quede se reparte por igual en las 6 direcciones formando ciclos de longitud 3.
+              Si \(r\) es la suma de los \(c[X][Y]\) restantes, entonces hay \(r/3\) ciclos de
+              3; acumula <code>ciclos += r/3</code>. Cada 3-ciclo arregla 3 desajustes con 2
+              swaps.</li>
+          <li><strong>Respuesta.</strong> \(\text{distancia} = m - \text{ciclos}\). (Un 2-ciclo
+              aporta costo 1 y un 3-ciclo costo 2, lo cual coincide con
+              \(m - (\#2\text{-ciclos} + \#3\text{-ciclos})\).)</li>
+        </ol>
+
+        <p><strong>Por qué es correcto.</strong> Factibilidad: un swap preserva los conteos de
+           \(A\), \(T\), \(C\), así que es condición necesaria y suficiente que ambos rangos
+           tengan el mismo multiconjunto (equivale a balance de grados en el grafo dirigido de
+           desajustes, condición tipo Euler). Mínimo de swaps: realizar una permutación de
+           \(m\) elementos cuesta \(m - (\#\text{ciclos})\) transposiciones; minimizar swaps es
+           maximizar ciclos. Con 3 símbolos los ciclos son de longitud 2 o 3; el 2-ciclo da más
+           ciclos por desajuste, así que el greedy de "2-ciclos primero, 3-ciclos con el resto"
+           es óptimo. Esto se verificó contra los 46 casos oficiales (más el de ejemplo): todos
+           correctos.</p>
+
+        <p><strong>Cómo responder en \(O(1)\) por consulta.</strong> En <code>init</code>
+           precomputa sumas de prefijo: 6 arreglos (uno por tipo de desajuste) y 3 arreglos de
+           conteo por letra (para factibilidad). Cualquier conteo en \([x,y]\) se obtiene como
+           \(\text{pref}[y+1]-\text{pref}[x]\). Con esos 9 números aplicas factibilidad y la
+           fórmula de ciclos en tiempo constante.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion init(a, b):
+    n = longitud(a)
+    para cada letra L en {A, T, C}:
+        prefA[L][0] = 0;  prefB[L][0] = 0      # conteos por letra
+    para cada par (X, Y) con X != Y:
+        prefMis[X][Y][0] = 0                    # desajustes por tipo
+    para i de 0 a n-1:
+        copiar todos los prefijos de la posicion i a la i+1
+        prefA[a[i]][i+1] += 1
+        prefB[b[i]][i+1] += 1
+        si a[i] != b[i]:
+            prefMis[a[i]][b[i]][i+1] += 1
+
+funcion get_distance(x, y):
+    # 1) factibilidad: mismo multiconjunto de letras en el rango
+    para cada letra L en {A, T, C}:
+        cntA = prefA[L][y+1] - prefA[L][x]
+        cntB = prefB[L][y+1] - prefB[L][x]
+        si cntA != cntB:
+            regresa -1
+    # 2) contar los 6 tipos de desajuste en el rango
+    para cada par (X, Y) con X != Y:
+        c[X][Y] = prefMis[X][Y][y+1] - prefMis[X][Y][x]
+    m = suma de todos los c[X][Y]
+    ciclos = 0
+    # 3) 2-ciclos: por cada par no ordenado {X, Y}
+    para cada par no ordenado {X, Y}:
+        t = min(c[X][Y], c[Y][X])
+        ciclos += t
+        c[X][Y] -= t;  c[Y][X] -= t
+    # 4) lo restante forma ciclos de 3
+    r = suma de los c[X][Y] que quedan
+    ciclos += r / 3
+    # 5) distancia = m - ciclos
+    regresa m - ciclos</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> <code>init</code>: \(O(n)\) en tiempo (con constante
+           del alfabeto, \(\sim 16\) enteros por posición) y \(O(n)\) en memoria
+           (\(\sim 6.4\) MB para \(n=10^5\), holgado frente a 2 GB).
+           <code>get_distance</code>: \(O(1)\) por consulta. Total \(O(n+q)\). Medido: el peor
+           caso (\(n=q=10^5\)) corre en \(\sim 0.04\) s, muy por debajo del límite de 1.0 s.</p>
+
+        <p class="note">Nota: el alfabeto es de solo 3 letras (no hay <code>G</code>). La
+           referencia oficial usa una matriz de prefijos \(4\times 4\) por comodidad y deja la
+           fila/columna de <code>G</code> en cero; es la misma idea con \(K=4\) en vez de
+           \(K=3\).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

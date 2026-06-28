@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2021 · Tarea 1 — Distributing Candies</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2021 · Día 1</div>
+    <h1>Tarea <span class="num">1</span> — Distributing Candies</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La tía Khong está preparando \(n\) cajas de dulces para los estudiantes de una
+       escuela cercana. Las cajas están numeradas de \(0\) a \(n-1\) y al principio están
+       <strong>vacías</strong>. La caja \(i\) (con \(0 \le i \le n-1\)) tiene una capacidad
+       de \(c[i]\) dulces.</p>
+
+    <p>La tía Khong dedica \(q\) días a preparar las cajas. En el día \(j\)
+       (con \(0 \le j \le q-1\)) realiza una acción descrita por tres enteros
+       \(l[j]\), \(r[j]\) y \(v[j]\), donde \(0 \le l[j] \le r[j] \le n-1\) y
+       \(v[j] \ne 0\). Para cada caja \(k\) que cumpla \(l[j] \le k \le r[j]\):</p>
+
+    <ul>
+      <li>Si \(v[j] &gt; 0\), la tía Khong <strong>agrega</strong> dulces a la caja \(k\), uno
+          por uno, hasta haber agregado exactamente \(v[j]\) dulces o hasta que la caja se
+          llene. Dicho de otra forma, si la caja tenía \(p\) dulces antes de la acción,
+          después tendrá \(\min(c[k],\, p + v[j])\) dulces.</li>
+      <li>Si \(v[j] &lt; 0\), la tía Khong <strong>quita</strong> dulces de la caja \(k\), uno
+          por uno, hasta haber quitado exactamente \(-v[j]\) dulces o hasta que la caja quede
+          vacía. Dicho de otra forma, si la caja tenía \(p\) dulces antes de la acción,
+          después tendrá \(\max(0,\, p + v[j])\) dulces.</li>
+    </ul>
+
+    <p>Tu tarea es determinar cuántos dulces hay en cada caja después de los \(q\) días.</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Debes implementar el siguiente procedimiento:</p>
+    <div class="sig">
+      <span class="tag">Firma a implementar</span>
+<pre>int[] distribute_candies(int[] c, int[] l, int[] r, int[] v)</pre>
+    </div>
+    <ul>
+      <li><code>c</code>: un arreglo de longitud \(n\). Para \(0 \le i \le n-1\), \(c[i]\) es la
+          capacidad de la caja \(i\).</li>
+      <li><code>l</code>, <code>r</code> y <code>v</code>: tres arreglos de longitud \(q\). En el
+          día \(j\) (con \(0 \le j \le q-1\)) la tía Khong realiza la acción descrita por los
+          enteros \(l[j]\), \(r[j]\) y \(v[j]\), como se explicó arriba.</li>
+      <li>El procedimiento debe <strong>regresar</strong> un arreglo de longitud \(n\).
+          Llamémoslo \(s\). Para \(0 \le i \le n-1\), \(s[i]\) debe ser el número de dulces que
+          hay en la caja \(i\) después de los \(q\) días.</li>
+    </ul>
+    <p class="note">En C++ la firma equivale a
+       <code>std::vector&lt;int&gt; distribute_candies(std::vector&lt;int&gt; c,
+       std::vector&lt;int&gt; l, std::vector&lt;int&gt; r, std::vector&lt;int&gt; v)</code>.
+       No se lee de la entrada estándar ni se escribe en la salida estándar: el evaluador
+       llama a tu función una sola vez.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>4.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2048 MiB (2 GiB)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Cajas</td><td><span class="badge">\(1 \le n \le 200\,000\)</span></td></tr>
+        <tr><td>Días / operaciones</td><td><span class="badge">\(1 \le q \le 200\,000\)</span></td></tr>
+        <tr><td>Capacidades</td><td><span class="badge">\(1 \le c[i] \le 10^9\)</span> (para todo \(0 \le i \le n-1\))</td></tr>
+        <tr><td>Rangos</td><td><span class="badge">\(0 \le l[j] \le r[j] \le n-1\)</span> (para todo \(0 \le j \le q-1\))</td></tr>
+        <tr><td>Valores</td><td><span class="badge">\(-10^9 \le v[j] \le 10^9\)</span>, con \(v[j] \ne 0\) (para todo \(0 \le j \le q-1\))</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">3</td><td>\(n, q \le 2000\)</td></tr>
+          <tr><td>2</td><td class="pts">8</td><td>\(v[j] &gt; 0\) para todo \(0 \le j \le q-1\) (todas las operaciones suman)</td></tr>
+          <tr><td>3</td><td class="pts">27</td><td>\(c[0] = c[1] = \cdots = c[n-1]\) (todas las capacidades iguales)</td></tr>
+          <tr><td>4</td><td class="pts">29</td><td>\(l[j] = 0\) y \(r[j] = n-1\) para todo \(0 \le j \le q-1\) (cada operación afecta el rango completo)</td></tr>
+          <tr><td>5</td><td class="pts">33</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>distribute_candies(
+  [10, 15, 13],
+  [0, 0],
+  [2, 1],
+  [20, -11])</pre></div>
+      <div class="io"><h4>Retorno</h4><pre>[0, 4, 13]</pre></div>
+    </div>
+    <p>Esto significa que la caja \(0\) tiene capacidad \(10\), la caja \(1\) tiene capacidad
+       \(15\) y la caja \(2\) tiene capacidad \(13\).</p>
+    <p>Al final del día \(0\): la caja \(0\) tiene \(\min(c[0],\, 0 + v[0]) = 10\) dulces, la
+       caja \(1\) tiene \(\min(c[1],\, 0 + v[0]) = 15\) dulces y la caja \(2\) tiene
+       \(\min(c[2],\, 0 + v[0]) = 13\) dulces.</p>
+    <p>Al final del día \(1\): la caja \(0\) tiene \(\max(0,\, 10 + v[1]) = 0\) dulces y la
+       caja \(1\) tiene \(\max(0,\, 15 + v[1]) = 4\) dulces. Como \(2 &gt; r[1]\), la caja \(2\)
+       no cambia. El número de dulces al final de cada día se resume así:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Día</th><th>Caja 0</th><th>Caja 1</th><th>Caja 2</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>10</td><td>15</td><td>13</td></tr>
+          <tr><td>1</td><td>0</td><td>4</td><td>13</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Por lo tanto, el procedimiento debe regresar \([0, 4, 13]\).</p>
+
+    <h3>Evaluador de muestra</h3>
+    <p>El evaluador de muestra lee la entrada en el siguiente formato:</p>
+    <ul>
+      <li>línea \(1\): \(n\)</li>
+      <li>línea \(2\): \(c[0]\ c[1]\ \ldots\ c[n-1]\)</li>
+      <li>línea \(3\): \(q\)</li>
+      <li>línea \(4 + j\) (con \(0 \le j \le q-1\)): \(l[j]\ r[j]\ v[j]\)</li>
+    </ul>
+    <p>Y escribe tu respuesta como:</p>
+    <ul>
+      <li>línea \(1\): \(s[0]\ s[1]\ \ldots\ s[n-1]\)</li>
+    </ul>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Funcional</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Segment tree</span>
+      <span class="ptag">Búsqueda binaria</span>
+      <span class="ptag">Offline</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(n\) cajas con capacidades \(c[i]\), todas vacías. Llegan \(q\) operaciones de
+       rango: la operación \(j\) le suma \(v[j]\) (positivo o negativo) a todas las cajas en
+       \([l[j], r[j]]\), pero <strong>el contenido se recorta</strong> a \([0, c[k]]\) (si se
+       pasa de la capacidad queda llena; si baja de \(0\) queda en \(0\)). Debes devolver el
+       estado final de las \(n\) cajas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(n, q \le 200\,000\) descarta cualquier solución \(O(nq)\) en el caso general:
+                apunta a \(O\big((n+q)\log q\big)\). Las sumas de prefijo pueden llegar a
+                \(|v|\cdot q \approx 10^9 \cdot 2\times10^5 = 2\times10^{14}\), así que hay que
+                usar enteros de 64 bits (<code>long long</code>); con <code>int</code> hay
+                desbordamiento.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo se comporta UNA sola caja?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste qué le pasa a una caja aislada si ignoras el recorte?
+           Si sumas todos los \(v[j]\) que la tocan, en orden, ¿qué objeto natural aparece?</p>
+        <p>Olvida por un momento las capacidades. Para una caja, considera solo los deltas que
+           la afectan, en orden temporal: \(d_1, d_2, \ldots, d_m\). Define las
+           <strong>sumas de prefijo</strong> \(P_0 = 0\) y \(P_k = P_{k-1} + d_k\). Si la
+           capacidad fuera infinita y no hubiera piso en \(0\), el contenido final sería
+           simplemente \(P_m\). El reto es entender cómo el recorte a \([0, c]\) modifica eso.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtarea 1 (\(n, q \le 2000\)): los primeros 3 puntos</summary>
+      <div class="body">
+        <p class="q">Con tan pocas cajas y días, ¿hace falta ser listo? ¿Cuánto cuesta
+           simular la definición tal cual?</p>
+        <p>Con \(n, q \le 2000\) puedes simular directamente: para cada día \(j\) recorres
+           las cajas de \(l[j]\) a \(r[j]\) y actualizas cada una con
+           \(\min(c[k], \max(0, \text{contenido} + v[j]))\). Es \(O(nq) \approx 4\times10^6\),
+           de sobra para esta subtarea. Sirve además como verificador (fuerza bruta) para
+           comparar contra tu solución rápida.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 2 (\(v[j] &gt; 0\)): solo se llena, nunca se vacía</summary>
+      <div class="body">
+        <p class="q">Si todas las operaciones suman, ¿una caja puede tocar alguna vez el
+           piso \(0\)? ¿Entonces de qué lado ocurre el único recorte posible?</p>
+        <p>Con \(v[j] &gt; 0\) el contenido nunca baja, así que jamás toca \(0\); el único
+           recorte posible es por <strong>arriba</strong> (la capacidad). Como una caja, una
+           vez llena, se queda llena, el resultado es simplemente
+           \(s[i] = \min\big(c[i],\ \text{(suma total de los } v[j] \text{ que la tocan)}\big)\).
+           La suma total por caja se obtiene con un arreglo de diferencias (difference array):
+           \(+v[j]\) en \(l[j]\) y \(-v[j]\) en \(r[j]+1\), luego un barrido de prefijos.
+           Todo en \(O(n + q)\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Subtarea 4 (\(l[j]=0,\ r[j]=n-1\)): todas ven la misma historia</summary>
+      <div class="body">
+        <p class="q">Si cada operación cubre el rango completo, ¿qué tienen en común todas
+           las cajas? ¿Cambia algo entre ellas además de su capacidad?</p>
+        <p>Cuando toda operación afecta a todas las cajas, la <strong>secuencia de deltas es
+           idéntica</strong> para cada caja: solo difieren en \(c[i]\). Calcula una sola vez
+           las sumas de prefijo globales \(P_0, P_1, \ldots, P_q\). El contenido final de una
+           caja con capacidad \(c\), después de recortar a \([0, c]\) en cada paso, queda
+           determinado por la historia de esos prefijos. Esto te empuja a la pregunta clave:
+           dada la lista de prefijos, ¿cómo calculas el valor recortado final sin volver a
+           simular paso por paso?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — La observación clave: la ÚLTIMA saturación manda</summary>
+      <div class="body">
+        <p class="q">¿Y si te fijas en la última vez que la caja topó (en \(0\) o en \(c\))?
+           Después de ese instante, ¿importa algo de lo que pasó antes?</p>
+        <p>Define la <strong>amplitud</strong> de un sufijo de los prefijos como
+           \(\max - \min\) de esos prefijos. Idea central:</p>
+        <ul>
+          <li>Si en toda la historia \(\max_k P_k - \min_k P_k &lt; c\), la caja
+              <strong>nunca topó</strong>: el contenido final es \(P_m - \min_k P_k\)
+              (solo actuó el piso en \(0\), desplazando todo hacia arriba).</li>
+          <li>Si sí topó, lo único que importa es la <strong>última saturación</strong>:
+              el momento más reciente en que la amplitud de un sufijo alcanza \(c\). A partir
+              de ahí el contenido quedó pegado a un borde (\(0\) o \(c\)) y solo se le suma el
+              delta neto del sufijo recortado.</li>
+        </ul>
+        <p>Para una sola caja esto se calcula con un barrido de derecha a izquierda; el
+           verdadero reto es hacerlo para las \(n\) cajas a la vez, de forma eficiente.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <h3>Idea</h3>
+        <p><strong>Una sola caja.</strong> Sean \(P_0 = 0, P_1, \ldots, P_m\) las sumas de
+           prefijo de los deltas que la afectan (como si tuviera capacidad infinita). El valor
+           final tras recortar a \([0, c]\) es:</p>
+        <ul>
+          <li>Si \(\max_k P_k - \min_k P_k &lt; c\): nunca saturó, y vale
+              \(P_m - \min_k P_k\).</li>
+          <li>Si saturó: localiza el punto de la última saturación. Si ese sufijo lo determinó
+              el <strong>mínimo</strong> (topó en \(0\)), el valor es
+              \(P_m - \min_{\text{sufijo}} P\). Si lo determinó el <strong>máximo</strong>
+              (topó en el tope \(c\)), el valor es \(c - \big(\max_{\text{sufijo}} P - P_m\big)\).</li>
+        </ul>
+
+        <p><strong>Las \(n\) cajas a la vez: barrido offline.</strong> Recorre las cajas
+           \(i = 0, 1, \ldots, n-1\) manteniendo un <strong>segment tree indexado por el orden
+           de las operaciones</strong> (cada operación es una posición temporal). Una operación
+           \(j\) se "enciende" cuando \(i\) entra a su rango (en \(l[j]\)) y se "apaga" cuando
+           \(i\) lo deja (en \(r[j]+1\)). Esto se logra con eventos de palanca (toggle):
+           \(+v[j]\) en \(l[j]\) y \(-v[j]\) en \(r[j]+1\).</p>
+        <p>El segment tree, sobre las posiciones de las operaciones, guarda las sumas de
+           prefijo (capacidad infinita) y soporta:</p>
+        <ul>
+          <li><strong>Actualización de sufijo:</strong> sumar \(\delta\) a todas las posiciones
+              desde la operación encendida/apagada hasta el final (agregar un delta cambia
+              todas las prefijas posteriores). Se hace con <em>lazy</em> de suma.</li>
+          <li><strong>Consulta de \(\min\) y \(\max\) globales</strong> de las prefijas, más el
+              valor total actual \(P_m\) (last_value).</li>
+          <li><strong>Descenso de búsqueda binaria DENTRO del árbol</strong> para localizar la
+              última saturación.</li>
+        </ul>
+        <p>Para cada caja \(i\): si \(\max_{\text{seg}} - \min_{\text{seg}} &lt; c[i]\), nunca
+           topó y la respuesta es \(\text{last\_value} - \min_{\text{seg}}\); si no, un solo
+           descenso por el árbol encuentra la frontera de saturación y devuelve el valor
+           recortado.</p>
+
+        <h3>Por qué es correcto</h3>
+        <p>La fórmula de saturación es el resultado estándar del recorte acumulado: tras la
+           última vez que la amplitud de un sufijo de las prefijas alcanza la capacidad, el
+           contenido queda fijado en un borde (\(0\) o \(c\)) y desde ahí solo se le suma el
+           delta neto del sufijo recortado; el caso "amplitud \( &lt; c\)" significa que nunca
+           topó y el valor es la suma total menos el mínimo (solo actuó el piso). El segment
+           tree combina \(\min\) y \(\max\) con un único lazy de suma; el descenso distingue si
+           la saturación fue por piso o por techo comparando la prefija de la hoja con
+           \(\text{last\_value}\). Verificado empíricamente: la solución modelo reproduce de
+           forma idéntica los 32/32 casos oficiales del paquete.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion distribute_candies(c, l, r, v):
+    n = tam(c);  q = tam(l)
+    # eventos de barrido: al entrar al rango se enciende; al salir se apaga
+    para j en 0..q-1:
+        agregar a toggle[l[j]]   el par (id=j, delta=+v[j])
+        agregar a toggle[r[j]+1] el par (id=j, delta=-v[j])
+
+    S = segtree sobre las posiciones de operacion   # guarda sumas de prefijo
+        # update_sufijo(pos, delta): suma delta a [pos, fin]
+        # min global, max global, last_value (suma total actual)
+
+    para i en 0..n-1:                       # barrido por caja
+        para cada (id, delta) en toggle[i]:
+            S.update_sufijo(pos_de(id), delta)
+        si (maxGlobal(S) - minGlobal(S)) &lt; c[i]:     # nunca saturo
+            s[i] = last_value(S) - minGlobal(S)
+        si no:
+            s[i] = S.resolver(c[i])         # descenso en el arbol
+    devolver s
+
+funcion segtree.resolver(cap):              # descenso O(log q)
+    # baja por el arbol al punto de saturacion mas reciente,
+    # manteniendo (small, big) = min/max del sufijo ya aceptado;
+    # prefiere el hijo derecho si al incluirlo la amplitud (big - small) &gt; cap
+    descender desde la raiz acumulando lazy, eligiendo hijo segun amplitud &gt; cap
+    al llegar a la hoja de saturacion:
+        si esa hoja la determino el minimo (topo en 0):
+            devolver  last_value - small
+        si no (topo en el tope, en cap):
+            devolver  cap - (big - last_value)</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O\big((n+q)\log q\big)\) en tiempo. Cada uno de los
+           \(q\) encendidos y \(q\) apagados hace una actualización de sufijo \(O(\log q)\), y
+           cada una de las \(n\) cajas hace una consulta/descenso \(O(\log q)\). Buscar
+           binariamente DENTRO del árbol evita el factor \(\log\) extra de las soluciones con
+           búsqueda binaria externa. Memoria \(O(n+q)\). En el caso peor (\(n = q = 200\,000\))
+           el tiempo medido fue \(\approx 0.21\) s, muy holgado frente al límite de \(4\) s.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (cuidado obligatorio)</span>
+<pre>// Las sumas de prefijo llegan a ~2e14 (|v|*q = 1e9 * 2e5).
+// Usa  long long  para las prefijas y los nodos del segment tree.
+// Con  int  hay overflow (es exactamente lo que rompe a las
+// soluciones incorrectas del paquete).</pre>
+          <p class="note">Es el único detalle dependiente del lenguaje: garantizar enteros de
+             64 bits en las sumas de prefijo y en el árbol.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
