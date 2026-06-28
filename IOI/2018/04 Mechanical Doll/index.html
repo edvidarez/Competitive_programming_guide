@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2018 · Tarea 4 — Muñeca Mecánica</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2018 · Día 2</div>
+    <h1>Tarea <span class="num">4</span> — Muñeca Mecánica</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Una <strong>muñeca mecánica</strong> es una muñeca que repite automáticamente una
+       secuencia específica de movimientos. En Japón se han construido muchas muñecas
+       mecánicas desde tiempos antiguos.</p>
+
+    <p>Los movimientos de la muñeca los controla un <strong>circuito</strong> formado por
+       <strong>dispositivos</strong>. Los dispositivos se conectan con <strong>tubos</strong>.
+       Cada dispositivo tiene una o dos <em>salidas</em>, y puede tener una cantidad
+       arbitraria (posiblemente cero) de <em>entradas</em>. Cada tubo conecta la salida de
+       un dispositivo con la entrada del mismo o de otro dispositivo. A cada entrada llega
+       exactamente un tubo, y de cada salida sale exactamente un tubo.</p>
+
+    <p>Para describir cómo se mueve la muñeca, imagina una <strong>bola</strong> colocada
+       sobre uno de los dispositivos. La bola viaja por el circuito. En cada paso del
+       recorrido, la bola sale del dispositivo por una de sus salidas, recorre el tubo
+       conectado a esa salida y entra al dispositivo que está al otro extremo del tubo.</p>
+
+    <p>Hay tres tipos de dispositivos: <strong>origen</strong>, <strong>disparadores</strong>
+       e <strong>interruptores</strong>. Hay exactamente un origen, \(M\) disparadores y
+       \(S\) interruptores (\(S\) puede ser cero). <strong>Tú decides el valor de \(S\).</strong>
+       Cada dispositivo tiene un número de serie único.</p>
+
+    <ul>
+      <li><strong>Origen:</strong> el dispositivo donde la bola se coloca inicialmente.
+          Tiene una sola salida. Su número de serie es \(0\).</li>
+      <li><strong>Disparador (trigger):</strong> hace que la muñeca realice un movimiento
+          específico cada vez que la bola entra en él. Cada disparador tiene una sola salida.
+          Los números de serie de los disparadores van de \(1\) a \(M\).</li>
+      <li><strong>Interruptor (switch):</strong> tiene dos salidas, llamadas <code>X</code>
+          e <code>Y</code>. El estado de un interruptor es <code>X</code> o <code>Y</code>.
+          Cuando la bola entra a un interruptor, sale por la salida indicada por el estado
+          actual; <em>después</em> el interruptor cambia su estado al opuesto. Al inicio,
+          todos los interruptores están en estado <code>X</code>. Los números de serie de
+          los interruptores van de \(-1\) a \(-S\) (¡son <strong>negativos</strong>!).</li>
+    </ul>
+
+    <p>Te dan el número de disparadores \(M\) y una secuencia \(A\) de longitud \(N\), donde
+       cada elemento es el número de serie de un disparador. Cada disparador puede aparecer
+       varias veces en \(A\) (posiblemente cero). Tu tarea es construir un circuito que
+       cumpla las siguientes condiciones:</p>
+
+    <ol>
+      <li>La bola <strong>regresa al origen</strong> tras un número finito de pasos.</li>
+      <li>Cuando la bola regresa al origen por primera vez, el estado de
+          <strong>todos</strong> los interruptores es <code>X</code> (es decir, cada
+          interruptor fue visitado un número <em>par</em> de veces).</li>
+      <li>La bola regresa al origen por primera vez después de entrar a disparadores
+          exactamente \(N\) veces. Los números de serie de los disparadores, en el orden en
+          que se visitan, son \(A[0], A[1], \dots, A[N-1]\).</li>
+      <li>Sea \(P\) el total de cambios de estado de todos los interruptores provocados por
+          la bola antes de regresar al origen por primera vez. Debe cumplirse
+          \(P \le 20\,000\,000\).</li>
+    </ol>
+
+    <p>Al mismo tiempo, <strong>no quieres usar demasiados interruptores</strong>: tu
+       puntaje depende de \(S\).</p>
+
+    <figure>
+      <img alt="Circuito del ejemplo: origen 0 (círculo), disparadores 1 a 4 (cuadrados) e interruptores -1 y -2 (triángulos con salidas X e Y)."
+           src="data:image/png;base64,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">
+      <figcaption>Circuito del ejemplo (\(M=4\), \(A=[1,2,1,3]\)). El origen \(0\) es el
+        círculo; los disparadores \(1\)–\(4\) son los cuadrados; los interruptores \(-1\) y
+        \(-2\) son los triángulos, cada uno con sus salidas <code>X</code> e <code>Y</code>.</figcaption>
+    </figure>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea de <strong>construcción</strong>: no lees de la entrada estándar ni
+       escribes a la salida estándar. Debes implementar el siguiente procedimiento, que el
+       evaluador llama <strong>exactamente una vez</strong>:</p>
+    <div class="sig">
+      <span class="tag">Procedimiento a implementar</span>
+<pre>create_circuit(int M, int[] A)</pre>
+    </div>
+    <ul>
+      <li><code>M</code>: el número de disparadores.</li>
+      <li><code>A</code>: un arreglo de longitud \(N\) con los números de serie de los
+          disparadores que la bola debe visitar, en el orden en que deben visitarse.</li>
+      <li>El valor de \(N\) es la longitud del arreglo <code>A</code>.</li>
+    </ul>
+
+    <p>Para dar tu respuesta, tu programa debe llamar (exactamente una vez) al
+       procedimiento:</p>
+    <div class="sig">
+      <span class="tag">Procedimiento para responder</span>
+<pre>answer(int[] C, int[] X, int[] Y)</pre>
+    </div>
+    <ul>
+      <li><code>C</code>: un arreglo de longitud \(M+1\). La salida del dispositivo \(i\)
+          (con \(0 \le i \le M\)) se conecta al dispositivo <code>C[i]</code>. Es decir,
+          <code>C[0]</code> es a dónde va el origen, y <code>C[i]</code> (con \(i \ge 1\))
+          es a dónde va el disparador \(i\).</li>
+      <li><code>X</code>, <code>Y</code>: dos arreglos de la misma longitud. Su longitud
+          \(S\) es el número de interruptores. Para el interruptor \(-j\) (con
+          \(1 \le j \le S\)), su salida <code>X</code> se conecta al dispositivo
+          <code>X[j-1]</code> y su salida <code>Y</code> al dispositivo <code>Y[j-1]</code>.</li>
+      <li>Cada elemento de <code>C</code>, <code>X</code> e <code>Y</code> debe ser un entero
+          entre \(-S\) y \(M\), inclusive.</li>
+      <li>\(S\) debe ser a lo sumo \(400\,000\).</li>
+    </ul>
+    <p>Si alguna condición no se cumple, tu programa recibe <strong>Wrong Answer</strong>.
+       En caso contrario recibe <strong>Accepted</strong> y tu puntaje se calcula según el
+       valor de \(S\) (ver Subtareas).</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>2 segundos</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Disparadores \(M\)</td><td><span class="badge">\(1 \le M \le 100\,000\)</span></td></tr>
+        <tr><td>Longitud de la secuencia \(N\)</td><td><span class="badge">\(1 \le N \le 200\,000\)</span></td></tr>
+        <tr><td>Cada elemento \(A[k]\)</td><td><span class="badge">\(1 \le A[k] \le M\)</span></td></tr>
+        <tr><td>Interruptores que usas \(S\)</td><td><span class="badge">\(S \le 400\,000\)</span></td></tr>
+        <tr><td>Cambios de estado \(P\)</td><td><span class="badge">\(P \le 20\,000\,000\)</span></td></tr>
+      </table>
+    </div>
+    <p class="note">Nota: los valores numéricos de los límites vienen como imágenes en el PDF
+      oficial; \(M \le 100\,000\) y \(N \le 200\,000\) se confirmaron con los casos de prueba
+      del paquete oficial, y \(S \le 400\,000\), \(P \le 20\,000\,000\) con el evaluador
+      (<code>grader.cpp</code>).</p>
+
+    <h2>Subtareas</h2>
+    <p>El puntaje y las restricciones de cada caso de prueba son:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>#</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">2</td><td>Cada entero \(i\) (\(1 \le i \le M\)) aparece <strong>a lo sumo 1 vez</strong> en la secuencia \(A\).</td></tr>
+          <tr><td>2</td><td class="pts">4</td><td>Cada entero \(i\) aparece <strong>a lo sumo 2 veces</strong> en \(A\).</td></tr>
+          <tr><td>3</td><td class="pts">10</td><td>Cada entero \(i\) aparece <strong>a lo sumo 4 veces</strong> en \(A\).</td></tr>
+          <tr><td>4</td><td class="pts">10</td><td>\(N \le 16\). (Se permiten hasta \(20\) interruptores.)</td></tr>
+          <tr><td>5</td><td class="pts">18</td><td>Hay <strong>un solo disparador</strong> (\(M = 1\)); se repite \(N\) veces.</td></tr>
+          <tr><td>6</td><td class="pts">56</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Para cada caso de prueba juzgado como <strong>Accepted</strong>, el puntaje depende de
+       \(S\):</p>
+    <ul>
+      <li>Si \(S\) no supera cierto umbral de <strong>puntaje pleno</strong>, ganas todo el
+          puntaje del caso.</li>
+      <li>Para las subtareas 5 y 6, si \(S\) está entre ese umbral y otro mayor, ganas
+          <strong>puntaje parcial</strong> (proporcional, multiplicado por el puntaje de la
+          subtarea); más allá, el puntaje es \(0\).</li>
+    </ul>
+    <p class="note">Los dos umbrales exactos vienen como imágenes en el PDF y no son
+      extraíbles como texto. Por el editorial y por la subtarea 4 (con \(N=16\) se permiten
+      \(20\) interruptores), el umbral de puntaje pleno equivale, en la práctica, a
+      \(S \le N + \lceil \log_2 N \rceil\); usar el árbol completo de \(2^k\) hojas sin podar
+      (\(S \approx 2N\)) da aproximadamente medio puntaje. La solución de abajo logra
+      \(S = N - 1 + \mathrm{popcount}(L-N) \le N - 1 + \lceil \log_2 N \rceil\), por debajo del
+      umbral, así que obtiene puntaje pleno.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Sea \(M=4\), \(N=4\) y \(A=[1,2,1,3]\). El evaluador llama
+       <code>create_circuit(4, [1, 2, 1, 3])</code>. Una respuesta válida es:</p>
+    <div class="example">
+      <div class="io"><h4>Llamada de respuesta</h4><pre>answer(
+  C = [1, -1, -2, 0, 2],
+  X = [2, -2],
+  Y = [3,  1]
+)</pre></div>
+      <div class="io"><h4>Recorrido de la bola</h4><pre>0 -> 1 -> -1 =X=> 2
+  -> -2 =X=> -2 =Y=> 1
+  -> -1 =Y=> 3 -> 0</pre></div>
+    </div>
+    <p class="note">Se usan dos interruptores, así que \(S=2\). Inicialmente \(-1\) y \(-2\)
+      están en <code>X</code>. La primera vez que la bola entra a \(-1\) (estado <code>X</code>)
+      va al disparador \(2\) y \(-1\) pasa a <code>Y</code>; la segunda vez (estado
+      <code>Y</code>) va al disparador \(3\) y vuelve a <code>X</code>. La bola visita los
+      disparadores \(1,2,1,3\) en ese orden, regresa al origen con ambos interruptores en
+      <code>X</code>, y el número de cambios de estado es \(P=4\). El circuito cumple todas
+      las condiciones.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Construcción</span>
+      <span class="ptag">Árbol binario</span>
+      <span class="ptag">Inversión de bits</span>
+      <span class="ptag">Divide y vencerás</span>
+      <span class="ptag">Poda</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan \(M\) disparadores y una secuencia \(A\) de longitud \(N\). Debes
+       <strong>construir</strong> un circuito (origen + disparadores + interruptores que
+       alternan sus dos salidas) de modo que la bola, partiendo del origen, dispare
+       exactamente \(A[0], A[1], \dots, A[N-1]\) en orden y vuelva al origen con
+       <strong>todos</strong> los interruptores otra vez en estado <code>X</code> (paridad
+       par de visitas). Para puntaje pleno, usa pocos interruptores: del orden de
+       \(N + \log_2 N\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 200\,000\) y \(S \le 400\,000\) obligan a una construcción \(O(N)\)
+                con \(S\) cercano a \(N\): no sobra margen para soluciones con \(2N\) o más
+                interruptores en el caso general. Las subtareas suben en dificultad por
+                cuántas veces se repite cada disparador (\(\le 1, \le 2, \le 4\)), luego por
+                \(N\) pequeña, luego un solo disparador, y al final el caso general.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué hace en el fondo un interruptor?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste en un interruptor como un <em>divisor</em>? Si la bola lo
+           visita dos veces, manda una bola a la salida <code>X</code> y la otra a
+           <code>Y</code>. ¿Y si encadenas interruptores formando un árbol binario?</p>
+        <p>Un interruptor reparte sus visitas alternando <code>X, Y, X, Y, \dots</code> Si la
+           visitas un número par de veces, queda otra vez en <code>X</code> (condición 2).
+           Encadenándolos como un <strong>árbol binario</strong>, cada nivel duplica cuántos
+           destinos distintos puedes alcanzar antes de "cerrar el ciclo". La pregunta clave
+           es: ¿en qué <em>orden</em> reparte la bola a las hojas del árbol?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Subtareas 1, 2 y 3 (cada disparador se repite poco)</summary>
+      <div class="body">
+        <p class="q">¿Cómo conectas si cada disparador aparece a lo sumo una vez? ¿Y a lo
+           sumo dos? ¿Y a lo sumo cuatro?</p>
+        <ul>
+          <li><strong>A lo sumo 1 vez</strong> (subtarea 1): no necesitas interruptores.
+              Encadena los disparadores en el orden de \(A\): el origen va al primero, cada
+              disparador va al siguiente, y el último vuelve al origen.</li>
+          <li><strong>A lo sumo 2 veces</strong> (subtarea 2): pon <em>un</em> interruptor
+              después de cada disparador que aparezca dos veces; sus dos salidas mandan la
+              bola a los dos lugares donde toca ir tras cada aparición.</li>
+          <li><strong>A lo sumo 4 veces</strong> (subtarea 3): por cada disparador usa un
+              arbolito de \(3\) interruptores que ramifica su salida en \(4\). Si aparece solo
+              \(3\) veces, "mata" una de las \(4\) hojas conectándola de regreso a la raíz del
+              árbol (un destino que no toca disparador).</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Subtarea 4 (\(N \le 16\)): junta todo en un árbol</summary>
+      <div class="body">
+        <p class="q">En vez de un arbolito por disparador, ¿y si juntas <strong>todas</strong>
+           las salidas en un único punto y ramificas desde ahí con un solo árbol binario
+           completo?</p>
+        <p>Con \(16\) hojas necesitas \(15 = 2^4 - 1\) interruptores (dentro del límite de
+           \(20\) de esta subtarea). Cada disparador, al terminar, regresa la bola a la raíz
+           del árbol, y el árbol decide cuál es el <strong>siguiente</strong> destino. El reto
+           es garantizar que las hojas se emitan <strong>en el orden correcto</strong>
+           \(A[1], A[2], \dots\) ¿En qué orden visita un árbol completo sus hojas?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: inversión de bits</summary>
+      <div class="body">
+        <p class="q">¿Notaste que el interruptor raíz alterna con el <em>bit más bajo</em> del
+           número de paso \(t\), el nivel siguiente con el bit que le sigue, y así?</p>
+        <p>Toma un árbol completo de \(L = 2^k\) hojas. Numera los pasos
+           \(t = 0, 1, 2, \dots\) Cuando la bola entra a la raíz por \(t\)-ésima vez, baja por
+           el árbol siguiendo los bits de \(t\): la raíz usa el bit \(0\), su hijo el bit
+           \(1\), etc. El resultado es que la bola llega a la hoja cuyo índice (in-order) es
+           \(\mathrm{rev}_k(t)\), la <strong>inversión de los \(k\) bits</strong> de \(t\).</p>
+        <p>Dos consecuencias preciosas:</p>
+        <ul>
+          <li>Como \(L\) es potencia de \(2\), la bola da <strong>exactamente \(L\) pasos</strong>
+              por la raíz antes de volver al origen, y cada interruptor de nivel \(d\) se visita
+              \(L/2^d\) veces (un número par): <strong>todos terminan en <code>X</code></strong>
+              (condición 2 satisfecha gratis).</li>
+          <li>Las hojas se "emiten" en orden de \(t\) creciente. Si pones tu secuencia en las
+              hojas correctas, salen en el orden que quieres.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 5 — Subtarea 5 (un solo disparador): rellenos y poda</summary>
+      <div class="body">
+        <p class="q">El árbol completo de \(2^k \ge N\) hojas funciona, pero usa
+           \(\approx 2N\) interruptores (medio puntaje). ¿Cuáles hojas <em>no</em>
+           corresponden a un disparo real, y cómo las agrupas para ahorrarte interruptores?</p>
+        <p>Si \(N\) no es potencia de \(2\), te sobran \(L - N\) hojas: son
+           <strong>relleno</strong> (apuntan de vuelta a la raíz, consumen un paso sin tocar
+           ningún disparador ni el origen). La idea para puntaje pleno: coloca <em>todos</em>
+           los rellenos juntos, en un bloque contiguo y alineado de posiciones. Entonces ese
+           bloque se descompone en pocos <strong>subárboles completos de puro relleno</strong>,
+           y cada uno se puede <strong>podar</strong>: no creas esos interruptores; su padre
+           apunta directo a la raíz. Así bajas de \(L-1\) interruptores a
+           \(N - 1 + \mathrm{popcount}(L-N)\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Un <strong>único árbol binario de interruptores</strong>
+           cuya raíz, en entradas sucesivas, "emite" la secuencia de los siguientes destinos.
+           Conectamos:</p>
+        <ul>
+          <li>\(C[0] = A[0]\): el origen va <strong>directo</strong> al primer disparador.
+              Este truco ahorra un nivel del árbol y es lo que ajusta el conteo de
+              interruptores al umbral (con \(N=16\) da exactamente \(15\), no \(16\)–\(17\)).</li>
+          <li>\(C[i] = -1\) para <strong>todo</strong> disparador \(i\): tras disparar
+              cualquier disparador, la bola entra a la raíz del árbol (serial \(-1\)), que
+              decide a dónde ir después.</li>
+        </ul>
+        <p>El árbol debe emitir, en sus visitas sucesivas, la secuencia
+           \(\text{seq} = [A[1], A[2], \dots, A[N-1], 0]\) de longitud \(sz = N\). El último
+           \(0\) es el origen: cierra el ciclo justo al final.</p>
+
+        <p><strong>Construcción.</strong> Sea \(L\) la menor potencia de \(2\) con
+           \(L \ge N\), y \(k = \log_2 L\). Colocamos las \(sz\) hojas <em>reales</em> en las
+           posiciones in-order altas \([L-sz,\, L)\) y los rellenos en las bajas
+           \([0,\, L-sz)\). Recorremos \(t = 0 \dots L-1\): cuando \(\mathrm{rev}_k(t) \ge L-sz\)
+           (hoja real), asignamos \(\text{leaf}[\mathrm{rev}_k(t)] = \text{seq}[\text{idx}{+}{+}]\).
+           Como las hojas reales se emiten con \(t\) creciente, la secuencia sale en orden, y
+           el \(0\) final cae siempre en \(t = L-1\) (la última emisión): la bola vuelve al
+           origen sólo tras los \(N\) disparos y todos los rellenos.</p>
+
+        <p><strong>Poda.</strong> La región de relleno \([0, L-sz)\) es contigua y alineada, así
+           que se parte en a lo sumo \(k\) subárboles completos. Cada subárbol todo-relleno se
+           poda: no se crea interruptor, su padre apunta directo a la raíz \(-1\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion rev_k(t, k):                 # invierte los k bits bajos de t
+    r = 0
+    para i en 0..k-1:
+        si (t tiene encendido el bit i):  r |= bit (k-1-i)
+    devolver r
+
+# build sobre el rango in-order [lo, hi) (tamano potencia de 2).
+# Devuelve el serial destino al que debe apuntar el padre.
+funcion build(lo, hi):
+    si hi &lt;= skipEnd:     devolver -1          # rango todo-relleno  ->  poda a la raiz
+    si hi - lo == 1:       devolver leaf[lo]    # hoja real (disparador, o 0 = origen)
+    id  = ++S                                   # pre-orden: la raiz toma id 1 (serial -1)
+    mid = (lo + hi) / 2
+    X[id-1] = build(lo, mid)                    # X = primera visita = subarbol izquierdo
+    Y[id-1] = build(mid, hi)                    # Y = subarbol derecho
+    devolver -id
+
+procedimiento create_circuit(M, A):             # M = #disparadores;  N = longitud de A
+    N = longitud(A)
+    C = arreglo de tamano M+1, todo en -1        # cada disparador  ->  raiz
+    C[0] = A[0]                                   # origen  ->  primer disparador (directo)
+    si N == 1:
+        C[A[0]] = 0                               # el unico disparador  ->  origen
+        para i en 1..M:  si C[i] == -1:  C[i] = 0 # sin interruptores: todo en rango [0, M]
+        answer(C, [], []);  terminar
+    sz = N
+    L = 1;  k = 0
+    mientras L &lt; sz:   L *= 2;  k += 1          # L = menor potencia de 2  >=  N
+    seq = [A[1], A[2], ..., A[N-1], 0]           # longitud sz; el ultimo 0 cierra el ciclo
+    leaf = arreglo de tamano L, todo en -1
+    skipEnd = L - sz                             # rellenos en [0, skipEnd); reales en [skipEnd, L)
+    idx = 0
+    para t en 0..L-1:                            # asigna hojas reales en orden de emision
+        p = rev_k(t, k)
+        si p >= skipEnd:   leaf[p] = seq[idx];  idx += 1
+    S = 0
+    build(0, L)                                  # construye el arbol; raiz = interruptor 1 (serial -1)
+    recortar X, Y a longitud S
+    answer(C, X, Y)</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong></p>
+        <ol>
+          <li><em>Dispara \(A\) en orden.</em> Origen \(\to A[0]\) directo; tras cada disparo la
+              bola entra a la raíz y el árbol emite \(\text{seq}=[A[1],\dots,A[N-1],0]\) en orden
+              de \(t\) creciente. Total de disparos: \(1 + (N-1) = N\).</li>
+          <li><em>Vuelve al origen sólo al final.</em> El único \(0\) está en \(t=L-1\) (último
+              paso); cada relleno emite \(-1\) (re-entra a la raíz) y nunca va al origen.</li>
+          <li><em>Todos los interruptores quedan en <code>X</code>.</em> La bola recorre
+              exactamente \(L=2^k\) pasos por la raíz; cada interruptor de nivel \(d\) se visita
+              \(L/2^d\) veces (par).</li>
+          <li><em>Seriales válidos.</em> Disparadores \(\to -1\) (válido pues \(S \ge 1\) cuando
+              \(N \ge 2\)); hojas \(\to\) disparador en \([1,M]\) u origen \(0\); interruptores
+              en \([-S,-1]\). Todo cae en \([-S, M]\). Y \(P\) queda muy por debajo de
+              \(20\,000\,000\) (peor caso medido \(\approx 3.84 \times 10^6\)).</li>
+        </ol>
+
+        <p><strong>Complejidad.</strong> \(O(N)\) en tiempo y memoria, pues \(L &lt; 2N\) (el
+           llenado de hojas con \(\mathrm{rev}_k\) es \(O(L\,k) = O(N\log N)\), despreciable). El
+           número de interruptores es
+           \(S = N - 1 + \mathrm{popcount}(L - N) \le N - 1 + \lceil \log_2 N \rceil\), por
+           debajo del umbral de puntaje pleno. El caso \(N=1\) usa \(S=0\), \(P=0\).
+           Verificado: <strong>56/56</strong> casos del paquete oficial dan
+           <strong>Accepted</strong>, con \(S\) y \(P\) muy por debajo de los límites duros.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>// Conteos de bits con builtins (sin escribir tu propio popcount):
+//   __builtin_popcount(L - N)   -> cuantos subarboles muertos hay
+//   __builtin_clz / __builtin_ctz para hallar k = log2(L)
+// La recursion de build tiene profundidad O(log N) (k niveles),
+// asi que no hay riesgo de desbordar la pila.</pre>
+          <p class="note">Sólo son atajos de C++ para contar bits; la solución completa va en
+             pseudocódigo, no en código de un lenguaje real.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
