@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOI 2024 · Tarea 2 — Message</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas (propia del IOI) */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .sig{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .sig .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre,.sig pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">IOI 2024 · Día 1</div>
+    <h1>Tarea <span class="num">2</span> — Message</h1>
+    <p class="note">PDF original (oficial): <a class="pdf" href="statement.pdf">statement.pdf</a> · Tipo: <strong>Comunicación</strong> (dos programas: emisor y receptor)</p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Aisha y Basma son dos amigas que se escriben. Aisha tiene un mensaje \(M\), que
+       es una secuencia de \(S\) bits (es decir, ceros o unos), y quiere enviárselo a Basma.
+       Aisha se comunica con Basma <strong>enviándole paquetes</strong>. Un <em>paquete</em> es una
+       secuencia de \(31\) bits, indexados de \(0\) a \(30\). Aisha quiere hacerle llegar el
+       mensaje \(M\) a Basma enviando cierta cantidad de paquetes.</p>
+
+    <p>Por desgracia, Cleopatra interceptó la comunicación entre Aisha y Basma y puede
+       <strong>alterar los paquetes</strong>. En cada paquete, Cleopatra puede modificar los bits de
+       exactamente \(15\) índices. Más precisamente, existe un arreglo \(C\) de longitud \(31\),
+       en el que cada elemento es \(0\) o \(1\), con el siguiente significado:</p>
+    <ul>
+      <li>\(C[i]=1\) indica que el bit con índice \(i\) <strong>puede</strong> ser cambiado por Cleopatra.
+          A estos índices los llamamos <em>controlados</em> por Cleopatra.</li>
+      <li>\(C[i]=0\) indica que el bit con índice \(i\) <strong>no</strong> puede ser cambiado por Cleopatra.</li>
+    </ul>
+    <p>El arreglo \(C\) contiene exactamente \(15\) unos y \(16\) ceros. Mientras se envía el
+       mensaje \(M\), el conjunto de índices controlados por Cleopatra permanece igual para todos
+       los paquetes. <strong>Aisha sabe con exactitud cuáles \(15\) índices controla Cleopatra.
+       Basma solo sabe que hay \(15\) índices controlados, pero no sabe cuáles.</strong></p>
+
+    <p>Sea \(A\) un paquete que Aisha decide enviar (le llamamos el <em>paquete original</em>).
+       Sea \(B\) el paquete que recibe Basma (le llamamos el <em>paquete alterado</em>). Para
+       cada \(i\) con \(0 \le i &lt; 31\):</p>
+    <ul>
+      <li>si Cleopatra <strong>no</strong> controla el bit con índice \(i\) (\(C[i]=0\)), Basma recibe el
+          bit \(i\) tal como lo envió Aisha (\(B[i]=A[i]\));</li>
+      <li>en otro caso, si Cleopatra controla el bit con índice \(i\) (\(C[i]=1\)), el valor de
+          \(B[i]\) lo decide Cleopatra.</li>
+    </ul>
+    <p>Inmediatamente después de enviar cada paquete, Aisha se entera de cuál fue el paquete
+       alterado correspondiente.</p>
+    <p>Después de que Aisha envía todos los paquetes, Basma recibe todos los paquetes alterados
+       en el orden en que fueron enviados y debe <strong>reconstruir el mensaje original \(M\)</strong>.</p>
+
+    <p>Tu tarea es diseñar e implementar una estrategia que le permita a Aisha enviar el mensaje
+       \(M\) a Basma, de modo que Basma pueda recuperar \(M\) a partir de los paquetes alterados.
+       Concretamente, debes implementar dos procedimientos: el primero realiza las acciones de
+       Aisha (recibe \(M\) y \(C\), y envía paquetes); el segundo realiza las acciones de Basma
+       (recibe los paquetes alterados y debe recuperar \(M\)).</p>
+
+    <h2>Detalles de implementación</h2>
+    <p>Esta es una tarea de <strong>comunicación</strong>: no lees de la entrada estándar ni escribes a la
+       salida estándar. Implementas funciones que el evaluador llama. Además, <code>send_message</code>
+       y <code>receive_message</code> se ejecutan en <strong>dos programas separados</strong> que no comparten
+       memoria: lo único que viaja entre ellos son los paquetes (alterados por Cleopatra).</p>
+
+    <p>El primer procedimiento que debes implementar es:</p>
+    <div class="sig">
+      <span class="tag">Acciones de Aisha</span>
+<pre>void send_message(std::vector&lt;bool&gt; M, std::vector&lt;bool&gt; C);</pre>
+    </div>
+    <ul>
+      <li><code>M</code>: arreglo de longitud \(S\) con el mensaje que Aisha quiere enviar a Basma.</li>
+      <li><code>C</code>: arreglo de longitud \(31\) que indica los índices controlados por Cleopatra.</li>
+      <li>Este procedimiento puede ser llamado a lo más \(2100\) veces en cada caso de prueba.</li>
+    </ul>
+    <p>Este procedimiento debe llamar al siguiente procedimiento para enviar un paquete:</p>
+    <div class="sig">
+      <span class="tag">Enviar un paquete (lo provee el evaluador)</span>
+<pre>std::vector&lt;bool&gt; send_packet(std::vector&lt;bool&gt; A);</pre>
+    </div>
+    <ul>
+      <li><code>A</code>: un paquete original (arreglo de longitud \(31\)) con los bits que envía Aisha.</li>
+      <li>Devuelve el paquete alterado \(B\) con los bits que recibirá Basma.</li>
+      <li>Puede ser llamado a lo más \(100\) veces en cada invocación de <code>send_message</code>.</li>
+    </ul>
+    <p>El segundo procedimiento que debes implementar es:</p>
+    <div class="sig">
+      <span class="tag">Acciones de Basma</span>
+<pre>std::vector&lt;bool&gt; receive_message(std::vector&lt;std::vector&lt;bool&gt;&gt; R);</pre>
+    </div>
+    <ul>
+      <li><code>R</code>: arreglo con los paquetes alterados, en el orden en que Aisha los envió.
+          Cada elemento de \(R\) es un arreglo de longitud \(31\).</li>
+      <li>Debe devolver un arreglo de \(S\) bits igual al mensaje original \(M\).</li>
+      <li>Se le llama exactamente una vez por cada llamada correspondiente a <code>send_message</code>.
+          El orden de las llamadas a <code>receive_message</code> no es necesariamente el mismo que el de
+          las llamadas a <code>send_message</code>.</li>
+    </ul>
+    <p class="note">Nota: en algunos casos el comportamiento del evaluador es <strong>adaptativo</strong>: lo que
+       devuelve <code>send_packet</code> puede depender no solo de su argumento, sino también de las entradas
+       y los valores devueltos en llamadas previas, e incluso de números pseudoaleatorios. El evaluador
+       es determinista: si lo corres dos veces y en ambas envías los mismos paquetes, hará los mismos
+       cambios.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>3.0 s</td></tr>
+        <tr><td>Límite de memoria</td><td>2 GiB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Longitud del mensaje</td><td><span class="badge">\(1 \le S \le 1024\)</span></td></tr>
+        <tr><td>Arreglo \(C\)</td><td><span class="badge">\(31\) elementos: \(16\) ceros y \(15\) unos</span></td></tr>
+        <tr><td>Bits por paquete</td><td><span class="badge">\(31\) (índices \(0\) a \(30\))</span></td></tr>
+        <tr><td>Llamadas a <code>send_packet</code> por mensaje</td><td><span class="badge">\(\le 100\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas y puntaje</h2>
+    <p>Si en algún caso las llamadas a <code>send_packet</code> no respetan las reglas, o si el valor que
+       devuelve <code>receive_message</code> es incorrecto, el puntaje de ese caso es \(0\).</p>
+    <p>En otro caso, sea \(Q\) el <strong>máximo número de llamadas a <code>send_packet</code></strong> entre todas
+       las invocaciones de <code>send_message</code> de todos los casos. Sea \(X\) igual a:</p>
+    <ul>
+      <li>\(1\), si \(Q \le 66\);</li>
+      <li>\(0.95^{\,Q-66}\), si \(66 &lt; Q \le 100\).</li>
+    </ul>
+    <p>Entonces el puntaje de cada subtarea se calcula como:</p>
+    <div class="subtasks">
+      <table>
+        <thead><tr><th>Subtarea</th><th>Puntos</th><th>Restricciones adicionales</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="pts">\(10\cdot X\)</td><td>\(S \le 64\)</td></tr>
+          <tr><td>2</td><td class="pts">\(90\cdot X\)</td><td>Sin restricciones adicionales.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">El factor \(X\) es global (depende del peor \(Q\) entre todos los casos): para ganar el
+       \(100\%\) hay que lograr \(Q \le 66\) en todos los casos. (Hay además un caso de ejemplo de
+       \(0\) puntos para validar el formato.)</p>
+
+    <h2>Ejemplo</h2>
+    <p>Considera la siguiente llamada, con \(M=[0,1,1,0]\) y \(C\) con ceros en los índices \(0\)–\(15\)
+       y unos en los índices \(16\)–\(30\):</p>
+    <div class="example">
+      <div class="io"><h4>Llamada</h4><pre>send_message(
+  [0,1,1,0],
+  [0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,
+   1,1,1,1,1,1,1,1,
+   1,1,1,1,1,1,1])</pre></div>
+      <div class="io"><h4>Retorno esperado</h4><pre>receive_message(...)
+  =&gt; [0,1,1,0]</pre></div>
+    </div>
+    <p>En este ejemplo se supone que Cleopatra rellena los bits que controla con \(0\) y \(1\) alternados
+       (\(0\) al primer índice que controla, \(1\) al segundo, \(0\) al tercero, etc.). Aisha decide enviar
+       dos bits del mensaje en cada paquete: el primer bit en los primeros \(8\) índices fiables y el
+       segundo bit en los siguientes \(8\) índices fiables.</p>
+    <div class="example">
+      <div class="io"><h4>Primer paquete enviado</h4><pre>send_packet(
+  [0,0,0,0,0,0,0,0,
+   1,1,1,1,1,1,1,1,
+   0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0])</pre></div>
+      <div class="io"><h4>Paquete alterado recibido</h4><pre>[0,0,0,0,0,0,0,0,
+ 1,1,1,1,1,1,1,1,
+ 0,1,0,1,0,1,0,1,
+ 0,1,0,1,0,1,0]</pre></div>
+    </div>
+    <div class="example">
+      <div class="io"><h4>Segundo paquete enviado</h4><pre>send_packet(
+  [1,1,1,1,1,1,1,1,
+   0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0,0,
+   0,0,0,0,0,0,0])</pre></div>
+      <div class="io"><h4>Paquete alterado recibido</h4><pre>[1,1,1,1,1,1,1,1,
+ 0,0,0,0,0,0,0,0,
+ 0,1,0,1,0,1,0,1,
+ 0,1,0,1,0,1,0]</pre></div>
+    </div>
+    <p>Basma recupera \(M\) así: de cada paquete toma el primer bit que aparece dos veces seguidas y el
+       último bit que aparece dos veces seguidas. Del primer paquete toma \([0,1]\) y del segundo
+       \([1,0]\); al unirlos obtiene \([0,1,1,0]\), que es el mensaje correcto.</p>
+    <p class="note">Se puede demostrar que, con esa estrategia supuesta de Cleopatra y mensajes de longitud
+       \(4\), este método de Basma recupera \(M\) sin importar el valor de \(C\). Sin embargo,
+       <strong>no es correcto en el caso general</strong> (Cleopatra puede ser adversaria). El evaluador de ejemplo
+       usa exactamente esa Cleopatra de \(0\)/\(1\) alternados y no es adaptativo.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Comunicación</span>
+      <span class="ptag">Teoría de códigos</span>
+      <span class="ptag">Grafo funcional</span>
+      <span class="ptag">Ciclos</span>
+      <span class="ptag">Constructivo</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Aisha envía paquetes de \(31\) bits. En cada paquete, Cleopatra reescribe a su antojo los bits de
+       \(15\) índices fijos (los <em>controlados</em>); los otros \(16\) índices (los <em>fiables</em>) llegan intactos.
+       Aisha conoce el conjunto fiable; Basma no. Hay que diseñar un protocolo que le permita a Basma
+       reconstruir \(M\) usando el mínimo número de paquetes \(Q\). El pleno (\(X=1\)) exige \(Q \le 66\).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(16\) índices fiables por paquete (los \(31-15\)); el mensaje mide hasta \(S=1024\) bits;
+                la métrica es el <strong>número de paquetes</strong> \(Q\), no el tiempo. La subtarea 1
+                (\(S \le 64\)) regala los puntos con un protocolo cómodo de \(16\) paquetes; la subtarea 2
+                exige empacar el caso completo en \(66\) paquetes.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué hay que comunicar realmente?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que Aisha tiene <em>dos</em> cosas que decirle a Basma, no una?</p>
+        <p>Por un lado está el mensaje \(M\). Por otro, Basma <strong>no sabe cuáles \(16\) índices son
+           fiables</strong> (los que llegan intactos). Los bits que escribe Aisha en los \(15\) índices
+           controlados son basura: Cleopatra los pisa. Así que toda la información útil (incluyendo
+           "cuáles columnas son de fiar") tiene que viajar <em>dentro de los propios \(16\) índices fiables</em>.
+           Imagina los paquetes apilados como una <strong>rejilla</strong> de \(Q\) renglones \(\times\) \(31\)
+           columnas: solo \(16\) de esas columnas son confiables, y son justo las que Basma debe descubrir.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Empieza por la subtarea 1 (\(S \le 64\))</summary>
+      <div class="body">
+        <p class="q">Si tuvieras \(16\) renglones de rejilla, ¿cuántos bits fiables tienes para jugar?</p>
+        <p>Con \(16\) paquetes hay \(16 \times 16 = 256\) celdas fiables. Sobra muchísimo para \(S \le 64\).
+           La versión más burda que funciona: un <strong>código de repetición</strong>. Por ejemplo, manda cada bit
+           del mensaje en su propio paquete, repitiéndolo en <em>las \(31\) posiciones</em>; Basma toma el valor
+           mayoritario de cada paquete y, como hay \(16\) posiciones intactas contra \(15\) alteradas, la
+           mayoría siempre coincide con el bit original. Eso ya da \(Q=16\) para \(S \le 64\) y por tanto
+           \(X=1\) en la subtarea 1. La pregunta del millón es: ¿cómo extiendes esto a \(S=1024\) sin gastar
+           \(1024\) paquetes?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La observación clave: ¿cómo le dices a Basma cuáles columnas son fiables?</summary>
+      <div class="body">
+        <p class="q">Basma no conoce el conjunto fiable. ¿Existe alguna estructura que <em>sobreviva</em> a
+           cualquier cosa que haga Cleopatra y que apunte exactamente a esas \(16\) columnas?</p>
+        <p>Ordena los \(16\) índices fiables de forma cíclica: \(a_1 &lt; a_2 &lt; \dots &lt; a_{16}\). En la
+           columna de cada índice fiable \(b\), escribe un "puntero" al <strong>siguiente</strong> índice fiable:
+           \(\mathrm{nxt}[b]\) = distancia cíclica de \(b\) hasta el próximo índice fiable (un valor en
+           \([1,16]\)). Como esas columnas son intactas, el puntero llega perfecto. Ahora considera el
+           grafo funcional \(b \to (b+\mathrm{nxt}[b]) \bmod 31\): los \(16\) índices fiables forman un
+           <strong>ciclo de longitud \(16\)</strong> que recorre justo el conjunto fiable. Cleopatra puede inventar
+           punteros falsos en sus columnas, pero no puede crear otro ciclo de longitud \(16\) que incluya
+           un índice fiable. ¿Cómo codificas \(\mathrm{nxt}[b]\in[1,16]\) gastando pocas celdas y dejando
+           el resto para el mensaje?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Afinando hacia \(Q=66\): de la idea burda al óptimo</summary>
+      <div class="body">
+        <p class="q">¿Cuántas celdas fiables tienes en total con \(66\) paquetes, y cuántas te cuesta marcar
+           las columnas fiables?</p>
+        <p>El editorial progresa así, recortando paquetes en cada paso:</p>
+        <ul>
+          <li><strong>Repetición</strong> (1 bit por paquete): correcto pero carísimo (subtarea 1).</li>
+          <li>Mandar el conjunto fiable por separado y luego el mensaje: \(31 + \lceil 1025/16\rceil = 96\).</li>
+          <li>Agrupar varios bits de control: baja a \(\approx 85\).</li>
+          <li>Marcar primero un solo índice fiable: \(\approx 71\).</li>
+          <li>Codificar las brechas \((a_{i+1}-a_i)\bmod 31\) en binario: \(\approx 70\)–\(69\).</li>
+          <li><strong>One-hot del puntero al siguiente fiable + relleno del mensaje</strong>: \(\boxed{66}\). Aquí los
+              \(16\) punteros consumen exactamente \(31\) celdas, dejando \(66\cdot 16 - 31 = 1025\) celdas
+              fiables, justo lo necesario para el mensaje enmarcado.</li>
+        </ul>
+        <p>La idea de <em>one-hot</em>: en la columna \(b\) pones el puntero \(\mathrm{nxt}[b]\) como un único \(1\)
+           en el renglón \(\mathrm{nxt}[b]-1\) (y \(0\) en los renglones anteriores de esa "zona de puntero").
+           Como \(\sum_b \mathrm{nxt}[b]\) recorre el ciclo completo \(=31\), gastas exactamente \(31\) celdas
+           en punteros. Todo lo demás es para el mensaje. ¿Listo para armar el protocolo completo?</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Apila los paquetes como una rejilla de \(Q\) renglones \(\times\) \(31\) columnas.
+           Solo las \(16\) columnas fiables sobreviven a Cleopatra. En cada columna fiable codificamos
+           (a) un <em>puntero</em> al siguiente índice fiable, en one-hot, para que Basma reconstruya el
+           conjunto fiable, y (b) los bits del mensaje en las celdas restantes.</p>
+
+        <h3>Codificación de las posiciones fiables (puntero one-hot)</h3>
+        <p>Sean \(a_1 &lt; a_2 &lt; \dots &lt; a_{16}\) los \(16\) índices fiables (donde \(C=0\)), en orden cíclico.
+           Para cada índice fiable \(b\), define \(\mathrm{nxt}[b]\) = distancia cíclica de \(b\) al
+           <em>siguiente</em> índice fiable (un valor en \([1,16]\); para \(a_{16}\), el siguiente es \(a_1\)).
+           En la columna \(b\) escribe \(\mathrm{nxt}[b]\) en one-hot: un \(1\) en el renglón
+           \(\mathrm{nxt}[b]-1\) y \(0\) en los renglones anteriores de esa zona. Como
+           \(\sum_b \mathrm{nxt}[b]=31\), los punteros consumen exactamente \(31\) celdas. Las columnas
+           controladas pueden llevar cualquier cosa (Cleopatra las pisa).</p>
+
+        <h3>Carga del mensaje</h3>
+        <p>Las celdas restantes de las columnas fiables (renglones \(\ge \mathrm{nxt}[b]\)) se rellenan, en
+           orden, con los bits del mensaje. Para que Basma sepa dónde termina \(M\) sin conocer \(S\), se
+           <strong>enmarca</strong>: se manda \(M\), luego un bit \(1\) terminador y después ceros de relleno, de modo
+           que el flujo total quepa exactamente en las celdas disponibles. Capacidad total en el peor caso:
+           \(66\cdot 16 - 31 = 1025\), justo \(M\) (\(\le 1024\)) más el \(1\) terminador.</p>
+
+        <h3>Decodificación (Basma)</h3>
+        <p>Recibe los paquetes alterados \(R\). Para cada columna \(b\), recupera \(\mathrm{nxt}[b]\) leyendo
+           la posición del primer \(1\) en la zona de puntero (primeros \(16\) renglones); exacto en columnas
+           fiables, basura en controladas. Construye el grafo funcional \(b \to (b+\mathrm{nxt}[b])\bmod 31\)
+           y busca, partiendo de cada vértice, la órbita: el conjunto que genera una órbita de tamaño \(16\)
+           es el conjunto fiable. Con \(C\) y \(\mathrm{nxt}\) conocidos, lee los bits del mensaje de las
+           columnas fiables en renglones \(\ge \mathrm{nxt}[b]\), en el mismo orden, y quita el marco
+           (descarta los ceros finales hasta el \(1\) terminador inclusive). Eso es \(M\).</p>
+
+        <h3>Por qué es correcto</h3>
+        <p>Cleopatra solo controla \(15\) índices; los \(16\) fiables pasan intactos, así que tanto los
+           punteros one-hot como los bits de mensaje de las columnas fiables llegan sin alterar. La clave es
+           que el grafo funcional \(b \to (b+\mathrm{nxt}[b])\bmod 31\) tiene <strong>siempre exactamente un ciclo
+           de longitud \(16\)</strong>, que recorre justo los índices fiables (sus aristas son correctas por
+           construcción; las de los controlados no pueden formar otro ciclo de longitud \(16\) que incluya un
+           fiable). Por eso Basma identifica el conjunto fiable sin conocerlo de antemano. Y como cada brecha
+           \((a_{i+1}-a_i)\bmod 31\) está en \([1,16]\), el one-hot de los \(16\) punteros gasta exactamente
+           \(31\) celdas; quedan \(66\cdot 16 - 31 = 1025\), igual a la longitud del mensaje enmarcado, lo que
+           cubre cualquier \(1 \le S \le 1024\). Verificado contra el evaluador oficial: <code>receive_message</code>
+           reconstruye \(M\) en los \(27\) casos (incluida la batería de estrategias adversarias de Cleopatra
+           de la subtarea 2), con \(Q=66\) en el peor caso.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — Aisha</span>
+<pre>send_message(M, C):            # Aisha conoce C
+  fiables = { b : C[b] == 0 }            # exactamente 16
+  para cada b en fiables:
+      nxt[b] = distancia ciclica de b al siguiente indice fiable   # en [1,16]
+  Q = max(16, ceil( (31 + |M| + 1) / 16 ))   # peor caso = 66
+  rejilla A[0..Q-1][0..30] = 0
+  # punteros one-hot (gastan 31 celdas en total)
+  para cada b en fiables:
+      A[ nxt[b]-1 ][b] = 1
+  # marco del mensaje: M, luego un 1 terminador, luego ceros de relleno
+  flujo = M ++ [1] ++ ceros          # llena las celdas fiables restantes
+  pos = 0
+  para renglon i de 0 a Q-1:
+      para cada b en fiables con nxt[b] &lt;= i:    # celdas no usadas por el puntero
+          A[i][b] = flujo[pos]; pos = pos + 1
+  para cada renglon i:
+      send_packet(A[i])              # Cleopatra altera las columnas controladas</pre>
+        </div>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo — Basma</span>
+<pre>receive_message(R):            # R = paquetes alterados; |R| = Q
+  para cada columna b de 0 a 30:
+      nxt[b] = 1 + (renglon del primer 1 en R[0..15][b])   # exacto si b es fiable
+  # identificar los fiables por el ciclo de longitud 16
+  para cada inicio b:
+      recorrer v -> (v + nxt[v]) mod 31, marcando visitados
+      si la orbita tiene longitud 16:
+          fiables = ese conjunto; fijar C
+          terminar
+  # leer el mensaje de las columnas fiables
+  flujo = [ ]
+  para renglon i de 0 a |R|-1:
+      para cada b en fiables con nxt[b] &lt;= i:
+          flujo.append( R[i][b] )
+  quitar de flujo los ceros finales y el 1 terminador
+  devolver flujo               # == M</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> tiempo \(O(Q\cdot 31)\) por mensaje, tanto en el emisor como en el
+           receptor (\(Q \le 66\) paquetes de \(31\) bits); la búsqueda del ciclo es \(O(31)\) amortizado por
+           columna. Memoria \(O(Q\cdot 31)\) para la rejilla. La métrica de puntaje es el número de paquetes:
+           \(Q = \max(16,\ \lceil (31+S+1)/16\rceil)\), que vale \(16\) para \(S \le 64\) (subtarea 1) y a lo
+           más \(66\) para \(S \le 1024\) (subtarea 2). Con \(Q \le 66\) se obtiene \(X=1\), es decir
+           \(10 + 90 = 100\) puntos.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
