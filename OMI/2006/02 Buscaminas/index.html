@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2006 · Problema 02 — Buscaminas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">11ª OMI · 2006 · Karel</div>
+    <h1>Problema <span class="num">02</span> — Buscaminas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/buscaminas_karel">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Durante la revolución kareliana, Karel Obregón fue un protagonista importante.
+       En esa época el entonces presidente Porfirio Beepers ordenó a los militares
+       colocar minas en la huasteca kareliana para impedir la entrada del ejército
+       revolucionario a la capital. El general Karel Obregón fungió como espía para el
+       ejército revolucionario, robando los planos donde las minas fueron colocadas.
+       El general Karel Obregón se ha dado a la tarea de determinar el número de minas
+       contiguas a una cierta posición del mapa.</p>
+
+    <p>Un ejemplo de una mina y sus posiciones contiguas se muestra a continuación:</p>
+
+    <figure>
+      <img alt="Una mina (9 zumbadores) en el centro, rodeada por sus 8 casillas contiguas, incluidas las diagonales."
+           src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCABYAFwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD0D/hWX/UX/wDJb/7Oup1zxFZeHoo5b4SCN1Zi67cKFxkkkjA5rWrzP40W0Fz4YPnwxy+XbXMib1DbWCDDDPQj1rlxlWVKi5Rdnp+LSOPH1pUcO5wdndee7S/U7K6ii8V+GXjhke3jucYZ0BK7X9Af9n1rmv8AhWX/AFF//Jb/AOzrpfCX/IsWf/A//Q2rarTDTdSjCct2k/wNMJUlVw9OpLdpP70cfongX+xtXgv/AO0fO8rd8nkbc5UjruPrWhqfjDTdJ1E2Nys/nbgq7QuGJXdgZYZOMn8DXQV4z8QbaD/hYNjdeTH9o+0iPzdo37fssh2564zziuXMsROhSUoOzv8Ao3+hx5viqmGoKdN2d+1/st/oejeJvDP/AAkf2X/TPs/kb/8Allv3bse4x0rA/wCFZf8AUX/8lv8A7Ou/or0D1Dn/AAz4Z/4Rz7V/pn2jz9n/ACy2bdufc560ab4w03VNTTT4FnFwy7trhflGCQThicHa2PpXQV4z4FtoLb4nT+RDHF5ltFI+xQu5j9oyxx1J9a8/GYidKrTjF7vX74r9Ty8fiqlGtShB6Seun96K+W7O21vwL/bOrz3/APaPk+bt+TyN2MKB13D0qh/wrL/qL/8Akt/9nXf0V6B6h5B/wm3iL/oIf+QY/wD4mvUtQ0mx1Ty/tsHm+XnZ87LjOM9CPQV4bXv9TOEZx5Zq68yKlOFSLhNJp9HqYOusfD/hK4bSz5Bg2+X/ABbd0gz97Pqa8+/4TbxF/wBBD/yDH/8AE13/AI2/5FC+/wC2f/oxa8gpxiopJKyRUYqKUYqyR3HhbxTrOo+I7S0u7zzIJN+5fKQZwjEcgZ6gV2d34d0q+unubm13zPjc3mMM4GBwD6CvNPBP/I32P/bT/wBFtXr9RUpQqK1SKa89SKtGnWXLVipLzVzj/HWt6jo32D7BceT5vmb/AJFbONuOoPqa5D/hNvEX/QQ/8gx//E10HxN/5hf/AG1/9krz+tDQ9P8AAut6jrP2/wC33HneV5ez5FXGd2egHoK3LTw7pVjdJc21rsmTO1vMY4yMHgn0Ncp8Mv8AmKf9sv8A2eu/rOdKE2nKKbW3l6Gc6NOo1KcU2trrb07HnHinxTrOneI7u0tLzy4I9m1fKQ4yik8kZ6k1j/8ACbeIv+gh/wCQY/8A4mjxt/yN99/2z/8ARa1z9aGh6/8A8IT4d/6B/wD5Gk/+Kql478Xv4PsIbwQ+bGyyFwIXkPygH+E8DrycDpyK62vPPizby3ehfZoF3zTW1zGi5AyxUADJ9648fUdPDuSdtvzRwZnVdLCymnbVa/8AbyTOrsSniTw3GdRhRkuM70Qso+Vzjvn+Ed6r/wDCE+Hf+gf/AORpP/iqm8Jf8ixZ/wDA/wD0Nq2q0wknOhCUt2l+Rrgpynhqc5O7cU/wMex8LaNp15Hd2ln5c8edrea5xkEHgnHQmuV8VfEO58Pa7d2Mdmk0NrEk00gTPkxsudzZcZHyvwoJ+Xp0z6FXiXxP02TUPEWpQxWUzyT26wrcQ3PlhSUwPNXcu5BnI+/1bgfxc2ZVXSpxalbX9Gceb15UaMWpct5JX+T9P677Hrup6Jp2s+V9vt/O8rOz52XGcZ6EegrP/wCEJ8O/9A//AMjSf/FV0FFeiesZ+maJp2jeb9gt/J83G/52bOM46k+prkvDXj6413xO2kNbonlLmRjA8ech8bSx5GYzyBj0J7d7XkXg23lX4iC5K4hktkjVsjllE5Ix9GX868vH1pU61KMXa7+/WP6NnjZniJ0sRQjGVuZ/f70V+TZ6LfeFtG1G8ku7uz8yeTG5vNcZwABwDjoBVf8A4Qnw7/0D/wDyNJ/8VXQUV6h7J4BXv9eAV7/QBz/jb/kUL7/tn/6MWvIK9f8AG3/IoX3/AGz/APRi15BQB0Hgn/kb7H/tp/6LavX68g8E/wDI32P/AG0/9FtXr9AHAfE3/mF/9tf/AGSvP69A+Jv/ADC/+2v/ALJXn9AHoHwy/wCYp/2y/wDZ67+uA+GX/MU/7Zf+z139AHkHjb/kb77/ALZ/+i1rn66Dxt/yN99/2z/9FrXP0Ae/1wPxT1jVNE0aK80p9skcU8jgztGMKoOflHzEenHU8it7/hNvDv8A0EP/ACDJ/wDE1nfEHw7feJNLWyskz5kM0Tvlfk3qADgkZ71x49SeHfKr7bX7q+2pwZmpPCyUU27ra9/iV9tdja8MTS3Hh21lmkeSRt+XdiSfnbua16w9LYeH/C0TaofIEGfM/i27nOPu59RUf/CbeHf+gh/5Bk/+JrTCKSoQUt7L8jXBKSw1NT35Ve+97HQV5V4017WdP8bQ2dtcPHYzyiNitw4ZT5DPgIOAMqOc9zx3rvbHxTo2o3kdpaXnmTyZ2r5TjOASeSMdAa5PxX4S1XV/Esd9bQZhhmEqnevz/uWjI5Ixy2fwrjzaM5UUoJt36X7Pt52ODPI1JYdKmm3fpf8Allbbzt5HolFZ+p63p2jeV9vuPJ83Oz5GbOMZ6A+orP8A+E28O/8AQQ/8gyf/ABNeoeydBXlXg3XtZvPHT6dfXDm3jiWSNRcPJvDCUZbOAD8g45x6nt6Lpmt6drPm/YLjzvKxv+RlxnOOoHoa4vw14S1XTfGK6tcwbIWhWJhvU7dolweDzkyY6dq8vHxm61LlTav0v3jvbyvueNmcajxFDkTavra+nvR3tptfc9EorHvvFOjadeSWl3eeXPHjcvlOcZAI5Ax0Iqv/AMJt4d/6CH/kGT/4mvUPZPIK9/oooA5/xt/yKF9/2z/9GLXkFFFAHQeCf+Rvsf8Atp/6LavX6KKAOA+Jv/ML/wC2v/slef0UUAegfDL/AJin/bL/ANnrv6KKAPIPG3/I333/AGz/APRa1z9FFAH/2Q==">
+      <figcaption>Una mina (representada con 9 zumbadores) y sus 8 casillas contiguas.</figcaption>
+    </figure>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El mundo de Karel es un cuarto rectangular cerrado por paredes, cuyas
+         dimensiones <strong>no se conocen de antemano</strong>. Dentro del cuarto,
+         algunas casillas contienen una <strong>mina</strong>, representada con
+         <strong>9 zumbadores</strong>; las demás casillas comienzan vacías. Karel
+         arranca en alguna casilla del cuarto, pero <strong>no sabe su posición ni su
+         orientación inicial</strong>, y lleva <strong>infinitos zumbadores</strong>
+         en la mochila. <strong>Objetivo:</strong> en cada casilla que <em>no</em> sea
+         mina, dejar tantos zumbadores como minas haya en sus 8 casillas contiguas
+         (las 4 ortogonales más las 4 diagonales). Las casillas que eran mina pueden
+         quedar como sea.</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por teclado: toda la información viene en el <strong>mundo</strong>
+       de Karel. El cuarto está delimitado por paredes y contiene las minas (cada una
+       con 9 zumbadores). Karel está colocado en una casilla desconocida con una
+       orientación desconocida.</p>
+
+    <figure>
+      <img alt="Mundo de ejemplo: cuarto 4x4 cerrado por paredes; Karel en (1,1) mirando al norte; minas (9 zumbadores) en (2,3) y (3,2)."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Ejemplo de entrada: el cuarto con dos minas; la flecha azul es Karel.</figcaption>
+    </figure>
+
+    <h2>Salida</h2>
+    <p>No hay salida por pantalla: el resultado es el <strong>estado final del mundo</strong>.
+       Cada casilla que no es mina debe terminar con un número de zumbadores igual al de
+       minas que la rodean (un valor de 0 a 8). No importa la posición ni la orientación
+       final de Karel, ni cuántos zumbadores queden en las casillas que originalmente
+       eran mina.</p>
+
+    <figure>
+      <img alt="Mundo de ejemplo resuelto: cada casilla sin mina muestra el número de minas contiguas; las minas conservan su marca."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Ejemplo de salida: cada casilla sin mina guarda el conteo de minas contiguas.</figcaption>
+    </figure>
+
+    <h2>Condiciones</h2>
+    <ul>
+      <li>Karel se encuentra dentro del mapa y desconoce su ubicación y orientación inicial.</li>
+      <li>Karel tiene infinitos zumbadores en la mochila.</li>
+      <li>Una mina se representa con 9 zumbadores.</li>
+      <li>No importa la posición ni la orientación final de Karel.</li>
+      <li>No importa el número de zumbadores que queden en la posición donde originalmente existe una mina.</li>
+    </ul>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado (evaluador de Karel de omegaUp)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Representación de mina</td><td><span class="badge">9 zumbadores</span></td></tr>
+        <tr><td>Casillas contiguas</td><td><span class="badge">8 (incluye diagonales)</span></td></tr>
+        <tr><td>Mochila de Karel</td><td><span class="badge">infinitos zumbadores</span></td></tr>
+        <tr><td>Posición y orientación inicial</td><td><span class="badge">desconocidas</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <p>Observa las figuras de <em>Entrada</em> y <em>Salida</em> de arriba. En el
+       ejemplo el cuarto mide \(4 \times 4\). Karel (la flecha azul) inicia en la
+       esquina suroeste, casilla \((1,1)\), mirando al norte. Hay dos minas
+       (9 zumbadores) en \((2,3)\) y \((3,2)\).</p>
+    <p>En el estado final, cada casilla sin mina guarda cuántas minas la rodean:
+       por ejemplo \((2,2)\) y \((3,3)\) tocan a las dos minas a la vez, así que valen
+       \(2\); las casillas \((1,1)\) y \((4,4)\), alejadas de toda mina, quedan vacías
+       (\(0\) minas contiguas). Las casillas \((2,3)\) y \((3,2)\) siguen siendo minas:
+       su contenido final ya no importa.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Recorrido de cuadrícula</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes un cuarto rectangular cerrado con algunas minas; cada mina son
+       <strong>9 zumbadores</strong>. Karel no sabe dónde está ni hacia dónde mira.
+       Para cada casilla que <em>no</em> es mina hay que dejar tantos zumbadores como
+       minas haya en sus 8 vecinas. Es, literalmente, el tablero de números del
+       Buscaminas, generado por un robot.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El mundo es desconocido (tamaño, tu posición y tu orientación): primero
+                hay que <strong>ubicarse en una esquina con orientación fija</strong> y
+                luego <strong>recorrer todo el cuarto</strong>. La clave numérica: una
+                mina son \(9\) zumbadores y una pista vale a lo más \(8\) (sólo hay
+                \(8\) vecinas), así que el \(9\) <strong>nunca</strong> se confunde con
+                una pista.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Notaste que esto es exactamente generar los números del
+           Buscaminas? ¿Qué operación se repite en CADA casilla del cuarto?</p>
+        <p>Separa el problema en dos partes independientes: (a) <strong>recorrer</strong>
+           todas las casillas del cuarto, y (b) <strong>qué hacer</strong> al pararte en
+           una casilla. Cada casilla sin mina debe terminar con el conteo de minas en
+           sus \(8\) contiguas; cada casilla mina se deja como está.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Ubicarte sin saber dónde estás</summary>
+      <div class="body">
+        <p class="q">Karel desconoce su posición y su orientación. ¿Cómo conviertes ese
+           caos en un punto de partida conocido? ¿Qué condiciones <em>absolutas</em> de
+           orientación (orientado-al-norte, orientado-al-sur, …) te regala Karel?</p>
+        <p>Para fijar un origen: avanza hasta chocar con una pared, gira y avanza hasta
+           chocar con otra: eso te deja en una <strong>esquina</strong>. Usando las
+           condiciones cardinales puedes llegar SIEMPRE a la misma esquina (digamos la
+           <strong>suroeste</strong>) mirando al norte. Desde ahí, un recorrido en
+           <strong>serpentina</strong> (sube una columna, pásate una a la derecha, baja,
+           y así) visita TODAS las casillas sin repetir.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — El truco del 9 (mina vs. pista)</summary>
+      <div class="body">
+        <p class="q">Si vas a dejar zumbadores de pista en las casillas vacías, ¿cómo
+           evitas confundir esos zumbadores con los de una mina más adelante? ¿Cuántos
+           zumbadores puede tener como MÁXIMO una pista?</p>
+        <p>Una casilla tiene a lo más \(8\) vecinas, así que una pista vale entre \(0\) y
+           \(8\). Una mina son \(9\). Por eso \(9\) (o más) es un <strong>centinela</strong>
+           que una pista nunca alcanza: una casilla es mina \(\iff\) tiene \(9\) o más
+           zumbadores. Gracias a esto puedes ir modificando el tablero sin perder de
+           vista cuáles eran minas.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿Mirar vecinos o repartir desde la mina?</summary>
+      <div class="body">
+        <p class="q">Hay dos formas: pararte en una casilla y mirar sus \(8\) vecinas
+           para contar minas; o pararte en una MINA y sumar \(1\) a cada una de sus \(8\)
+           vecinas. ¿Cuál te ahorra "recordar" un número mientras caminas (algo que Karel
+           no puede hacer, porque no tiene variables)?</p>
+        <p>Si te paras en la mina y sueltas \(1\) zumbador en cada vecina, <strong>no
+           necesitas recordar ningún conteo</strong>: la única decisión ("¿soy mina?") se
+           toma en la casilla donde estás, y los depósitos en las \(8\) vecinas son
+           incondicionales. Además es <strong>independiente del orden</strong>: cuando
+           todas las minas hayan repartido, cada casilla habrá acumulado exactamente el
+           número de minas que la rodean.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea global.</strong> Recorre todo el cuarto una sola vez. En cada
+           casilla decide si es mina (tiene \(\ge 9\) zumbadores). Si lo es, visita sus
+           \(8\) vecinas accesibles y deja \(1\) zumbador en cada una; si no lo es, no
+           hagas nada (sus zumbadores los pondrán las minas vecinas). Al final, cada
+           casilla sin mina tendrá tantos zumbadores como minas contiguas.</p>
+
+        <p><strong>Por qué funciona.</strong> Cada mina contribuye \(+1\) a cada vecina,
+           así que una casilla sin mina termina con la suma de minas que la rodean: justo
+           el número del Buscaminas. El orden no importa porque cada mina aporta de forma
+           independiente. Y el truco del \(9\) garantiza que nunca confundas una pista a
+           medio llenar (a lo más \(8\)) con una mina (\(\ge 9\)): aunque dos minas sean
+           vecinas y una le sume a la otra, las minas se quedan en \(\ge 9\) y las pistas
+           en \(\le 8\). Como el contenido final de una mina "no importa", da igual que
+           reciba zumbadores extra de minas vecinas.</p>
+
+        <p><strong>Cómo ubicarte y recorrer.</strong> Primero ve a la esquina suroeste y
+           queda mirando al norte (usando las condiciones cardinales, esto es
+           determinista sin saber de dónde partiste). Luego recorre en serpentina: sube
+           la columna procesando casilla por casilla; si hay columna a la derecha, pásate
+           a ella y bájala procesando; repite hasta que no quede columna. Cada vez que una
+           mina manda a Karel a sus vecinas, Karel <em>regresa</em> a la casilla de partida
+           antes de seguir el recorrido, así no se pierde.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel)</span>
+<pre>inicia-ejecucion
+    ve-a-esquina-suroeste-mirando-al-norte
+    recorre-cuarto-en-serpentina      # en cada casilla llama a: procesa-casilla
+termina-ejecucion
+
+define-nueva-instruccion ve-a-esquina-suroeste-mirando-al-norte como:
+    gira-hasta orientado-al-sur
+    mientras frente-libre:  avanza      # pegado al muro sur (fila de abajo)
+    gira-hasta orientado-al-oeste
+    mientras frente-libre:  avanza      # pegado al muro oeste (columna izquierda)
+    gira-hasta orientado-al-norte
+
+define-nueva-instruccion procesa-casilla como:
+    si es-mina:                          # la casilla actual tiene 9 o mas zumbadores
+        reparte-a-las-8-vecinas
+
+define-nueva-instruccion reparte-a-las-8-vecinas como:
+    # 4 ortogonales
+    repite 4 veces:
+        si frente-libre:
+            avanza;  deja-zumbador;  date-la-vuelta;  avanza;  date-la-vuelta
+        gira-izquierda
+    # 4 diagonales: un paso al frente + un paso a la izquierda
+    repite 4 veces:
+        si diagonal-accesible:
+            paso-diagonal;  deja-zumbador;  regresa-de-diagonal
+        gira-izquierda
+
+define-nueva-instruccion recorre-cuarto-en-serpentina como:
+    repite:
+        sube-columna-procesando            # procesa-casilla; mientras frente-libre: avanza; procesa-casilla
+        si hay-columna-a-la-derecha:
+            muevete-una-a-la-derecha
+            baja-columna-procesando
+            si hay-columna-a-la-derecha:  muevete-una-a-la-derecha
+            si-no:  termina
+        si-no:
+            termina</pre>
+        </div>
+
+        <p class="note"><strong>Sobre <code>es-mina</code> y <code>date-la-vuelta</code>:</strong>
+           Karel sólo puede sentir si HAY zumbador (junto-a-zumbador), no cuántos. Para saber
+           si la casilla tiene \(\ge 9\) hay que levantar zumbadores de uno en uno (hasta \(9\))
+           contando con un <code>repite</code>, y luego <em>devolver exactamente los que
+           levantaste</em> (apoyándote en una casilla auxiliar o reconstruyendo la cuenta) para
+           no estropear una pista a medio llenar. <code>date-la-vuelta</code> es simplemente
+           <code>gira-izquierda; gira-izquierda</code>; <code>gira-hasta</code> repite
+           <code>gira-izquierda</code> hasta cumplir la condición cardinal.</p>
+
+        <p><strong>Complejidad.</strong> Con un cuarto de \(F \times C\) casillas, el recorrido
+           visita cada casilla una vez; en cada mina se hacen \(8\) excursiones de costo
+           constante y detectar una mina cuesta \(O(9)=O(1)\). En total \(O(F \cdot C)\)
+           instrucciones de Karel; memoria extra: ninguna (sólo el propio mundo).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

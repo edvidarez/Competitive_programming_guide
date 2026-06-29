@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2006 · Problema 04 — Ruleta</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:auto}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  /* Tabla de traza (ejemplo) */
+  .trace{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:auto}
+  .trace table{border-collapse:collapse;font-size:14px;min-width:100%}
+  .trace th,.trace td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--border);
+    border-right:1px solid var(--border);white-space:nowrap}
+  .trace th{background:var(--panel2);color:var(--muted)}
+  .trace td:first-child,.trace th:first-child{text-align:left;color:var(--muted);position:sticky;left:0;background:var(--panel)}
+  .trace tr:last-child td{border-bottom:none}
+  .trace td:last-child,.trace th:last-child{border-right:none}
+  .trace .gain td{color:var(--accent2);font-weight:600}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">11ª OMI · 2006 · Lenguaje</div>
+    <h1>Problema <span class="num">04</span> — Ruleta</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/ruleta">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>La historia y el método</h2>
+    <p>El juego de la ruleta ha sido objeto de innumerables intentos de descubrir alguna
+       flaqueza que permitiera diseñar un método para obtener ganancias sistemáticas.
+       Numerosos autores han escrito tratados de cómo saltar la banca. Norman Leigh escribió
+       una obra clásica donde expone cómo, junto con doce compañeros, saltaron la banca de
+       Montecarlo. La obra, magistralmente escrita, cuenta hechos «verídicos». Pero con el
+       auxilio de la ciencia de la computación podemos ver que esos hechos, tal como los
+       relata Leigh en su libro, no pueden haber sucedido.</p>
+
+    <p>El método que Leigh relata en su libro es el <strong>Labouchere inverso</strong>.
+       El apostador comienza anotando en una libreta los números 1, 2, 3 y 4. Siempre apuesta
+       una ficha igual a la suma de los números de los extremos de la lista. Si gana, agrega
+       al final de la lista un número de igual valor al de su última apuesta, que acaba de
+       ganar. Si pierde, tacha los dos números de los extremos de la lista. Si en principio
+       pierde las dos apuestas iniciales, la lista se acaba y en total ha perdido $10, y
+       entonces vuelve a comenzar anotando los números 1, 2, 3 y 4 en su libreta y reiniciando
+       el método. Si la apuesta llega a superar el límite de la mesa, el jugador también
+       reinicia el método anotando una nueva lista de 1, 2, 3 y 4 en su libreta y apostando $5.</p>
+
+    <p>Recordamos que la ruleta europea consta de los números del 0 al 36 y que, jugando a
+       <strong>par</strong> se gana si se obtiene un número par distinto de cero; el que juega
+       a <strong>impar</strong> gana si el número es impar; y en caso de salir cero ambos
+       pierden. La apuesta máxima es de $100 (recuerde que cuando se supera esta apuesta el
+       método se reinicia). En cada apuesta se gana o se pierde el monto apostado.</p>
+
+    <p>Con dos jugadores, uno jugando a par y otro a impar, el método se comporta así en unas
+       bolas de ejemplo. El renglón superior muestra las bolas de ejemplo, el inferior la
+       ganancia acumulada, y los demás la lista en cada momento (cada columna es el estado de
+       la libreta <em>después</em> de procesar esa bola, leída de arriba hacia abajo):</p>
+
+    <h3>Jugador a par</h3>
+    <div class="trace">
+      <table>
+        <thead>
+          <tr><th>Bola →</th><th>31</th><th>22</th><th>26</th><th>11</th><th>4</th><th>36</th><th>0</th><th>4</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Lista</td><td>2</td><td>2</td><td>2</td><td>3</td><td>3</td><td>3</td><td>5</td><td>5</td></tr>
+          <tr><td></td><td>3</td><td>3</td><td>3</td><td>5</td><td>5</td><td>5</td><td>8</td><td>8</td></tr>
+          <tr><td></td><td></td><td>5</td><td>5</td><td></td><td>8</td><td>8</td><td></td><td>13</td></tr>
+          <tr><td></td><td></td><td></td><td>7</td><td></td><td></td><td>11</td><td></td><td></td></tr>
+          <tr class="gain"><td>Ganancia</td><td>-5</td><td>0</td><td>+7</td><td>-2</td><td>+6</td><td>+17</td><td>+3</td><td><strong>+16 = P</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Jugador a impar</h3>
+    <div class="trace">
+      <table>
+        <thead>
+          <tr><th>Bola →</th><th>31</th><th>22</th><th>26</th><th>11</th><th>4</th><th>36</th><th>0</th><th>4</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Lista</td><td>1</td><td>2</td><td>3</td><td>3</td><td>1</td><td>2</td><td>1</td><td>2</td></tr>
+          <tr><td></td><td>2</td><td>3</td><td></td><td>3</td><td>2</td><td>3</td><td>2</td><td>3</td></tr>
+          <tr><td></td><td>3</td><td>4</td><td></td><td></td><td>3</td><td></td><td>3</td><td></td></tr>
+          <tr><td></td><td>4</td><td></td><td></td><td></td><td>4</td><td></td><td>4</td><td></td></tr>
+          <tr><td></td><td>5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr class="gain"><td>Ganancia</td><td>+5</td><td>-1</td><td>-7</td><td>-4</td><td>-10</td><td>-15</td><td>-20</td><td><strong>-25 = Q</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">La libreta arranca en \([1,2,3,4]\) para ambos jugadores; las columnas
+       muestran el estado tras cada una de las 8 bolas del ejemplo.</p>
+
+    <h2>El problema</h2>
+    <p>Debes escribir un programa que calcule la ganancia o pérdida lograda luego de jugarse
+       cierta cantidad de bolas de ruleta.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer del teclado de la PC los siguientes datos:</p>
+    <ul>
+      <li>En la primera línea, el número \(0 < N \le 30\,000\) de tiradas de ruleta.</li>
+      <li>En cada una de las siguientes \(N\) líneas, un número entero entre 0 y 36 que
+          representa la bola obtenida en cada uno de los \(N\) giros de la ruleta.</li>
+    </ul>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en la pantalla de la PC dos enteros \(P\) y \(Q\) separados
+       por un espacio, indicando respectivamente la ganancia o pérdida de par e impar,
+       proveniente de aplicar el método de Labouchere inverso a las apuestas de par e impar
+       en la serie de bolas contenidas en la entrada.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (consulta el juez en línea)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (consulta el juez en línea)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de tiradas</td><td><span class="badge">\(0 < N \le 30\,000\)</span></td></tr>
+        <tr><td>Valor de cada bola</td><td><span class="badge">\(0 \le \text{bola} \le 36\)</span></td></tr>
+        <tr><td>Apuesta máxima (límite de mesa)</td><td><span class="badge">$100</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>8
+31
+22
+26
+11
+4
+36
+0
+4</pre></div>
+      <div class="io"><h4>Salida</h4><pre>16 -25</pre></div>
+    </div>
+    <p class="note">Las 8 bolas son 31, 22, 26, 11, 4, 36, 0 y 4. Aplicando el método: el
+       jugador a par termina con ganancia \(P = +16\) y el jugador a impar con \(Q = -25\)
+       (ver las tablas de traza de arriba).</p>
+
+    <h2>Consideraciones</h2>
+    <p>El número de tiradas de la ruleta nunca superará los 30 000.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Estructuras de datos</span>
+      <span class="ptag">Implementación</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Dos jugadores independientes apuestan con el sistema <em>Labouchere inverso</em> sobre
+       la misma secuencia de \(N\) giros de ruleta: uno a par y otro a impar. Hay que reproducir
+       fielmente las reglas del método y reportar la ganancia/pérdida final de cada uno: \(P\)
+       (par) y \(Q\) (impar). No hay nada que «optimizar»; es una simulación de reglas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 30\,000\) y dos simulaciones independientes ⇒ basta \(O(N)\). Como la
+                apuesta se reinicia al pasar de $100, los montos quedan acotados y todo cabe en
+                enteros normales; no hay riesgo de desbordamiento.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya notaste que aquí no hay que «descubrir» nada, sino ejecutar las reglas
+           tal cual las describe el enunciado?</p>
+        <p>La «libreta» es una lista de números de la que lees y borras en <em>ambos</em>
+           extremos (al perder) y a la que agregas <em>al final</em> (al ganar). ¿Qué
+           estructura de datos te deja hacer las tres cosas de forma barata? ¿Una cola doble
+           (deque)? ¿Una lista con dos índices, uno al frente y otro al final?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Separa a los dos jugadores</summary>
+      <div class="body">
+        <p class="q">¿Viste que el jugador a par y el jugador a impar no interactúan entre
+           sí? ¿Podrías correr exactamente la misma simulación dos veces, cambiando solo la
+           condición de «¿ganó?»?</p>
+        <p>Para una misma bola \(b\): ¿cuándo gana el de par? (par y \(b \ne 0\)). ¿Cuándo gana
+           el de impar? (impar). ¿Y si sale \(0\)? Recuerda que el cero hace que <em>ambos</em>
+           pierdan. Si encapsulas la simulación en una función parametrizada por «apuesto a
+           par/impar», escribes la lógica una sola vez.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Los detalles que tumban tu código</summary>
+      <div class="body">
+        <p class="q">¿Estás seguro de qué apuestas cuando la lista tiene un <em>solo</em>
+           número?</p>
+        <p>Tres casos finos que hay que clavar (revísalos contra la traza del ejemplo):</p>
+        <ul>
+          <li><strong>Lista de un elemento:</strong> la apuesta es ese único número, NO el
+              doble. (En la traza de impar, con la lista \([3]\) la apuesta es \(3\), no \(6\).)</li>
+          <li><strong>La lista se vacía tras perder:</strong> al tachar los dos extremos puede
+              quedar vacía; entonces se reinicia con \([1,2,3,4]\) para la siguiente bola
+              (cuentas la pérdida y <em>después</em> reinicias).</li>
+          <li><strong>La apuesta se pasa de $100:</strong> antes de jugar esa bola, reinicia la
+              lista a \([1,2,3,4]\) y apuesta $5 (= \(1+4\)); con ese $5 se resuelve la bola.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>El problema se resuelve con una <strong>simulación directa</strong> del método.
+           Mantén la libreta en una <strong>cola doble</strong> (deque): apostar es leer el
+           frente y el final; ganar es agregar al final; perder es quitar frente y final.
+           Corre la misma simulación dos veces (par e impar) y reporta ambas ganancias.</p>
+
+        <p><strong>Orden de cada bola (clave para que cuadre con la traza):</strong></p>
+        <ol>
+          <li>Calcula la apuesta: si la lista tiene un elemento, es ese número; si tiene dos o
+              más, es la suma del frente y el final.</li>
+          <li>Si la apuesta &gt; 100, reinicia la lista a \([1,2,3,4]\) y fija la apuesta en
+              \(5\).</li>
+          <li>Decide si este jugador ganó con la bola actual (ojo con el \(0\)).</li>
+          <li>Si ganó: suma la apuesta a la ganancia y agrega la apuesta al final de la lista.</li>
+          <li>Si perdió: resta la apuesta; quita el frente y el final; si quedó vacía,
+              reiníciala a \([1,2,3,4]\).</li>
+        </ol>
+
+        <p><strong>¿Por qué es correcto?</strong> Cada paso es una transcripción literal de las
+           reglas del enunciado, y los tres casos de borde (lista de un elemento, vaciado y
+           límite de mesa) se manejan explícitamente. Verificado contra el ejemplo
+           (\(P=16,\ Q=-25\)) y los 20 casos oficiales (coincidencia exacta).</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>funcion simular(bolas, apuesta_a_par):
+    lista     <- [1, 2, 3, 4]          # cola doble
+    ganancia  <- 0
+    para cada b en bolas:
+        # 1) apuesta = suma de extremos (o el único elemento)
+        si tamaño(lista) == 1:
+            apuesta <- frente(lista)   # un solo número: NO se duplica
+        si no:
+            apuesta <- frente(lista) + final(lista)
+
+        # 2) limite de mesa: si pasa de 100, reinicia y apuesta 5
+        si apuesta > 100:
+            lista   <- [1, 2, 3, 4]
+            apuesta <- 5               # = 1 + 4
+
+        # 3) ¿gano este jugador con la bola b?
+        si b == 0:                  gano <- falso          # el cero pierde para ambos
+        sino si (b es par):         gano <- apuesta_a_par
+        sino (b es impar):          gano <- no apuesta_a_par
+
+        # 4) / 5) aplicar resultado
+        si gano:
+            ganancia <- ganancia + apuesta
+            agregar apuesta al final de lista              # crece al ganar
+        si no:
+            ganancia <- ganancia - apuesta
+            quitar frente y final de lista                 # tacha ambos extremos
+            (si solo habia 1, queda vacia)
+            si lista esta vacia:
+                lista <- [1, 2, 3, 4]                       # se acabo: reinicia
+    regresa ganancia
+
+principal:
+    leer N y las N bolas
+    P <- simular(bolas, verdadero)     # par
+    Q <- simular(bolas, falso)         # impar
+    imprimir  P, " ", Q</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N)\) en tiempo y \(O(N)\) en memoria por jugador
+           (la libreta tiene a lo más \(\approx N+4\) números). Total \(O(N)\), de sobra para
+           \(N \le 30\,000\).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

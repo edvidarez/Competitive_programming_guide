@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2006 · Problema 01 — Áreas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\01F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\01F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">11ª OMI · 2006 · Karel</div>
+    <h1>Problema <span class="num">01</span> — Áreas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/areas">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Karel desea hacer su testamento. Hace tiempo compró un terreno que desea
+       repartir entre sus descendientes y, para hacer una repartición justa,
+       necesita saber el <strong>área exacta</strong> del mismo.</p>
+    <p>El terreno de Karel está separado de los terrenos vecinos por medio de una
+       <strong>cerca</strong>. Los terrenos —tanto el de Karel como los de sus
+       vecinos— están representados por <strong>áreas de beepers contiguos</strong>.
+       Dos beepers son contiguos si la distancia horizontal o vertical entre ellos
+       es igual a 1 (dos beepers <em>en diagonal</em> NO son contiguos). Las cercas
+       que separan los terrenos están representadas por <strong>espacios sin
+       beepers</strong>.</p>
+    <p>Dado un mundo rectangular, rodeado en su totalidad por paredes, ayuda a Karel
+       a medir el <strong>área total de su terreno</strong>. Tu programa deberá dejar
+       un número de beepers igual al área del terreno de Karel en la <strong>esquina
+       inferior izquierda</strong> del mundo.</p>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El mundo es una cuadrícula rectangular cerrada por paredes en todo su
+         contorno y <strong>sin paredes en el interior</strong>. Cada celda del piso
+         tiene <strong>un beeper</strong> (si pertenece a un terreno) o
+         <strong>ningún beeper</strong> (si es cerca). Un <em>terreno</em> es un
+         grupo de celdas con beeper conectadas <strong>4-direccionalmente</strong>
+         (arriba, abajo, izquierda, derecha); las diagonales no cuentan. Distintos
+         terrenos siempre quedan separados por al menos una celda de cerca.</p>
+      <p>Karel arranca <strong>parado sobre alguna celda de su propio terreno</strong>
+         (posición y orientación iniciales dadas por el mundo) con
+         <strong>100 beepers en la mochila</strong>. Se considera resuelto cuando, al
+         apagarse, la <strong>esquina inferior izquierda</strong> contiene tantos
+         beepers como celdas tiene el terreno de Karel (su área). La ubicación y la
+         orientación finales de Karel no importan.</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>La información viene en el <strong>mundo de Karel</strong> (no por la entrada
+       estándar): las dimensiones, las paredes del contorno, los beepers que forman
+       todos los terrenos y la posición y orientación inicial de Karel sobre su
+       terreno. Karel no conoce coordenadas; sólo dispone de sus <strong>sensores</strong>
+       (¿hay pared al frente?, ¿hay un beeper en esta celda?, ¿le quedan beepers en
+       la mochila?, ¿hacia qué punto cardinal mira?).</p>
+
+    <h2>Salida</h2>
+    <p>El <strong>estado final del mundo</strong>: en la <strong>esquina inferior
+       izquierda</strong> debe quedar un número de beepers igual al área del terreno
+       de Karel. En el ejemplo oficial, además, el terreno de Karel queda vacío
+       (sus beepers se usaron para contar) y los demás terrenos quedan intactos.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 s</td></tr>
+        <tr><td>Límite de memoria</td><td>256 MB</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Beepers en la mochila</td><td><span class="badge">exactamente 100</span></td></tr>
+        <tr><td>Área del terreno de Karel</td><td><span class="badge">\(\le 100\)</span></td></tr>
+        <tr><td>Esquina inferior izquierda</td><td><span class="badge">inicia sin beepers</span></td></tr>
+        <tr><td>Paredes interiores</td><td><span class="badge">no hay</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Condiciones</h2>
+    <ul>
+      <li>Karel tiene <strong>100 beepers en la mochila</strong>.</li>
+      <li>El área del terreno de Karel siempre va a ser <strong>menor o igual a 100</strong>.</li>
+      <li>Karel inicia en <strong>algún punto de su terreno</strong>.</li>
+      <li>Cada terreno está formado por montones de <strong>un beeper</strong>
+          contiguos ya sea vertical u horizontalmente.</li>
+      <li>La esquina inferior izquierda del mundo <strong>no tiene beepers</strong>.</li>
+      <li>No importan ni la ubicación ni la orientación final de Karel.</li>
+      <li>No hay paredes en el interior del mundo.</li>
+    </ul>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <figure>
+        <img alt="Mundo de entrada: cuadrícula 6x6 con varios terrenos de beepers (marcas verdes con un 1). Karel (flecha azul) está parado sobre un beeper en la columna 3, renglón 4, mirando hacia el sur."
+             src="data:image/jpeg;base64,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">
+        <figcaption>Entrada: Karel (flecha azul) inicia sobre su terreno, en la
+           columna 3, renglón 4. Su terreno (la componente conexa de beepers que lo
+           contiene) tiene 6 celdas.</figcaption>
+      </figure>
+      <figure>
+        <img alt="Mundo de salida: el terreno de Karel quedó vacío, los demás terrenos siguen igual y la esquina inferior izquierda muestra 6 beepers."
+             src="data:image/jpeg;base64,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">
+        <figcaption>Salida: en la esquina inferior izquierda quedan
+           <strong>6</strong> beepers (el área del terreno de Karel); el terreno de
+           Karel quedó vacío y los terrenos vecinos no se tocaron.</figcaption>
+      </figure>
+    </div>
+    <p class="note">El terreno de Karel del ejemplo está formado por las celdas
+       \((3,4),(2,4),(4,4),(3,3),(2,3),(3,2)\): son 6 celdas conectadas por lados,
+       así que la respuesta es \(6\).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Flood fill</span>
+      <span class="ptag">Componentes conexas</span>
+      <span class="ptag">Recursión (DFS)</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Karel arranca parado sobre un beeper. Su <em>terreno</em> es la
+       <strong>componente conexa 4-direccional</strong> de beepers que contiene su
+       celda inicial. Hay que contar cuántas celdas tiene esa componente y dejar esa
+       cantidad de beepers en la esquina inferior izquierda del mundo.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El área es \(\le 100\) y la mochila trae <strong>exactamente 100</strong>
+                beepers. Esos dos números no son casualidad: permiten usar el 100 como
+                <em>compensación</em> para deducir el área (lo vemos en la pista final).
+                Además, <strong>no hay paredes interiores</strong>, así que Karel se mueve
+                libre por todo el rectángulo.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué es exactamente "el terreno de Karel"?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que no te piden contar TODOS los beepers del mundo,
+           sino sólo los del terreno donde Karel está parado?</p>
+        <p>Un terreno es un grupo de celdas con beeper pegadas por sus lados (no por
+           diagonales). Como los terrenos se separan con cercas (celdas vacías), dos
+           terrenos distintos nunca quedan pegados por un lado. Entonces el terreno de
+           Karel es justo la <strong>componente conexa</strong> de beepers que toca su
+           celda inicial. ¿Cómo recorrerías una componente conexa con un robot?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Recorrer sin coordenadas: marca lo visitado</summary>
+      <div class="body">
+        <p class="q">Karel no sabe en qué coordenada está. ¿Cómo evitas pasar dos
+           veces por la misma celda y caer en un ciclo infinito?</p>
+        <p>El único "papel y lápiz" que tiene Karel son los propios beepers. Truco
+           clásico de <em>flood fill</em>: cuando llegues a una celda del terreno,
+           <strong>recoge su beeper</strong>. Así la celda queda vacía y ya no la
+           confundirás con una celda por visitar (se ve igual que una cerca). De paso,
+           cada beeper recogido te sirve para contar. ¿Y cómo visitas a los vecinos?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — DFS recursivo que regresa a su lugar</summary>
+      <div class="body">
+        <p class="q">Si avanzas a un vecino y luego a otro, ¿cómo regresas a la celda
+           desde donde saliste para probar las otras direcciones?</p>
+        <p>Define una instrucción recursiva <code>recolecta</code> con un contrato
+           estricto: <strong>empieza y termina en la misma celda y con la misma
+           orientación</strong>. Para cada una de las 4 direcciones: si el frente está
+           libre, avanza; si la celda vecina tiene beeper, llámate a ti misma
+           (<em>recursión</em>); luego da media vuelta, avanza para regresar y vuelve a
+           orientarte. Como Karel sólo siente el beeper de la celda en la que está
+           parado, hay que <strong>entrar</strong> a la vecina para checarla y, si no
+           sirve, dar marcha atrás. ¿Y cómo conviertes el conteo en la respuesta de la
+           esquina?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Contar exacto con el truco del 100</summary>
+      <div class="body">
+        <p class="q">Tras el recorrido, la mochila tiene \(100 + \text{área}\)
+           beepers, pero Karel no puede "leer" ese número. ¿Cómo dejas SÓLO el área
+           en la esquina?</p>
+        <p>Karel sólo sabe si la mochila está vacía o no, y si la celda tiene beeper o
+           no. Pero sí puede repetir una acción un número fijo de veces. Idea: ve a la
+           esquina inferior izquierda, <strong>vacía toda la mochila</strong> ahí (la
+           esquina queda con \(100 + \text{área}\)) y luego <strong>recoge
+           exactamente 100</strong>. Lo que sobra en la esquina es el área. Esto
+           funciona justo porque la mochila trae 100 y el área es \(\le 100\).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El terreno de Karel es la componente conexa
+           4-direccional de beepers que contiene su celda inicial. Se recorre con un
+           <strong>DFS recursivo</strong> que va recogiendo cada beeper del terreno
+           (recoger = marcar como visitada, porque la celda queda vacía). Cada beeper
+           recogido se acumula en la mochila, así que al final la mochila pasó de
+           \(100\) a \(100 + \text{área}\). Para depositar sólo el área, Karel va a la
+           esquina inferior izquierda (no hay paredes interiores, así que basta pegarse
+           a la pared izquierda y luego a la de abajo), <strong>vacía toda la
+           mochila</strong> en esa celda y luego <strong>recoge 100</strong>: lo que
+           queda es exactamente el área.</p>
+
+        <p><strong>Por qué es correcto.</strong> El DFS visita cada celda del terreno
+           exactamente una vez (al entrar recoge su único beeper; nunca vuelve a entrar
+           porque ya está vacía). Sólo cruza a celdas con beeper, y como los terrenos
+           están separados por cercas, nunca salta a otro terreno ni a la esquina. El
+           contrato "empieza y termina en la misma celda y orientación" garantiza que
+           el retroceso (<em>backtracking</em>) deja a Karel listo para probar la
+           siguiente dirección y, al final, de vuelta en su celda inicial. El conteo
+           es exacto porque cada celda aporta un beeper, y el truco del 100 despeja la
+           compensación inicial de la mochila (\(100 + \text{área} - 100 =
+           \text{área}\)), válido porque \(\text{área} \le 100\).</p>
+
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel</span>
+<pre>define media-vuelta:
+    gira-izquierda
+    gira-izquierda
+
+define mira-al-oeste:
+    mientras no-orientado-al-oeste:
+        gira-izquierda
+
+define mira-al-sur:
+    mientras no-orientado-al-sur:
+        gira-izquierda
+
+# DFS: recoge toda la componente de beepers hacia la mochila.
+# Contrato: empieza y termina en la MISMA celda y orientacion.
+define recolecta:
+    coge-zumbador                  # marca esta celda como visitada (queda vacia)
+    repite 4 veces:                # prueba las 4 direcciones
+        si frente-libre:
+            avanza                 # entra a la celda vecina
+            si junto-a-zumbador:   # vecina con beeper => terreno sin visitar
+                recolecta          # explora esa rama (regresa aqui igual)
+            media-vuelta
+            avanza                 # regresa a la celda de origen
+            media-vuelta           # recupera la orientacion de esta direccion
+        gira-izquierda             # pasa a la siguiente direccion
+
+inicia-ejecucion:
+    recolecta                      # la mochila pasa de 100 a 100 + area
+
+    mira-al-oeste                  # pegarse a la pared izquierda
+    mientras frente-libre:
+        avanza
+    mira-al-sur                    # bajar a la esquina inferior izquierda
+    mientras frente-libre:
+        avanza
+
+    mientras hay-zumbadores-en-la-mochila:
+        deja-zumbador              # vuelca TODO: la esquina queda con 100 + area
+    repite 100 veces:
+        coge-zumbador              # quita los 100 iniciales: queda exactamente el area
+
+    apagate
+termina-ejecucion</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> El DFS toca cada celda del terreno una vez y
+           cruza cada arista del árbol de recorrido a lo más dos veces, así que es
+           \(O(\text{área})\) en pasos; la ida a la esquina es \(O(\text{lado del
+           mundo})\) y el ajuste final es \(O(100)\). La profundidad de la recursión
+           es \(\le \text{área} \le 100\). En total, lineal en el tamaño del terreno.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

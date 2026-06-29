@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **140 / 190**
+Total de problemas: **190** · Completados: **146 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -109,16 +109,16 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 5 | Lenguaje | Las Cuentas del Hippie | `2005/05 Las Cuentas del Hippie/index.html` |
 | [ ] | 6 | Lenguaje | Secuencia Circular | `2005/06 Secuencia Circular/index.html` |
 
-## 11ª OMI · 2006 — 0 / 6
+## 11ª OMI · 2006 — 6 / 6
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Áreas | `2006/01 Áreas/index.html` |
-| [ ] | 2 | Karel | Buscaminas | `2006/02 Buscaminas/index.html` |
-| [ ] | 3 | Karel | El Maléfico Chuzpa | `2006/03 El Maléfico Chuzpa/index.html` |
-| [ ] | 4 | Lenguaje | Ruleta | `2006/04 Ruleta/index.html` |
-| [ ] | 5 | Lenguaje | Sopa de Letras | `2006/05 Sopa de Letras/index.html` |
-| [ ] | 6 | Lenguaje | Secuencias Estables | `2006/06 Secuencias Estables/index.html` |
+| [x] | 1 | Karel | Áreas | `2006/01 Áreas/index.html` |
+| [x] | 2 | Karel | Buscaminas | `2006/02 Buscaminas/index.html` |
+| [x] | 3 | Karel | El Maléfico Chuzpa | `2006/03 El Maléfico Chuzpa/index.html` |
+| [x] | 4 | Lenguaje | Ruleta | `2006/04 Ruleta/index.html` |
+| [x] | 5 | Lenguaje | Sopa de Letras | `2006/05 Sopa de Letras/index.html` |
+| [x] | 6 | Lenguaje | Secuencias Estables | `2006/06 Secuencias Estables/index.html` |
 
 ## 12ª OMI · 2007 — 6 / 6
 
