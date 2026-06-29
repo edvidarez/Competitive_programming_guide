@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2005 · Problema 03 — Mapa del Tesoro</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">10ª OMI · 2005 · Karel</div>
+    <h1>Problema <span class="num">03</span> — Mapa del Tesoro</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/K-Mapa-del-tesoro">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Enojado por el saqueo de sus tesoros, Karel Sparrow ha decidido crear un nuevo
+       sistema de codificación para sus mapas. El nuevo sistema es una secuencia de
+       montones de zumbadores que indican la dirección en la que se debe dar cada
+       paso. Un zumbador significa un paso al norte, dos zumbadores un paso al este,
+       tres un paso al sur y cuatro uno al oeste.</p>
+    <p>Pasado el tiempo, ya viejo, Sparrow ha regresado a la isla y te ha pedido que
+       lo ayudes a seguir el recorrido indicado por la secuencia de montones. Ayuda a
+       Karel a encontrar su tesoro y ganarás el 10% de su botín.</p>
+
+    <p>Escribe un programa que permita a Karel seguir las instrucciones del mapa. Las
+       instrucciones (secuencia de montones) se encuentran de manera consecutiva a lo
+       largo de la primera fila, comenzando en la columna 1 y siguiendo hacia la
+       derecha.</p>
+    <p>El punto donde inicia el recorrido siempre es la esquina de la fila 1 con la
+       columna 1.</p>
+    <p>Las instrucciones del recorrido son tales que nunca te llevarán de vuelta a la
+       primera fila, y el camino jamás se cruzará sobre sí mismo.</p>
+
+    <h3>Consideraciones</h3>
+    <ul>
+      <li>Karel inicia en la esquina de la primera fila con la primera columna mirando
+          al este.</li>
+      <li>Las instrucciones terminan cuando encuentras el primer espacio vacío sobre la
+          primera fila o llegas a la pared; un mapa puede tener hasta 100
+          instrucciones.</li>
+      <li>No llevas ningún zumbador en la mochila.</li>
+      <li>No hay paredes dentro del mundo ni zumbadores aparte de los de la secuencia
+          de instrucciones.</li>
+      <li>No importa la orientación final de Karel.</li>
+      <li>Karel debe terminar en la posición final del camino indicado por el mapa.</li>
+      <li>No importa si dejas zumbadores en algún lugar del mapa.</li>
+    </ul>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>Es una tarea de <strong>Karel el robot</strong> en una cuadrícula. El mundo
+         <strong>no tiene paredes interiores</strong> (solo las cuatro paredes del
+         borde) y los <strong>únicos zumbadores</strong> son los de la secuencia de
+         instrucciones. Karel comienza en la celda <strong>(fila 1, columna 1)</strong>
+         <strong>mirando al este</strong> y con la <strong>mochila vacía</strong>.</p>
+      <p>En la <strong>primera fila</strong>, desde la columna 1 hacia la derecha, hay
+         <strong>montones de 1 a 4 zumbadores</strong> colocados en celdas consecutivas.
+         Cada montón es una orden de movimiento: <strong>1 = paso al norte</strong>,
+         <strong>2 = paso al este</strong>, <strong>3 = paso al sur</strong>,
+         <strong>4 = paso al oeste</strong>. La secuencia termina en la primera celda
+         vacía de la fila 1 o al llegar a la pared. El objetivo es que Karel
+         <strong>termine parado en la celda final</strong> del recorrido que describen
+         esas órdenes (el punto del tesoro).</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada estándar: la información viene <strong>en el mundo</strong>. En la
+       primera fila, a partir de la columna 1 y hacia la derecha, hay montones de
+       zumbadores; cada montón tiene entre 1 y 4 zumbadores y codifica un paso
+       (1 = norte, 2 = este, 3 = sur, 4 = oeste). La secuencia de hasta 100 montones
+       termina en la primera celda vacía de la fila 1 o en la pared este. Karel arranca
+       en (1, 1) mirando al este, con la mochila vacía, y no hay paredes interiores.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida estándar: se evalúa el <strong>estado final del mundo</strong>.
+       Karel debe quedar parado sobre la <strong>celda final del recorrido</strong> (la
+       que se obtiene al ejecutar, en orden, todos los pasos codificados por los
+       montones, partiendo de (1, 1)). La <strong>orientación final no importa</strong> y
+       <strong>tampoco importa</strong> dónde queden los zumbadores.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (tarea de Karel)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (tarea de Karel)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de instrucciones</td><td><span class="badge">\(1 \le \text{instrucciones} \le 100\)</span></td></tr>
+        <tr><td>Tamaño de cada montón</td><td><span class="badge">\(1,\,2,\,3\) o \(4\) zumbadores</span></td></tr>
+        <tr><td>Codificación de pasos</td><td>1 = norte · 2 = este · 3 = sur · 4 = oeste</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).
+       Al ser una tarea de Karel, solo se evalúa la <strong>posición final</strong> de
+       Karel (la orientación final y los zumbadores que queden no importan).</p>
+
+    <h2>Ejemplo</h2>
+    <figure>
+      <img alt="Mundo inicial: Karel en la celda (1,1) mirando al este; a lo largo de
+                la primera fila hay montones de zumbadores (1, 1, 2, 2, 1, 1, 2, 2, 3,
+                3, 3, 4) en las columnas 1 a 12."
+           src="data:image/png;base64,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">
+      <figcaption>Mundo inicial. Karel (cuadro azul) está en (fila 1, columna 1)
+        mirando al este. En la primera fila, las columnas 1 a 12 tienen los montones
+        \(1, 1, 2, 2, 1, 1, 2, 2, 3, 3, 3, 4\); la columna 13 está vacía, así que ahí
+        terminan las instrucciones.</figcaption>
+    </figure>
+    <figure>
+      <img alt="Mundo final: se dibuja el recorrido sobre la cuadrícula y la flecha azul
+                muestra a Karel detenido en la celda (fila 2, columna 4)."
+           src="data:image/png;base64,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">
+      <figcaption>Mundo final. Siguiendo los pasos en orden, el recorrido sube, va al
+        este, sube, va al este, baja y termina yendo al oeste; la flecha azul marca a
+        Karel en su posición final, la celda (fila 2, columna 4).</figcaption>
+    </figure>
+    <p class="note">Cómo se lee el ejemplo: los montones son
+       \(1, 1, 2, 2, 1, 1, 2, 2, 3, 3, 3, 4\). Eso da 4 pasos al norte, 4 al este, 3 al
+       sur y 1 al oeste. Partiendo de (1, 1), el desplazamiento neto es
+       \(4-3 = 1\) hacia el norte y \(4-1 = 3\) hacia el este, por lo que Karel debe
+       terminar en la celda <strong>(fila 2, columna 4)</strong>.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Implementación</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>En la primera fila hay una secuencia de montones de 1 a 4 zumbadores; cada montón
+       es un paso (1 = norte, 2 = este, 3 = sur, 4 = oeste). Empezando en (1, 1) mirando
+       al este, Karel debe ejecutar todos los pasos en orden y quedar parado en la
+       <strong>celda final</strong> del recorrido. Solo importa la posición final.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Hasta \(100\) instrucciones y un mundo sin paredes interiores. Como
+                <strong>solo cuenta la posición final</strong>, puedes gastar (recoger)
+                los zumbadores que quieras y dejar marcadores donde te convenga; nada de
+                eso se penaliza.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya viste que cada montón es <em>una sola</em> orden de movimiento y
+           que basta con ejecutarlas en orden? ¿Qué primitiva de Karel te deja saber si
+           en una celda hay zumbadores, y cuál te deja contarlos uno por uno?</p>
+        <p>No es un problema de C++: es Karel. La cuadrícula no tiene paredes interiores,
+           así que avanzar nunca se bloquea por dentro. Piensa en términos de
+           <code>avanza</code>, <code>gira-izquierda</code>, <code>coge-zumbador</code>,
+           <code>junto-a-zumbador</code> y los sensores de orientación
+           (<code>orientado-al-norte</code>, …).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Leer un montón sin variables</summary>
+      <div class="body">
+        <p class="q">Karel no tiene variables enteras. ¿Cómo distingues entonces si un
+           montón tiene 1, 2, 3 o 4 zumbadores? ¿Qué pasa si recoges uno y preguntas
+           si <em>todavía</em> estás <code>junto-a-zumbador</code>, y encadenas esa
+           pregunta?</p>
+        <p>Recoge un zumbador: si ya no quedan, era un montón de 1 (norte). Si quedan,
+           recoge otro y vuelve a preguntar (2 = este), y así hasta 4 (oeste). Como
+           <strong>solo importa la posición final</strong>, no te estorba gastar (recoger
+           por completo) el montón al leerlo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — El problema de las dos posiciones</summary>
+      <div class="body">
+        <p class="q">Las órdenes viven en la fila 1, pero el recorrido <em>se aleja</em>
+           de esa fila y, por la garantía del enunciado, nunca regresa a ella. Entonces,
+           mientras bajas a leer la siguiente orden, ¿cómo recuerdas en qué celda del
+           recorrido te habías quedado?</p>
+        <p>Necesitas llevar <em>dos</em> posiciones a la vez: la del recorrido (el
+           "frente") y la de la orden que estás leyendo. Karel es un solo robot, así que
+           usa un <strong>zumbador-marcador</strong>: déjalo en tu celda actual del
+           recorrido antes de ir a leer. ¿Notas que ese marcador será el
+           <strong>único zumbador fuera de la fila 1</strong>?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Reencontrar el frente y la siguiente orden</summary>
+      <div class="body">
+        <p class="q">Para volver a tu marcador, ¿cómo lo localizas si no sabes sus
+           coordenadas? Como es el único zumbador en las filas \(\ge 2\), ¿qué tal un
+           <strong>barrido en serpentina</strong> de esas filas hasta caer
+           <code>junto-a-zumbador</code>?</p>
+        <p class="q">¿Y cómo hallas la siguiente orden sin contar columnas? Si
+           <strong>recoges cada montón al leerlo</strong>, las columnas ya leídas quedan
+           vacías formando un prefijo. Entonces, ¿basta con bajar a la fila 1, pegarte a
+           la pared oeste (columna 1) y avanzar al este hasta el primer montón que
+           encuentres?</p>
+        <p>Si al barrer la fila 1 desde la columna 1 llegas a la pared este sin encontrar
+           montones, ya no quedan órdenes: terminaste.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La idea es una <strong>simulación con lanzadera (shuttle)</strong>. Karel
+           mantiene un <strong>marcador</strong> (un zumbador) en su celda actual del
+           recorrido — ese marcador <em>es</em> la posición que va construyendo. Para
+           cada orden: baja a la fila 1, encuentra el siguiente montón, léelo (contando
+           cuántos zumbadores tiene), regresa al marcador y da <strong>un paso</strong>
+           en la dirección indicada, moviendo el marcador. Al agotarse las órdenes, Karel
+           se queda parado sobre el marcador: esa es la celda del tesoro.</p>
+
+        <p><strong>Por qué funciona.</strong> Cada montón aporta exactamente un paso del
+           camino, en el orden en que aparecen. Como el recorrido nunca vuelve a la fila
+           1 ni se cruza, el marcador siempre vive en las filas \(\ge 2\) y es el único
+           zumbador ahí, así que el barrido lo reencuentra sin ambigüedad. Recoger cada
+           montón al leerlo deja las columnas leídas como un prefijo vacío, por lo que
+           "pegarse al oeste y avanzar al este hasta el primer montón" siempre cae en la
+           siguiente orden. Y como solo importa la posición final, gastar zumbadores y
+           dejar el marcador no penaliza.</p>
+
+        <p><strong>Truco para no necesitar variables.</strong> No puedes "guardar" la
+           dirección leída en la fila 1 para usarla arriba. La solución es
+           <em>fundir</em> la lectura con la acción: dentro de cada rama del conteo
+           (1, 2, 3, 4) ya sabes la dirección, así que ahí mismo regresas al marcador y
+           das el paso correspondiente. La dirección "viaja" por la rama del código, no
+           por una variable.</p>
+
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel (pseudocódigo)</span>
+<pre>// ---------- instrucciones auxiliares ----------
+
+define orientar-al(D):                 // D en {norte, este, sur, oeste}
+    mientras (no orientado-al-D):
+        gira-izquierda
+
+define bajar-a-la-fila-1:
+    orientar-al(sur)
+    mientras frente-libre:             // se detiene al chocar con la pared sur (fila 1)
+        avanza
+
+define pegarse-al-oeste:
+    orientar-al(oeste)
+    mientras frente-libre:             // se detiene en la columna 1
+        avanza
+
+define buscar-este:                    // avanza al este hasta un monton o la pared
+    si (no junto-a-zumbador):
+        si frente-libre:
+            avanza
+            buscar-este                // recursion
+    // al salir: o estas junto-a-zumbador (siguiente orden), o pegado a la pared este
+
+define buscar-siguiente-monton:        // ya parado en la fila 1, columna 1
+    orientar-al(este)
+    buscar-este
+
+define volver-al-marcador:             // el marcador es el unico zumbador en filas >= 2
+    // barrido en serpentina por las filas 2, 3, 4, ... hasta caer junto-a-zumbador
+    serpentina-hasta-zumbador
+
+define paso-y-remarcar(D):             // ya parado sobre el marcador viejo
+    coge-zumbador                      // quita el marcador viejo
+    orientar-al(D)
+    avanza                             // un paso del recorrido
+    deja-zumbador                      // marcador nuevo en el frente
+
+// ---------- nucleo: leer un monton y aplicarlo ----------
+
+define leer-y-aplicar:                 // ya parado sobre el monton, en la fila 1
+    coge-zumbador
+    si (no junto-a-zumbador):          // tenia 1  -> norte
+        volver-al-marcador; paso-y-remarcar(norte)
+    si no:
+        coge-zumbador
+        si (no junto-a-zumbador):      // tenia 2  -> este
+            volver-al-marcador; paso-y-remarcar(este)
+        si no:
+            coge-zumbador
+            si (no junto-a-zumbador):  // tenia 3  -> sur
+                volver-al-marcador; paso-y-remarcar(sur)
+            si no:                     // tenia 4  -> oeste
+                coge-zumbador
+                volver-al-marcador; paso-y-remarcar(oeste)
+
+// ---------- arranque (1a orden, sin marcador previo) ----------
+
+define aplicar-inicial(D):             // Karel esta EN el frente (la celda 1,1)
+    orientar-al(D)
+    avanza
+    deja-zumbador                      // crea el primer marcador
+
+define leer-primera:                   // parado en (1,1) sobre el primer monton
+    coge-zumbador
+    si (no junto-a-zumbador): aplicar-inicial(norte)
+    si no:
+        coge-zumbador
+        si (no junto-a-zumbador): aplicar-inicial(este)
+        si no:
+            coge-zumbador
+            si (no junto-a-zumbador): aplicar-inicial(sur)
+            si no: coge-zumbador; aplicar-inicial(oeste)
+
+// ---------- bucle principal (recursivo) ----------
+
+define seguir-mapa:
+    bajar-a-la-fila-1
+    pegarse-al-oeste
+    buscar-siguiente-monton
+    si junto-a-zumbador:               // hay otra orden
+        leer-y-aplicar
+        seguir-mapa                    // repite
+    si no:                             // no hay mas: termina en el frente
+        volver-al-marcador
+        apagate
+
+// ---------- programa ----------
+
+inicia-ejecucion
+    leer-primera                       // 1a orden + crea el marcador
+    seguir-mapa                        // procesa el resto y termina sobre el marcador
+termina-ejecucion</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Con \(n \le 100\) instrucciones, cada paso hace
+           un recorrido por la fila 1 (\(O(\text{ancho})\)) más un barrido para
+           reencontrar el marcador (\(O(\text{área})\)). El total es
+           \(O(n \cdot \text{área del mundo})\) movimientos de Karel, de sobra dentro de
+           los límites para mundos de este tamaño. (Se puede afinar evitando el barrido
+           si llevas el marcador de forma más inteligente, pero no hace falta.)</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
