@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **170 / 190**
+Total de problemas: **190** · Completados: **174 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -51,14 +51,14 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 3 | Día 2 | Torneo | `1999/03 Torneo/index.html` |
 | [ ] | 4 | Día 2 | Atínale | `1999/04 Atínale/index.html` |
 
-## 5ª OMI · 2000 — 0 / 4
+## 5ª OMI · 2000 — 4 / 4
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Moscas | `2000/01 Moscas/index.html` |
-| [ ] | 2 | Día 1 | Maratón de cine | `2000/02 Maratón de cine/index.html` |
-| [ ] | 3 | Día 2 | Sumas 2000 | `2000/03 Sumas 2000/index.html` |
-| [ ] | 4 | Día 2 | Vendedor de alfombras | `2000/04 Vendedor de alfombras/index.html` |
+| [x] | 1 | Día 1 | Moscas | `2000/01 Moscas/index.html` |
+| [x] | 2 | Día 1 | Maratón de cine | `2000/02 Maratón de cine/index.html` |
+| [x] | 3 | Día 2 | Sumas 2000 | `2000/03 Sumas 2000/index.html` |
+| [x] | 4 | Día 2 | Vendedor de alfombras | `2000/04 Vendedor de alfombras/index.html` |
 
 ## 6ª OMI · 2001 — 4 / 4
 
