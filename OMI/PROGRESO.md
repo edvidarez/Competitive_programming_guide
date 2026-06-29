@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **166 / 190**
+Total de problemas: **190** · Completados: **170 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -60,14 +60,14 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 3 | Día 2 | Sumas 2000 | `2000/03 Sumas 2000/index.html` |
 | [ ] | 4 | Día 2 | Vendedor de alfombras | `2000/04 Vendedor de alfombras/index.html` |
 
-## 6ª OMI · 2001 — 0 / 4
+## 6ª OMI · 2001 — 4 / 4
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Tareas | `2001/01 Tareas/index.html` |
-| [ ] | 2 | Día 1 | Comisolo | `2001/02 Comisolo/index.html` |
-| [ ] | 3 | Día 2 | Defender | `2001/03 Defender/index.html` |
-| [ ] | 4 | Día 2 | Elevador | `2001/04 Elevador/index.html` |
+| [x] | 1 | Día 1 | Tareas | `2001/01 Tareas/index.html` |
+| [x] | 2 | Día 1 | Comisolo | `2001/02 Comisolo/index.html` |
+| [x] | 3 | Día 2 | Defender | `2001/03 Defender/index.html` |
+| [x] | 4 | Día 2 | Elevador | `2001/04 Elevador/index.html` |
 
 ## 7ª OMI · 2002 — 4 / 4
 

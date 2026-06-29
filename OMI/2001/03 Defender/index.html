@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2001 · Problema 03 — Defender</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">6ª OMI · 2001 · Día 2</div>
+    <h1>Problema <span class="num">03</span> — Defender</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.pdf">statement.pdf</a>
+       · Sitio OMI: <a class="pdf" href="http://www.olimpiadadeinformatica.org.mx/Resultados/img/problemas/defender.pdf">defender.pdf</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+
+    <h3>Descripción</h3>
+    <p>Hace ya algunos años, hubo un juego de Atari llamado <em>Defender</em>. El juego
+       trataba de una nave espacial cuyo objetivo era destruir a todas las naves
+       enemigas. Para llevar a cabo esto, la nave del jugador recorría un mapa en forma
+       de pasillo en el que iban apareciendo las naves enemigas. Una vez que se llegaba
+       al final del mapa se comenzaba nuevamente desde el principio, y así hasta destruir
+       a todos los enemigos.</p>
+
+    <figure>
+      <img style="image-rendering:pixelated;width:100%;max-width:360px;background:#fff;padding:6px;border-radius:6px" alt="Pantalla del juego: a la izquierda la nave del jugador (etiquetada «Jugador») y, repartidas por el pasillo, varias naves enemigas a distintas alturas (etiquetadas «Naves enemigas»)."
+           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPgAAABaAQAAAAC9fqZDAAAACXBIWXMAAAsSAAALEgHS3X78AAABSklEQVRIx+3WvUrDUBQH8BMcHN0E65DJB3B16Tu0U9ulc0ImJ6fbxVF8AgcfoCjYJpMQEMwUXUpA0RpxdOh1EAKNjYLaxvbe/wmUDgHvkuHHSQ7ngxsieAwSGTof5fEXxq+w+2uLmuS8o3CZc1p0STj/mHGfylT/4j6pYk+xp4Q9+eujbDLfFuxz+b9ae6FAXh/0YHxrs4/cbkbQrdoA+oldCWH9x0x/glX0P2FcYv9anV/3TfXqTH1dvTo/3lbG5/KPq0u6wC45JxN5W9LGMvHs97n8i9cnFar8Z/VPVD7rX0JqN6czIeD8xYwXn9/h90Po/IaJj47ujsP9hrWr8/fI63V36pHG76/Pnw5Pnda2zl1vdHnmNB81/uC6Xr/r1HTvHwYHt+GFY2/h+oyZ+gWruB/eGH/GHhvYfcY7Rvnv13/POff/m+HzCZXzIhnIE2AYAAAAAElFTkSuQmCC">
+      <figcaption>Pantalla del juego.</figcaption>
+    </figure>
+
+    <p>Para destruir una nave, era necesario colocarse a la misma altura y disparar. Si
+       una nave enemiga pasaba sin que fuera destruida, era necesario dar toda la vuelta
+       para eliminarla.</p>
+
+    <h3>Problema</h3>
+    <p>Eres el piloto de la nave DEFENDER y tu tarea, como ya se explicó, es detener a tus
+       enemigos. Desgraciadamente, debido a la batalla tus motores ya no funcionan
+       correctamente, y tus armas han perdido algo de alcance. Debido al corto alcance de
+       tus armas solo te es posible dispararle a la nave enemiga que se encuentra más
+       cercana a ti.</p>
+
+    <p>Las naves enemigas vienen con diferentes alturas entre 1 y 255. Debido a que
+       sufriste un daño en uno de tus propulsores, tu nave tarda mucho tiempo en subir,
+       por lo que en el rango de tiempo que hay entre una nave enemiga y la otra puedes
+       <strong>bajar todo lo que quieras</strong>, pero sin embargo solo puedes
+       <strong>subir \(S\) unidades de altura</strong>.</p>
+
+    <p>Debido a que te resultará imposible detener a todos tus enemigos, debes escribir un
+       programa que te permita decidir a cuáles debes destruir de modo que el número de
+       naves enemigas derribadas sea el máximo posible.</p>
+
+    <p>La altura con la que inicia tu nave siempre es de 255.</p>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea del archivo <code>INPUT.TXT</code> hay un número entero que
+       indica el valor de \(S\), con \(1 \le S \le 50\). En la segunda línea hay un entero
+       que indica el número \(N\) de naves enemigas aproximándose, con \(1 \le N \le 200\).
+       En las siguientes \(N\) líneas hay un número entero en cada una indicando la altura
+       respectiva de cada una de las naves enemigas (en el orden en que se aproximan).</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en el archivo de salida <code>OUTPUT.TXT</code> un
+       número entero indicando el número máximo de naves enemigas que pueden ser
+       derribadas.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado (edición 2001)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado (edición 2001)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Unidades máximas de subida por intervalo</td><td><span class="badge">\(1 \le S \le 50\)</span></td></tr>
+        <tr><td>Número de naves enemigas</td><td><span class="badge">\(1 \le N \le 200\)</span></td></tr>
+        <tr><td>Altura de cada nave</td><td><span class="badge">entre \(1\) y \(255\)</span></td></tr>
+        <tr><td>Altura inicial de tu nave</td><td><span class="badge">\(255\)</span></td></tr>
+        <tr><td>Entrada / Salida</td><td>por archivos <code>INPUT.TXT</code> / <code>OUTPUT.TXT</code></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>INPUT.TXT</h4><pre>30
+6
+230
+100
+50
+210
+190
+220</pre></div>
+      <div class="io"><h4>OUTPUT.TXT</h4><pre>4</pre></div>
+    </div>
+    <p class="note">En la pantalla que se muestra hay 6 naves enemigas; suponiendo que
+       sus respectivas alturas fueran 230, 100, 50, 210, 190 y 220, y que \(S = 30\), el
+       número máximo de naves enemigas que se pueden derribar es 4. Una posible forma de
+       hacerlo sería derribar la primera nave en 230, después bajar a 100 para derribar a
+       la segunda, utilizar el tercer intervalo para subir a 130, usar el cuarto intervalo
+       para subir a 160, derribar la quinta nave en 190 y derribar la sexta nave en 220,
+       para un total de 4 naves derribadas.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Programación dinámica (DP)</span>
+      <span class="ptag">Subsecuencia (LIS)</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tu nave empieza a altura \(255\). Te dan \(S\) y las alturas \(h_1,\dots,h_N\) de
+       \(N\) naves que se aproximan en ese orden. Entre una nave y la siguiente puedes
+       <strong>bajar lo que quieras</strong> pero <strong>subir a lo más \(S\)</strong>.
+       Para derribar una nave debes estar exactamente a su altura (y solo puedes atacar a
+       la nave más cercana, es decir, en el orden dado; las que dejas pasar ya no cuentan).
+       Maximiza cuántas naves derribas.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 200\) y alturas \(\le 255\): una DP \(O(N^2)\) (o incluso
+                \(O(N\cdot 255)\)) es más que suficiente. No hace falta nada sofisticado;
+                lo difícil es la <em>modelación</em>.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué estado importa?</summary>
+      <div class="body">
+        <p class="q">Cuando llegas a la nave \(i\), ¿qué es lo único que determina tu
+           futuro? ¿Importa cómo llegaste, o solo la altura a la que estás?</p>
+        <p>Procesas las naves en orden. Lo único que arrastras de una nave a la siguiente
+           es tu <strong>altura actual</strong>. En cada nave decides: ¿la derribo (y
+           entonces quedo exactamente a su altura) o la dejo pasar? Piensa en el problema
+           como <em>elegir un subconjunto de naves a derribar, respetando el orden</em>.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Qué te limita entre dos derribos?</summary>
+      <div class="body">
+        <p class="q">Si derribas la nave \(i\) (quedas a altura \(h_i\)) y la siguiente
+           que quieres derribar es la \(j>i\), ¿cuánto puedes haber subido en el camino?
+           ¿Cuántos intervalos hay entre ellas y cuánto sube cada uno?</p>
+        <p>Entre la nave \(i\) y la \(j\) hay \(j-i\) intervalos; en cada uno puedes subir
+           hasta \(S\) y bajar lo que sea. Como bajar es gratis, lo único que te puede
+           impedir derribar la nave \(j\) es <strong>no poder subir lo suficiente</strong>.
+           ¿Qué desigualdad debe cumplir \(h_j\) respecto de \(h_i\)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La transformación clave</summary>
+      <div class="body">
+        <p class="q">La condición para encadenar dos derribos es
+           \(h_j \le h_i + S\,(j-i)\). Si la reacomodas pasando los términos con índice a
+           un lado, ¿qué cantidad por nave aparece sola?</p>
+        <p>Resta \(S\cdot(\text{índice})\) de cada altura: define \(b_i = h_i - S\cdot i\).
+           Entonces \(h_j \le h_i + S\,(j-i)\) es exactamente \(b_j \le b_i\). Es decir,
+           una secuencia de naves se puede derribar <strong>si y solo si</strong> sus
+           valores \(b\) van en orden <strong>no creciente</strong> al avanzar por los
+           índices. ¿Qué objeto clásico buscas entonces?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — ¿Y el arranque a 255?</summary>
+      <div class="body">
+        <p class="q">¿La altura inicial de 255 te restringe alguna vez? Piensa en una
+           nave virtual de altura 255 colocada en el índice 0.</p>
+        <p>Su valor sería \(b_0 = 255 - S\cdot 0 = 255\). Como toda altura cumple
+           \(h_i \le 255\) y \(S\cdot i \ge 0\), siempre \(b_i \le 255 = b_0\). Por eso
+           <strong>la primera nave que elijas nunca está bloqueada por el arranque</strong>:
+           el problema se reduce limpiamente a las naves reales.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Define para cada nave \(i\) (con \(i=1,\dots,N\)) el valor
+           \(b_i = h_i - S\cdot i\). Como vimos, un conjunto de naves
+           \(i_1 < i_2 < \dots < i_k\) se puede derribar en orden si y solo si
+           \(b_{i_1} \ge b_{i_2} \ge \dots \ge b_{i_k}\). Por lo tanto, el número máximo
+           de naves derribables es la <strong>longitud de la subsecuencia no creciente más
+           larga</strong> de \(b\).</p>
+
+        <p><strong>¿Por qué es correcto?</strong> Lo único que limita encadenar dos
+           derribos es la subida: con \(j-i\) intervalos puedes ganar a lo más \(S\,(j-i)\)
+           de altura, así que necesitas \(h_j \le h_i + S\,(j-i)\), que equivale a
+           \(b_j \le b_i\). Bajar nunca cuesta, así que si una nave queda por debajo de tu
+           alcance siempre llegas. Y cuando <em>dejas pasar</em> naves, lo mejor es quedar
+           lo más alto posible (subir el máximo en cada intervalo), porque estar más alto
+           nunca estorba: siempre puedes bajar gratis. Esa flexibilidad es justo la que
+           captura la condición «\(b\) no creciente» entre las naves elegidas.</p>
+
+        <p>Con la nave virtual de altura 255 en el índice 0 (\(b_0 = 255\)) se ve que el
+           arranque jamás bloquea la primera elección, así que basta resolver el LIS no
+           creciente sobre las \(N\) naves reales.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer S
+leer N
+para i de 1 a N:
+    leer h[i]
+    b[i] = h[i] - S * i          # transformación clave
+
+# longitud de la subsecuencia NO CRECIENTE más larga de b
+respuesta = 0
+para i de 1 a N:
+    dp[i] = 1                     # la nave i sola
+    para j de 1 a i-1:
+        si b[j] >= b[i]:          # i puede ir después de j
+            dp[i] = max(dp[i], dp[j] + 1)
+    respuesta = max(respuesta, dp[i])
+
+escribir respuesta               # 0 no ocurre: con N>=1 siempre derribas >=1</pre>
+        </div>
+
+        <p>Verificación con el ejemplo (\(S=30\), alturas 230, 100, 50, 210, 190, 220):
+           \(b = [\,200,\ 40,\ -40,\ 90,\ 40,\ 40\,]\). La subsecuencia no creciente más
+           larga es \(200 \ge 90 \ge 40 \ge 40\) (índices 1, 4, 5, 6), de longitud
+           \(\mathbf{4}\), que coincide con la respuesta esperada.</p>
+
+        <p><strong>Complejidad:</strong> \(O(N^2)\) tiempo y \(O(N)\) memoria con la DP de
+           arriba. Si quisieras, el mismo LIS no creciente se calcula en
+           \(O(N\log N)\), pero con \(N \le 200\) es innecesario.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

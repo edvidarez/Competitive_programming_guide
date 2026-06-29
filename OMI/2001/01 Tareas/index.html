@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2001 · Problema 01 — Tareas</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">6ª OMI · 2001 · Día 1</div>
+    <h1>Problema <span class="num">01</span> — Tareas</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.pdf">statement.pdf</a>
+       · Versión en línea: <a class="pdf" href="http://www.olimpiadadeinformatica.org.mx/Resultados/img/problemas/tareas.pdf">olimpiadadeinformatica.org.mx</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Existe un juego de mesa para 2 jugadores llamado <em>áreas</em>, cuyo objetivo
+       es ir colocando fichas en un tablero rectangular cuadriculado, de modo que el
+       número de fichas contiguas de un solo color abarque la mayor área posible.</p>
+
+    <p>Cada jugador tiene su propio color de fichas, y en su turno puede colocar una
+       ficha de su color en cualquier lugar de la cuadrícula que no se encuentre
+       ocupado.</p>
+
+    <p>Una ficha se considera contigua a otra si los cuadros en los que se encuentran
+       tienen al menos un punto en común, es decir, cada casilla (excepto las de la
+       orilla) tienen 8 casillas contiguas.</p>
+
+    <p>Un juego termina cuando el tablero se encuentra lleno.</p>
+
+    <figure>
+      <img alt="Cuadrícula de 3×3: la casilla central tiene un punto negro y las 8 casillas que la rodean están marcadas con una X, indicando que son contiguas."
+           src="data:image/png;base64,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">
+      <figcaption>Posiciones contiguas indicadas por ‘X’.</figcaption>
+    </figure>
+
+    <p>En tu salón de clases están organizando un torneo de este juego, y te han
+       pedido que desarrolles un programa que contabilice las áreas para evitar
+       problemas entre los jugadores en el momento de la cuenta.</p>
+
+    <p><strong>Problema:</strong> escribe un programa que reciba como entrada la
+       configuración final del tablero de juego y haga un recuento de las áreas de
+       cada color para obtener al ganador de la partida.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer del archivo de texto <code>INPUT.TXT</code> la
+       configuración final del tablero de juego. En la primera línea del archivo
+       <code>INPUT.TXT</code> hay dos números enteros \(1 \le N, M \le 100\),
+       indicando respectivamente el alto y el ancho del tablero de juego que se usó.
+       En las siguientes \(N\) líneas hay \(M\) números enteros separados por un
+       espacio que indican el color por el que está ocupada cada casilla. Los valores
+       de las casillas pueden ser <code>0</code> — primer jugador, ó <code>1</code> —
+       segundo jugador.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en el archivo de salida <code>OUTPUT.TXT</code> dos
+       números enteros separados por un espacio. El primero de ellos debe ser un
+       <code>0</code> ó <code>1</code> indicando al jugador ganador, y el segundo debe
+       indicar el tamaño del área más grande que se encontró en el tablero.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Alto y ancho</td><td><span class="badge">\(1 \le N, M \le 100\)</span></td></tr>
+        <tr><td>Valor de cada casilla</td><td><span class="badge">\(0\) ó \(1\)</span></td></tr>
+      </table>
+    </div>
+    <p class="note">Grado de dificultad (del enunciado oficial): Implementación: SE ·
+       Algoritmo: 2.</p>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+
+    <h3>Ejemplo 1</h3>
+    <div class="example">
+      <div class="io"><h4>INPUT.TXT</h4><pre>3 3
+0 1 0
+1 0 1
+0 1 0</pre></div>
+      <div class="io"><h4>OUTPUT.TXT</h4><pre>0 5</pre></div>
+    </div>
+    <p class="note">Los cinco <code>0</code> forman una X (la del centro toca a las
+       cuatro esquinas por la diagonal), así que quedan todos conectados en una sola
+       área de tamaño 5. Los cuatro <code>1</code> forman un área de tamaño 4. Gana el
+       jugador <code>0</code> con un área de 5.</p>
+
+    <h3>Ejemplo 2</h3>
+    <div class="example">
+      <div class="io"><h4>INPUT.TXT</h4><pre>5 6
+0 1 1 1 0 0
+0 0 1 1 0 0
+0 0 0 1 1 1
+1 1 0 0 0 1
+1 1 1 1 0 0</pre></div>
+      <div class="io"><h4>OUTPUT.TXT</h4><pre>0 11</pre></div>
+    </div>
+    <p class="note">El área más grande del tablero es un grupo de 11 casillas
+       <code>0</code> conectadas entre sí (contando las diagonales). Gana el jugador
+       <code>0</code> con un área de 11.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">BFS/DFS</span>
+      <span class="ptag">Componentes conexas</span>
+      <span class="ptag">Flood fill</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un tablero de \(N \times M\) lleno de <code>0</code> y <code>1</code>.
+       Un «área» de un color es el grupo de casillas de ese color conectadas entre sí
+       por adyacencia de <strong>8 vecinos</strong> (lados y esquinas). Encuentra el
+       área más grande de todo el tablero e imprime el color de ese grupo y su tamaño.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N, M \le 100\) significan a lo más \(10{,}000\) casillas: un recorrido
+                lineal \(O(N\cdot M)\) sobra. No hace falta nada elaborado; lo único
+                delicado es usar bien la adyacencia de 8 y no recontar grupos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste si esto se puede ver como un grafo, donde cada
+           casilla es un nodo y conectas dos casillas vecinas solo si tienen el
+           <em>mismo</em> color?</p>
+        <p>Con esa mirada, un «área de un color» deja de ser un concepto del juego y
+           se vuelve algo muy conocido en grafos. ¿Cómo se llama el grupo de nodos
+           que están todos conectados entre sí?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — La adyacencia correcta</summary>
+      <div class="body">
+        <p class="q">¿Cuántos vecinos tiene una casilla que no está en la orilla?</p>
+        <p>La figura del enunciado lo dice: <strong>8</strong>, porque cuentan también
+           las cuatro diagonales (dos cuadros son contiguos si comparten al menos un
+           punto). El error más común aquí es usar solo 4 vecinos (arriba, abajo,
+           izquierda, derecha) y obtener áreas más chicas de la cuenta. ¿Estás
+           incluyendo las diagonales?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Medir cada grupo sin repetir</summary>
+      <div class="body">
+        <p class="q">¿Qué pasa si recorres el tablero casilla por casilla y, cada vez
+           que topas con una que <em>aún no has visitado</em>, exploras todo su grupo
+           de un jalón?</p>
+        <p>Al explorar el grupo marcas como «visitada» cada casilla que tocas y vas
+           contando cuántas son. Así, cuando vuelvas a encontrar una casilla de ese
+           mismo grupo en el recorrido general, ya estará marcada y no la vuelves a
+           contar. ¿Con qué técnica recorres todo un grupo conectado: BFS (cola) o
+           DFS (recursión/pila)?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Quedarte con el mejor</summary>
+      <div class="body">
+        <p class="q">Mientras mides el tamaño de cada grupo, ¿cómo te quedas con el
+           ganador?</p>
+        <p>Lleva dos variables: el área más grande vista hasta ahora y el color de ese
+           grupo. Cada vez que termines de medir un grupo, si su tamaño supera al mejor
+           guardado, actualiza ambos. ¿Notaste que no necesitas dos recorridos
+           separados (uno para cada color)? El mismo barrido considera grupos de
+           <code>0</code> y de <code>1</code> por igual.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Modela el tablero como un grafo implícito: cada casilla \((i,j)\) es un
+           nodo, y dos casillas son adyacentes si son vecinas en cualquiera de las
+           <strong>8 direcciones</strong> (los 4 lados y las 4 esquinas). Un «área» de
+           un color es una <strong>componente conexa</strong> formada por casillas de
+           ese mismo color bajo esa adyacencia.</p>
+
+        <p>Recorre todas las casillas. Cuando encuentres una que aún no esté visitada,
+           lanza un <em>flood fill</em> (BFS con cola o DFS) que descubra todas las
+           casillas alcanzables del <em>mismo color</em>, marcándolas como visitadas y
+           contando cuántas son. Compara ese tamaño con el mejor visto hasta ahora; si
+           lo supera, guarda el nuevo tamaño y el color de esa casilla. Al final
+           imprime el color del grupo más grande y su tamaño.</p>
+
+        <p><strong>Por qué es correcto:</strong> cada casilla pertenece a exactamente
+           una componente conexa de su color. El flood fill desde una casilla no
+           visitada descubre <em>toda</em> su componente exactamente una vez (la marca
+           de visitado impide reentrar). Como el barrido pasa por todas las casillas,
+           se consideran todas las componentes de ambos colores, así que el máximo que
+           guardas es el máximo global del tablero.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N, M
+leer matriz tablero[N][M]
+visitado[N][M] ← falso  para todas
+mejor_area  ← 0
+mejor_color ← 0
+
+para i de 0 a N-1:
+    para j de 0 a M-1:
+        si no visitado[i][j]:
+            color ← tablero[i][j]
+            area  ← 0
+            cola  ← { (i,j) };   visitado[i][j] ← verdadero
+            mientras cola no esté vacía:
+                (x,y) ← sacar de la cola
+                area  ← area + 1
+                para cada (dx,dy) en las 8 direcciones:   // dx,dy ∈ {-1,0,1}, no (0,0)
+                    nx ← x+dx;   ny ← y+dy
+                    si (nx,ny) está dentro del tablero
+                       y no visitado[nx][ny]
+                       y tablero[nx][ny] == color:
+                            visitado[nx][ny] ← verdadero
+                            meter (nx,ny) en la cola
+            si area &gt; mejor_area:
+                mejor_area  ← area
+                mejor_color ← color
+
+escribir mejor_color, mejor_area</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(N\cdot M)\) en tiempo (cada casilla se
+           encola y se visita una sola vez, revisando sus 8 vecinos) y \(O(N\cdot M)\)
+           en memoria (la matriz y el arreglo de visitados). Con \(N, M \le 100\) son
+           a lo más \(10{,}000\) casillas: instantáneo.</p>
+
+        <p class="note"><strong>Sobre empates:</strong> si el área máxima de los
+           <code>0</code> coincidiera con la de los <code>1</code>, el enunciado no
+           define el desempate; en los ejemplos oficiales no ocurre.</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Nota de E/S en C++ (opcional)</span>
+<pre>// Es una tarea vieja con archivos: lee de INPUT.TXT y escribe en OUTPUT.TXT.
+freopen("INPUT.TXT",  "r", stdin);
+freopen("OUTPUT.TXT", "w", stdout);
+// ...luego usas cin/cout normalmente.</pre>
+          <p class="note">Solo es la conexión de archivos; el algoritmo es el de
+             arriba. No es parte de la solución, sino del formato de E/S del enunciado.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
