@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2002 · Problema 01 — Descifrando Jeroglíficos</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">7ª OMI · 2002 · Día 1</div>
+    <h1>Problema <span class="num">01</span> — Descifrando Jeroglíficos</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/jeroglificos">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>La situación económica mundial se encuentra en crisis, lo que te ha llevado
+       a buscar nuevas formas de obtener ingresos económicos. En vista del éxito
+       obtenido por personajes como Alan Quartermain, Indiana Jones, Lara Croft y
+       algunos otros, has decidido que la mejor forma de asegurar tu futuro es la
+       búsqueda de tesoros de culturas antiguas. Investigando sobre las viejas
+       civilizaciones encontraste información sobre los OMIncas, esta cultura
+       aparece mencionada en algunos códices como un pueblo de grandes riquezas y,
+       sin embargo, su civilización prácticamente no ha sido explorada, lo que la
+       hace el objetivo perfecto de tus planes.</p>
+
+    <p>El primer paso para buscar un tesoro es conocer la ubicación geográfica en
+       donde se encuentra. Durante tus pesquisas encontraste un mapa que indica la
+       localización de la tumba de su más grande patriarca; desgraciadamente las
+       instrucciones se encuentran escritas en jeroglíficos, por lo que primero
+       tendrás que descifrarlas.</p>
+
+    <p>El mapa indica un punto de partida y, a partir de este, da instrucciones
+       sobre cómo llegar a la entrada de la tumba. Después de estudiar ampliamente
+       el mapa has descubierto que hay 14 jeroglíficos diferentes: 10 de ellos
+       simbolizan los diez dígitos de la numeración decimal
+       (0, 1, 2, 3, 4, 5, 6, 7, 8, 9), otro más significa <em>girar a la derecha
+       90 grados</em>, hay otro que indica <em>girar a la izquierda 90 grados</em>,
+       uno más simboliza <em>avanzar</em> y el último significa <em>fin del
+       mensaje</em>.</p>
+
+    <p>Las instrucciones del mapa son del estilo de "avanza 20 pasos, gira a la
+       derecha, avanza 10 pasos…". Una característica importante es que después de
+       un símbolo de avanzar siempre siguen dos jeroglíficos de número que indican
+       una cantidad de dos cifras equivalente al número de pasos que hay que
+       avanzar (por ejemplo, si hay que avanzar 5 pasos seguirían las cifras "05";
+       si hubiera que avanzar 15 seguirían las cifras "15"). Los jeroglíficos de
+       número irán únicamente después del símbolo de avanza.</p>
+
+    <p>Para encontrar las coordenadas de entrada a la tumba debes posicionarte en
+       el punto de partida y seguir las instrucciones. El jeroglífico "fin del
+       mensaje" solamente aparece una vez en el mapa, al final de las
+       instrucciones, siempre para indicar que se ha llegado al final de ellas.</p>
+
+    <h3>Cómo se representan los jeroglíficos</h3>
+    <p>Debes escribir un programa que, conociendo los símbolos de los 14
+       jeroglíficos diferentes y el mensaje del mapa, siga las instrucciones y
+       determine el punto exacto de la entrada de la tumba.</p>
+    <p>Los jeroglíficos están representados siempre en una cuadrícula de
+       \(5 \times 5\) caracteres. Por ejemplo, los siguientes serían jeroglíficos
+       válidos (gira a la derecha, avanza, 0, 1 y fin del mensaje):</p>
+    <div class="io"><pre>...\.     .....     .000.     .11..      .ffff
+.---&gt;     ./|\.     0...0     1.1..      .f...
+.|./.     ..|..     0...0     ..1..      .fff.
+.|...     ..|..     0...0     ..1..      .f...
+.|...     ..|..     .000.     11111      .f...</pre></div>
+
+    <p>El mapa contiene un mensaje con instrucciones para llegar a la entrada de la
+       tumba. Este mensaje puede contener desde 2 hasta 40 símbolos, seguidos uno
+       del otro, todos en una sola línea de símbolos (es decir, 5 líneas de texto).
+       Por ejemplo, suponiendo que las instrucciones fueran "avanza 10 pasos, gira
+       a la derecha, avanza 1 paso, fin del mensaje", y usando los símbolos de
+       arriba, el mensaje del mapa se vería así:</p>
+    <div class="io"><pre>......11...000....\.......000..11...ffff
+./|\.1.1..0...0.---&gt;./|\.0...01.1...f...
+..|....1..0...0.|./...|..0...0..1...f...
+..|....1..0...0.|.....|..0...0..1...f...
+..|..11111.000..|.....|...000.11111.f...</pre></div>
+
+    <p>Para este problema se considerará que la posición inicial siempre es la
+       coordenada \((0,0)\) y la dirección inicial siempre es el <strong>norte</strong>.</p>
+    <p class="note">Nota de transcripción: el enunciado original remitía aquí a una
+       figura con la orientación de los ejes; esa figura no está disponible en la
+       fuente. Del ejemplo se desprende que avanzar hacia el norte aumenta la
+       coordenada vertical y que, al girar a la derecha desde el norte, se mira al
+       este (lo que aumenta la coordenada horizontal).</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer los siguientes datos: los 14 jeroglíficos, cada uno
+       en 5 líneas de texto con 5 caracteres cada una, en el orden
+       (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, Avanza, Gira derecha, Gira izquierda, Fin del
+       mensaje). Los caracteres de cada línea no tienen ningún espacio entre ellos.
+       Después de los 14 jeroglíficos vendrán 5 líneas, que pueden tener desde 10
+       hasta 200 caracteres cada una, conteniendo las instrucciones del mapa.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir dos números, en una sola línea y separados por un
+       espacio, que indiquen la coordenada (horizontal, vertical) en la que se
+       encuentra la entrada de la tumba.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado oficial</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado oficial</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Símbolos del mensaje</td><td><span class="badge">\(2 \le S \le 40\)</span></td></tr>
+        <tr><td>Caracteres por línea del mensaje</td><td><span class="badge">de 10 a 200</span></td></tr>
+        <tr><td>Tamaño de cada jeroglífico</td><td><span class="badge">cuadrícula de \(5 \times 5\)</span></td></tr>
+        <tr><td>Tras un "Avanza"</td><td><span class="badge">siempre 2 cifras (de \(00\) a \(99\))</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada</h4><pre>.000.
+0...0
+0...0
+0...0
+.000.
+.11..
+1.1..
+..1..
+..1..
+11111
+.222.
+2...2
+..22.
+22...
+22222
+.333.
+3...3
+..33.
+3...3
+.333.
+4..4.
+4..4.
+44444
+...4.
+...4.
+55555
+5....
+5555.
+....5
+5555.
+.666.
+6....
+6666.
+6...6
+.666.
+77777
+....7
+...7.
+..7..
+..7..
+.888.
+8...8
+.888.
+8...8
+.888.
+.999.
+9...9
+.9999
+....9
+.999.
+.....
+./|\.
+..|..
+..|..
+..|..
+...\.
+.---&gt;
+.|./.
+.|...
+.|...
+./...
+&lt;---.
+.\.|.
+...|.
+...|.
+.FFFF
+.F...
+.FFF.
+.F...
+.F...
+......11...000....\.......000..11...FFFF
+./|\.1.1..0...0.---&gt;./|\.0...01.1...F...
+..|....1..0...0.|./...|..0...0..1...F...
+..|....1..0...0.|.....|..0...0..1...F...
+..|..11111.000..|.....|...000.11111.F...</pre></div>
+      <div class="io"><h4>Salida</h4><pre>1 10</pre></div>
+    </div>
+    <p class="note">Los primeros 14 bloques de 5 líneas definen los jeroglíficos (en
+       este caso, el de "Fin del mensaje" usa la letra <code>F</code>). Las últimas
+       5 líneas son el mensaje, que se lee en columnas de 5 en 5: codifica
+       "avanza 10 pasos, gira a la derecha, avanza 01 paso, fin". Partiendo de
+       \((0,0)\) mirando al norte: avanzas 10 hacia el norte hasta \((0,10)\), giras
+       a la derecha (ahora ves al este) y avanzas 1 hasta \((1,10)\). Por eso la
+       salida es <code>1 10</code>.</p>
+
+    <h2>Consideraciones</h2>
+    <p>Los jeroglíficos de este ejemplo y los caracteres que los representan son
+       sólo para este caso; los jeroglíficos de los casos de evaluación utilizarán
+       caracteres ASCII y representaciones diferentes. Por ejemplo, lo siguiente es
+       un jeroglífico válido y puede representar cualquiera de los 14 símbolos:</p>
+    <div class="io"><pre>Asfui
+Desfe
+Ikkel
+U93'3
+0*o92</pre></div>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Strings</span>
+      <span class="ptag">Geometría</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan 14 plantillas de \(5 \times 5\) (los dígitos 0–9, "avanza", "gira a la
+       derecha", "gira a la izquierda" y "fin") y un mensaje formado por 5 renglones
+       de texto: cada símbolo ocupa 5 columnas consecutivas. Decodifica los símbolos,
+       simula el recorrido desde \((0,0)\) mirando al norte (cada "avanza" gasta las
+       dos cifras que le siguen como número de dos dígitos) y reporta la coordenada
+       final (horizontal, vertical).</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>Todo es diminuto: a lo más \(S = 40\) símbolos, cada uno una cuadrícula
+                fija de \(5 \times 5\). No hay restricciones de tiempo apretadas; basta
+                una simulación directa \(O(S)\). El reto no es la eficiencia, sino
+                <em>leer y reconocer</em> bien los símbolos.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿En qué dos mitades parte el problema?</summary>
+      <div class="body">
+        <p class="q">¿Notaste que aquí hay dos tareas casi independientes: primero
+           <em>reconocer</em> qué símbolo es cada bloque y luego <em>simular</em> el
+           camino que describen? ¿Conviene resolver una y después la otra?</p>
+        <p>El mensaje son 5 renglones. Si cada símbolo mide exactamente 5 columnas,
+           ¿cuántos símbolos hay si un renglón tiene \(L\) caracteres? ¿Cómo recortas
+           el \(i\)-ésimo bloque de los 5 renglones?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — El truco de "Consideraciones"</summary>
+      <div class="body">
+        <p class="q">El enunciado avisa que en los casos reales los símbolos usan
+           caracteres ASCII arbitrarios, no los bonitos del ejemplo. Entonces,
+           ¿puedes buscar un <code>0</code>, una <code>|</code> o una flecha para
+           saber qué símbolo es? Si no, ¿qué sí permanece igual?</p>
+        <p>Lo único invariante es la <strong>forma exacta</strong> de la cuadrícula
+           \(5 \times 5\). ¿Y si guardas las 14 plantillas tal cual y comparas cada
+           bloque del mensaje, carácter por carácter, contra ellas? Como los 14
+           jeroglíficos son <em>diferentes</em>, ¿puede un bloque coincidir con más
+           de una plantilla?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — La caminata y la brújula</summary>
+      <div class="body">
+        <p class="q">Para moverte, ¿te conviene llevar la dirección como un vector
+           \((dx, dy)\)? Empezando en el norte, ¿cómo lo rotas 90° a la derecha y
+           90° a la izquierda sin tablas de casos?</p>
+        <p>¿Cómo decides cuál eje es el "horizontal" y cuál el "vertical" de la
+           salida? Mira el ejemplo: avanzar 10 al norte y luego 1 a la derecha da
+           <code>1 10</code>. Y recuerda: cuando el símbolo actual es "avanza", los
+           <em>dos siguientes</em> son cifras; conviene saltarlos en el recorrido
+           (avanzar el índice de 3 en 3 en ese caso).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> El problema se separa en reconocimiento + simulación.</p>
+        <p><strong>1) Lectura y reconocimiento.</strong> Lee los 14 jeroglíficos
+           (70 renglones, 5 cada uno) y guárdalos como 14 matrices de \(5 \times 5\),
+           recordando su significado por el <em>orden</em> en que llegan: posiciones
+           0–9 son los dígitos, la 10 es "avanza", la 11 "gira a la derecha", la 12
+           "gira a la izquierda" y la 13 "fin". Luego lee los 5 renglones del mensaje.
+           Si un renglón mide \(L\) caracteres, hay \(S = L / 5\) símbolos. El símbolo
+           \(i\) es el bloque formado por las columnas \([5i,\,5i+4]\) de los 5
+           renglones; para identificarlo, compáralo carácter por carácter contra las
+           14 plantillas y toma la que coincida (es única, porque los 14 son
+           distintos). No dependas de los caracteres concretos: solo de la forma.</p>
+        <p><strong>2) Simulación.</strong> Lleva la posición \((x,y)=(0,0)\) y la
+           dirección como vector \((dx,dy)=(0,1)\) (norte). Recorre los símbolos: si
+           es "fin", terminas; si es "avanza", el número de pasos es
+           \(10 \cdot d_1 + d_2\) con los dos dígitos siguientes, y haces
+           \(x \mathrel{+}= dx\cdot pasos\), \(y \mathrel{+}= dy\cdot pasos\) (y saltas
+           esos dos símbolos); si es "gira a la derecha" (horario) haces
+           \((dx,dy)\leftarrow(dy,-dx)\); si es "gira a la izquierda" (antihorario)
+           haces \((dx,dy)\leftarrow(-dy,dx)\). Al final imprime \(x\) y \(y\).</p>
+        <p><strong>Por qué es correcto.</strong> El reconocimiento es exacto porque
+           cada bloque es idéntico a una y solo una plantilla. La rotación por vector
+           reproduce los giros de 90° respetando que el norte mira a \((0,1)\) y que un
+           giro a la derecha lleva al este \((1,0)\), justo como en el ejemplo (de ahí
+           la salida <code>1 10</code>). Como "avanza" siempre va seguido de exactamente
+           dos cifras y "fin" aparece una sola vez al final, el barrido nunca se sale de
+           formato.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>// --- Lectura ---
+para k = 0..13:
+    plantilla[k] <- leer matriz 5x5 (5 renglones de 5 caracteres)
+// significado por orden: 0..9 = dígito k; 10=AVANZA; 11=DER; 12=IZQ; 13=FIN
+
+leer los 5 renglones del mensaje en msg[0..4]
+L <- longitud de msg[0]
+S <- L / 5
+
+// --- Reconocimiento ---
+para i = 0..S-1:
+    bloque <- columnas [5*i, 5*i+4] de msg[0..4]   // submatriz 5x5
+    sim[i] <- el k tal que plantilla[k] == bloque    // comparación exacta
+
+// --- Simulación ---
+x <- 0 ; y <- 0
+dx <- 0 ; dy <- 1            // mirando al norte
+i <- 0
+mientras i < S:
+    s <- sim[i]
+    si s == FIN:
+        terminar
+    si no, si s == AVANZA:
+        pasos <- 10*valor(sim[i+1]) + valor(sim[i+2])   // dos cifras
+        x <- x + dx*pasos
+        y <- y + dy*pasos
+        i <- i + 3
+    si no, si s == DER:          // giro horario
+        (dx, dy) <- (dy, -dx)
+        i <- i + 1
+    si no, si s == IZQ:          // giro antihorario
+        (dx, dy) <- (-dy, dx)
+        i <- i + 1
+
+imprimir x, " ", y</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(S)\) símbolos, cada comparación de
+           plantilla cuesta \(5\times 5 = 25\) contra 14 candidatas, así que el total
+           es \(O(S \cdot 14 \cdot 25)\): constante en la práctica (\(S \le 40\)).
+           Memoria \(O(1)\) (apenas las 14 plantillas y los 5 renglones).</p>
+
+        <div class="pseudo cpp-trick">
+          <span class="tag">Truco de C++ (opcional)</span>
+<pre>Lee renglones completos con getline (NO con el operador &gt;&gt;):
+los caracteres de los jeroglíficos pueden ser cualquier símbolo
+ASCII, así que tokenizar por espacios rompería la lectura.
+Compara submatrices como std::string de 5 caracteres
+(o std::array&lt;std::string,5&gt;) para que "==" sea la comparación exacta.</pre>
+          <p class="note">Solo es una ayuda de lectura/comparación; la lógica sigue
+             siendo la del pseudocódigo de arriba.</p>
+        </div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

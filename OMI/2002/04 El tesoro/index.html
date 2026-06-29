@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2002 · Problema 04 — El tesoro</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">7ª OMI · 2002 · Día 2</div>
+    <h1>Problema <span class="num">04</span> — El tesoro</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.pdf">statement.pdf</a>
+       · Fuente en línea: <a class="pdf" href="http://www.olimpiadadeinformatica.org.mx/Resultados/img/problemas/tesoro.pdf">olimpiadadeinformatica.org.mx</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Descripción</h2>
+    <p>Ha sido un camino difícil, pero al fin llegaste al tesoro del gran patriarca.
+       Exaltado por el brillo de los tesoros, estás a punto de tomar cierta figura
+       grande que parece hecha de oro sólido e incrustada con un sinnúmero de piedras
+       preciosas, cuando te das cuenta de que debajo de la figura hay un mecanismo
+       sensible al peso que activa una trampa si se retira la joya.</p>
+
+    <p>De cualquier forma, no todo está perdido: debajo de la figura está escrito el
+       nombre de un dios OMInca, y junto a la mesa donde está la figura hay una serie
+       de cubos de plomo de diferentes pesos, los cuales tienen una letra diferente en
+       cada una de sus seis caras. Deduces que los cubos están ahí para ser utilizados
+       como medidas de peso. Tras un largo análisis te das cuenta de que si tomas cubos
+       tales que puedas formar el nombre del dios OMInca escrito debajo de la figura,
+       apilando cubos uno sobre otro, siempre con la condición de que <strong>las caras
+       de dos cubos apilados que se tocan deben tener la misma letra</strong>, el peso
+       obtenido es exactamente igual al de la figura de oro. Cuando se forma el nombre
+       del dios, éste debe quedar escrito en las caras de los cubos que quedan de frente
+       a ti. En la siguiente figura se muestra el nombre del dios OMITL.</p>
+
+    <figure>
+      <img alt="Torre de cubos apilados que, leída de abajo hacia arriba en las caras de enfrente, forma el nombre OMITL (O, M, I, T, L)."
+           src="data:image/png;base64,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">
+      <figcaption>El nombre OMITL formado apilando cubos: se lee de abajo hacia arriba
+         en las caras que quedan de frente.</figcaption>
+    </figure>
+
+    <p>Lo más importante a tomar en cuenta a la hora de formar el nombre de un dios es
+       que las caras que se tocan de los cubos deben tener la misma letra. Por ejemplo,
+       si el nombre del dios fuera OMITLA en lugar de OMITL, el cubo que va arriba de la
+       ‘L’ debe tener una letra ‘U’ en su parte inferior. Es posible también poner las
+       letras volteadas; por ejemplo, la siguiente manera de formar OMITL también es
+       válida.</p>
+
+    <figure>
+      <img alt="Otra torre de cubos que también forma OMITL, con algunas letras impresas volteadas."
+           src="data:image/png;base64,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">
+      <figcaption>Otra forma válida de formar OMITL (las letras pueden quedar volteadas).</figcaption>
+    </figure>
+
+    <p>Cada cubo tiene siempre 6 letras diferentes y, para todos los casos de prueba que
+       se utilizan en la evaluación, existe al menos una forma de escribir el nombre del
+       dios cumpliendo con las condiciones del problema.</p>
+
+    <h2>Problema</h2>
+    <p>Debes escribir un programa que encuentre una manera de formar el nombre del dios
+       utilizando los cubos que se proporcionan en el archivo de entrada, cumpliendo con
+       las limitantes del problema.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer del archivo de entrada <code>TESORO.IN</code> los
+       siguientes datos: en la primera línea, el número \(N\) de cubos, con
+       \(4 \le N \le 40\). En las siguientes \(N\) líneas debe leer 6 caracteres (que no
+       están separados por ningún espacio) que indican las letras en las caras del cubo.
+       Las letras vienen en orden, de la cara 1 a la cara 6, y las caras de los cubos se
+       numeran de la siguiente forma:</p>
+
+    <figure>
+      <img alt="Cruz desplegada de un cubo: la cara 1 al centro; arriba de ella la cara 2; debajo la cara 4 y más abajo la cara 6; a la izquierda la cara 5 y a la derecha la cara 3."
+           src="data:image/png;base64,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">
+      <figcaption>Numeración de las caras del cubo (cubo desdoblado). Al plegarlo,
+         quedan opuestas las caras 1–6, 2–4 y 3–5.</figcaption>
+    </figure>
+
+    <p>En la última línea del archivo se encuentra el nombre del dios, el cual nunca será
+       menor de 4 letras ni mayor de 10 letras.</p>
+
+    <p class="note"><strong>Nota:</strong> Para los cubos y el nombre del dios se
+       utilizarán únicamente las letras mayúsculas de la ‘A’ a la ‘Z’.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en el archivo de salida <code>TESORO.OUT</code> los
+       cubos utilizados para formar el nombre del dios. Los números de los cubos
+       utilizados deberán ir en una sola línea, separados por un espacio y escritos en el
+       orden en el que se fueron utilizando para formar el nombre del dios; es decir,
+       siempre se irá primero el cubo que tenga la primera letra del nombre del dios. Los
+       números de los cubos se asignan según su orden en el archivo de entrada, contando a
+       partir del 1.</p>
+
+    <p>En el caso de que exista más de una solución, sólo deberás escribir una de ellas;
+       cualquier solución será considerada correcta.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de cubos</td><td><span class="badge">\(4 \le N \le 40\)</span></td></tr>
+        <tr><td>Longitud del nombre</td><td><span class="badge">\(4 \le L \le 10\) letras</span></td></tr>
+        <tr><td>Caras por cubo</td><td>6 letras distintas (‘A’–‘Z’) por cubo</td></tr>
+        <tr><td>Grado de dificultad (oficial)</td><td>Implementación: CE · Algoritmo: 2</td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>TESORO.IN</h4><pre>6
+CVKSMZ
+PXLAHU
+HTINCE
+ALQIOB
+LCTZAV
+CNEZMU
+ZEUS</pre></div>
+      <div class="io"><h4>TESORO.OUT</h4><pre>5 3 6 1</pre></div>
+    </div>
+    <p class="note">El nombre es <code>ZEUS</code>. El cubo 5 (<code>LCTZAV</code>) aporta
+       la <code>Z</code>, el cubo 3 (<code>HTINCE</code>) la <code>E</code>, el cubo 6
+       (<code>CNEZMU</code>) la <code>U</code> y el cubo 1 (<code>CVKSMZ</code>) la
+       <code>S</code>. Orientando cada cubo, las caras que se tocan coinciden: entre el 5 y
+       el 3 toca una <code>T</code>, entre el 3 y el 6 una <code>N</code>, y entre el 6 y el
+       1 una <code>Z</code>. Cualquier otra solución válida también sería aceptada.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Backtracking</span>
+      <span class="ptag">Búsqueda con poda (DFS)</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Tienes \(N\) cubos; cada uno trae 6 letras distintas en sus caras, numeradas 1 a 6,
+       de modo que quedan opuestas las parejas \((1,6)\), \((2,4)\) y \((3,5)\). Dado un
+       nombre de \(L\) letras (\(4 \le L \le 10\)), apila \(L\) cubos <em>distintos</em> en
+       una torre de manera que cada cubo muestre al frente la letra correspondiente del
+       nombre y que las dos caras que se tocan entre cubos vecinos tengan la misma letra.
+       Imprime los índices de los cubos en el orden del nombre. Se garantiza que existe
+       solución.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 40\) y \(L \le 10\) son diminutos: una búsqueda con retroceso
+                (backtracking) y poda por la letra que debe empatar es más que suficiente.
+                No hace falta nada sofisticado.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cuántas formas tiene un cubo de mostrar una letra?</summary>
+      <div class="body">
+        <p class="q">Si decides qué cara del cubo va al <em>frente</em> (la que muestra
+           la letra del nombre), ¿el cubo queda totalmente fijo, o todavía puede girar?</p>
+        <p>Fijar la cara de enfrente deja libre el giro alrededor del eje frente–atrás:
+           hay <strong>4 orientaciones</strong>. La cara de atrás siempre es la opuesta de
+           la de enfrente; las otras cuatro caras forman dos parejas opuestas y son las que
+           pueden quedar arriba/abajo. ¿Qué parejas son opuestas según la numeración de la
+           figura?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Qué relaciona a dos cubos vecinos de la torre?</summary>
+      <div class="body">
+        <p class="q">Si el cubo de la posición \(i\) está debajo del de la posición
+           \(i{+}1\), ¿qué condición exacta los amarra?</p>
+        <p>Solo una: la cara de <em>arriba</em> del cubo de abajo debe tener la misma letra
+           que la cara de <em>abajo</em> del cubo de encima. La torre es entonces una
+           <strong>cadena</strong>: cada eslabón solo se conecta con el siguiente por una
+           letra (la del contacto). El nombre se lee de abajo hacia arriba, así que la
+           primera letra está hasta abajo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Por qué no basta ser glotón?</summary>
+      <div class="body">
+        <p class="q">Cada posición \(i\) necesita un cubo <em>distinto</em> que tenga la
+           letra \(\text{nombre}[i]\) en alguna cara. Si en la posición 0 eliges el primer
+           cubo que sirva, ¿podrías quedarte atorado más arriba?</p>
+        <p>Sí: una elección temprana puede dejar sin opciones a una posición posterior
+           (porque gastaste el único cubo que servía, o porque la letra de contacto ya no
+           empata). Necesitas poder <strong>deshacer</strong> decisiones. Eso es
+           backtracking, no greedy.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Armando el retroceso</summary>
+      <div class="body">
+        <p class="q">¿Qué información mínima necesitas arrastrar mientras llenas la torre
+           de abajo hacia arriba?</p>
+        <p>Solo dos cosas: en qué posición vas y qué letra debe tener <em>abajo</em> el
+           próximo cubo (es la letra que quedó <em>arriba</em> del cubo anterior). Recorre
+           los cubos no usados que tengan la letra de esa posición; como las 6 letras de un
+           cubo son distintas, a lo más una cara sirve de frente. Por cada una de las 4
+           orientaciones, comprueba si su cara de abajo empata con lo requerido y, si sí,
+           marca el cubo como usado y baja a la siguiente posición. Si te atoras, deshaz y
+           prueba la siguiente opción.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Modelado del cubo.</strong> Por la numeración de la figura, las caras
+           opuestas son \((1,6)\), \((2,4)\) y \((3,5)\). Si un cubo muestra al frente la
+           cara \(f\), su cara de atrás es \(\operatorname{opp}(f)\) y las cuatro caras
+           restantes son las candidatas a quedar arriba. Para cada una de esas cuatro caras
+           \(g\) (las que no son \(f\) ni \(\operatorname{opp}(f)\)), una orientación deja
+           arriba la letra de \(g\) y abajo la letra de \(\operatorname{opp}(g)\). Esas son
+           las 4 orientaciones posibles con \(f\) al frente.</p>
+
+        <p><strong>Búsqueda.</strong> El nombre se forma de abajo hacia arriba. Llenamos las
+           posiciones \(0,1,\dots,L-1\) con cubos distintos. En cada posición probamos cada
+           cubo libre que contenga la letra requerida; fijamos esa cara al frente y probamos
+           sus 4 orientaciones. La única restricción entre vecinos es que la cara de abajo del
+           cubo actual coincida con la cara de arriba del cubo anterior. Cuando colocamos los
+           \(L\) cubos, tenemos una solución; como el problema garantiza que existe, el
+           retroceso siempre la encuentra. Al final se imprimen los índices en el orden del
+           nombre (primero el de la primera letra). Esto reproduce el ejemplo: \(5\ 3\ 6\ 1\)
+           para <code>ZEUS</code>.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>opp = { 1:6, 2:4, 3:5, 6:1, 4:2, 5:3 }   // caras opuestas
+
+leer N
+para i = 1..N:
+    cubo[i] = los 6 caracteres (caras 1..6)
+leer nombre ; L = longitud(nombre)
+
+usado[1..N] = falso
+resultado[0..L-1]
+
+funcion DFS(pos, letraAbajoRequerida):
+    si pos == L:
+        regresa verdadero                  // torre completa
+    para c = 1..N:
+        si usado[c]: continuar
+        f = cara de cubo[c] cuya letra == nombre[pos]   // a lo más una
+        si no existe f: continuar
+        para cada cara g en {1..6} \ {f, opp(f)}:       // 4 orientaciones
+            arriba = letra de cubo[c] en la cara g
+            abajo  = letra de cubo[c] en la cara opp(g)
+            si pos == 0  o  abajo == letraAbajoRequerida:
+                usado[c] = verdadero
+                resultado[pos] = c
+                si DFS(pos + 1, arriba):
+                    regresa verdadero
+                usado[c] = falso           // deshacer
+    regresa falso
+
+DFS(0, ninguna)
+imprimir resultado[0..L-1] separados por espacios</pre>
+        </div>
+
+        <p><strong>Por qué es correcto.</strong> Probamos exhaustivamente cada combinación
+           de cubo + orientación por posición, respetando la unicidad de los cubos y el
+           empate de la letra de contacto; el retroceso explora todas las ramas hasta hallar
+           una torre completa. Como se garantiza que existe al menos una, la encontramos. Que
+           el enunciado acepte cualquier solución válida nos permite devolver la primera que
+           complete la torre.</p>
+
+        <p><strong>Complejidad.</strong> Por posición hay a lo más \(N\) cubos \(\times\) 4
+           orientaciones. En el peor caso teórico el árbol de búsqueda es \(O\big((4N)^{L}\big)\),
+           pero la poda por la letra de contacto lo deja minúsculo para \(N \le 40\) y
+           \(L \le 10\); en la práctica es instantáneo. Memoria \(O(N + L)\).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
