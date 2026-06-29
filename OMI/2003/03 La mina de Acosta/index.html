@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2003 · Problema 03 — La mina de Acosta</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">8ª OMI · 2003 · Día 2</div>
+    <h1>Problema <span class="num">03</span> — La mina de Acosta</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.pdf">statement.pdf</a>
+       · Fuente original: <a class="pdf" href="https://www.olimpiadadeinformatica.org.mx/OMI/OMI/archivos/problemas/lenguaje2003/omi2003d2a.pdf">olimpiadadeinformatica.org.mx (PDF)</a>
+       · Esta edición (8ª OMI, 2003) no tiene juez en línea.</p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Descripción</h2>
+    <p>Pachuca es una ciudad minera por tradición; de entre sus minas, una de las más
+       famosas es la mina de Acosta. Al saber que venías a Pachuca al examen nacional
+       de la OMI, tuviste curiosidad de conocer la famosa mina; sin embargo, movido por
+       la curiosidad y la fascinación, te adentraste demasiado en el laberinto de la
+       mina y ahora te encuentras perdido y aislado de tu grupo.</p>
+    <p>La mina es un laberinto formado por cuartos que se comunican unos con otros por
+       medio de túneles; todos los túneles llevan a algún cuarto. Por último, la mina
+       sólo tiene una salida.</p>
+
+    <h2>Problema</h2>
+    <p>Tu tarea consiste en desarrollar un programa que sea capaz de encontrar el
+       camino más corto hacia la salida, a partir del cuarto en el que te encuentras
+       en el momento en el que te diste cuenta que estabas perdido.</p>
+
+    <h2>Entrada</h2>
+    <p>Tu programa deberá leer del archivo de texto <code>ENTRADA.TXT</code> el mapa de
+       la mina para determinar cuál es el camino más corto a la salida. El mapa está
+       representado en el archivo de la siguiente manera:</p>
+    <ul>
+      <li>En la primera línea del archivo hay un número \(2 \le N \le 100\) que indica
+          el número de cuartos que hay en la mina.</li>
+      <li>En las siguientes \(N\) líneas hay una lista de números separados por un
+          espacio cada uno. Cada lista de números se refiere a uno de los cuartos de la
+          mina; por ejemplo, la primera lista (línea 2 del archivo) se refiere al
+          cuarto 1, la siguiente (línea 3 del archivo) al cuarto 2, etc.</li>
+      <li>El primer número de cada lista es \(0 \le T_i \le 100\); este número indica
+          la cantidad de túneles que salen del cuarto \(i\). Al número \(T_i\) le
+          siguen \(T_i\) números en la lista, que indican los cuartos a los que conectan
+          cada uno de los \(T_i\) túneles.</li>
+      <li>En la última línea del archivo hay dos números separados por un espacio: el
+          primer número indica el cuarto en el que te encuentras, y el segundo número
+          indica el cuarto que es la salida.</li>
+    </ul>
+    <p>Los cuartos están numerados a partir del 1.</p>
+
+    <h2>Salida</h2>
+    <p>Tu programa deberá escribir en el archivo de texto <code>SALIDA.TXT</code> el
+       camino más corto que haya desde el cuarto en el que te encuentras hasta el cuarto
+       de salida.</p>
+    <p>Para describir el camino hacia la salida, tu programa deberá escribir en una línea
+       una lista de números separados por un espacio. Esta lista de números describe los
+       cuartos por los que pasaste para llegar a la salida, comenzando por el cuarto en
+       el que te encuentras hasta llegar a la salida.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>1 segundo</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Número de cuartos</td><td><span class="badge">\(2 \le N \le 100\)</span></td></tr>
+        <tr><td>Túneles por cuarto</td><td><span class="badge">\(0 \le T_i \le 100\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada). Como
+       hay calificación por <em>special judge</em>, si existe más de un camino de la misma
+       longitud mínima, cualquiera de ellos se considera correcto.</p>
+
+    <h2>Ejemplo</h2>
+    <p>Para el mapa de la mina que se muestra a continuación (estás en el cuarto 6 y la
+       salida es el cuarto 8):</p>
+
+    <figure>
+      <img alt="Grafo del ejemplo: 9 cuartos numerados unidos por túneles. El cuarto 6 lleva la etiqueta «Aqui estas» y el cuarto 8 la etiqueta «Salida». Túneles: 4-2, 4-6, 2-6, 2-5, 6-1, 1-5, 5-3, 5-8, 3-9, 9-8, 7-8."
+           src="data:image/png;base64,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">
+      <figcaption>Figura 1: el mapa de la mina del ejemplo. Cada círculo es un cuarto y
+         cada segmento, un túnel. Estás en el cuarto 6 («Aqui estas») y la salida es el
+         cuarto 8 («Salida»).</figcaption>
+    </figure>
+
+    <p>Los archivos de entrada y salida para el mapa anterior quedan de la siguiente
+       manera:</p>
+    <div class="example">
+      <div class="io"><h4>ENTRADA.TXT</h4><pre>9
+2 5 6
+3 4 5 6
+2 5 9
+2 2 6
+4 1 2 3 8
+3 1 2 4
+1 8
+3 5 7 9
+2 3 8
+6 8</pre></div>
+      <div class="io"><h4>SALIDA.TXT</h4><pre>6 1 5 8</pre></div>
+    </div>
+    <p class="note"><strong>Nota:</strong> para los casos de prueba que se utilizarán,
+       siempre habrá al menos un camino hacia la salida. En el caso de que exista más de
+       un camino de la misma longitud, cualquiera de los caminos se considerará correcto;
+       en el ejemplo anterior, la solución <code>6 2 5 8</code> también es correcta.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Grafos</span>
+      <span class="ptag">BFS</span>
+      <span class="ptag">Camino más corto</span>
+      <span class="ptag">Reconstrucción de ruta</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Te dan un grafo no dirigido de hasta \(N \le 100\) cuartos (nodos) unidos por
+       túneles (aristas), más un cuarto de inicio y un cuarto de salida. Debes imprimir
+       <em>un</em> camino con el menor número de túneles desde el inicio hasta la salida.
+       Si hay varios caminos mínimos, cualquiera sirve.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(N \le 100\) y \(T_i \le 100\): el grafo es diminuto (a lo más
+                \(N \cdot T_i \le 10\,000\) referencias de túnel). Como cada túnel
+                "cuesta" lo mismo (1 paso), el camino más corto en número de aristas se
+                obtiene con <strong>BFS</strong> en \(O(N + M)\). No hace falta Dijkstra
+                ni nada más pesado.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que los cuartos son <em>nodos</em> y los túneles son
+           <em>aristas</em> de un grafo? Cuando el enunciado dice "camino más corto" y
+           cada túnel pesa igual, ¿qué significa exactamente "más corto"?</p>
+        <p>"Más corto" aquí es el <strong>menor número de túneles</strong> (aristas)
+           entre el inicio y la salida, no una distancia con pesos. El problema se reduce
+           a: camino mínimo en aristas en un grafo con pesos unitarios.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — ¿Qué recorrido resuelve pesos unitarios?</summary>
+      <div class="body">
+        <p class="q">¿Recuerdas que, cuando todas las aristas valen lo mismo, un recorrido
+           por niveles desde el origen visita los nodos en orden de distancia creciente?
+           ¿Cómo se llama ese recorrido y qué estructura usa?</p>
+        <p>Es la <strong>búsqueda en anchura (BFS)</strong>, que usa una cola. La primera
+           vez que BFS toca un nodo, lo hace por un camino de longitud mínima; en
+           particular, la primera vez que alcanzas la salida ya es por un camino mínimo.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — No basta la longitud: hay que imprimir el camino</summary>
+      <div class="body">
+        <p class="q">El BFS te da la distancia, pero aquí piden la <em>secuencia de
+           cuartos</em>. Cuando descubres un nodo \(v\) desde un nodo \(u\), ¿qué pasa si
+           guardas \(\text{padre}[v] = u\)? Al llegar a la salida, ¿cómo regresas hasta
+           el inicio y en qué orden lo imprimes?</p>
+        <p>Guarda un <em>padre</em> por cada nodo durante el BFS. Para reconstruir, parte
+           de la salida y sigue los padres hasta el inicio; eso te da el camino al revés,
+           así que <strong>inviértelo</strong> antes de imprimir.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Detalles que muerden</summary>
+      <div class="body">
+        <p class="q">¿Notaste que en el ejemplo cada túnel aparece listado en sus dos
+           extremos (el cuarto 1 lista al 6 <em>y</em> el cuarto 6 lista al 1)? ¿Qué pasa
+           si lees \(T_i = 0\) (un cuarto sin túneles)? ¿Y si el inicio resulta ser ya
+           la salida?</p>
+        <p>El grafo viene como adyacencia ya simétrica, así que puedes recorrerlo tal
+           cual lo lees. Cuida leer correctamente \(T_i\) (incluido \(T_i = 0\)) antes de
+           sus vecinos, y el caso límite inicio = salida (el camino es ese único cuarto).
+           Recuerda leer de <code>ENTRADA.TXT</code> y escribir en <code>SALIDA.TXT</code>
+           (esta edición de 2003 usa E/S por archivos).</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Modela cada cuarto como un nodo y cada túnel como una
+           arista. Construye la lista de adyacencia leyendo, para cada cuarto \(i\), su
+           cantidad \(T_i\) y sus \(T_i\) vecinos. Como todas las aristas pesan 1, el
+           camino con menos túneles se halla con un <strong>BFS</strong> desde el cuarto
+           inicial, guardando un arreglo de <em>padres</em> para poder reconstruir la
+           ruta.</p>
+        <p><strong>Por qué es correcto.</strong> BFS expande los nodos en orden de
+           distancia (en número de aristas) creciente desde el origen; por eso, el árbol
+           de padres que genera contiene, para cada nodo alcanzable, un camino de longitud
+           mínima desde el inicio. Al seguir los padres desde la salida hasta el inicio
+           obtienes uno de esos caminos mínimos; el enunciado acepta cualquiera cuando hay
+           empates. Además, el enunciado garantiza que siempre existe al menos un camino,
+           así que la salida siempre se alcanza.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer N
+para i de 1 a N:
+    leer T_i
+    repetir T_i veces:
+        leer v
+        agregar v a adyacencia[i]
+leer inicio, salida          # ultima linea de ENTRADA.TXT
+
+# --- BFS desde el inicio ---
+para todo nodo: visitado[nodo] = falso ;  padre[nodo] = 0
+cola = cola vacia
+visitado[inicio] = verdadero
+encolar inicio
+mientras la cola no este vacia:
+    u = desencolar
+    si u == salida: salir del ciclo          # (optimizacion opcional)
+    para cada v en adyacencia[u]:
+        si no visitado[v]:
+            visitado[v] = verdadero
+            padre[v] = u
+            encolar v
+
+# --- reconstruir el camino salida -> inicio y voltearlo ---
+camino = lista vacia
+nodo = salida
+mientras nodo != 0:                # 0 = centinela (padre del inicio)
+    agregar nodo a camino
+    nodo = padre[nodo]
+invertir camino
+
+escribir en SALIDA.TXT los elementos de camino separados por un espacio</pre>
+        </div>
+
+        <p>El centinela \(\text{padre}[\text{inicio}] = 0\) hace que la reconstrucción se
+           detenga sola en el inicio, y cubre gratis el caso inicio = salida (el camino
+           queda con un solo cuarto).</p>
+
+        <p><strong>Complejidad:</strong> \(O(N + M)\) en tiempo y memoria, donde
+           \(M = \sum_i T_i \le 10\,000\) es el número total de referencias de túnel. Con
+           \(N \le 100\) es prácticamente instantáneo.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
+

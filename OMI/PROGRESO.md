@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **158 / 190**
+Total de problemas: **190** · Completados: **162 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -78,14 +78,14 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 3 | Día 2 | Abriendo La Puerta | `2002/03 Abriendo La Puerta/index.html` |
 | [ ] | 4 | Día 2 | El tesoro | `2002/04 El tesoro/index.html` |
 
-## 8ª OMI · 2003 — 0 / 4
+## 8ª OMI · 2003 — 4 / 4
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Cuadrados | `2003/01 Cuadrados/index.html` |
-| [ ] | 2 | Día 1 | La línea mas larga | `2003/02 La línea mas larga/index.html` |
-| [ ] | 3 | Día 2 | La mina de Acosta | `2003/03 La mina de Acosta/index.html` |
-| [ ] | 4 | Día 2 | Imagen | `2003/04 Imagen/index.html` |
+| [x] | 1 | Día 1 | Cuadrados | `2003/01 Cuadrados/index.html` |
+| [x] | 2 | Día 1 | La línea mas larga | `2003/02 La línea mas larga/index.html` |
+| [x] | 3 | Día 2 | La mina de Acosta | `2003/03 La mina de Acosta/index.html` |
+| [x] | 4 | Día 2 | Imagen | `2003/04 Imagen/index.html` |
 
 ## 9ª OMI · 2004 — 6 / 6
 
