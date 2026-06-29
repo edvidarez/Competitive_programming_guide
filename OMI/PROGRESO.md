@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **152 / 190**
+Total de problemas: **190** · Completados: **158 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -87,16 +87,16 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 3 | Día 2 | La mina de Acosta | `2003/03 La mina de Acosta/index.html` |
 | [ ] | 4 | Día 2 | Imagen | `2003/04 Imagen/index.html` |
 
-## 9ª OMI · 2004 — 0 / 6
+## 9ª OMI · 2004 — 6 / 6
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Karel | Amontonar Zumbadores | `2004/01 Amontonar Zumbadores/index.html` |
-| [ ] | 2 | Karel | La Marcha | `2004/02 La Marcha/index.html` |
-| [ ] | 3 | Karel | El estadio de fútbol | `2004/03 El estadio de fútbol/index.html` |
-| [ ] | 4 | Lenguaje | Ordenando dígitos | `2004/04 Ordenando dígitos/index.html` |
-| [ ] | 5 | Lenguaje | Mensajes Secretos | `2004/05 Mensajes Secretos/index.html` |
-| [ ] | 6 | Lenguaje | Gato Ruso | `2004/06 Gato Ruso/index.html` |
+| [x] | 1 | Karel | Amontonar Zumbadores | `2004/01 Amontonar Zumbadores/index.html` |
+| [x] | 2 | Karel | La Marcha | `2004/02 La Marcha/index.html` |
+| [x] | 3 | Karel | El estadio de fútbol | `2004/03 El estadio de fútbol/index.html` |
+| [x] | 4 | Lenguaje | Ordenando dígitos | `2004/04 Ordenando dígitos/index.html` |
+| [x] | 5 | Lenguaje | Mensajes Secretos | `2004/05 Mensajes Secretos/index.html` |
+| [x] | 6 | Lenguaje | Gato Ruso | `2004/06 Gato Ruso/index.html` |
 
 ## 10ª OMI · 2005 — 6 / 6
 

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2004 &middot; Problema 01 — Amontonar Zumbadores</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socraticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matematicas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">9&ordf; OMI &middot; 2004 &middot; Karel</div>
+    <h1>Problema <span class="num">01</span> &mdash; Amontonar Zumbadores</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       &middot; Practica en l&iacute;nea: <a class="pdf" href="https://omegaup.com/arena/problem/amontonar_beepers/">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>Descripci&oacute;n</h2>
+    <p>Por su naturaleza, Karel es un robot muy ordenado y le gusta tener todos
+       sus <em>beepers</em> (zumbadores) acomodados en montones.</p>
+    <p>Tras un fin de semana de juegos, Karel tiene su cuarto lleno de beepers
+       regados en columnas, por lo que ahora, de cada columna, deber&aacute;
+       juntarlos y hacer un mont&oacute;n con ellos en la base de la misma.</p>
+
+    <h2>El problema</h2>
+    <p>Tu tarea consiste en escribir un programa que ayude a Karel a amontonar los
+       beepers de cada columna en un mont&oacute;n en la base de la misma.</p>
+
+    <figure>
+      <img alt="Mundo de entrada: cuadricula con columnas de beepers de alturas 5, 2, 4, 2 y 3 (un beeper por casilla), apiladas desde la base. Karel esta en la casilla (1,1) mirando al norte."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Entrada de ejemplo. Cada casilla verde tiene <strong>un</strong>
+         beeper; las columnas (de izquierda a derecha) miden \(5,\ 2,\ 4,\ 2,\ 3\)
+         beepers de alto y arrancan en la fila 1. Karel est&aacute; en \((1,1)\)
+         mirando al norte (flecha azul). La sexta columna est&aacute; vac&iacute;a:
+         marca el final del cuarto.</figcaption>
+    </figure>
+
+    <figure>
+      <img alt="Mundo de salida: en la fila 1 cada casilla base tiene un monton con 5, 2, 4, 2 y 3 beepers respectivamente; las casillas superiores quedan vacias."
+           src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCABvANQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD0Ciik1q51Cy1u2t21Kedb2VhJbvbLHbxQ7XZfLk25aXKICvmMSC7bFXGwA5D4pf8AJONW/wC2P/o5K5/Qf+Re0z/r0i/9AFdB8Uv+Scat/wBsf/RyV6f4E/5J54a/7BVr/wCiloA0NC/5F7TP+vSL/wBAFGu/8i9qf/XpL/6Aa0KKAPAK0NC/5GHTP+vuL/0MV7fRQAVx/wAR/wDkXrf/AK+1/wDQHrsKKAPAK7D4cf8AIw3H/Xo3/oaV6fRQAV5h8R/+Rht/+vRf/Q3r0+igDwCvT/hx/wAi9cf9fbf+gJXYUUAFeIa7/wAjDqf/AF9y/wDoZr2+igDwCvb9C/5F7TP+vSL/ANAFaFFAGfrv/Ivan/16S/8AoBrxCvf6KAPENC/5GHTP+vuL/wBDFe30UUAcf8R/+Ret/wDr7X/0B68wr3+igDwCivf6KAOAou7W1ubsXLXuozLFK09tazshigkYEMytjzD8ryAKzFQGwAAF2lFAHH/FL/knGrf9sf8A0cldn4L8X6FbeBfD1vNfbZYtMtkdfJc4IiUEcLXGfFL/AJJxq3/bH/0clc/oP/IvaZ/16Rf+gCgD6LgnjubeK4hbdFKgdGxjIIyDzRPPHbW8txM22KJC7tjOABkniqehf8i9pn/XpF/6AKNd/wCRe1P/AK9Jf/QDQBn/APCbeHf+gh/5Bk/+JqSDxfoVzcRW8N9ullcIi+S4yScAcrXjlaGhf8jDpn/X3F/6GKAPb6p6lqllpFutxfTeVEzhA20tzgnHAPoauVx/xH/5F63/AOvtf/QHoA0P+E28O/8AQQ/8gyf/ABNXNN8RaVq9w1vY3Xmyqhcr5bLxkDPIHqK8UrsPhx/yMNx/16N/6GlAHp9ZepeItK0i4W3vrrypWQOF8tm4yRngH0NaleYfEf8A5GG3/wCvRf8A0N6AOv8A+E28O/8AQQ/8gyf/ABNamm6pZavbtcWM3mxK5QttK84BxyB6ivDK9P8Ahx/yL1x/19t/6AlAHYVhz+L9CtriW3mvtssTlHXyXOCDgjha3K8Q13/kYdT/AOvuX/0M0Aen/wDCbeHf+gh/5Bk/+JrcgnjubeK4hbdFKgdGxjIIyDzXgle36F/yL2mf9ekX/oAoAuTzx21vLcTNtiiQu7YzgAZJ4rD/AOE28O/9BD/yDJ/8TWhrv/Ivan/16S/+gGvEKAPY4PF+hXNxFbw326WVwiL5LjJJwBytbleIaF/yMOmf9fcX/oYr2+gCnqWqWWkW63F9N5UTOEDbS3OCccA+hrL/AOE28O/9BD/yDJ/8TWf8R/8AkXrf/r7X/wBAevMKAPX/APhNvDv/AEEP/IMn/wATRXkFFAHoFWZbC6gjMkkW1B1O4H+tVqivdLsbrV21DSrZIja3Dm+1EcvdsQyG33n5nRGYE5O1DEiKCVIjAOU+KX/JONW/7Y/+jkqPw14Q1258K6RcQ2O6KWyhdG85BkFAQeWqT4pf8k41b/tj/wCjkr0/wJ/yTzw1/wBgq1/9FLQBqaTBJbaNY28y7ZYreNHXOcEKARxRq0Elzo19bwrullt5ERc4ySpAHNXKKAPIP+EJ8Rf9A/8A8jR//FVc0nwhrttrNjcTWO2KK4jd285DgBgSeGr1OigArm/Gul3ur6NDb2MPmyrcK5XcF42sM8keorpKKAPIP+EJ8Rf9A/8A8jR//FV0fgrw7qukazNcX1r5UTW7IG8xW53KccE+hrvKKACuD8a+HdV1fWYbixtfNiW3VC3mKvO5jjkj1Fd5RQB5B/whPiL/AKB//kaP/wCKru/BWl3ukaNNb30PlStcM4XcG42qM8E+hrpKKACvLNW8Ia7c6zfXENjuiluJHRvOQZBYkHlq9TooA8g/4QnxF/0D/wDyNH/8VXqekwSW2jWNvMu2WK3jR1znBCgEcVcooAp6tBJc6NfW8K7pZbeREXOMkqQBzXln/CE+Iv8AoH/+Ro//AIqvX6KAPPPD/gS9juIL6+l+yy29wriDaH3hSDncG4zyPwo8Q/GDQPD/AIrh0V1e4jVil9dRHK2rdhgDLkH7wH3fc5UXviHP4yk00ab4Q0x3luFPnX4uIozEvTagZgdx/vY4HTk5X5ZvbOfTr+4sbqPy7m2laGVMg7XUkEZHB5B6V9VkGSUManUryT7RT19X28l9+m+FWq46I+vPEmmDxL4fT7FcI44uYWjwyzfIdoBzjB3DnpXn/wDwhPiL/oH/APkaP/4qoPhHF450OC0t7vSXufDV6qzQyfaYt1sHG4OoL52nOSuM85AzkN7NXhZhg1hK7pRmpLo00/vts+6NYS5lc8g/4QnxF/0D/wDyNH/8VRXr9FcRRwFRNYaV9se9j0PSor53ZzdxWirNub7x39cnJye+TUtFAHH/ABS/5Jxq3/bH/wBHJWx4T+If2Lwbodp/Ze/yNPt4932jG7bGozjb7Vj/ABS/5Jxq3/bH/wBHJXP6D/yL2mf9ekX/AKAKAPoewuvtunW13s2efEsm3Odu4A4z+NF/dfYtOubvZv8AIiaTbnG7aCcZ/Cq+hf8AIvaZ/wBekX/oAo13/kXtT/69Jf8A0A0Ach/ws3/qEf8Akz/9hU9h8Q/tuo21p/Zezz5Vj3faM7dxAzjb715xWhoX/Iw6Z/19xf8AoYoA9vrH8R67/wAI/p0d39m+0b5RHt37MZBOc4PpWxXH/Ef/AJF63/6+1/8AQHoAof8ACzf+oR/5M/8A2Fa/hzxh/wAJBqMlp9h+z7IjJu87fnBAxjaPWvKK7D4cf8jDcf8AXo3/AKGlAHp9cv4j8Yf8I/qMdp9h+0b4hJu87ZjJIxjafSuorzD4j/8AIw2//Xov/ob0AaH/AAs3/qEf+TP/ANhXT+HNd/4SDTpLv7N9n2SmPbv35wAc5wPWvGK9P+HH/IvXH/X23/oCUAdhXD3/AMQ/sWo3Np/Ze/yJWj3faMbtpIzjb7V3FeIa7/yMOp/9fcv/AKGaAOw/4Wb/ANQj/wAmf/sK7ewuvtunW13s2efEsm3Odu4A4z+NeEV7foX/ACL2mf8AXpF/6AKALF/dfYtOubvZv8iJpNucbtoJxn8K4j/hZv8A1CP/ACZ/+wrr9d/5F7U/+vSX/wBANeIUAez+HNd/4SDTpLv7N9n2SmPbv35wAc5wPWvlHxp/yPfiH/sJ3P8A6NavV9C/5GHTP+vuL/0MV7fXs5Nm39mzlPk5uZW3t+jM6lPnRzfhm6+xfDPR7vZv8jR4ZNucbtsIOM/hWJ/ws3/qEf8Akz/9hV/4j/8AIvW//X2v/oD15hXlVZ+0nKfd3LSsrHoH/Czf+oR/5M//AGFFef0VmM9Ap6y6ZcT39tZapBd3Nhs+0xxfN5RZmUKxBIDZRsr1GOQMimVau4Jl8S61cNE4hfTbFEkKnazLNclgD0JAZcjtuHrQBwvxS/5Jxq3/AGx/9HJWx4T+Hn23wbod3/amzz9Pt5Nv2fO3dGpxnd71j/FL/knGrf8AbH/0clen+BP+SeeGv+wVa/8AopaAJb/VbHwd4dtZNRmxbwLHbmX5VGQuATuIAzj170zTdZ03xp4fvW0u6V4H32rSKVfaxQf3SR0YcZrF+K0Mc3hCMS3TWqJewSGdU3FNjbs8ggDjqeB1PANN+Fd0914ev/8ASftcEd+yQXXy/vl8qMk5UBThiy5AH3cdQa4lXm8U6XS3+Xl+p5yxFR410fs2/wAvL9fkRf8ACsv+ov8A+S3/ANnU9h8PPsWo213/AGpv8iVZNv2fG7aQcZ3e1dxRXaeic/4g8ZaR4YljTVJTCHUFXZkVTnPGWYc/KafrWlL4q0S1RLg2yMyXCs0e44KngjI/vetcL8UtTtNO8QWIkltYbua1KwzXLBVRd53kkkZH3flByxx0ALL6D4VhgtvCGiwWsnm28dhAkUm4NuURqAcjg5HcVwYevUnXqQlstjzMLiatTE1Kc/hW2n9f16HLf8Ky/wCov/5Lf/Z1r+HPB/8Awj+oyXf277RviMe3ydmMkHOdx9K6iiu89M59vGGmpq6aa6zrPJcfZkyFAZ8np82T0J6dAar+I/B//CQajHd/bvs+yIR7fJ35wSc53D1rzDUhcn4z6XPLYzNFFrPk28itHtwyyGQ/eDZzt4I4EWQctivd64cFWqVU3Np+nz/r1PNy7EVayk6jT9PV6f11ucB/wrL/AKi//kt/9nXRaLpS+FdEuke4Nyis9wzLHtOAo4Ayf7vrW7VLWP8AkCX/AP17Sf8AoJrrqScYOS6I7q0nGnKS6JmZoXjLSPEV/cWWnyl57ZSZl3IdnOMHDEg59fQ1j3/w8+26jc3f9qbPPlaTb9nzt3EnGd3vXL/C2903VPFTXFnc2oSDTpIra2hkXcIi8WWZR90fKgC4GB15O1fYK58DVnVoqVTc5curVK1BTq/FqcB/wrL/AKi//kt/9nXTXmo2nhPw/bNeuzQW8awtIoA+6n3jk4Awp71s1yPxGkt4vDcUt2F8lLqNmLLuCkAkMfQA4Oe2M8YzV4upKlRlOG6Lx1adHDzqQ3Rp2Gq2PjHw7dSadNm3nWS3EvysMlcEjaSDjPr2rm/+FZf9Rf8A8lv/ALOj4TP52hatP5sc/m6kW+0QjEU2IIRlBk4AxtPzHlW5HQd/VYecp0oylu0XhZyqUIznu1/X9fgjh7D4efYtRtrv+1N/kSrJt+z43bSDjO72ruKKK2Ogx/Eehf8ACQadHafafs+yUSbtm/OARjGR61zH/Csv+ov/AOS3/wBnXf0UAcB/wrL/AKi//kt/9nRXf0UAcBUr3E8ilXmkZT1BYkVFRQBx/wAUv+Scat/2x/8ARyVH4a8X67beFdIt4b7bFFZQoi+ShwAgAHK1p+OdHu9e8GajptiEa5lVDGrttDFXVsZ9TtwM8Z6kda86tNL+JFnZQWsfh+zKQxrGpadMkAYGf3vtQB9HwWsOueH9POop55eGOZuSuXKcn5cepontYdD8P6gdOTyCkMky8lsOE4PzZ9BXk+m+J/jPHp8MFt4S0R4oEWJWaVc/KAOf9IFQ33jH4w3Ntc2U3hXRFWRGifa4yMgg4/f1n7KHP7TlXN36/eZ+xp+09ryrm721+81f+E28Rf8AQQ/8gx//ABNXNJ8X67c6zY2819uiluI0dfJQZBYAjha8z+yfEv8A6F2x/wC/yf8Ax2prRfidZ3kF1H4c08vDIsihpkwSDkZ/e+1aGh9E3+h6dqc6zXlv5kirsB3sOMk9j7msjxff3Og+H7U6ZJ5BWZIR8ob5NjcfNn0FcB/wlvxs8nzv+EQ0Py9u7PmjpjP/AD8Via34i+LOvWaWt14Y0hESQSAxSAHIBHec+tZxpQjJzjFJvdmcaNOE3OMUm93bV+p0X/CbeIv+gh/5Bj/+Jro/BXiLVdX1ma3vrrzYlt2cL5arzuUZ4A9TXjn2T4l/9C7Y/wDf5P8A47WnoV78VdF1Az2fhnS5JZE8rbLKpHJB7TD0FaGh7x/wjulfbvtv2X/SPM83f5jfeznOM461y/jXxFqukazDb2N15UTW6uV8tW53MM8g+grk5/GHxqtkDy+EdDVScZ8wHn/wIrmtb1D4p69eJdXXhrS0dIxGBFKoGASe8x9azhShTvyRSv2M6dGnSv7OKV97Kx13/CbeIv8AoIf+QY//AImu48IX9zr3h+6OpyeeWmeE/KF+TYvHy49TXg/2T4l/9C7Y/wDf5P8A47XReHta+L2lW0llYeFtIlVnMp82Vc9AP+e49BVtJqzLaTVme22Gh6dpk7TWdv5cjLsJ3seMg9z7CvPNW8X67bazfW8N9tiiuJERfJQ4AYgDlax5/GvxntnCS+EtDViM48wHj/wIrkbtfideXk91J4c08PNI0jBZkwCTk4/e+9TCnCmuWCSXkRTpU6UeWnFJeSsd1/wm3iL/AKCH/kGP/wCJr0mC1h1zw/p51FPPLwxzNyVy5Tk/Lj1NfO32T4l/9C7Y/wDf5P8A47XY6b4n+M8enwwW3hLRHigRYlZpVz8oA5/0gU5RjNcsldFThGcXGaun3PWJ7WHQ/D+oHTk8gpDJMvJbDhOD82fQV5t/wm3iL/oIf+QY/wD4msq+8Y/GG5trmym8K6IqyI0T7XGRkEHH7+uU+yfEv/oXbH/v8n/x2iMYwXLFWQQhGEVGCsl2PTNJ8X67c6zY2819uiluI0dfJQZBYAjha9Tr5mtF+J1neQXUfhzTy8MiyKGmTBIORn977V2f/CW/GzyfO/4RDQ/L27s+aOmM/wDPxVFHoXjXVL3SNGhuLGbypWuFQttDcbWOOQfQVwn/AAm3iL/oIf8AkGP/AOJrndb8RfFnXrNLW68MaQiJIJAYpADkAjvOfWsH7J8S/wDoXbH/AL/J/wDHaAPQP+E28Rf9BD/yDH/8TRXn/wBk+Jf/AELtj/3+T/47RQB7BRRRQAUUUUAQa1ZxTaJZXLNOJLfWLHYEndUO66gB3ICFf23A46jBq7d/8fs//XRv506O62W/kPBBNH5iygSpuwykFT9QVBB7EA1DI5lleRsZZixx70ANooooAi1LS7HU7pDY2yf2nbiGW51M/M9qihW8hGPIMijBjUgBZGdvvgSS1FNYaVcXQu59D0qW9AXF29orTAqAFbeecjAwe2BUtABU1p/x+wf9dF/nUNOjcxSpIuMqwYZ9qAMqW0sbHxNZnTYLWCzvLGWaKa0k8w6gAYf3s7YBZ1LnaxMhYSOSynhtOgR2kb3Eltp1lay3Mnm3EtvAEaZueXI+8fmY5PqaKACkm1C50vTr67s7d7i6SDbCiQvL87MqqzInzFASGbaCdoOATxS1Pa3T2kpkjCkldvzUAc74SaIeHUgilvZlt7u8i82+jdZZP9KlIZt6gsxBGTj724HBBA26fI6ucpDFCMsxWJdoLMxZjj1LMST3JJplABVC/wDDn9v6nprbtEfyIboeRqln9q3bmt/mSPcvTbgtnjcBj5uL9E8dpeWQs7/TrK+txJ5oju4BKobGMgHjOCefc0AUtHu4dQ0Swvbe0S0huLaOWO2jxthVlBCDAAwAcdB06Vdp0jmWV5GxlmLHHvTaACsOQqmr6tqN9pVrcw21/a2kN/8AaGW7tjJBbBUjGz/V+ZLlh5gBDyZVskNuU6QWst1FdyabYveww+TFdtADMiYIwH6gfM3T1PrQA2iiigAooooA/9k=">
+      <figcaption>Salida de ejemplo. Todos los beepers de cada columna quedaron
+         amontonados en su casilla base: \(5,\ 2,\ 4,\ 2,\ 3\). El resto de las
+         casillas qued&oacute; vac&iacute;o. No importa d&oacute;nde termine Karel.</figcaption>
+    </figure>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p><strong>El mundo.</strong> Una cuadr&iacute;cula rectangular rodeada de
+         paredes. Karel inicia en la casilla \((1,1)\) (esquina inferior izquierda)
+         <strong>orientado hacia el norte</strong> y con la <strong>mochila
+         vac&iacute;a</strong>.</p>
+      <p><strong>Las columnas.</strong> A partir de la columna 1 hay columnas de
+         beepers, una pegada a la otra <em>sin dejar espacios</em>. Cada columna es
+         una pila de beepers que arranca en la fila 1 (la base) y sube de forma
+         contigua; su <em>altura</em> (cantidad de beepers) va de \(1\) a \(100\).
+         La <strong>primera columna vac&iacute;a</strong> (una casilla base sin
+         beepers) le avisa a Karel que lleg&oacute; al final del cuarto.</p>
+      <p><strong>El objetivo.</strong> Para cada columna, juntar todos sus beepers
+         en un solo mont&oacute;n sobre su casilla base (fila 1). Al terminar, cada
+         base debe contener tantos beepers como med&iacute;a la columna y las
+         casillas de arriba deben quedar vac&iacute;as.</p>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por teclado: toda la informaci&oacute;n est&aacute; en el
+       <strong>mundo</strong> de Karel (la posici&oacute;n de los beepers y el
+       lugar inicial del robot), tal como se ve en la figura de entrada. La
+       cantidad de beepers de cada casilla y la altura de cada columna son
+       <strong>desconocidas</strong> de antemano: el programa debe funcionar para
+       cualquier configuraci&oacute;n.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por pantalla: lo que se eval&uacute;a es el <strong>estado
+       final del mundo</strong>. Cada columna debe quedar amontonada en su casilla
+       base (fila 1), con el resto de sus casillas vac&iacute;as. La posici&oacute;n
+       y la orientaci&oacute;n final de Karel no importan.</p>
+
+    <h2>Condiciones</h2>
+    <div class="limits">
+      <table>
+        <tr><td>L&iacute;mite de tiempo</td><td>No especificado (tarea de Karel)</td></tr>
+        <tr><td>L&iacute;mite de memoria</td><td>No especificado (tarea de Karel)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Posici&oacute;n inicial de Karel</td><td><span class="badge">\((1,1)\), orientado al norte</span></td></tr>
+        <tr><td>Mochila inicial</td><td><span class="badge">vac&iacute;a</span></td></tr>
+        <tr><td>Altura de cada columna</td><td><span class="badge">\(1 \le h \le 100\) beepers</span></td></tr>
+        <tr><td>Columnas</td><td><span class="badge">contiguas; la primera vac&iacute;a marca el fin</span></td></tr>
+      </table>
+    </div>
+    <ul>
+      <li>Inicialmente, Karel se encuentra en la posici&oacute;n \((1,1)\)
+          orientado hacia el norte.</li>
+      <li>El cuarto de Karel se encuentra lleno de columnas de beepers como se
+          muestra en el ejemplo.</li>
+      <li>Las columnas de beepers pueden tener cualquier altura desde \(1\) hasta
+          \(100\) beepers, y se suceden una a la otra sin dejar espacios.</li>
+      <li>Al encontrar la primera columna vac&iacute;a, Karel sabr&aacute; que ha
+          llegado al final del cuarto.</li>
+      <li>Karel no tiene beepers en la mochila.</li>
+      <li>La cantidad de beepers en cada casilla es desconocida.</li>
+      <li>No importa la posici&oacute;n ni la orientaci&oacute;n final de Karel.</li>
+    </ul>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: en esta edici&oacute;n el puntaje es por casos de
+       prueba (todo o nada). La soluci&oacute;n debe ser general y funcionar para
+       cualquier mundo v&aacute;lido.</p>
+
+    <h2>Ejemplo</h2>
+    <p>El ejemplo es <strong>gr&aacute;fico</strong> (no hay entrada/salida de
+       texto). Las dos figuras de arriba muestran el mundo <em>antes</em> y
+       <em>despu&eacute;s</em>: las columnas de alturas \(5,2,4,2,3\) quedan
+       convertidas en montones de \(5,2,4,2,3\) beepers sobre la fila 1.</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulaci&oacute;n</span>
+      <span class="ptag">Ciclos anidados</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Karel recorre columnas contiguas de beepers (una pila por columna que sube
+       desde la fila 1). Para cada columna debe <strong>bajar todos sus beepers a
+       la casilla base</strong>, formando un mont&oacute;n. Se detiene al llegar a
+       la primera columna vac&iacute;a. No conoce de antemano ni el ancho del
+       cuarto ni la altura de las columnas, as&iacute; que todo se resuelve con
+       ciclos (<code>mientras</code>) y condiciones, no con n&uacute;meros fijos.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los l&iacute;mites</td>
+            <td>Las alturas (hasta \(100\)) y el ancho son <em>desconocidos</em>:
+                hay que usar <code>mientras junto-a-zumbador</code> para descubrir
+                el alto de cada columna y el fin del cuarto, nunca <code>repite k
+                veces</code> con un \(k\) fijo. Como una casilla podr&iacute;a
+                tener m&aacute;s de un beeper, conviene vaciarla por completo antes
+                de subir.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 &mdash; &iquest;C&oacute;mo modelarlo?</summary>
+      <div class="body">
+        <p class="q">&iquest;Ya pensaste que el problema se descompone en dos bucles
+           anidados: uno que avanza de columna en columna (de oeste a este) y, dentro,
+           otro que trabaja la columna actual (de sur a norte)?</p>
+        <p>El robot no necesita saber cu&aacute;ntas columnas hay ni qu&eacute; tan
+           altas son: puede <em>preguntarle al mundo</em>. &iquest;Qu&eacute; sensor
+           de Karel te dice si la casilla donde est&aacute; parado tiene al menos un
+           beeper?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 &mdash; &iquest;Cu&aacute;ndo parar?</summary>
+      <div class="body">
+        <p class="q">&iquest;C&oacute;mo sabe Karel que ya termin&oacute; con el
+           cuarto? La pista est&aacute; en el enunciado: &laquo;la primera columna
+           vac&iacute;a&raquo;.</p>
+        <p>Si Karel se para siempre en la <strong>base</strong> de la columna que va
+           a procesar, entonces <code>junto-a-zumbador</code> sobre esa base es justo
+           la pregunta &laquo;&iquest;hay columna aqu&iacute;?&raquo;. &iquest;Ves
+           c&oacute;mo eso te da el bucle exterior <code>mientras
+           junto-a-zumbador</code>? Ojo: despu&eacute;s de amontonar, la base
+           <em>queda con beepers</em>, as&iacute; que debes moverte a la siguiente
+           columna <strong>antes</strong> de volver a preguntar.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 &mdash; Una sola columna</summary>
+      <div class="body">
+        <p class="q">Olvida el cuarto: &iquest;c&oacute;mo amontonas <em>una</em>
+           columna en su base? Una idea limpia es <strong>subir recogiendo todo</strong>
+           y luego <strong>bajar y soltar todo</strong>.</p>
+        <p>Sube mientras la casilla actual tenga beepers, vaci&aacute;ndola por
+           completo antes de dar un paso al norte; cuando pises una casilla sin
+           beepers ya pasaste el tope. Entonces das media vuelta, bajas hasta topar
+           con la pared sur (la fila 1) y sueltas <code>mientras
+           algun-zumbador-en-la-mochila</code>. &iquest;Por qu&eacute; funciona aunque
+           no sepas la altura?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 &mdash; Cuidado con el techo y con las vueltas</summary>
+      <div class="body">
+        <p class="q">&iquest;Qu&eacute; pasa si una columna llega justo hasta la
+           pared norte del cuarto? Si haces <code>avanza</code> sin revisar,
+           &iexcl;Karel se estrella!</p>
+        <p>Protege cada avance con <code>si frente-libre</code>. Y como Karel
+           s&oacute;lo tiene <code>gira-izquierda</code>, define t&uacute; mismo
+           <code>gira-derecha</code> (tres giros a la izquierda) y
+           <code>da-media-vuelta</code> (dos giros) para no perderte con las
+           orientaciones.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final &mdash; Soluci&oacute;n completa (100 puntos)</summary>
+      <div class="body">
+        <p><strong>Idea.</strong> Dos bucles anidados con <code>mientras</code>:</p>
+        <ol>
+          <li><strong>Bucle exterior (las columnas).</strong> Karel siempre se para
+             en la base de la columna a procesar. Mientras esa base tenga beepers
+             (<code>junto-a-zumbador</code>): amontona esa columna y luego
+             p&aacute;sate una casilla a la derecha, a la base de la siguiente. Al
+             toparte con una base vac&iacute;a (la primera columna vac&iacute;a),
+             el bucle termina &mdash; ese es el fin del cuarto.</li>
+          <li><strong>Trabajo de una columna.</strong>
+             <em>(a) Sube recogiendo:</em> mientras la casilla actual tenga beepers,
+             vac&iacute;ala por completo (<code>coge-zumbador</code> en bucle) y, si
+             <code>frente-libre</code>, avanza al norte. Al terminar, Karel carga en
+             la mochila <em>todos</em> los beepers de la columna y est&aacute; en el
+             tope (o una casilla arriba). <em>(b) Regresa a la base:</em> da media
+             vuelta y baja <code>mientras frente-libre</code>, hasta topar con la
+             pared sur (fila 1). <em>(c) Suelta el mont&oacute;n:</em> <code>mientras
+             algun-zumbador-en-la-mochila: deja-zumbador</code>. La base queda con
+             todos los beepers y la mochila vac&iacute;a, lista para la siguiente
+             columna.</li>
+        </ol>
+        <p><strong>Por qu&eacute; es correcto.</strong> La mochila arranca
+           vac&iacute;a y se vac&iacute;a por completo al final de cada columna, as&iacute;
+           que cada mont&oacute;n recibe exactamente los beepers de su propia columna.
+           Vaciar cada casilla antes de subir cubre el caso de varios beepers por
+           casilla (&laquo;la cantidad en cada casilla es desconocida&raquo;).
+           Proteger el avance con <code>si frente-libre</code> evita estrellarse si
+           la columna llega al techo: si no puedes avanzar, la casilla actual ya
+           qued&oacute; vac&iacute;a y el bucle de subida termina solo. Bajar
+           <code>mientras frente-libre</code> garantiza llegar a la fila 1 sin
+           importar la altura. El bucle exterior se detiene en la primera base sin
+           beepers, exactamente como pide el enunciado.</p>
+
+        <div class="pseudo">
+          <span class="tag">Primitivas de Karel</span>
+<pre>define gira-derecha como:
+    gira-izquierda
+    gira-izquierda
+    gira-izquierda
+
+define da-media-vuelta como:
+    gira-izquierda
+    gira-izquierda
+
+# Karel mira al NORTE, parado en la base de la columna
+define recoge-la-columna como:
+    mientras junto-a-zumbador:           # esta casilla tiene beepers
+        mientras junto-a-zumbador:       # vaciala por completo
+            coge-zumbador
+        si frente-libre:
+            avanza                       # sube a la casilla de arriba
+    # ahora la mochila trae TODOS los beepers de la columna
+
+# Karel mira al NORTE, en el tope (o una casilla arriba)
+define regresa-a-la-base como:
+    da-media-vuelta                      # ahora mira al SUR
+    mientras frente-libre:
+        avanza                           # baja hasta topar con la pared sur
+
+# Karel en la base, mira al SUR
+define amontona-aqui como:
+    mientras algun-zumbador-en-la-mochila:
+        deja-zumbador                    # deja todo el monton en la base
+
+# Karel en la base, mira al SUR
+define pasa-a-la-siguiente-columna como:
+    gira-izquierda                       # del SUR pasa a mirar al ESTE
+    avanza                               # una casilla a la derecha
+    gira-izquierda                       # del ESTE pasa a mirar al NORTE
+
+inicia-programa
+    # Karel arranca en (1,1) mirando al norte, mochila vacia
+    mientras junto-a-zumbador:           # hay columna en esta base?
+        recoge-la-columna
+        regresa-a-la-base
+        amontona-aqui
+        pasa-a-la-siguiente-columna
+    # al llegar a la primera base vacia, se acaba el cuarto
+termina-programa</pre>
+        </div>
+
+        <p><strong>Complejidad.</strong> Cada beeper se toma una vez y se suelta una
+           vez, y Karel sube y baja cada columna una sola vez. El total de pasos es
+           proporcional a la suma de las alturas, es decir
+           \(O(\text{columnas} \times \text{altura})\) o, equivalentemente,
+           \(O(\text{total de beepers})\) en cuanto a recogidas/sueltas. La
+           &laquo;memoria&raquo; es constante: s&oacute;lo la mochila de Karel.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

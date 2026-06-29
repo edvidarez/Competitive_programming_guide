@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 2004 · Problema 02 — La Marcha</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"\1F4A1";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"\1F513"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">9ª OMI · 2004 · Karel</div>
+    <h1>Problema <span class="num">02</span> — La Marcha</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.md">statement.md</a>
+       · Practica en línea: <a class="pdf" href="https://omegaup.com/arena/problem/marcha#problems">omegaUp</a></p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Harto de la inseguridad, Karel, como muchos otros ciudadanos, marchó del Ángel
+       de Reforma al Zócalo de la Ciudad de México el domingo 27 de junio. Al final de
+       la marcha, impresionado por la cantidad de gente, Karel se dio a la tarea de
+       obtener el número total de participantes en la marcha.</p>
+    <p>Tu tarea consiste en escribir un programa que le permita a Karel conocer la
+       cantidad total de <strong>mujeres</strong> y <strong>hombres</strong> que
+       asistieron a la marcha.</p>
+
+    <!-- ===== BLOQUE KAREL ===== -->
+    <div class="karel">
+      <span class="tag">Tarea de Karel</span>
+      <p>El mundo describe a la marcha como un <strong>rectángulo de zumbadores</strong>
+         (beepers) con su esquina inferior izquierda en la posición \((1,2)\). El
+         rectángulo puede tener un ancho máximo de \(90\) columnas y una altura máxima
+         de \(90\) filas.</p>
+      <ul>
+        <li>Cada casilla del rectángulo tiene <strong>1 o 2 zumbadores</strong>:
+            <strong>1 zumbador</strong> representa a una mujer y
+            <strong>2 zumbadores</strong> representan a un hombre.</li>
+        <li>Al inicio del programa Karel está en la posición \((1,1)\) orientado hacia
+            el <strong>norte</strong>.</li>
+        <li>Inicialmente Karel <strong>no</strong> tiene zumbadores en la mochila.</li>
+        <li>Karel deberá dejar en la posición \((1,1)\) una cantidad de zumbadores
+            igual al <strong>número de mujeres</strong>, y en la posición \((2,1)\) una
+            cantidad de zumbadores igual al <strong>número de hombres</strong> que
+            asistieron a la marcha.</li>
+        <li>No importa la posición ni la orientación con la que termine Karel.</li>
+        <li>No importa si Karel levanta o no a los participantes de la marcha (puede
+            dejar zumbadores sueltos en el rectángulo).</li>
+      </ul>
+    </div>
+
+    <h2>Entrada</h2>
+    <p>No hay entrada por la consola. Toda la información viene en el
+       <strong>mundo de Karel</strong>: el rectángulo de zumbadores que parte de la
+       casilla \((1,2)\), con 1 o 2 zumbadores en cada casilla, y Karel colocado en
+       \((1,1)\) mirando al norte con la mochila vacía.</p>
+
+    <h2>Salida</h2>
+    <p>No hay salida por la consola. El resultado es el <strong>estado final del
+       mundo</strong>: en la casilla \((1,1)\) debe quedar un número de zumbadores
+       igual al número de mujeres, y en la casilla \((2,1)\) un número de zumbadores
+       igual al número de hombres.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado en el enunciado</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Ancho del rectángulo</td><td><span class="badge">hasta \(90\) columnas</span></td></tr>
+        <tr><td>Altura del rectángulo</td><td><span class="badge">hasta \(90\) filas</span></td></tr>
+        <tr><td>Zumbadores por casilla</td><td><span class="badge">\(1\) (mujer) o \(2\) (hombre)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada).</p>
+
+    <h2>Ejemplo</h2>
+    <p>El mundo de entrada muestra una marcha de \(3\) columnas por \(4\) filas (12
+       casillas) que arranca en \((1,2)\), con Karel en \((1,1)\) mirando al norte:</p>
+    <figure>
+      <img alt="Mundo de entrada: rectángulo de casillas con 1 o 2 zumbadores, esquina inferior izquierda en (1,2); Karel (flecha azul) en (1,1) mirando al norte."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 1: mundo de entrada. Cada casilla del rectángulo tiene 1
+        zumbador (mujer) o 2 zumbadores (hombre).</figcaption>
+    </figure>
+    <p>En ese mundo hay <strong>6 mujeres</strong> (casillas con 1 zumbador) y
+       <strong>6 hombres</strong> (casillas con 2 zumbadores). El mundo de salida deja
+       \(6\) zumbadores en \((1,1)\) y \(6\) zumbadores en \((2,1)\):</p>
+    <figure>
+      <img alt="Mundo de salida: la casilla (1,1) tiene 6 zumbadores y la casilla (2,1) tiene 6 zumbadores."
+           src="data:image/jpeg;base64,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">
+      <figcaption>Figura 2: mundo de salida. \((1,1)=6\) mujeres y \((2,1)=6\)
+        hombres.</figcaption>
+    </figure>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Karel</span>
+      <span class="ptag">Simulación</span>
+      <span class="ptag">Conteo</span>
+      <span class="ptag">Ad-hoc</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>El mundo guarda un rectángulo (esquina inferior izquierda en \((1,2)\), hasta
+       \(90\times 90\)) donde cada casilla tiene 1 zumbador (mujer) o 2 zumbadores
+       (hombre). Karel debe contar cuántas mujeres y cuántos hombres hay y dejar esas
+       cantidades como zumbadores en \((1,1)\) y \((2,1)\), respectivamente.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>El rectángulo es chico (\(\le 90\times 90\), a lo más \(8100\)
+                casillas), así que recorrerlo varias veces es gratis. El reto no es la
+                eficiencia, sino <em>cómo cuenta</em> Karel: solo tiene una mochila y
+                el único sensor de zumbadores es <code>junto-a-zumbador</code> (sí/no),
+                no sabe «cuántos» hay en la casilla.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Cómo modelarlo?</summary>
+      <div class="body">
+        <p class="q">¿Ya pensaste que esto es un recorrido completo de la cuadrícula?
+           Si Karel visita <em>todas</em> las casillas del rectángulo y en cada una
+           decide «mujer u hombre», ¿no basta con ir sumando?</p>
+        <p>Karel no tiene variables enteras: su única «memoria numérica» son los
+           zumbadores que carga en la mochila y los que deja en el piso. Cada cantidad
+           que quieras recordar tendrás que representarla como una pila de zumbadores.
+           ¿Dónde te conviene guardar cada cuenta?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Distinguir mujer de hombre</summary>
+      <div class="body">
+        <p class="q">El sensor <code>junto-a-zumbador</code> solo te dice «hay al menos
+           uno» (sí/no), no te dice si hay 1 o 2. ¿Cómo distingues entonces una casilla
+           de 1 zumbador de una de 2?</p>
+        <p>¿Y si <em>recoges uno</em> y vuelves a preguntar? Tras recoger un zumbador,
+           si <strong>todavía</strong> queda otro, la casilla tenía 2 (hombre); si ya
+           <strong>no</strong> queda nada, tenía 1 (mujer). Con ese truco conviertes el
+           sensor de «sí/no» en un detector de «1 vs 2».</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — Dos cuentas, una sola mochila</summary>
+      <div class="body">
+        <p class="q">Quieres dos totales (mujeres y hombres), pero la mochila es una
+           sola pila indistinguible. Si vas echando zumbadores a la mochila, ¿cómo
+           sabrás luego cuáles eran «de mujer» y cuáles «de hombre»?</p>
+        <p>No puedes mezclarlos. La salida más limpia es hacer <strong>dos
+           recorridos</strong>: en el primero cuentas <em>solo</em> mujeres y guardas
+           ese total; en el segundo cuentas <em>solo</em> hombres. ¿Qué tendrías que
+           hacer en el primer recorrido para no perder a los hombres y poder contarlos
+           después?</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — Llegar a (1,1) y (2,1)</summary>
+      <div class="body">
+        <p class="q">Después de recorrer el rectángulo, Karel queda en una casilla
+           cualquiera. Sin variables, no «recuerda» coordenadas. ¿Cómo regresa con
+           seguridad a \((1,1)\) y \((2,1)\) para depositar las cuentas?</p>
+        <p>Usa las <strong>paredes</strong>: \((1,1)\) es la esquina suroeste del
+           mundo. Si Karel mira al sur y avanza hasta toparse con la pared, y luego mira
+           al oeste y avanza hasta toparse, cae <em>siempre</em> en \((1,1)\), venga de
+           donde venga. Un paso al este lo lleva a \((2,1)\). Para vaciar la cuenta:
+           <code>mientras hay-zumbadores-en-la-mochila: deja-zumbador</code>.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>La idea es <strong>contar con la mochila en dos pasadas</strong>, usando el
+           truco de «recoge-uno-y-pregunta» para clasificar cada casilla, y las paredes
+           para volver a la base.</p>
+
+        <p><strong>Recorrido 1 — mujeres.</strong> Karel barre todo el rectángulo (en
+           zig-zag, columna por columna). En cada casilla con zumbadores:</p>
+        <ul>
+          <li>Recoge un zumbador. Si <code>junto-a-zumbador</code> sigue siendo cierto,
+              era un <strong>hombre</strong> (tenía 2): <em>devuelve</em> el zumbador a
+              la casilla (queda intacta con 2) y no cuentas nada.</li>
+          <li>Si ya no queda nada, era una <strong>mujer</strong> (tenía 1):
+              <em>conserva</em> ese zumbador en la mochila (es tu \(+1\) de mujeres).</li>
+        </ul>
+        <p>Al terminar, la mochila tiene exactamente <em>W</em> zumbadores (una por
+           mujer), las casillas de mujer quedaron vacías y las de hombre siguen con 2.
+           Karel va a la base por las paredes y <strong>vacía la mochila en
+           \((1,1)\)</strong>: ahí quedan <em>W</em> zumbadores.</p>
+
+        <p><strong>Recorrido 2 — hombres.</strong> Ahora las únicas casillas con
+           zumbadores son las de hombre (siguen con 2). Karel barre de nuevo el
+           rectángulo y en cada casilla con zumbadores recoge <em>uno</em> (su \(+1\)
+           de hombres) y deja el otro. Al terminar, la mochila tiene <em>M</em>
+           zumbadores. Karel va a la base y <strong>vacía la mochila en
+           \((2,1)\)</strong>: ahí quedan <em>M</em> zumbadores.</p>
+
+        <p><strong>Cuidado con la fila 1.</strong> Empieza cada recorrido subiendo de
+           \((1,1)\) a \((1,2)\) sin tocar \((1,1)\), y barre solo de la fila 2 hacia
+           arriba; la fila 1 (donde viven \((1,1)\) y \((2,1)\)) no debe procesarse,
+           para no contar por error los zumbadores que ya depositaste. Como cada casilla
+           tiene al menos un zumbador, protege siempre el <code>coge-zumbador</code> con
+           un <code>si junto-a-zumbador</code> (recoger de una casilla vacía apaga a
+           Karel).</p>
+
+        <p>Por qué es correcto: cada casilla se clasifica sin ambigüedad (1 ⇒ mujer,
+           2 ⇒ hombre); el recorrido 1 no destruye a los hombres (los restaura), así
+           que el recorrido 2 los puede contar; y como cada cuenta se guarda y se
+           deposita por separado, no se mezclan. No importa que queden zumbadores
+           sueltos en el rectángulo: el enunciado lo permite.</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo (primitivas de Karel)</span>
+<pre>// orienta-al-X: usa los sensores de orientacion de Karel
+define-nueva-instruccion orienta-al-norte como:
+    mientras (no orientado-al-norte): gira-izquierda
+// (analogas: orienta-al-sur, orienta-al-este, orienta-al-oeste)
+
+define-nueva-instruccion ve-a-la-base como:        // termina en (1,1)
+    orienta-al-sur
+    mientras (frente-libre): avanza                //   baja hasta la pared sur
+    orienta-al-oeste
+    mientras (frente-libre): avanza                //   pega contra la pared oeste
+
+define-nueva-instruccion vacia-mochila-aqui como:
+    mientras (algun-zumbador-en-la-mochila): deja-zumbador
+
+// --- clasificacion de una casilla ---
+define-nueva-instruccion cuenta-si-mujer como:     // recorrido 1
+    si (junto-a-zumbador):
+        coge-zumbador
+        si (junto-a-zumbador):     // quedaba otro -> era HOMBRE (2)
+            deja-zumbador          //   lo devuelvo: casilla intacta, no cuento
+        // si no, era MUJER (1): conservo el zumbador en la mochila (+1)
+
+define-nueva-instruccion cuenta-si-hombre como:    // recorrido 2
+    si (junto-a-zumbador):         // ya solo los hombres tienen zumbadores
+        coge-zumbador              //   +1 hombre (dejo el otro)
+
+// --- barrido del rectangulo (solo filas >= 2), aplicando ACCION por casilla ---
+// procesa SOLO al subir; las bajadas son reposicionamiento (no tocan la fila 1).
+// bordes por paredes: norte = tope, este = borde derecho. Empieza en (1,2).
+define-nueva-instruccion recorre-marcha-con(ACCION) como:
+    ve-a-la-base                   // (1,1)
+    orienta-al-norte
+    avanza                         // entra a (1,2): base de la columna 1
+    repite (para-siempre):
+        ACCION                                     // procesa la base de la columna
+        mientras (frente-libre): { avanza ; ACCION }   // sube hasta el tope
+        orienta-al-este
+        si (frente-bloqueado): termina             // no hay mas columnas: fin
+        avanza                                     // siguiente columna (en el tope)
+        orienta-al-sur
+        mientras (frente-libre): avanza            // baja hasta la pared sur (fila 1)
+        orienta-al-norte
+        avanza                                     // sube a la fila 2 (sin procesar fila 1)
+
+inicia-ejecucion
+    recorre-marcha-con(cuenta-si-mujer)    // mochila = W (mujeres)
+    ve-a-la-base
+    vacia-mochila-aqui                     // (1,1) = numero de mujeres
+    recorre-marcha-con(cuenta-si-hombre)   // mochila = M (hombres)
+    ve-a-la-base
+    orienta-al-este ; avanza               // de (1,1) a (2,1)
+    vacia-mochila-aqui                     // (2,1) = numero de hombres
+termina-ejecucion</pre>
+        </div>
+        <p class="note">Notas: el sensor «algun-zumbador-en-la-mochila» es el estándar
+           de Karel para «la mochila no está vacía». Karel clásico no pasa instrucciones
+           como parámetro, así que en la práctica escribirías <em>dos</em> instrucciones
+           de barrido (una con <code>cuenta-si-mujer</code> y otra con
+           <code>cuenta-si-hombre</code>); aquí se factorizó como
+           <code>recorre-marcha-con(ACCION)</code> solo para no repetir el esquema. Lo
+           esencial: cada casilla de la marcha se visita una vez por recorrido, siempre
+           al subir, y la fila 1 nunca se procesa (por eso \((1,1)\) y \((2,1)\) no se
+           recuentan).</p>
+
+        <p><strong>Complejidad:</strong> dos recorridos de \(O(\text{ancho}\times
+           \text{alto})\) casillas, a lo más \(2\cdot 90\cdot 90 \approx 1.6\times10^4\)
+           pasos de proceso más \(O(\text{ancho}+\text{alto})\) de navegación. De sobra
+           para los límites.</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
