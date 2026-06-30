@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **174 / 190**
+Total de problemas: **190** · Completados: **178 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -42,14 +42,14 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 3 | Día 2 | Sumas | `1998/03 Sumas/index.html` |
 | [ ] | 4 | Día 2 | El Explorador | `1998/04 El Explorador/index.html` |
 
-## 4ª OMI · 1999 — 0 / 4
+## 4ª OMI · 1999 — 4 / 4
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | OMICEL | `1999/01 OMICEL/index.html` |
-| [ ] | 2 | Día 1 | Práctica | `1999/02 Práctica/index.html` |
-| [ ] | 3 | Día 2 | Torneo | `1999/03 Torneo/index.html` |
-| [ ] | 4 | Día 2 | Atínale | `1999/04 Atínale/index.html` |
+| [x] | 1 | Día 1 | OMICEL | `1999/01 OMICEL/index.html` |
+| [x] | 2 | Día 1 | Práctica | `1999/02 Práctica/index.html` |
+| [x] | 3 | Día 2 | Torneo | `1999/03 Torneo/index.html` |
+| [x] | 4 | Día 2 | Atínale | `1999/04 Atínale/index.html` |
 
 ## 5ª OMI · 2000 — 4 / 4
 

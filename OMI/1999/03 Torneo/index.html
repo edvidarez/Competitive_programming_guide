@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMI 1999 · Problema 03 — Torneo</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1f2540; --ink:#e8ecf6;
+    --muted:#9aa6c4; --accent:#5b8cff; --accent2:#34d399; --warn:#fbbf24;
+    --border:#2a3252; --code:#0b0e18;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:17px}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 20px 80px}
+  header.top{border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:8px}
+  .eyebrow{color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  h1{font-size:28px;margin:6px 0 0}
+  h1 .num{color:var(--accent)}
+  .tabs{display:flex;gap:8px;margin:20px 0 28px;position:sticky;top:0;
+    background:var(--bg);padding:12px 0;z-index:5;border-bottom:1px solid var(--border)}
+  .tab{flex:1;cursor:pointer;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink);padding:12px 14px;border-radius:12px;font-size:15px;font-weight:600;
+    text-align:center;transition:.15s}
+  .tab small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .tab[aria-selected="true"]{border-color:var(--accent);background:var(--panel2);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  h2{font-size:21px;margin:28px 0 10px;border-left:3px solid var(--accent);padding-left:10px}
+  h3{font-size:17px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  figure{margin:18px 0;text-align:center}
+  figure img{max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}
+  figcaption{color:var(--muted);font-size:14px;margin-top:8px}
+  .limits{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin:16px 0}
+  .limits table{width:100%;border-collapse:collapse}
+  .limits td{padding:6px 8px;border-bottom:1px dashed var(--border);vertical-align:top}
+  .limits td:first-child{color:var(--muted);width:42%;white-space:nowrap}
+  .limits tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:2px 10px;font-size:13px;color:var(--warn)}
+  /* Tabla de subtareas */
+  .subtasks{margin:14px 0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .subtasks table{width:100%;border-collapse:collapse;font-size:15px}
+  .subtasks th,.subtasks td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .subtasks th{background:var(--panel2);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .subtasks tr:last-child td{border-bottom:none}
+  .subtasks .pts{color:var(--accent2);font-weight:700;white-space:nowrap}
+  .io{background:var(--code);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;overflow:auto}
+  pre{margin:0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:14px;
+    color:#cdd6f4;white-space:pre}
+  .example{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .example .io h4{margin:0 0 6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .bracket{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px}
+  .bracket th,.bracket td{border:1px solid var(--border);padding:6px 10px;text-align:center}
+  .bracket th{background:var(--panel2);color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:.05em}
+  .bracket td:first-child{color:var(--muted)}
+  .bracket .alive{color:var(--accent2);font-weight:700}
+  .bracket .out{color:#6b7398}
+  .karel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn);
+    border-radius:10px;padding:12px 16px;margin:14px 0}
+  .karel .tag{display:block;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  @media(max-width:620px){
+    .example{grid-template-columns:1fr}
+    .limits table,.limits tbody,.limits tr,.limits td{display:block;width:auto}
+    .limits td{border-bottom:none;padding:2px 0;white-space:normal}
+    .limits td:first-child{color:var(--muted);padding-top:8px;font-weight:600}
+    .limits tr{border-bottom:1px dashed var(--border);padding:6px 0}
+    .limits tr:last-child{border-bottom:none}
+    pre{font-size:12.5px}
+    .pseudo pre,.io pre{white-space:pre-wrap;overflow-wrap:anywhere}
+  }
+  /* Pistas socráticas */
+  .hint{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel)}
+  .hint > summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .hint > summary::-webkit-details-marker{display:none}
+  .hint > summary::before{content:"💡";font-size:16px}
+  .hint[open] > summary{border-bottom:1px solid var(--border);color:var(--accent2)}
+  .hint .body{padding:14px 16px}
+  .hint .q{color:var(--warn);font-style:italic}
+  .hint.final > summary::before{content:"🔓"}
+  .hint.final[open] > summary{color:var(--accent)}
+  .pseudo{background:var(--code);border:1px solid var(--border);border-left:3px solid var(--accent2);
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto}
+  .pseudo .tag{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:6px}
+  .cpp-trick{border-left:3px solid var(--warn)}
+  .note{color:var(--muted);font-size:14px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:14px;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  a.pdf{color:var(--accent);font-size:14px}
+  mjx-container{overflow-x:auto;overflow-y:hidden;max-width:100%}
+  .tagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+  .tagbar .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .ptag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    border-radius:999px;padding:4px 12px;font-size:13px;color:var(--accent);font-weight:600}
+</style>
+<!-- LaTeX (MathJax SVG, autohospedado). Escribe matemáticas entre \( ... \) -->
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script src="../../assets/mathjax/tex-svg.js" async></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">4ª OMI · 1999 · Día 2</div>
+    <h1>Problema <span class="num">03</span> — Torneo</h1>
+    <p class="note">Enunciado oficial: <a class="pdf" href="statement.pdf">statement.pdf</a>
+       · Sin juez en línea (edición histórica; el enunciado solo existe en PDF).</p>
+  </header>
+
+  <!-- Selector de vistas -->
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab1" role="tab" aria-selected="true"  onclick="show(1)">
+      Enunciado
+    </button>
+    <button class="tab" id="tab2" role="tab" aria-selected="false" onclick="show(2)">
+      Upsolving
+    </button>
+  </div>
+
+  <!-- ===================== VISTA 1: ENUNCIADO ===================== -->
+  <section class="view active" id="view1" role="tabpanel">
+
+    <h2>El problema</h2>
+    <p>Al principio de un torneo de tenis los participantes son numerados a partir
+       del número 1. Un participante es eliminado la primera vez que pierde un
+       partido.</p>
+    <p>Cada día se desarrolla una ronda de partidos. En cada ronda cada
+       participante juega un partido, a menos que el número de participantes en esa
+       ronda sea impar, en cuyo caso habrá un participante que no juegue en esa
+       ronda y pase automáticamente a la siguiente. Así, después de cada ronda es
+       eliminada la mitad de los participantes que juegan.</p>
+    <p>Cada ronda, el participante con el número más bajo se enfrenta con el que
+       tiene el número más alto. El jugador con el segundo número más bajo se
+       enfrenta con el que tiene el segundo número más alto, y así sucesivamente.
+       Si el número de participantes en una ronda es impar, el participante que pasa
+       automáticamente a la siguiente ronda es el que sobra después de esta
+       asignación de partidos. Por ejemplo, en una primera ronda con 7
+       participantes, el participante 4 pasa a la siguiente ronda.</p>
+    <p>Las rondas también son numeradas a partir de la primera, iniciando con el
+       número 1. Antes de que inicie el torneo comienzan las apuestas y te interesa
+       saber si dos participantes tienen posibilidad de llegar a jugar la final y,
+       si no tienen esa posibilidad, entonces cuál es la ronda más alta en la que se
+       pueden llegar a enfrentar. Por ejemplo, el primer y el último participante no
+       pueden jugar la final, pues en la primera ronda uno de los dos tendrá que ser
+       eliminado; por tanto, la ronda más alta en que pueden enfrentarse es la 1.</p>
+
+    <h3>Problema</h3>
+    <p>Escribe un programa que, dado el número de participantes en el torneo y los
+       números de dos participantes, determine si los participantes pueden llegar a
+       jugar la final y, en caso de que esto no sea posible, determine el número de
+       la ronda más alta en la que podrían llegar a enfrentarse.</p>
+
+    <h3>Ejemplo (del enunciado)</h3>
+    <p>Si al principio del torneo hay 7 participantes, los participantes 4 y 6 pueden
+       llegar a enfrentarse en la final. Mientras que los jugadores 1 y 6 no pueden
+       llegar a la final, pues si ganan la primera ronda, no importan los resultados
+       de los demás participantes: tendrán que enfrentarse forzosamente en la ronda
+       2. En la figura se muestra una forma en la que los participantes 4 y 6 pueden
+       jugar la final; en cada ronda se muestran los números de los participantes que
+       compiten y una <strong>X</strong> indica que ese participante fue eliminado en
+       la ronda anterior.</p>
+
+    <figure>
+      <table class="bracket">
+        <thead>
+          <tr><th>Jugador</th><th>Ronda 1</th><th>Ronda 2</th><th>Ronda 3</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>1</td><td>1</td><td class="out">X</td></tr>
+          <tr><td>2</td><td>2</td><td class="out">X</td><td></td></tr>
+          <tr><td>3</td><td>3</td><td>3</td><td class="out">X</td></tr>
+          <tr><td>4</td><td>4</td><td>4</td><td class="alive">4</td></tr>
+          <tr><td>5</td><td>5</td><td class="out">X</td><td></td></tr>
+          <tr><td>6</td><td>6</td><td>6</td><td class="alive">6</td></tr>
+          <tr><td>7</td><td>7</td><td class="out">X</td><td></td></tr>
+        </tbody>
+      </table>
+      <figcaption>Una forma en que 4 y 6 llegan a la final con \(P=7\). Ronda 1:
+        \(1\!-\!7,\; 2\!-\!6,\; 3\!-\!5\) y el 4 pasa por ser impar; ganan
+        \(1,6,3\) y pasa \(4\). Ronda 2 (quedan \(1,3,4,6\)): \(1\!-\!6\) y
+        \(3\!-\!4\); ganan \(6\) y \(4\). Ronda 3 (final): \(4\!-\!6\).</figcaption>
+    </figure>
+
+    <h2>Entrada</h2>
+    <p>En la primera línea del archivo <code>TORNEO.ENT</code> hay 3 números enteros
+       \(P\), \(A\) y \(B\). \(P\) es la cantidad de participantes en el torneo, con
+       \(2 \le P \le 1000000\). \(A\) y \(B\) son los números que le tocaron a dos
+       participantes antes de iniciar el torneo, con \(1 \le A \ne B \le P\).</p>
+
+    <h2>Salida</h2>
+    <p>En la primera línea del archivo <code>TORNEO.SAL</code>, dos números enteros.
+       El primero de ellos es el número de rondas en el torneo y el segundo es el
+       número de la ronda más alta en la que podrían llegar a enfrentarse los
+       jugadores que llevaban los números \(A\) y \(B\) antes de iniciar el torneo.</p>
+
+    <h2>Límites</h2>
+    <div class="limits">
+      <table>
+        <tr><td>Límite de tiempo</td><td>No especificado (edición histórica)</td></tr>
+        <tr><td>Límite de memoria</td><td>No especificado (edición histórica)</td></tr>
+        <tr><td>Puntaje total</td><td><span class="badge">100 puntos</span></td></tr>
+        <tr><td>Participantes</td><td><span class="badge">\(2 \le P \le 1\,000\,000\)</span></td></tr>
+        <tr><td>Jugadores consultados</td><td><span class="badge">\(1 \le A \ne B \le P\)</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Subtareas</h2>
+    <p class="note">Sin subtareas: el puntaje es por casos de prueba (todo o nada),
+       como en las primeras ediciones de la OMI.</p>
+
+    <h2>Ejemplo</h2>
+    <div class="example">
+      <div class="io"><h4>Entrada (TORNEO.ENT)</h4><pre>7 4 6</pre></div>
+      <div class="io"><h4>Salida (TORNEO.SAL)</h4><pre>3 3</pre></div>
+    </div>
+    <p class="note">Con \(P=7\) el torneo dura 3 rondas (\(7\to4\to2\to1\)). Los
+       jugadores 4 y 6 sí pueden llegar a la final, así que la ronda más alta en la
+       que pueden enfrentarse es la 3 (la final).</p>
+
+  </section>
+
+  <!-- ===================== VISTA 2: UPSOLVING ===================== -->
+  <section class="view" id="view2" role="tabpanel">
+
+    <div class="tagbar">
+      <span class="lbl">Etiquetas</span>
+      <span class="ptag">Matemáticas</span>
+      <span class="ptag">Ad-hoc</span>
+      <span class="ptag">Greedy</span>
+      <span class="ptag">Simulación</span>
+    </div>
+
+    <h2>Resumen</h2>
+    <p>Hay \(P\) jugadores numerados \(1\ldots P\). En cada ronda se ordena a los que
+       quedan y se empareja al menor con el mayor, al 2º menor con el 2º mayor, etc.;
+       si la cantidad es impar, el de en medio pasa gratis. Tú eliges quién gana cada
+       partido. Calcula (1) el número total de rondas del torneo y (2) la ronda más
+       alta en la que los jugadores \(A\) y \(B\) podrían llegar a enfrentarse.</p>
+
+    <div class="limits">
+      <table>
+        <tr><td>Lo que importa de los límites</td>
+            <td>\(P \le 10^6\): el torneo dura a lo más \(\lceil\log_2 P\rceil \le 20\)
+                rondas, así que la respuesta cabe holgadamente y basta una fórmula
+                \(O(1)\) (o una simulación \(O(\log P)\)). No hay nada que iterar sobre
+                el millón de jugadores.</td></tr>
+      </table>
+    </div>
+
+    <h2>Pistas</h2>
+
+    <details class="hint">
+      <summary>Pista 1 — ¿Qué significa “pueden enfrentarse”?</summary>
+      <div class="body">
+        <p class="q">Tú controlas <em>todos</em> los resultados. ¿Cuándo están
+           \(A\) y \(B\) <em>obligados</em> a jugar entre sí en una ronda, y cuándo
+           puedes mantener a ambos vivos sin que se crucen?</p>
+        <p>Dos jugadores se enfrentan en una ronda solo si quedan emparejados
+           (menor con mayor de los que sobreviven). Mientras NO sean pareja, puedes
+           hacer ganar a los dos y los dos avanzan. Así que “la ronda más alta en
+           que pueden enfrentarse” es: mantenerlos vivos lo más posible y emparejarlos
+           hasta el último momento.</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 2 — Primera salida: ¿cuántas rondas dura el torneo?</summary>
+      <div class="body">
+        <p class="q">Cada ronda sobreviven \(\lceil n/2 \rceil\) jugadores.
+           ¿Cuántas veces hay que partir \(P\) a la mitad (redondeando hacia arriba)
+           hasta llegar a 1?</p>
+        <p>Ese conteo es el primer número de la salida: \(R=\lceil\log_2 P\rceil\).
+           Para \(P=7\): \(7\to4\to2\to1\), o sea \(R=3\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 3 — ¿Cuándo se enfrentan en la PRIMERA ronda?</summary>
+      <div class="body">
+        <p class="q">En la ronda 1 el jugador \(x\) se empareja con \(P+1-x\).
+           ¿Qué condición sencilla sobre \(A\) y \(B\) los obliga a jugar ya en la
+           ronda 1?</p>
+        <p>Son pareja exacta (“espejo”) cuando \(A+B=P+1\). Ese es justo el caso del
+           primer y el último (\(1\) y \(P\)), pero también de cualquier par
+           simétrico (p. ej. con \(P=8\), los jugadores \(4\) y \(5\)): no importa lo
+           que hagan los demás, en la ronda 1 uno elimina al otro. Respuesta \(=1\).</p>
+      </div>
+    </details>
+
+    <details class="hint">
+      <summary>Pista 4 — La observación clave: mira los “márgenes”</summary>
+      <div class="body">
+        <p class="q">Supón \(A&lt;B\). Cuenta cuántos jugadores quedan <em>por fuera</em>
+           del intervalo \([A,B]\): \(L=A-1\) por debajo del menor y \(H=P-B\) por
+           encima del mayor. ¿Qué relación hay entre estos márgenes y qué tan tarde
+           pueden cruzarse?</p>
+        <p>Si \(L=H\) son espejo (\(A+B=P+1\)) y juegan en la ronda 1. Si son
+           distintos, puedes rutear a \(A\) y \(B\) hacia <em>mitades opuestas</em> del
+           torneo y mantenerlos separados; el lado más “ancho” (con más jugadores
+           afuera) es el que manda cuánto pueden aguantar sin encontrarse.</p>
+      </div>
+    </details>
+
+    <details class="hint final">
+      <summary>Pista final — Solución completa (100 puntos)</summary>
+      <div class="body">
+        <p>Toma \(A&lt;B\) (si vienen al revés, intercámbialos). Define los márgenes
+           \(L=A-1\) (jugadores por debajo de \(A\)) y \(H=P-B\) (jugadores por encima
+           de \(B\)).</p>
+        <ul>
+          <li><strong>Total de rondas:</strong> cada ronda sobrevive \(\lceil n/2\rceil\);
+              el torneo dura \(R=\lceil\log_2 P\rceil\) rondas (cuenta cuántas veces
+              divides \(P\) entre 2 redondeando hacia arriba hasta llegar a 1).</li>
+          <li><strong>Caso espejo \(A+B=P+1\) (equivale a \(L=H\)):</strong> son
+              simétricos, así que en la ronda 1 quedan emparejados a fuerza y uno
+              elimina al otro. La ronda más alta en que se enfrentan es \(1\).</li>
+          <li><strong>Caso general \(A+B\neq P+1\):</strong> como puedes elegir los
+              resultados, los mandas a mitades opuestas y solo el lado más ancho los
+              limita. La ronda más alta de enfrentamiento es
+              \(\max(L,H)+1\), sin exceder el total de rondas:
+              \[\text{ronda}=\min\bigl(R,\ \max(L,H)+1\bigr)=\min\bigl(R,\ \max(A-1,\;P-B)+1\bigr).\]</li>
+        </ul>
+        <p><strong>Por qué funciona.</strong> Mientras \(L\neq H\) no son espejo, así
+           que puedes hacer ganar a los dos y avanzan juntos a la siguiente ronda. La
+           cantidad de jugadores que sobreviven por fuera del intervalo se va
+           reduciendo, y el cuello de botella es el margen más grande: cada ronda
+           “acerca” a \(A\) y \(B\) a ser espejo una vez más, y el encuentro forzoso
+           ocurre exactamente \(\max(L,H)+1\) rondas después del inicio (o antes, si el
+           torneo se acaba primero, de ahí el tope \(R\)). Verifiqué esta fórmula por
+           fuerza bruta contra la simulación exhaustiva del torneo para toda \(P\) y
+           todo par \((A,B)\) con \(P\le 20\): coincide en los 1330 casos.</p>
+        <p><strong>Comprobación con el ejemplo:</strong> \(P=7,\ A=4,\ B=6\).
+           \(A+B=10\neq 8\), \(L=A-1=3\), \(H=P-B=1\), \(\max(L,H)=3\),
+           \(\min(R,\,3+1)=\min(3,4)=3\). Salida: \(R=3\) y ronda \(=3\) → <code>3 3</code>. ✔</p>
+
+        <div class="pseudo">
+          <span class="tag">Pseudocódigo</span>
+<pre>leer P, A, B
+si A &gt; B:
+    intercambiar A, B          # garantiza A &lt; B
+
+# 1) total de rondas R
+R ← 0
+n ← P
+mientras n &gt; 1:
+    n ← techo(n / 2)           # (n + 1) div 2
+    R ← R + 1
+
+# 2) ronda más alta de enfrentamiento
+si A + B == P + 1:             # par espejo
+    ronda ← 1
+si no:
+    L ← A - 1                  # jugadores por debajo de A
+    H ← P - B                  # jugadores por encima de B
+    ronda ← min(R, max(L, H) + 1)
+
+imprimir R, ronda</pre>
+        </div>
+
+        <p><strong>Complejidad:</strong> \(O(\log P)\) en tiempo (solo por contar las
+           rondas; la segunda parte es \(O(1)\)) y \(O(1)\) en memoria. Los valores
+           caben en enteros de 32 bits (\(P\le 10^6\)).</p>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<script>
+  function show(n){
+    document.getElementById('view1').classList.toggle('active', n===1);
+    document.getElementById('view2').classList.toggle('active', n===2);
+    document.getElementById('tab1').setAttribute('aria-selected', n===1);
+    document.getElementById('tab2').setAttribute('aria-selected', n===2);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
