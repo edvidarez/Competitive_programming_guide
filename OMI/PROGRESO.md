@@ -1,6 +1,6 @@
 # Progreso de transcripción y upsolving — OMI
 
-Total de problemas: **190** · Completados: **182 / 190**
+Total de problemas: **190** · Completados: **186 / 190**
 
 Marca `[x]` cuando el `index.html` del problema esté terminado y revisado.
 Cada problema vive en `OMI/<año>/<NN Título>/` junto a su enunciado
@@ -24,14 +24,14 @@ ahí como `index.html` y rellena las dos vistas (enunciado fiel + upsolving).
 | [ ] | 3 | Día 2 | Mudanza | `1996/03 Mudanza/index.html` |
 | [ ] | 4 | Día 2 | Mina | `1996/04 Mina/index.html` |
 
-## 2ª OMI · 1997 — 0 / 4
+## 2ª OMI · 1997 — 4 / 4
 
 | ✓ | # | Día | Título | Archivo |
 |---|---|-----|--------|---------|
-| [ ] | 1 | Día 1 | Submarino | `1997/01 Submarino/index.html` |
-| [ ] | 2 | Día 1 | Átomos | `1997/02 Átomos/index.html` |
-| [ ] | 3 | Día 2 | Cintas | `1997/03 Cintas/index.html` |
-| [ ] | 4 | Día 2 | Superconejo | `1997/04 Superconejo/index.html` |
+| [x] | 1 | Día 1 | Submarino | `1997/01 Submarino/index.html` |
+| [x] | 2 | Día 1 | Átomos | `1997/02 Átomos/index.html` |
+| [x] | 3 | Día 2 | Cintas | `1997/03 Cintas/index.html` |
+| [x] | 4 | Día 2 | Superconejo | `1997/04 Superconejo/index.html` |
 
 ## 3ª OMI · 1998 — 4 / 4
 
